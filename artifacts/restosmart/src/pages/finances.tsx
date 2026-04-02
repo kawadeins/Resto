@@ -3,20 +3,36 @@ import { useGetFinancesSummary, getGetFinancesSummaryQueryKey, useGetDiscount, g
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Percent, Zap } from "lucide-react";
+import { TrendingUp, DollarSign, Percent, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const discountSchema = z.object({
+  enabled: z.boolean(),
+  percentage: z.number().min(5).max(50),
+  startTime: z.string(),
+  endTime: z.string(),
+  days: z.array(z.string()),
+  label: z.string().min(1, "Label is required"),
+  targetType: z.enum(["all", "dishes", "combos"]),
+  notes: z.string().optional(),
+});
+
+type DiscountFormValues = z.infer<typeof discountSchema>;
 
 export default function Finances() {
   const { toast } = useToast();
@@ -32,13 +48,17 @@ export default function Finances() {
 
   const updateDiscount = useUpdateDiscount();
 
-  const form = useForm({
+  const form = useForm<DiscountFormValues>({
+    resolver: zodResolver(discountSchema),
     defaultValues: {
       enabled: false,
       percentage: 10,
       startTime: "14:00",
       endTime: "17:00",
-      days: [] as string[],
+      days: [],
+      label: "Happy Hour",
+      targetType: "all",
+      notes: "",
     }
   });
 
@@ -51,11 +71,14 @@ export default function Finances() {
         startTime: discountSettings.startTime,
         endTime: discountSettings.endTime,
         days: discountSettings.days,
+        label: discountSettings.label,
+        targetType: discountSettings.targetType as "all" | "dishes" | "combos",
+        notes: discountSettings.notes || "",
       });
     }
   }, [discountSettings, form]);
 
-  const onDiscountSubmit = (data: any) => {
+  const onDiscountSubmit = (data: DiscountFormValues) => {
     updateDiscount.mutate(
       { data },
       {
@@ -85,7 +108,7 @@ export default function Finances() {
             <CardContent>
               {loadingSummary ? <Skeleton className="h-8 w-[120px]" /> : (
                 <div className="text-2xl font-bold text-emerald-500">
-                  ${summary?.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  €{summary?.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </div>
               )}
             </CardContent>
@@ -101,7 +124,7 @@ export default function Finances() {
             <CardContent>
               {loadingSummary ? <Skeleton className="h-8 w-[120px]" /> : (
                 <div className="text-2xl font-bold">
-                  ${summary?.totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  €{summary?.totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </div>
               )}
             </CardContent>
@@ -133,7 +156,7 @@ export default function Finances() {
             <CardContent>
               {loadingSummary ? <Skeleton className="h-8 w-[100px]" /> : (
                 <div className="text-2xl font-bold text-muted-foreground">
-                  ${summary?.avgDailyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  €{summary?.avgDailyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </div>
               )}
             </CardContent>
@@ -158,11 +181,11 @@ export default function Finances() {
                     <BarChart data={summary?.revenueByMonth} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `€${value/1000}k`} />
                       <Tooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                        formatter={(value: number) => [`€${value.toLocaleString()}`, "Revenue"]}
                       />
                       <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -203,24 +226,62 @@ export default function Finances() {
 
                     <FormField
                       control={form.control}
-                      name="percentage"
+                      name="label"
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex justify-between">
-                            <FormLabel>Discount Amount</FormLabel>
-                            <span className="font-bold text-primary">{field.value}%</span>
-                          </div>
+                          <FormLabel>Promotion Label</FormLabel>
                           <FormControl>
-                            <Slider
-                              min={5} max={50} step={5}
-                              value={[field.value]}
-                              onValueChange={(vals) => field.onChange(vals[0])}
-                              className="py-4"
-                            />
+                            <Input placeholder="e.g. Happy Hour" {...field} />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="targetType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Target Items</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Select target" /></SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="all">All Items</SelectItem>
+                                <SelectItem value="dishes">Specific Dishes</SelectItem>
+                                <SelectItem value="combos">Combo Deals</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="percentage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex justify-between">
+                              <FormLabel>Discount</FormLabel>
+                              <span className="font-bold text-primary">{field.value}%</span>
+                            </div>
+                            <FormControl>
+                              <Slider
+                                min={5} max={50} step={5}
+                                value={[field.value]}
+                                onValueChange={(vals) => field.onChange(vals[0])}
+                                className="py-2"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
@@ -230,6 +291,7 @@ export default function Finances() {
                           <FormItem>
                             <FormLabel>Start Time</FormLabel>
                             <FormControl><Input type="time" {...field} /></FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -240,6 +302,7 @@ export default function Finances() {
                           <FormItem>
                             <FormLabel>End Time</FormLabel>
                             <FormControl><Input type="time" {...field} /></FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -250,7 +313,7 @@ export default function Finances() {
                       name="days"
                       render={() => (
                         <FormItem>
-                          <div className="mb-4">
+                          <div className="mb-2">
                             <FormLabel>Active Days</FormLabel>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
@@ -279,6 +342,25 @@ export default function Finances() {
                               />
                             ))}
                           </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Internal Notes</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Any rules or conditions..." 
+                              className="resize-none" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />

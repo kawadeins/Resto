@@ -1,12 +1,16 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
+  { name: "Reservations", href: "/reservations", icon: Calendar },
   { name: "Staff", href: "/staff", icon: Users },
   { name: "Inventory", href: "/inventory", icon: Package },
+  { name: "Menu", href: "/menu", icon: UtensilsCrossed },
+  { name: "POS", href: "/pos", icon: ShoppingCart },
   { name: "Finances", href: "/finances", icon: DollarSign },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

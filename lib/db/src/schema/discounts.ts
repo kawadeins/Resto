@@ -9,6 +9,9 @@ export const discountsTable = pgTable("discounts", {
   startTime: text("start_time").notNull().default("15:00"),
   endTime: text("end_time").notNull().default("17:00"),
   days: text("days").array().notNull().default([]),
+  label: text("label").notNull().default("Happy Hour"),
+  targetType: text("target_type").notNull().default("all"),
+  notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

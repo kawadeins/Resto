@@ -1,5 +1,19 @@
 import { useState } from "react";
-import { useListEmployees, getListEmployeesQueryKey, useCreateEmployee, useUpdateEmployee, useDeleteEmployee, useListShifts, getListShiftsQueryKey, useCreateShift, useDeleteShift } from "@workspace/api-client-react";
+import { 
+  useListEmployees, 
+  getListEmployeesQueryKey, 
+  useCreateEmployee, 
+  useUpdateEmployee, 
+  useDeleteEmployee, 
+  useListShifts, 
+  getListShiftsQueryKey, 
+  useCreateShift, 
+  useDeleteShift,
+  useGetWorkingNow,
+  getGetWorkingNowQueryKey,
+  useGetUpcomingShiftReminders,
+  getGetUpcomingShiftRemindersQueryKey
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +21,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Pencil, Trash2, Clock } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, Clock, Users, Bell } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -18,7 +31,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Employee, Shift } from "@workspace/api-client-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import type { Employee } from "@workspace/api-client-react";
 
 const employeeSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -49,6 +63,14 @@ export default function Staff() {
 
   const { data: shifts, isLoading: loadingShifts } = useListShifts({
     query: { queryKey: getListShiftsQueryKey() }
+  });
+
+  const { data: workingNow, isLoading: loadingWorkingNow } = useGetWorkingNow({
+    query: { queryKey: getGetWorkingNowQueryKey(), refetchInterval: 60000 }
+  });
+
+  const { data: shiftReminders, isLoading: loadingReminders } = useGetUpcomingShiftReminders({
+    query: { queryKey: getGetUpcomingShiftRemindersQueryKey(), refetchInterval: 60000 }
   });
 
   const createEmployee = useCreateEmployee();
@@ -259,7 +281,63 @@ export default function Staff() {
         </Dialog>
       </div>
 
+      {shiftReminders && shiftReminders.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex flex-col gap-2">
+            {shiftReminders.map(reminder => (
+              <Alert key={`${reminder.employeeId}-${reminder.startTime}`} className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                <Bell className="h-4 w-4 text-amber-600" />
+                <AlertTitle>Starting Soon</AlertTitle>
+                <AlertDescription>
+                  {reminder.employeeName} ({reminder.role}) starts in {reminder.minutesUntilStart} min at {reminder.startTime}.
+                </AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Working Right Now
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingWorkingNow ? (
+              <Skeleton className="h-20 w-full" />
+            ) : workingNow && workingNow.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {workingNow.map(emp => (
+                  <div key={emp.id} className="flex flex-col justify-between p-4 rounded-lg border bg-card">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-semibold">{emp.name}</p>
+                        <p className="text-sm text-muted-foreground">{emp.role}</p>
+                      </div>
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                        {emp.shiftStart} - {emp.shiftEnd}
+                      </Badge>
+                    </div>
+                    <div className="text-sm font-medium text-emerald-500 mt-2">
+                      {emp.minutesUntilEnd} min remaining
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                <Users className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                <p>No one is currently clocked in.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card>
           <CardHeader>
             <CardTitle>Team Members</CardTitle>
@@ -327,7 +405,7 @@ export default function Staff() {
         </Card>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Weekly Rota</CardTitle>

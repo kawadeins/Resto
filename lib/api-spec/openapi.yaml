@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
+  version: 0.2.0
   description: RestoSmart Restaurant Management API
 servers:
   - url: /api
@@ -22,6 +22,10 @@ tags:
     description: Sales and finances
   - name: discounts
     description: Smart discount management
+  - name: reservations
+    description: Table reservations
+  - name: analytics
+    description: Business analytics
 
 paths:
   /healthz:
@@ -201,6 +205,36 @@ paths:
         "204":
           description: Deleted
 
+  /shifts/working-now:
+    get:
+      operationId: getWorkingNow
+      tags: [shifts]
+      summary: Get employees currently on shift based on current day and time
+      responses:
+        "200":
+          description: Employees working now
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkingNowEmployee"
+
+  /shifts/upcoming-reminders:
+    get:
+      operationId: getUpcomingShiftReminders
+      tags: [shifts]
+      summary: Get shifts starting within the next 30 minutes
+      responses:
+        "200":
+          description: Upcoming shift reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShiftReminder"
+
   /inventory:
     get:
       operationId: listInventory
@@ -361,6 +395,349 @@ paths:
               schema:
                 $ref: "#/components/schemas/DiscountSettings"
 
+  /reservations:
+    get:
+      operationId: listReservations
+      tags: [reservations]
+      summary: List all reservations
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+    post:
+      operationId: createReservation
+      tags: [reservations]
+      summary: Create a new reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservationBody"
+      responses:
+        "201":
+          description: Created reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+
+  /reservations/today:
+    get:
+      operationId: getTodayReservations
+      tags: [reservations]
+      summary: Get today's reservations
+      responses:
+        "200":
+          description: Today's reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+
+  /reservations/stats:
+    get:
+      operationId: getReservationStats
+      tags: [reservations]
+      summary: Reservation statistics
+      responses:
+        "200":
+          description: Reservation stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationStats"
+
+  /reservations/{id}:
+    get:
+      operationId: getReservation
+      tags: [reservations]
+      summary: Get reservation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+    put:
+      operationId: updateReservation
+      tags: [reservations]
+      summary: Update reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReservationBody"
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+    delete:
+      operationId: deleteReservation
+      tags: [reservations]
+      summary: Delete reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /analytics/performance:
+    get:
+      operationId: getPerformanceAnalytics
+      tags: [analytics]
+      summary: Get daily and monthly performance analytics
+      responses:
+        "200":
+          description: Performance analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerformanceAnalytics"
+
+  /analytics/daily:
+    get:
+      operationId: getDailyAnalytics
+      tags: [analytics]
+      summary: Get daily breakdown for the last 30 days
+      responses:
+        "200":
+          description: Daily analytics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyAnalyticsEntry"
+
+  /menu:
+    get:
+      operationId: listMenuItems
+      tags: [menu]
+      summary: List all menu items with calculated cost and margin
+      responses:
+        "200":
+          description: List of menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItem"
+    post:
+      operationId: createMenuItem
+      tags: [menu]
+      summary: Create a new menu item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMenuItemBody"
+      responses:
+        "201":
+          description: Created menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+
+  /menu/analytics:
+    get:
+      operationId: getMenuAnalytics
+      tags: [menu]
+      summary: Get top profitable dishes ranked by profit margin and total profit
+      responses:
+        "200":
+          description: Menu analytics data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItemAnalytics"
+
+  /menu/{id}:
+    get:
+      operationId: getMenuItem
+      tags: [menu]
+      summary: Get a single menu item by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+    put:
+      operationId: updateMenuItem
+      tags: [menu]
+      summary: Update a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMenuItemBody"
+      responses:
+        "200":
+          description: Updated menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+    delete:
+      operationId: deleteMenuItem
+      tags: [menu]
+      summary: Delete a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /menu/{id}/ingredients:
+    get:
+      operationId: getMenuItemIngredients
+      tags: [menu]
+      summary: Get all ingredients for a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ingredients for menu item
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuIngredient"
+    put:
+      operationId: setMenuItemIngredients
+      tags: [menu]
+      summary: Replace all ingredients for a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMenuItemIngredientsBody"
+      responses:
+        "200":
+          description: Updated ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuIngredient"
+
+  /pos/sell:
+    post:
+      operationId: recordPosSale
+      tags: [pos]
+      summary: Record a POS sale - deducts ingredients from inventory automatically
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordPosSaleBody"
+      responses:
+        "201":
+          description: Sale recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PosSale"
+
+  /pos/sales-log:
+    get:
+      operationId: listPosSales
+      tags: [pos]
+      summary: Get recent POS sales log
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of recent POS sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PosSale"
+
 components:
   schemas:
     HealthStatus:
@@ -380,6 +757,8 @@ components:
           type: number
         activeStaff:
           type: integer
+        workingNowCount:
+          type: integer
         lowStockAlerts:
           type: integer
         tableOccupancy:
@@ -388,14 +767,24 @@ components:
           type: integer
         tableOccupancyPercent:
           type: number
+        todayReservations:
+          type: integer
+        pendingReservations:
+          type: integer
+        upcomingShiftReminders:
+          type: integer
       required:
         - todayProfit
         - todayRevenue
         - activeStaff
+        - workingNowCount
         - lowStockAlerts
         - tableOccupancy
         - tableTotal
         - tableOccupancyPercent
+        - todayReservations
+        - pendingReservations
+        - upcomingShiftReminders
 
     MonthlySaleData:
       type: object
@@ -454,6 +843,55 @@ components:
         - role
         - email
         - phone
+
+    WorkingNowEmployee:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        shiftStart:
+          type: string
+        shiftEnd:
+          type: string
+        dayOfWeek:
+          type: string
+        minutesUntilEnd:
+          type: integer
+      required:
+        - id
+        - name
+        - role
+        - shiftStart
+        - shiftEnd
+        - dayOfWeek
+        - minutesUntilEnd
+
+    ShiftReminder:
+      type: object
+      properties:
+        employeeId:
+          type: integer
+        employeeName:
+          type: string
+        role:
+          type: string
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        minutesUntilStart:
+          type: integer
+      required:
+        - employeeId
+        - employeeName
+        - role
+        - dayOfWeek
+        - startTime
+        - minutesUntilStart
 
     Shift:
       type: object
@@ -653,6 +1091,13 @@ components:
           type: array
           items:
             type: string
+        label:
+          type: string
+        targetType:
+          type: string
+          enum: [all, dishes, combos]
+        notes:
+          type: string
       required:
         - id
         - enabled
@@ -660,6 +1105,8 @@ components:
         - startTime
         - endTime
         - days
+        - label
+        - targetType
 
     UpdateDiscountBody:
       type: object
@@ -676,9 +1123,461 @@ components:
           type: array
           items:
             type: string
+        label:
+          type: string
+        targetType:
+          type: string
+          enum: [all, dishes, combos]
+        notes:
+          type: string
       required:
         - enabled
         - percentage
         - startTime
         - endTime
         - days
+        - label
+        - targetType
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        partySize:
+          type: integer
+        status:
+          type: string
+          enum: [pending, confirmed, seated, completed, cancelled]
+        tableNumber:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        source:
+          type: string
+          enum: [direct, online, phone, walkin]
+        createdAt:
+          type: string
+      required:
+        - id
+        - customerName
+        - customerEmail
+        - customerPhone
+        - date
+        - time
+        - partySize
+        - status
+        - source
+        - createdAt
+
+    CreateReservationBody:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        partySize:
+          type: integer
+        tableNumber:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        source:
+          type: string
+          enum: [direct, online, phone, walkin]
+      required:
+        - customerName
+        - customerEmail
+        - customerPhone
+        - date
+        - time
+        - partySize
+        - source
+
+    UpdateReservationBody:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        partySize:
+          type: integer
+        status:
+          type: string
+          enum: [pending, confirmed, seated, completed, cancelled]
+        tableNumber:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        source:
+          type: string
+          enum: [direct, online, phone, walkin]
+      required:
+        - customerName
+        - customerEmail
+        - customerPhone
+        - date
+        - time
+        - partySize
+        - status
+        - source
+
+    ReservationStats:
+      type: object
+      properties:
+        todayTotal:
+          type: integer
+        todayConfirmed:
+          type: integer
+        todayPending:
+          type: integer
+        todaySeated:
+          type: integer
+        totalCovers:
+          type: integer
+        weekTotal:
+          type: integer
+        cancellationRate:
+          type: number
+        avgPartySize:
+          type: number
+      required:
+        - todayTotal
+        - todayConfirmed
+        - todayPending
+        - todaySeated
+        - totalCovers
+        - weekTotal
+        - cancellationRate
+        - avgPartySize
+
+    PerformanceAnalytics:
+      type: object
+      properties:
+        currentMonthRevenue:
+          type: number
+        currentMonthProfit:
+          type: number
+        prevMonthRevenue:
+          type: number
+        prevMonthProfit:
+          type: number
+        revenueGrowth:
+          type: number
+        profitGrowth:
+          type: number
+        bestDay:
+          type: string
+        bestDayRevenue:
+          type: number
+        avgCoversPerDay:
+          type: number
+        peakHours:
+          type: array
+          items:
+            $ref: "#/components/schemas/PeakHourEntry"
+        monthlyData:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlySaleData"
+        reservationsBySource:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceBreakdown"
+      required:
+        - currentMonthRevenue
+        - currentMonthProfit
+        - prevMonthRevenue
+        - prevMonthProfit
+        - revenueGrowth
+        - profitGrowth
+        - bestDay
+        - bestDayRevenue
+        - avgCoversPerDay
+        - peakHours
+        - monthlyData
+        - reservationsBySource
+
+    PeakHourEntry:
+      type: object
+      properties:
+        hour:
+          type: string
+        covers:
+          type: integer
+      required:
+        - hour
+        - covers
+
+    SourceBreakdown:
+      type: object
+      properties:
+        source:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+      required:
+        - source
+        - count
+        - percentage
+
+    DailyAnalyticsEntry:
+      type: object
+      properties:
+        date:
+          type: string
+        revenue:
+          type: number
+        profit:
+          type: number
+        covers:
+          type: integer
+        reservations:
+          type: integer
+      required:
+        - date
+        - revenue
+        - profit
+        - covers
+        - reservations
+
+    MenuIngredient:
+      type: object
+      properties:
+        id:
+          type: integer
+        menuItemId:
+          type: integer
+        inventoryItemId:
+          type: integer
+        inventoryItemName:
+          type: string
+        unit:
+          type: string
+        quantityUsed:
+          type: number
+        costPerUnit:
+          type: number
+        lineCost:
+          type: number
+      required:
+        - id
+        - menuItemId
+        - inventoryItemId
+        - inventoryItemName
+        - unit
+        - quantityUsed
+        - costPerUnit
+        - lineCost
+
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+        sellingPrice:
+          type: number
+        recipeCost:
+          type: number
+        profitMargin:
+          type: number
+        absoluteProfit:
+          type: number
+        isActive:
+          type: boolean
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/MenuIngredient"
+      required:
+        - id
+        - name
+        - category
+        - sellingPrice
+        - recipeCost
+        - profitMargin
+        - absoluteProfit
+        - isActive
+        - ingredients
+
+    CreateMenuItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+        sellingPrice:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - name
+        - category
+        - sellingPrice
+
+    UpdateMenuItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+        sellingPrice:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - name
+        - category
+        - sellingPrice
+
+    SetMenuItemIngredientsBody:
+      type: object
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              inventoryItemId:
+                type: integer
+              quantityUsed:
+                type: number
+            required:
+              - inventoryItemId
+              - quantityUsed
+      required:
+        - ingredients
+
+    MenuItemAnalytics:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        sellingPrice:
+          type: number
+        recipeCost:
+          type: number
+        absoluteProfit:
+          type: number
+        profitMargin:
+          type: number
+        totalSold:
+          type: integer
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+      required:
+        - id
+        - name
+        - category
+        - sellingPrice
+        - recipeCost
+        - absoluteProfit
+        - profitMargin
+        - totalSold
+        - totalRevenue
+        - totalProfit
+
+    PosSale:
+      type: object
+      properties:
+        id:
+          type: integer
+        menuItemId:
+          type: integer
+        menuItemName:
+          type: string
+        quantity:
+          type: integer
+        sellingPrice:
+          type: number
+        recipeCost:
+          type: number
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        soldAt:
+          type: string
+        notes:
+          type: string
+          nullable: true
+      required:
+        - id
+        - menuItemId
+        - menuItemName
+        - quantity
+        - sellingPrice
+        - recipeCost
+        - totalRevenue
+        - totalProfit
+        - soldAt
+
+    RecordPosSaleBody:
+      type: object
+      properties:
+        menuItemId:
+          type: integer
+        quantity:
+          type: integer
+        notes:
+          type: string
+          nullable: true
+      required:
+        - menuItemId
+        - quantity

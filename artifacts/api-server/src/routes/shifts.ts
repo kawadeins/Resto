@@ -6,6 +6,107 @@ import { CreateShiftBody, DeleteShiftParams } from "@workspace/api-zod";
 
 const router = Router();
 
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + (m || 0);
+}
+
+router.get("/working-now", async (req, res) => {
+  try {
+    const now = new Date();
+    const dayOfWeek = DAYS[now.getDay()];
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const rows = await db
+      .select({
+        id: shiftsTable.id,
+        employeeId: shiftsTable.employeeId,
+        employeeName: employeesTable.name,
+        role: employeesTable.role,
+        dayOfWeek: shiftsTable.dayOfWeek,
+        startTime: shiftsTable.startTime,
+        endTime: shiftsTable.endTime,
+      })
+      .from(shiftsTable)
+      .innerJoin(employeesTable, eq(shiftsTable.employeeId, employeesTable.id))
+      .where(eq(shiftsTable.dayOfWeek, dayOfWeek));
+
+    const workingNow = rows.filter((r) => {
+      const startMin = timeToMinutes(r.startTime);
+      const endMin = timeToMinutes(r.endTime);
+      // Handle overnight shifts
+      if (endMin < startMin) {
+        return currentMinutes >= startMin || currentMinutes < endMin;
+      }
+      return currentMinutes >= startMin && currentMinutes < endMin;
+    });
+
+    const result = workingNow.map((r) => {
+      const endMin = timeToMinutes(r.endTime);
+      const minutesUntilEnd = endMin > currentMinutes
+        ? endMin - currentMinutes
+        : (24 * 60 - currentMinutes) + endMin;
+      return {
+        id: r.employeeId,
+        name: r.employeeName,
+        role: r.role,
+        shiftStart: r.startTime,
+        shiftEnd: r.endTime,
+        dayOfWeek: r.dayOfWeek,
+        minutesUntilEnd,
+      };
+    });
+
+    res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "Failed to get working now");
+    res.status(500).json({ error: "Failed to get working now" });
+  }
+});
+
+router.get("/upcoming-reminders", async (req, res) => {
+  try {
+    const now = new Date();
+    const dayOfWeek = DAYS[now.getDay()];
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const windowEnd = currentMinutes + 30;
+
+    const rows = await db
+      .select({
+        employeeId: shiftsTable.employeeId,
+        employeeName: employeesTable.name,
+        role: employeesTable.role,
+        dayOfWeek: shiftsTable.dayOfWeek,
+        startTime: shiftsTable.startTime,
+        endTime: shiftsTable.endTime,
+      })
+      .from(shiftsTable)
+      .innerJoin(employeesTable, eq(shiftsTable.employeeId, employeesTable.id))
+      .where(eq(shiftsTable.dayOfWeek, dayOfWeek));
+
+    const reminders = rows
+      .filter((r) => {
+        const startMin = timeToMinutes(r.startTime);
+        return startMin > currentMinutes && startMin <= windowEnd;
+      })
+      .map((r) => ({
+        employeeId: r.employeeId,
+        employeeName: r.employeeName,
+        role: r.role,
+        dayOfWeek: r.dayOfWeek,
+        startTime: r.startTime,
+        minutesUntilStart: timeToMinutes(r.startTime) - currentMinutes,
+      }));
+
+    res.json(reminders);
+  } catch (err) {
+    req.log.error({ err }, "Failed to get shift reminders");
+    res.status(500).json({ error: "Failed to get shift reminders" });
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const rows = await db

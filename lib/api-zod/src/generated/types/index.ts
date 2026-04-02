@@ -3,25 +3,53 @@
  * Do not edit manually.
  * Api
  * RestoSmart Restaurant Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 
 export * from "./createEmployeeBody";
 export * from "./createEmployeeBodyStatus";
 export * from "./createInventoryItemBody";
+export * from "./createMenuItemBody";
+export * from "./createReservationBody";
+export * from "./createReservationBodySource";
 export * from "./createSaleRecordBody";
 export * from "./createShiftBody";
 export * from "./createShiftBodyDayOfWeek";
+export * from "./dailyAnalyticsEntry";
 export * from "./discountSettings";
+export * from "./discountSettingsTargetType";
 export * from "./dishStat";
 export * from "./employee";
 export * from "./employeeStatus";
 export * from "./financesSummary";
 export * from "./healthStatus";
 export * from "./inventoryItem";
+export * from "./listPosSalesParams";
+export * from "./listReservationsParams";
+export * from "./menuIngredient";
+export * from "./menuItem";
+export * from "./menuItemAnalytics";
 export * from "./monthlySaleData";
 export * from "./overviewSummary";
+export * from "./peakHourEntry";
+export * from "./performanceAnalytics";
+export * from "./posSale";
+export * from "./recordPosSaleBody";
+export * from "./reservation";
+export * from "./reservationSource";
+export * from "./reservationStats";
+export * from "./reservationStatus";
 export * from "./saleRecord";
+export * from "./setMenuItemIngredientsBody";
+export * from "./setMenuItemIngredientsBodyIngredientsItem";
 export * from "./shift";
 export * from "./shiftDayOfWeek";
+export * from "./shiftReminder";
+export * from "./sourceBreakdown";
 export * from "./updateDiscountBody";
+export * from "./updateDiscountBodyTargetType";
+export * from "./updateMenuItemBody";
+export * from "./updateReservationBody";
+export * from "./updateReservationBodySource";
+export * from "./updateReservationBodyStatus";
+export * from "./workingNowEmployee";

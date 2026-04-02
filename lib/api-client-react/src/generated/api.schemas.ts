@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * RestoSmart Restaurant Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 export interface HealthStatus {
   status: string;
@@ -13,10 +13,14 @@ export interface OverviewSummary {
   todayProfit: number;
   todayRevenue: number;
   activeStaff: number;
+  workingNowCount: number;
   lowStockAlerts: number;
   tableOccupancy: number;
   tableTotal: number;
   tableOccupancyPercent: number;
+  todayReservations: number;
+  pendingReservations: number;
+  upcomingShiftReminders: number;
 }
 
 export interface MonthlySaleData {
@@ -56,6 +60,25 @@ export interface CreateEmployeeBody {
   email: string;
   phone: string;
   status?: CreateEmployeeBodyStatus;
+}
+
+export interface WorkingNowEmployee {
+  id: number;
+  name: string;
+  role: string;
+  shiftStart: string;
+  shiftEnd: string;
+  dayOfWeek: string;
+  minutesUntilEnd: number;
+}
+
+export interface ShiftReminder {
+  employeeId: number;
+  employeeName: string;
+  role: string;
+  dayOfWeek: string;
+  startTime: string;
+  minutesUntilStart: number;
 }
 
 export type ShiftDayOfWeek =
@@ -151,6 +174,15 @@ export interface FinancesSummary {
   revenueByMonth: MonthlySaleData[];
 }
 
+export type DiscountSettingsTargetType =
+  (typeof DiscountSettingsTargetType)[keyof typeof DiscountSettingsTargetType];
+
+export const DiscountSettingsTargetType = {
+  all: "all",
+  dishes: "dishes",
+  combos: "combos",
+} as const;
+
 export interface DiscountSettings {
   id: number;
   enabled: boolean;
@@ -158,7 +190,19 @@ export interface DiscountSettings {
   startTime: string;
   endTime: string;
   days: string[];
+  label: string;
+  targetType: DiscountSettingsTargetType;
+  notes?: string;
 }
+
+export type UpdateDiscountBodyTargetType =
+  (typeof UpdateDiscountBodyTargetType)[keyof typeof UpdateDiscountBodyTargetType];
+
+export const UpdateDiscountBodyTargetType = {
+  all: "all",
+  dishes: "dishes",
+  combos: "combos",
+} as const;
 
 export interface UpdateDiscountBody {
   enabled: boolean;
@@ -166,4 +210,234 @@ export interface UpdateDiscountBody {
   startTime: string;
   endTime: string;
   days: string[];
+  label: string;
+  targetType: UpdateDiscountBodyTargetType;
+  notes?: string;
 }
+
+export type ReservationStatus =
+  (typeof ReservationStatus)[keyof typeof ReservationStatus];
+
+export const ReservationStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  seated: "seated",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export type ReservationSource =
+  (typeof ReservationSource)[keyof typeof ReservationSource];
+
+export const ReservationSource = {
+  direct: "direct",
+  online: "online",
+  phone: "phone",
+  walkin: "walkin",
+} as const;
+
+export interface Reservation {
+  id: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  partySize: number;
+  status: ReservationStatus;
+  tableNumber?: number | null;
+  notes?: string | null;
+  source: ReservationSource;
+  createdAt: string;
+}
+
+export type CreateReservationBodySource =
+  (typeof CreateReservationBodySource)[keyof typeof CreateReservationBodySource];
+
+export const CreateReservationBodySource = {
+  direct: "direct",
+  online: "online",
+  phone: "phone",
+  walkin: "walkin",
+} as const;
+
+export interface CreateReservationBody {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  partySize: number;
+  tableNumber?: number | null;
+  notes?: string | null;
+  source: CreateReservationBodySource;
+}
+
+export type UpdateReservationBodyStatus =
+  (typeof UpdateReservationBodyStatus)[keyof typeof UpdateReservationBodyStatus];
+
+export const UpdateReservationBodyStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  seated: "seated",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export type UpdateReservationBodySource =
+  (typeof UpdateReservationBodySource)[keyof typeof UpdateReservationBodySource];
+
+export const UpdateReservationBodySource = {
+  direct: "direct",
+  online: "online",
+  phone: "phone",
+  walkin: "walkin",
+} as const;
+
+export interface UpdateReservationBody {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  partySize: number;
+  status: UpdateReservationBodyStatus;
+  tableNumber?: number | null;
+  notes?: string | null;
+  source: UpdateReservationBodySource;
+}
+
+export interface ReservationStats {
+  todayTotal: number;
+  todayConfirmed: number;
+  todayPending: number;
+  todaySeated: number;
+  totalCovers: number;
+  weekTotal: number;
+  cancellationRate: number;
+  avgPartySize: number;
+}
+
+export interface PeakHourEntry {
+  hour: string;
+  covers: number;
+}
+
+export interface SourceBreakdown {
+  source: string;
+  count: number;
+  percentage: number;
+}
+
+export interface PerformanceAnalytics {
+  currentMonthRevenue: number;
+  currentMonthProfit: number;
+  prevMonthRevenue: number;
+  prevMonthProfit: number;
+  revenueGrowth: number;
+  profitGrowth: number;
+  bestDay: string;
+  bestDayRevenue: number;
+  avgCoversPerDay: number;
+  peakHours: PeakHourEntry[];
+  monthlyData: MonthlySaleData[];
+  reservationsBySource: SourceBreakdown[];
+}
+
+export interface DailyAnalyticsEntry {
+  date: string;
+  revenue: number;
+  profit: number;
+  covers: number;
+  reservations: number;
+}
+
+export interface MenuIngredient {
+  id: number;
+  menuItemId: number;
+  inventoryItemId: number;
+  inventoryItemName: string;
+  unit: string;
+  quantityUsed: number;
+  costPerUnit: number;
+  lineCost: number;
+}
+
+export interface MenuItem {
+  id: number;
+  name: string;
+  description?: string | null;
+  category: string;
+  sellingPrice: number;
+  recipeCost: number;
+  profitMargin: number;
+  absoluteProfit: number;
+  isActive: boolean;
+  ingredients: MenuIngredient[];
+}
+
+export interface CreateMenuItemBody {
+  name: string;
+  description?: string | null;
+  category: string;
+  sellingPrice: number;
+  isActive?: boolean;
+}
+
+export interface UpdateMenuItemBody {
+  name: string;
+  description?: string | null;
+  category: string;
+  sellingPrice: number;
+  isActive?: boolean;
+}
+
+export type SetMenuItemIngredientsBodyIngredientsItem = {
+  inventoryItemId: number;
+  quantityUsed: number;
+};
+
+export interface SetMenuItemIngredientsBody {
+  ingredients: SetMenuItemIngredientsBodyIngredientsItem[];
+}
+
+export interface MenuItemAnalytics {
+  id: number;
+  name: string;
+  category: string;
+  sellingPrice: number;
+  recipeCost: number;
+  absoluteProfit: number;
+  profitMargin: number;
+  totalSold: number;
+  totalRevenue: number;
+  totalProfit: number;
+}
+
+export interface PosSale {
+  id: number;
+  menuItemId: number;
+  menuItemName: string;
+  quantity: number;
+  sellingPrice: number;
+  recipeCost: number;
+  totalRevenue: number;
+  totalProfit: number;
+  soldAt: string;
+  notes?: string | null;
+}
+
+export interface RecordPosSaleBody {
+  menuItemId: number;
+  quantity: number;
+  notes?: string | null;
+}
+
+export type ListReservationsParams = {
+  date?: string;
+  status?: string;
+};
+
+export type ListPosSalesParams = {
+  limit?: number;
+};

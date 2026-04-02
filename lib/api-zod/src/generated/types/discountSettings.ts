@@ -3,8 +3,9 @@
  * Do not edit manually.
  * Api
  * RestoSmart Restaurant Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
+import type { DiscountSettingsTargetType } from "./discountSettingsTargetType";
 
 export interface DiscountSettings {
   id: number;
@@ -13,4 +14,7 @@ export interface DiscountSettings {
   startTime: string;
   endTime: string;
   days: string[];
+  label: string;
+  targetType: DiscountSettingsTargetType;
+  notes?: string;
 }

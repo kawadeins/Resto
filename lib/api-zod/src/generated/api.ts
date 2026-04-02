@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * RestoSmart Restaurant Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 import * as zod from "zod";
 
@@ -21,10 +21,14 @@ export const GetOverviewSummaryResponse = zod.object({
   todayProfit: zod.number(),
   todayRevenue: zod.number(),
   activeStaff: zod.number(),
+  workingNowCount: zod.number(),
   lowStockAlerts: zod.number(),
   tableOccupancy: zod.number(),
   tableTotal: zod.number(),
   tableOccupancyPercent: zod.number(),
+  todayReservations: zod.number(),
+  pendingReservations: zod.number(),
+  upcomingShiftReminders: zod.number(),
 });
 
 /**
@@ -155,6 +159,35 @@ export const CreateShiftBody = zod.object({
 export const DeleteShiftParams = zod.object({
   id: zod.coerce.number(),
 });
+
+/**
+ * @summary Get employees currently on shift based on current day and time
+ */
+export const GetWorkingNowResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  role: zod.string(),
+  shiftStart: zod.string(),
+  shiftEnd: zod.string(),
+  dayOfWeek: zod.string(),
+  minutesUntilEnd: zod.number(),
+});
+export const GetWorkingNowResponse = zod.array(GetWorkingNowResponseItem);
+
+/**
+ * @summary Get shifts starting within the next 30 minutes
+ */
+export const GetUpcomingShiftRemindersResponseItem = zod.object({
+  employeeId: zod.number(),
+  employeeName: zod.string(),
+  role: zod.string(),
+  dayOfWeek: zod.string(),
+  startTime: zod.string(),
+  minutesUntilStart: zod.number(),
+});
+export const GetUpcomingShiftRemindersResponse = zod.array(
+  GetUpcomingShiftRemindersResponseItem,
+);
 
 /**
  * @summary List all inventory items
@@ -289,6 +322,9 @@ export const GetDiscountResponse = zod.object({
   startTime: zod.string(),
   endTime: zod.string(),
   days: zod.array(zod.string()),
+  label: zod.string(),
+  targetType: zod.enum(["all", "dishes", "combos"]),
+  notes: zod.string().optional(),
 });
 
 /**
@@ -300,6 +336,9 @@ export const UpdateDiscountBody = zod.object({
   startTime: zod.string(),
   endTime: zod.string(),
   days: zod.array(zod.string()),
+  label: zod.string(),
+  targetType: zod.enum(["all", "dishes", "combos"]),
+  notes: zod.string().optional(),
 });
 
 export const UpdateDiscountResponse = zod.object({
@@ -309,4 +348,440 @@ export const UpdateDiscountResponse = zod.object({
   startTime: zod.string(),
   endTime: zod.string(),
   days: zod.array(zod.string()),
+  label: zod.string(),
+  targetType: zod.enum(["all", "dishes", "combos"]),
+  notes: zod.string().optional(),
 });
+
+/**
+ * @summary List all reservations
+ */
+export const ListReservationsQueryParams = zod.object({
+  date: zod.date().optional(),
+  status: zod.coerce.string().optional(),
+});
+
+export const ListReservationsResponseItem = zod.object({
+  id: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "seated",
+    "completed",
+    "cancelled",
+  ]),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+  createdAt: zod.string(),
+});
+export const ListReservationsResponse = zod.array(ListReservationsResponseItem);
+
+/**
+ * @summary Create a new reservation
+ */
+export const CreateReservationBody = zod.object({
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+});
+
+/**
+ * @summary Get today's reservations
+ */
+export const GetTodayReservationsResponseItem = zod.object({
+  id: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "seated",
+    "completed",
+    "cancelled",
+  ]),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+  createdAt: zod.string(),
+});
+export const GetTodayReservationsResponse = zod.array(
+  GetTodayReservationsResponseItem,
+);
+
+/**
+ * @summary Reservation statistics
+ */
+export const GetReservationStatsResponse = zod.object({
+  todayTotal: zod.number(),
+  todayConfirmed: zod.number(),
+  todayPending: zod.number(),
+  todaySeated: zod.number(),
+  totalCovers: zod.number(),
+  weekTotal: zod.number(),
+  cancellationRate: zod.number(),
+  avgPartySize: zod.number(),
+});
+
+/**
+ * @summary Get reservation by ID
+ */
+export const GetReservationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetReservationResponse = zod.object({
+  id: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "seated",
+    "completed",
+    "cancelled",
+  ]),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update reservation
+ */
+export const UpdateReservationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateReservationBody = zod.object({
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "seated",
+    "completed",
+    "cancelled",
+  ]),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+});
+
+export const UpdateReservationResponse = zod.object({
+  id: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "seated",
+    "completed",
+    "cancelled",
+  ]),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete reservation
+ */
+export const DeleteReservationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get daily and monthly performance analytics
+ */
+export const GetPerformanceAnalyticsResponse = zod.object({
+  currentMonthRevenue: zod.number(),
+  currentMonthProfit: zod.number(),
+  prevMonthRevenue: zod.number(),
+  prevMonthProfit: zod.number(),
+  revenueGrowth: zod.number(),
+  profitGrowth: zod.number(),
+  bestDay: zod.string(),
+  bestDayRevenue: zod.number(),
+  avgCoversPerDay: zod.number(),
+  peakHours: zod.array(
+    zod.object({
+      hour: zod.string(),
+      covers: zod.number(),
+    }),
+  ),
+  monthlyData: zod.array(
+    zod.object({
+      month: zod.string(),
+      revenue: zod.number(),
+      profit: zod.number(),
+    }),
+  ),
+  reservationsBySource: zod.array(
+    zod.object({
+      source: zod.string(),
+      count: zod.number(),
+      percentage: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get daily breakdown for the last 30 days
+ */
+export const GetDailyAnalyticsResponseItem = zod.object({
+  date: zod.string(),
+  revenue: zod.number(),
+  profit: zod.number(),
+  covers: zod.number(),
+  reservations: zod.number(),
+});
+export const GetDailyAnalyticsResponse = zod.array(
+  GetDailyAnalyticsResponseItem,
+);
+
+/**
+ * @summary List all menu items with calculated cost and margin
+ */
+export const ListMenuItemsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  sellingPrice: zod.number(),
+  recipeCost: zod.number(),
+  profitMargin: zod.number(),
+  absoluteProfit: zod.number(),
+  isActive: zod.boolean(),
+  ingredients: zod.array(
+    zod.object({
+      id: zod.number(),
+      menuItemId: zod.number(),
+      inventoryItemId: zod.number(),
+      inventoryItemName: zod.string(),
+      unit: zod.string(),
+      quantityUsed: zod.number(),
+      costPerUnit: zod.number(),
+      lineCost: zod.number(),
+    }),
+  ),
+});
+export const ListMenuItemsResponse = zod.array(ListMenuItemsResponseItem);
+
+/**
+ * @summary Create a new menu item
+ */
+export const CreateMenuItemBody = zod.object({
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  sellingPrice: zod.number(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Get top profitable dishes ranked by profit margin and total profit
+ */
+export const GetMenuAnalyticsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.string(),
+  sellingPrice: zod.number(),
+  recipeCost: zod.number(),
+  absoluteProfit: zod.number(),
+  profitMargin: zod.number(),
+  totalSold: zod.number(),
+  totalRevenue: zod.number(),
+  totalProfit: zod.number(),
+});
+export const GetMenuAnalyticsResponse = zod.array(GetMenuAnalyticsResponseItem);
+
+/**
+ * @summary Get a single menu item by ID
+ */
+export const GetMenuItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetMenuItemResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  sellingPrice: zod.number(),
+  recipeCost: zod.number(),
+  profitMargin: zod.number(),
+  absoluteProfit: zod.number(),
+  isActive: zod.boolean(),
+  ingredients: zod.array(
+    zod.object({
+      id: zod.number(),
+      menuItemId: zod.number(),
+      inventoryItemId: zod.number(),
+      inventoryItemName: zod.string(),
+      unit: zod.string(),
+      quantityUsed: zod.number(),
+      costPerUnit: zod.number(),
+      lineCost: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Update a menu item
+ */
+export const UpdateMenuItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateMenuItemBody = zod.object({
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  sellingPrice: zod.number(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateMenuItemResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  sellingPrice: zod.number(),
+  recipeCost: zod.number(),
+  profitMargin: zod.number(),
+  absoluteProfit: zod.number(),
+  isActive: zod.boolean(),
+  ingredients: zod.array(
+    zod.object({
+      id: zod.number(),
+      menuItemId: zod.number(),
+      inventoryItemId: zod.number(),
+      inventoryItemName: zod.string(),
+      unit: zod.string(),
+      quantityUsed: zod.number(),
+      costPerUnit: zod.number(),
+      lineCost: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a menu item
+ */
+export const DeleteMenuItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get all ingredients for a menu item
+ */
+export const GetMenuItemIngredientsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetMenuItemIngredientsResponseItem = zod.object({
+  id: zod.number(),
+  menuItemId: zod.number(),
+  inventoryItemId: zod.number(),
+  inventoryItemName: zod.string(),
+  unit: zod.string(),
+  quantityUsed: zod.number(),
+  costPerUnit: zod.number(),
+  lineCost: zod.number(),
+});
+export const GetMenuItemIngredientsResponse = zod.array(
+  GetMenuItemIngredientsResponseItem,
+);
+
+/**
+ * @summary Replace all ingredients for a menu item
+ */
+export const SetMenuItemIngredientsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SetMenuItemIngredientsBody = zod.object({
+  ingredients: zod.array(
+    zod.object({
+      inventoryItemId: zod.number(),
+      quantityUsed: zod.number(),
+    }),
+  ),
+});
+
+export const SetMenuItemIngredientsResponseItem = zod.object({
+  id: zod.number(),
+  menuItemId: zod.number(),
+  inventoryItemId: zod.number(),
+  inventoryItemName: zod.string(),
+  unit: zod.string(),
+  quantityUsed: zod.number(),
+  costPerUnit: zod.number(),
+  lineCost: zod.number(),
+});
+export const SetMenuItemIngredientsResponse = zod.array(
+  SetMenuItemIngredientsResponseItem,
+);
+
+/**
+ * @summary Record a POS sale - deducts ingredients from inventory automatically
+ */
+export const RecordPosSaleBody = zod.object({
+  menuItemId: zod.number(),
+  quantity: zod.number(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Get recent POS sales log
+ */
+export const listPosSalesQueryLimitDefault = 50;
+
+export const ListPosSalesQueryParams = zod.object({
+  limit: zod.coerce.number().default(listPosSalesQueryLimitDefault),
+});
+
+export const ListPosSalesResponseItem = zod.object({
+  id: zod.number(),
+  menuItemId: zod.number(),
+  menuItemName: zod.string(),
+  quantity: zod.number(),
+  sellingPrice: zod.number(),
+  recipeCost: zod.number(),
+  totalRevenue: zod.number(),
+  totalProfit: zod.number(),
+  soldAt: zod.string(),
+  notes: zod.string().nullish(),
+});
+export const ListPosSalesResponse = zod.array(ListPosSalesResponseItem);

@@ -9,6 +9,10 @@ import Overview from "@/pages/overview";
 import Staff from "@/pages/staff";
 import Inventory from "@/pages/inventory";
 import Finances from "@/pages/finances";
+import Reservations from "@/pages/reservations";
+import Analytics from "@/pages/analytics";
+import Menu from "@/pages/menu";
+import Pos from "@/pages/pos";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +31,10 @@ function Router() {
         <Route path="/staff" component={Staff} />
         <Route path="/inventory" component={Inventory} />
         <Route path="/finances" component={Finances} />
+        <Route path="/reservations" component={Reservations} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/menu" component={Menu} />
+        <Route path="/pos" component={Pos} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

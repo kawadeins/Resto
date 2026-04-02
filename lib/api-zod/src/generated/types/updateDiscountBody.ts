@@ -3,8 +3,9 @@
  * Do not edit manually.
  * Api
  * RestoSmart Restaurant Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
+import type { UpdateDiscountBodyTargetType } from "./updateDiscountBodyTargetType";
 
 export interface UpdateDiscountBody {
   enabled: boolean;
@@ -12,4 +13,7 @@ export interface UpdateDiscountBody {
   startTime: string;
   endTime: string;
   days: string[];
+  label: string;
+  targetType: UpdateDiscountBodyTargetType;
+  notes?: string;
 }
