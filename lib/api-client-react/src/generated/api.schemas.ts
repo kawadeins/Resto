@@ -9,6 +9,21 @@ export interface HealthStatus {
   status: string;
 }
 
+export type OverviewSummaryActiveDiscount = {
+  active: boolean;
+  label?: string | null;
+  percentage?: number | null;
+  minutesRemaining?: number | null;
+};
+
+export type OverviewSummaryLowStockItemsItem = {
+  id: number;
+  name: string;
+  quantity: number;
+  alertThreshold: number;
+  unit: string;
+};
+
 export interface OverviewSummary {
   todayProfit: number;
   todayRevenue: number;
@@ -21,6 +36,10 @@ export interface OverviewSummary {
   todayReservations: number;
   pendingReservations: number;
   upcomingShiftReminders: number;
+  liveTraffic: number;
+  expectedRevenue: number;
+  activeDiscount: OverviewSummaryActiveDiscount;
+  lowStockItems: OverviewSummaryLowStockItemsItem[];
 }
 
 export interface MonthlySaleData {
@@ -431,6 +450,87 @@ export interface RecordPosSaleBody {
   menuItemId: number;
   quantity: number;
   notes?: string | null;
+}
+
+export type DealType = (typeof DealType)[keyof typeof DealType];
+
+export const DealType = {
+  flash: "flash",
+  scheduled: "scheduled",
+} as const;
+
+export interface Deal {
+  id: number;
+  type: DealType;
+  enabled: boolean;
+  percentage: number;
+  startTime: string;
+  endTime: string;
+  days: string[];
+  label: string;
+  targetType: string;
+  notes?: string | null;
+  flashExpiresAt?: string | null;
+  flashMinutesRemaining?: number | null;
+  isFlashActive: boolean;
+  createdAt: string;
+}
+
+export interface ActiveDiscountStatus {
+  active: boolean;
+  type?: string | null;
+  label?: string | null;
+  percentage?: number | null;
+  minutesRemaining?: number | null;
+  expiresAt?: string | null;
+}
+
+export interface FlashDealRequest {
+  label?: string;
+  percentage?: number;
+}
+
+export interface ScheduledDealRequest {
+  label: string;
+  percentage: number;
+  startTime: string;
+  endTime: string;
+  days: string[];
+  notes?: string | null;
+}
+
+export interface DiscountBlastRequest {
+  title: string;
+  message: string;
+  targetCount?: number;
+}
+
+export interface ToggleDealBody {
+  enabled: boolean;
+}
+
+export interface NotificationRecord {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  targetCount: number;
+  sentAt: string;
+}
+
+export type PatchReservationStatusBodyStatus =
+  (typeof PatchReservationStatusBodyStatus)[keyof typeof PatchReservationStatusBodyStatus];
+
+export const PatchReservationStatusBodyStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  rejected: "rejected",
+  arrived: "arrived",
+  cancelled: "cancelled",
+} as const;
+
+export interface PatchReservationStatusBody {
+  status: PatchReservationStatusBodyStatus;
 }
 
 export type ListReservationsParams = {

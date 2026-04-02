@@ -369,31 +369,156 @@ paths:
     get:
       operationId: getDiscount
       tags: [discounts]
-      summary: Get current smart discount settings
+      summary: Get all discount deals
       responses:
         "200":
-          description: Discount settings
+          description: All deals
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DiscountSettings"
-    put:
-      operationId: updateDiscount
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deal"
+
+  /discounts/all:
+    get:
+      operationId: listDeals
       tags: [discounts]
-      summary: Update smart discount settings
+      summary: List all discount deals (flash and scheduled)
+      responses:
+        "200":
+          description: List of deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deal"
+
+  /discounts/active-status:
+    get:
+      operationId: getActiveDiscountStatus
+      tags: [discounts]
+      summary: Get currently active discount (if any)
+      responses:
+        "200":
+          description: Active discount status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActiveDiscountStatus"
+
+  /discounts/flash:
+    post:
+      operationId: activateFlashDeal
+      tags: [discounts]
+      summary: Activate a 30-minute flash discount
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateDiscountBody"
+              $ref: "#/components/schemas/FlashDealRequest"
       responses:
-        "200":
-          description: Updated discount settings
+        "201":
+          description: Flash deal activated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DiscountSettings"
+                $ref: "#/components/schemas/Deal"
+
+  /discounts/scheduled:
+    post:
+      operationId: createScheduledDeal
+      tags: [discounts]
+      summary: Create a recurring scheduled discount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScheduledDealRequest"
+      responses:
+        "201":
+          description: Scheduled deal created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
+
+  /discounts/blast:
+    post:
+      operationId: sendDiscountBlast
+      tags: [discounts]
+      summary: Send a discount notification blast to customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscountBlastRequest"
+      responses:
+        "201":
+          description: Blast sent and logged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationRecord"
+
+  /discounts/{id}/toggle:
+    patch:
+      operationId: toggleDeal
+      tags: [discounts]
+      summary: Enable or disable a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToggleDealBody"
+      responses:
+        "200":
+          description: Updated deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
+
+  /discounts/{id}:
+    delete:
+      operationId: deleteDeal
+      tags: [discounts]
+      summary: Delete a discount deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [discounts]
+      summary: Get notification blast log
+      responses:
+        "200":
+          description: Notifications log
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationRecord"
 
   /reservations:
     get:
@@ -521,6 +646,31 @@ paths:
       responses:
         "204":
           description: Deleted
+
+  /reservations/{id}/status:
+    patch:
+      operationId: patchReservationStatus
+      tags: [reservations]
+      summary: Update reservation status only
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchReservationStatusBody"
+      responses:
+        "200":
+          description: Updated reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
 
   /analytics/performance:
     get:
@@ -773,6 +923,47 @@ components:
           type: integer
         upcomingShiftReminders:
           type: integer
+        liveTraffic:
+          type: integer
+        expectedRevenue:
+          type: number
+        activeDiscount:
+          type: object
+          properties:
+            active:
+              type: boolean
+            label:
+              type: string
+              nullable: true
+            percentage:
+              type: number
+              nullable: true
+            minutesRemaining:
+              type: integer
+              nullable: true
+          required:
+            - active
+        lowStockItems:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              quantity:
+                type: number
+              alertThreshold:
+                type: number
+              unit:
+                type: string
+            required:
+              - id
+              - name
+              - quantity
+              - alertThreshold
+              - unit
       required:
         - todayProfit
         - todayRevenue
@@ -785,6 +976,10 @@ components:
         - todayReservations
         - pendingReservations
         - upcomingShiftReminders
+        - liveTraffic
+        - expectedRevenue
+        - activeDiscount
+        - lowStockItems
 
     MonthlySaleData:
       type: object
@@ -1581,3 +1776,163 @@ components:
       required:
         - menuItemId
         - quantity
+
+    Deal:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [flash, scheduled]
+        enabled:
+          type: boolean
+        percentage:
+          type: number
+        startTime:
+          type: string
+        endTime:
+          type: string
+        days:
+          type: array
+          items:
+            type: string
+        label:
+          type: string
+        targetType:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        flashExpiresAt:
+          type: string
+          nullable: true
+        flashMinutesRemaining:
+          type: integer
+          nullable: true
+        isFlashActive:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - enabled
+        - percentage
+        - startTime
+        - endTime
+        - days
+        - label
+        - targetType
+        - isFlashActive
+        - createdAt
+
+    ActiveDiscountStatus:
+      type: object
+      properties:
+        active:
+          type: boolean
+        type:
+          type: string
+          nullable: true
+        label:
+          type: string
+          nullable: true
+        percentage:
+          type: number
+          nullable: true
+        minutesRemaining:
+          type: integer
+          nullable: true
+        expiresAt:
+          type: string
+          nullable: true
+      required:
+        - active
+
+    FlashDealRequest:
+      type: object
+      properties:
+        label:
+          type: string
+        percentage:
+          type: number
+      required: []
+
+    ScheduledDealRequest:
+      type: object
+      properties:
+        label:
+          type: string
+        percentage:
+          type: number
+        startTime:
+          type: string
+        endTime:
+          type: string
+        days:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+          nullable: true
+      required:
+        - label
+        - percentage
+        - startTime
+        - endTime
+        - days
+
+    DiscountBlastRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        message:
+          type: string
+        targetCount:
+          type: integer
+      required:
+        - title
+        - message
+
+    ToggleDealBody:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+      required:
+        - enabled
+
+    NotificationRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        targetCount:
+          type: integer
+        sentAt:
+          type: string
+      required:
+        - id
+        - type
+        - title
+        - message
+        - targetCount
+        - sentAt
+
+    PatchReservationStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, rejected, arrived, cancelled]
+      required:
+        - status

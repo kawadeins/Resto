@@ -8,10 +8,12 @@ import {
   useGetUpcomingShiftReminders,
   getGetUpcomingShiftRemindersQueryKey,
   useGetLowStockItems,
-  getGetLowStockItemsQueryKey
+  getGetLowStockItemsQueryKey,
+  useGetActiveDiscountStatus,
+  getGetActiveDiscountStatusQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag } from "lucide-react";
+import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,6 +41,10 @@ export default function Overview() {
     query: { queryKey: getGetLowStockItemsQueryKey() }
   });
 
+  const { data: activeDiscount } = useGetActiveDiscountStatus({
+    query: { queryKey: getGetActiveDiscountStatusQueryKey(), refetchInterval: 30000 }
+  });
+
   return (
     <div className="space-y-8 pb-10">
       <div>
@@ -60,6 +66,20 @@ export default function Overview() {
             </Alert>
           ))}
         </div>
+      )}
+
+      {activeDiscount?.active && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+          <Zap className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+          <div className="flex-1">
+            <span className="font-bold text-emerald-500">{activeDiscount.label}</span>
+            <span className="text-sm text-muted-foreground ml-2">{activeDiscount.percentage}% off is live right now</span>
+            {activeDiscount.minutesRemaining != null && (
+              <span className="ml-2 text-sm text-emerald-500 font-mono">({activeDiscount.minutesRemaining} min left)</span>
+            )}
+          </div>
+          <Badge className="bg-emerald-500 text-white border-0 animate-pulse text-xs">LIVE DISCOUNT</Badge>
+        </motion.div>
       )}
 
       {lowStockItems && lowStockItems.length > 0 && (
@@ -85,7 +105,7 @@ export default function Overview() {
         </Alert>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -171,6 +191,42 @@ export default function Overview() {
                 <div className="text-2xl font-bold text-amber-500">{summary?.tableOccupancyPercent || 0}%</div>
               )}
               <p className="text-xs text-muted-foreground mt-1">{summary?.tableOccupancy || 0} / {summary?.tableTotal || 0} tables seated</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Live Traffic</CardTitle>
+              <Clock className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              {loadingSummary ? (
+                <Skeleton className="h-8 w-[60px]" />
+              ) : (
+                <div className="text-2xl font-bold text-blue-500">{summary?.liveTraffic ?? 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">Bookings in next 2h</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Expected Revenue</CardTitle>
+              <TrendingUp className="h-4 w-4 text-indigo-500" />
+            </CardHeader>
+            <CardContent>
+              {loadingSummary ? (
+                <Skeleton className="h-8 w-[100px]" />
+              ) : (
+                <div className="text-2xl font-bold text-indigo-500">
+                  €{(summary?.expectedRevenue ?? 0).toLocaleString()}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">From confirmed bookings</p>
             </CardContent>
           </Card>
         </motion.div>

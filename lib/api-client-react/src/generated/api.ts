@@ -17,6 +17,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ActiveDiscountStatus,
   CreateEmployeeBody,
   CreateInventoryItemBody,
   CreateMenuItemBody,
@@ -24,9 +25,11 @@ import type {
   CreateSaleRecordBody,
   CreateShiftBody,
   DailyAnalyticsEntry,
-  DiscountSettings,
+  Deal,
+  DiscountBlastRequest,
   Employee,
   FinancesSummary,
+  FlashDealRequest,
   HealthStatus,
   InventoryItem,
   ListPosSalesParams,
@@ -35,17 +38,20 @@ import type {
   MenuItem,
   MenuItemAnalytics,
   MonthlySaleData,
+  NotificationRecord,
   OverviewSummary,
+  PatchReservationStatusBody,
   PerformanceAnalytics,
   PosSale,
   RecordPosSaleBody,
   Reservation,
   ReservationStats,
   SaleRecord,
+  ScheduledDealRequest,
   SetMenuItemIngredientsBody,
   Shift,
   ShiftReminder,
-  UpdateDiscountBody,
+  ToggleDealBody,
   UpdateMenuItemBody,
   UpdateReservationBody,
   WorkingNowEmployee,
@@ -1734,16 +1740,14 @@ export function useGetFinancesSummary<
 }
 
 /**
- * @summary Get current smart discount settings
+ * @summary Get all discount deals
  */
 export const getGetDiscountUrl = () => {
   return `/api/discounts`;
 };
 
-export const getDiscount = async (
-  options?: RequestInit,
-): Promise<DiscountSettings> => {
-  return customFetch<DiscountSettings>(getGetDiscountUrl(), {
+export const getDiscount = async (options?: RequestInit): Promise<Deal[]> => {
+  return customFetch<Deal[]>(getGetDiscountUrl(), {
     ...options,
     method: "GET",
   });
@@ -1785,7 +1789,7 @@ export type GetDiscountQueryResult = NonNullable<
 export type GetDiscountQueryError = ErrorType<unknown>;
 
 /**
- * @summary Get current smart discount settings
+ * @summary Get all discount deals
  */
 
 export function useGetDiscount<
@@ -1809,42 +1813,183 @@ export function useGetDiscount<
 }
 
 /**
- * @summary Update smart discount settings
+ * @summary List all discount deals (flash and scheduled)
  */
-export const getUpdateDiscountUrl = () => {
-  return `/api/discounts`;
+export const getListDealsUrl = () => {
+  return `/api/discounts/all`;
 };
 
-export const updateDiscount = async (
-  updateDiscountBody: UpdateDiscountBody,
-  options?: RequestInit,
-): Promise<DiscountSettings> => {
-  return customFetch<DiscountSettings>(getUpdateDiscountUrl(), {
+export const listDeals = async (options?: RequestInit): Promise<Deal[]> => {
+  return customFetch<Deal[]>(getListDealsUrl(), {
     ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateDiscountBody),
+    method: "GET",
   });
 };
 
-export const getUpdateDiscountMutationOptions = <
+export const getListDealsQueryKey = () => {
+  return [`/api/discounts/all`] as const;
+};
+
+export const getListDealsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listDeals>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listDeals>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListDealsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeals>>> = ({
+    signal,
+  }) => listDeals({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listDeals>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListDealsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listDeals>>
+>;
+export type ListDealsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all discount deals (flash and scheduled)
+ */
+
+export function useListDeals<
+  TData = Awaited<ReturnType<typeof listDeals>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listDeals>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListDealsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get currently active discount (if any)
+ */
+export const getGetActiveDiscountStatusUrl = () => {
+  return `/api/discounts/active-status`;
+};
+
+export const getActiveDiscountStatus = async (
+  options?: RequestInit,
+): Promise<ActiveDiscountStatus> => {
+  return customFetch<ActiveDiscountStatus>(getGetActiveDiscountStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetActiveDiscountStatusQueryKey = () => {
+  return [`/api/discounts/active-status`] as const;
+};
+
+export const getGetActiveDiscountStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getActiveDiscountStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveDiscountStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetActiveDiscountStatusQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getActiveDiscountStatus>>
+  > = ({ signal }) => getActiveDiscountStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveDiscountStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetActiveDiscountStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getActiveDiscountStatus>>
+>;
+export type GetActiveDiscountStatusQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get currently active discount (if any)
+ */
+
+export function useGetActiveDiscountStatus<
+  TData = Awaited<ReturnType<typeof getActiveDiscountStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveDiscountStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetActiveDiscountStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Activate a 30-minute flash discount
+ */
+export const getActivateFlashDealUrl = () => {
+  return `/api/discounts/flash`;
+};
+
+export const activateFlashDeal = async (
+  flashDealRequest: FlashDealRequest,
+  options?: RequestInit,
+): Promise<Deal> => {
+  return customFetch<Deal>(getActivateFlashDealUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(flashDealRequest),
+  });
+};
+
+export const getActivateFlashDealMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateDiscount>>,
+    Awaited<ReturnType<typeof activateFlashDeal>>,
     TError,
-    { data: BodyType<UpdateDiscountBody> },
+    { data: BodyType<FlashDealRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof updateDiscount>>,
+  Awaited<ReturnType<typeof activateFlashDeal>>,
   TError,
-  { data: BodyType<UpdateDiscountBody> },
+  { data: BodyType<FlashDealRequest> },
   TContext
 > => {
-  const mutationKey = ["updateDiscount"];
+  const mutationKey = ["activateFlashDeal"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -1854,45 +1999,463 @@ export const getUpdateDiscountMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updateDiscount>>,
-    { data: BodyType<UpdateDiscountBody> }
+    Awaited<ReturnType<typeof activateFlashDeal>>,
+    { data: BodyType<FlashDealRequest> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return updateDiscount(data, requestOptions);
+    return activateFlashDeal(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type UpdateDiscountMutationResult = NonNullable<
-  Awaited<ReturnType<typeof updateDiscount>>
+export type ActivateFlashDealMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activateFlashDeal>>
 >;
-export type UpdateDiscountMutationBody = BodyType<UpdateDiscountBody>;
-export type UpdateDiscountMutationError = ErrorType<unknown>;
+export type ActivateFlashDealMutationBody = BodyType<FlashDealRequest>;
+export type ActivateFlashDealMutationError = ErrorType<unknown>;
 
 /**
- * @summary Update smart discount settings
+ * @summary Activate a 30-minute flash discount
  */
-export const useUpdateDiscount = <
+export const useActivateFlashDeal = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateDiscount>>,
+    Awaited<ReturnType<typeof activateFlashDeal>>,
     TError,
-    { data: BodyType<UpdateDiscountBody> },
+    { data: BodyType<FlashDealRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
-  Awaited<ReturnType<typeof updateDiscount>>,
+  Awaited<ReturnType<typeof activateFlashDeal>>,
   TError,
-  { data: BodyType<UpdateDiscountBody> },
+  { data: BodyType<FlashDealRequest> },
   TContext
 > => {
-  return useMutation(getUpdateDiscountMutationOptions(options));
+  return useMutation(getActivateFlashDealMutationOptions(options));
 };
+
+/**
+ * @summary Create a recurring scheduled discount
+ */
+export const getCreateScheduledDealUrl = () => {
+  return `/api/discounts/scheduled`;
+};
+
+export const createScheduledDeal = async (
+  scheduledDealRequest: ScheduledDealRequest,
+  options?: RequestInit,
+): Promise<Deal> => {
+  return customFetch<Deal>(getCreateScheduledDealUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(scheduledDealRequest),
+  });
+};
+
+export const getCreateScheduledDealMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createScheduledDeal>>,
+    TError,
+    { data: BodyType<ScheduledDealRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createScheduledDeal>>,
+  TError,
+  { data: BodyType<ScheduledDealRequest> },
+  TContext
+> => {
+  const mutationKey = ["createScheduledDeal"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createScheduledDeal>>,
+    { data: BodyType<ScheduledDealRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createScheduledDeal(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateScheduledDealMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createScheduledDeal>>
+>;
+export type CreateScheduledDealMutationBody = BodyType<ScheduledDealRequest>;
+export type CreateScheduledDealMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a recurring scheduled discount
+ */
+export const useCreateScheduledDeal = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createScheduledDeal>>,
+    TError,
+    { data: BodyType<ScheduledDealRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createScheduledDeal>>,
+  TError,
+  { data: BodyType<ScheduledDealRequest> },
+  TContext
+> => {
+  return useMutation(getCreateScheduledDealMutationOptions(options));
+};
+
+/**
+ * @summary Send a discount notification blast to customers
+ */
+export const getSendDiscountBlastUrl = () => {
+  return `/api/discounts/blast`;
+};
+
+export const sendDiscountBlast = async (
+  discountBlastRequest: DiscountBlastRequest,
+  options?: RequestInit,
+): Promise<NotificationRecord> => {
+  return customFetch<NotificationRecord>(getSendDiscountBlastUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(discountBlastRequest),
+  });
+};
+
+export const getSendDiscountBlastMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendDiscountBlast>>,
+    TError,
+    { data: BodyType<DiscountBlastRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendDiscountBlast>>,
+  TError,
+  { data: BodyType<DiscountBlastRequest> },
+  TContext
+> => {
+  const mutationKey = ["sendDiscountBlast"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendDiscountBlast>>,
+    { data: BodyType<DiscountBlastRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return sendDiscountBlast(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendDiscountBlastMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendDiscountBlast>>
+>;
+export type SendDiscountBlastMutationBody = BodyType<DiscountBlastRequest>;
+export type SendDiscountBlastMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Send a discount notification blast to customers
+ */
+export const useSendDiscountBlast = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendDiscountBlast>>,
+    TError,
+    { data: BodyType<DiscountBlastRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof sendDiscountBlast>>,
+  TError,
+  { data: BodyType<DiscountBlastRequest> },
+  TContext
+> => {
+  return useMutation(getSendDiscountBlastMutationOptions(options));
+};
+
+/**
+ * @summary Enable or disable a deal
+ */
+export const getToggleDealUrl = (id: number) => {
+  return `/api/discounts/${id}/toggle`;
+};
+
+export const toggleDeal = async (
+  id: number,
+  toggleDealBody: ToggleDealBody,
+  options?: RequestInit,
+): Promise<Deal> => {
+  return customFetch<Deal>(getToggleDealUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(toggleDealBody),
+  });
+};
+
+export const getToggleDealMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof toggleDeal>>,
+    TError,
+    { id: number; data: BodyType<ToggleDealBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof toggleDeal>>,
+  TError,
+  { id: number; data: BodyType<ToggleDealBody> },
+  TContext
+> => {
+  const mutationKey = ["toggleDeal"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof toggleDeal>>,
+    { id: number; data: BodyType<ToggleDealBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return toggleDeal(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ToggleDealMutationResult = NonNullable<
+  Awaited<ReturnType<typeof toggleDeal>>
+>;
+export type ToggleDealMutationBody = BodyType<ToggleDealBody>;
+export type ToggleDealMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Enable or disable a deal
+ */
+export const useToggleDeal = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof toggleDeal>>,
+    TError,
+    { id: number; data: BodyType<ToggleDealBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof toggleDeal>>,
+  TError,
+  { id: number; data: BodyType<ToggleDealBody> },
+  TContext
+> => {
+  return useMutation(getToggleDealMutationOptions(options));
+};
+
+/**
+ * @summary Delete a discount deal
+ */
+export const getDeleteDealUrl = (id: number) => {
+  return `/api/discounts/${id}`;
+};
+
+export const deleteDeal = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteDealUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteDealMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDeal>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteDeal>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteDeal"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteDeal>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteDeal(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteDealMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteDeal>>
+>;
+
+export type DeleteDealMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a discount deal
+ */
+export const useDeleteDeal = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDeal>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteDeal>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteDealMutationOptions(options));
+};
+
+/**
+ * @summary Get notification blast log
+ */
+export const getListNotificationsUrl = () => {
+  return `/api/notifications`;
+};
+
+export const listNotifications = async (
+  options?: RequestInit,
+): Promise<NotificationRecord[]> => {
+  return customFetch<NotificationRecord[]>(getListNotificationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListNotificationsQueryKey = () => {
+  return [`/api/notifications`] as const;
+};
+
+export const getListNotificationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listNotifications>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listNotifications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListNotificationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listNotifications>>
+  > = ({ signal }) => listNotifications({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listNotifications>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListNotificationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listNotifications>>
+>;
+export type ListNotificationsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get notification blast log
+ */
+
+export function useListNotifications<
+  TData = Awaited<ReturnType<typeof listNotifications>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listNotifications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListNotificationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary List all reservations
@@ -2483,6 +3046,94 @@ export const useDeleteReservation = <
   TContext
 > => {
   return useMutation(getDeleteReservationMutationOptions(options));
+};
+
+/**
+ * @summary Update reservation status only
+ */
+export const getPatchReservationStatusUrl = (id: number) => {
+  return `/api/reservations/${id}/status`;
+};
+
+export const patchReservationStatus = async (
+  id: number,
+  patchReservationStatusBody: PatchReservationStatusBody,
+  options?: RequestInit,
+): Promise<Reservation> => {
+  return customFetch<Reservation>(getPatchReservationStatusUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(patchReservationStatusBody),
+  });
+};
+
+export const getPatchReservationStatusMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchReservationStatus>>,
+    TError,
+    { id: number; data: BodyType<PatchReservationStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchReservationStatus>>,
+  TError,
+  { id: number; data: BodyType<PatchReservationStatusBody> },
+  TContext
+> => {
+  const mutationKey = ["patchReservationStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchReservationStatus>>,
+    { id: number; data: BodyType<PatchReservationStatusBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return patchReservationStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchReservationStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchReservationStatus>>
+>;
+export type PatchReservationStatusMutationBody =
+  BodyType<PatchReservationStatusBody>;
+export type PatchReservationStatusMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update reservation status only
+ */
+export const usePatchReservationStatus = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchReservationStatus>>,
+    TError,
+    { id: number; data: BodyType<PatchReservationStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof patchReservationStatus>>,
+  TError,
+  { id: number; data: BodyType<PatchReservationStatusBody> },
+  TContext
+> => {
+  return useMutation(getPatchReservationStatusMutationOptions(options));
 };
 
 /**

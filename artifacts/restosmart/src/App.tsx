@@ -13,6 +13,8 @@ import Reservations from "@/pages/reservations";
 import Analytics from "@/pages/analytics";
 import Menu from "@/pages/menu";
 import Pos from "@/pages/pos";
+import Marketing from "@/pages/marketing";
+import Bookings from "@/pages/bookings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,6 +37,8 @@ function Router() {
         <Route path="/analytics" component={Analytics} />
         <Route path="/menu" component={Menu} />
         <Route path="/pos" component={Pos} />
+        <Route path="/marketing" component={Marketing} />
+        <Route path="/bookings" component={Bookings} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

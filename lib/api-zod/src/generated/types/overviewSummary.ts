@@ -5,6 +5,8 @@
  * RestoSmart Restaurant Management API
  * OpenAPI spec version: 0.2.0
  */
+import type { OverviewSummaryActiveDiscount } from "./overviewSummaryActiveDiscount";
+import type { OverviewSummaryLowStockItemsItem } from "./overviewSummaryLowStockItemsItem";
 
 export interface OverviewSummary {
   todayProfit: number;
@@ -18,4 +20,8 @@ export interface OverviewSummary {
   todayReservations: number;
   pendingReservations: number;
   upcomingShiftReminders: number;
+  liveTraffic: number;
+  expectedRevenue: number;
+  activeDiscount: OverviewSummaryActiveDiscount;
+  lowStockItems: OverviewSummaryLowStockItemsItem[];
 }

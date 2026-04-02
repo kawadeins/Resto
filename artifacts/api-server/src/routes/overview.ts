@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { employeesTable, inventoryTable, salesTable, reservationsTable, shiftsTable } from "@workspace/db";
+import { employeesTable, inventoryTable, salesTable, reservationsTable, shiftsTable, discountsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const AVG_SPEND_PER_COVER = 35;
 
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -18,11 +19,10 @@ router.get("/summary", async (req, res) => {
     const now = new Date();
     const dayOfWeek = DAYS[now.getDay()];
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const twoHoursLater = currentMinutes + 120;
 
     const [todaySale] = await db.select().from(salesTable).where(eq(salesTable.date, today)).limit(1);
-
     const activeStaffRows = await db.select().from(employeesTable).where(eq(employeesTable.status, "active"));
-
     const allInventory = await db.select().from(inventoryTable);
     const lowStockItems = allInventory.filter(
       (item) => parseFloat(item.quantity) <= parseFloat(item.alertThreshold)
@@ -47,14 +47,65 @@ router.get("/summary", async (req, res) => {
 
     const allReservations = await db.select().from(reservationsTable);
     const todayReservations = allReservations.filter((r) => r.date === today);
-    const pendingReservations = allReservations.filter(
-      (r) => r.date === today && (r.status === "pending" || r.status === "confirmed")
+
+    const confirmedToday = todayReservations.filter((r) => r.status === "confirmed" || r.status === "arrived");
+    const pendingReservations = todayReservations.filter(
+      (r) => r.status === "pending" || r.status === "confirmed"
     );
 
     const tableTotal = 20;
     const tableOccupancy = todayReservations.filter(
-      (r) => r.status === "seated" || r.status === "confirmed"
+      (r) => r.status === "arrived" || r.status === "confirmed"
     ).length || Math.floor(Math.random() * 8) + 5;
+
+    const liveTraffic = allReservations.filter((r) => {
+      if (r.date !== today) return false;
+      if (r.status === "rejected" || r.status === "cancelled") return false;
+      const reservationMin = timeToMinutes(r.time);
+      return reservationMin >= currentMinutes && reservationMin <= twoHoursLater;
+    }).length;
+
+    const confirmedCovers = confirmedToday.reduce((sum, r) => sum + r.partySize, 0);
+    const expectedRevenue = confirmedCovers * AVG_SPEND_PER_COVER;
+
+    const allDeals = await db.select().from(discountsTable);
+    const flashDeal = allDeals.find(
+      (d) =>
+        d.type === "flash" &&
+        d.enabled &&
+        d.flashExpiresAt != null &&
+        new Date(d.flashExpiresAt) > now
+    );
+
+    let activeDiscount: { active: boolean; label: string | null; percentage: number | null; minutesRemaining: number | null } = {
+      active: false, label: null, percentage: null, minutesRemaining: null,
+    };
+
+    if (flashDeal) {
+      activeDiscount = {
+        active: true,
+        label: flashDeal.label,
+        percentage: parseFloat(flashDeal.percentage),
+        minutesRemaining: Math.max(0, Math.round((new Date(flashDeal.flashExpiresAt!).getTime() - now.getTime()) / 60000)),
+      };
+    } else {
+      const scheduledActive = allDeals.find((d) => {
+        if (d.type !== "scheduled" || !d.enabled) return false;
+        if (!d.days.includes(dayOfWeek)) return false;
+        const startMin = timeToMinutes(d.startTime);
+        const endMin = timeToMinutes(d.endTime);
+        return currentMinutes >= startMin && currentMinutes < endMin;
+      });
+      if (scheduledActive) {
+        const endMin = timeToMinutes(scheduledActive.endTime);
+        activeDiscount = {
+          active: true,
+          label: scheduledActive.label,
+          percentage: parseFloat(scheduledActive.percentage),
+          minutesRemaining: Math.max(0, endMin - currentMinutes),
+        };
+      }
+    }
 
     res.json({
       todayProfit: todaySale ? parseFloat(todaySale.profit) : 0,
@@ -68,6 +119,16 @@ router.get("/summary", async (req, res) => {
       todayReservations: todayReservations.length,
       pendingReservations: pendingReservations.length,
       upcomingShiftReminders,
+      liveTraffic,
+      expectedRevenue,
+      activeDiscount,
+      lowStockItems: lowStockItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: parseFloat(item.quantity),
+        alertThreshold: parseFloat(item.alertThreshold),
+        unit: item.unit,
+      })),
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get overview summary");
@@ -81,19 +142,17 @@ router.get("/sales-chart", async (req, res) => {
       SELECT
         TO_CHAR(date::date, 'Mon YYYY') as month,
         SUM(revenue::numeric) as revenue,
-        SUM(profit::numeric) as profit,
-        COALESCE(SUM(expenses::numeric), 0) as expenses
+        SUM(profit::numeric) as profit
       FROM sales
       GROUP BY TO_CHAR(date::date, 'Mon YYYY'), DATE_TRUNC('month', date::date)
       ORDER BY DATE_TRUNC('month', date::date)
       LIMIT 12
     `);
 
-    const data = (rows.rows as { month: string; revenue: string; profit: string; expenses: string }[]).map((r) => ({
+    const data = (rows.rows as { month: string; revenue: string; profit: string }[]).map((r) => ({
       month: r.month,
       revenue: parseFloat(r.revenue),
       profit: parseFloat(r.profit),
-      expenses: parseFloat(r.expenses ?? "0"),
     }));
 
     res.json(data);

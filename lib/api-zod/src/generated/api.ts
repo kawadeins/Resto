@@ -29,6 +29,23 @@ export const GetOverviewSummaryResponse = zod.object({
   todayReservations: zod.number(),
   pendingReservations: zod.number(),
   upcomingShiftReminders: zod.number(),
+  liveTraffic: zod.number(),
+  expectedRevenue: zod.number(),
+  activeDiscount: zod.object({
+    active: zod.boolean(),
+    label: zod.string().nullish(),
+    percentage: zod.number().nullish(),
+    minutesRemaining: zod.number().nullish(),
+  }),
+  lowStockItems: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      quantity: zod.number(),
+      alertThreshold: zod.number(),
+      unit: zod.string(),
+    }),
+  ),
 });
 
 /**
@@ -313,45 +330,137 @@ export const GetFinancesSummaryResponse = zod.object({
 });
 
 /**
- * @summary Get current smart discount settings
+ * @summary Get all discount deals
  */
-export const GetDiscountResponse = zod.object({
+export const GetDiscountResponseItem = zod.object({
   id: zod.number(),
+  type: zod.enum(["flash", "scheduled"]),
   enabled: zod.boolean(),
   percentage: zod.number(),
   startTime: zod.string(),
   endTime: zod.string(),
   days: zod.array(zod.string()),
   label: zod.string(),
-  targetType: zod.enum(["all", "dishes", "combos"]),
-  notes: zod.string().optional(),
+  targetType: zod.string(),
+  notes: zod.string().nullish(),
+  flashExpiresAt: zod.string().nullish(),
+  flashMinutesRemaining: zod.number().nullish(),
+  isFlashActive: zod.boolean(),
+  createdAt: zod.string(),
+});
+export const GetDiscountResponse = zod.array(GetDiscountResponseItem);
+
+/**
+ * @summary List all discount deals (flash and scheduled)
+ */
+export const ListDealsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.enum(["flash", "scheduled"]),
+  enabled: zod.boolean(),
+  percentage: zod.number(),
+  startTime: zod.string(),
+  endTime: zod.string(),
+  days: zod.array(zod.string()),
+  label: zod.string(),
+  targetType: zod.string(),
+  notes: zod.string().nullish(),
+  flashExpiresAt: zod.string().nullish(),
+  flashMinutesRemaining: zod.number().nullish(),
+  isFlashActive: zod.boolean(),
+  createdAt: zod.string(),
+});
+export const ListDealsResponse = zod.array(ListDealsResponseItem);
+
+/**
+ * @summary Get currently active discount (if any)
+ */
+export const GetActiveDiscountStatusResponse = zod.object({
+  active: zod.boolean(),
+  type: zod.string().nullish(),
+  label: zod.string().nullish(),
+  percentage: zod.number().nullish(),
+  minutesRemaining: zod.number().nullish(),
+  expiresAt: zod.string().nullish(),
 });
 
 /**
- * @summary Update smart discount settings
+ * @summary Activate a 30-minute flash discount
  */
-export const UpdateDiscountBody = zod.object({
-  enabled: zod.boolean(),
-  percentage: zod.number(),
-  startTime: zod.string(),
-  endTime: zod.string(),
-  days: zod.array(zod.string()),
-  label: zod.string(),
-  targetType: zod.enum(["all", "dishes", "combos"]),
-  notes: zod.string().optional(),
+export const ActivateFlashDealBody = zod.object({
+  label: zod.string().optional(),
+  percentage: zod.number().optional(),
 });
 
-export const UpdateDiscountResponse = zod.object({
+/**
+ * @summary Create a recurring scheduled discount
+ */
+export const CreateScheduledDealBody = zod.object({
+  label: zod.string(),
+  percentage: zod.number(),
+  startTime: zod.string(),
+  endTime: zod.string(),
+  days: zod.array(zod.string()),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Send a discount notification blast to customers
+ */
+export const SendDiscountBlastBody = zod.object({
+  title: zod.string(),
+  message: zod.string(),
+  targetCount: zod.number().optional(),
+});
+
+/**
+ * @summary Enable or disable a deal
+ */
+export const ToggleDealParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ToggleDealBody = zod.object({
+  enabled: zod.boolean(),
+});
+
+export const ToggleDealResponse = zod.object({
   id: zod.number(),
+  type: zod.enum(["flash", "scheduled"]),
   enabled: zod.boolean(),
   percentage: zod.number(),
   startTime: zod.string(),
   endTime: zod.string(),
   days: zod.array(zod.string()),
   label: zod.string(),
-  targetType: zod.enum(["all", "dishes", "combos"]),
-  notes: zod.string().optional(),
+  targetType: zod.string(),
+  notes: zod.string().nullish(),
+  flashExpiresAt: zod.string().nullish(),
+  flashMinutesRemaining: zod.number().nullish(),
+  isFlashActive: zod.boolean(),
+  createdAt: zod.string(),
 });
+
+/**
+ * @summary Delete a discount deal
+ */
+export const DeleteDealParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get notification blast log
+ */
+export const ListNotificationsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  message: zod.string(),
+  targetCount: zod.number(),
+  sentAt: zod.string(),
+});
+export const ListNotificationsResponse = zod.array(
+  ListNotificationsResponseItem,
+);
 
 /**
  * @summary List all reservations
@@ -519,6 +628,44 @@ export const UpdateReservationResponse = zod.object({
  */
 export const DeleteReservationParams = zod.object({
   id: zod.coerce.number(),
+});
+
+/**
+ * @summary Update reservation status only
+ */
+export const PatchReservationStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const PatchReservationStatusBody = zod.object({
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "rejected",
+    "arrived",
+    "cancelled",
+  ]),
+});
+
+export const PatchReservationStatusResponse = zod.object({
+  id: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.coerce.date(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "seated",
+    "completed",
+    "cancelled",
+  ]),
+  tableNumber: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  source: zod.enum(["direct", "online", "phone", "walkin"]),
+  createdAt: zod.string(),
 });
 
 /**

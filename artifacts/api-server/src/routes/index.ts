@@ -10,6 +10,7 @@ import reservationsRouter from "./reservations";
 import analyticsRouter from "./analytics";
 import menuRouter from "./menu";
 import posRouter from "./pos";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use("/reservations", reservationsRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/menu", menuRouter);
 router.use("/pos", posRouter);
+router.use("/notifications", notificationsRouter);
 
 export default router;

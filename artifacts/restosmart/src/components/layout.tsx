@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
+  { name: "Bookings", href: "/bookings", icon: BookOpen },
   { name: "Reservations", href: "/reservations", icon: Calendar },
   { name: "Staff", href: "/staff", icon: Users },
   { name: "Inventory", href: "/inventory", icon: Package },
@@ -11,6 +12,7 @@ const navigation = [
   { name: "POS", href: "/pos", icon: ShoppingCart },
   { name: "Finances", href: "/finances", icon: DollarSign },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Marketing", href: "/marketing", icon: Megaphone },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
