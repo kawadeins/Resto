@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RestoSmart Restaurant Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: overview
+    description: Dashboard overview and summary
+  - name: employees
+    description: Employee management
+  - name: shifts
+    description: Shift management
+  - name: inventory
+    description: Inventory management
+  - name: sales
+    description: Sales and finances
+  - name: discounts
+    description: Smart discount management
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,331 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /overview/summary:
+    get:
+      operationId: getOverviewSummary
+      tags: [overview]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OverviewSummary"
+
+  /overview/sales-chart:
+    get:
+      operationId: getMonthlySalesChart
+      tags: [overview]
+      summary: Get monthly sales chart data
+      responses:
+        "200":
+          description: Monthly sales data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlySaleData"
+
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [employees]
+      summary: List all employees
+      responses:
+        "200":
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Employee"
+    post:
+      operationId: createEmployee
+      tags: [employees]
+      summary: Create a new employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeBody"
+      responses:
+        "201":
+          description: Created employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+
+  /employees/{id}:
+    get:
+      operationId: getEmployee
+      tags: [employees]
+      summary: Get employee by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "404":
+          description: Not found
+    put:
+      operationId: updateEmployee
+      tags: [employees]
+      summary: Update an employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeBody"
+      responses:
+        "200":
+          description: Updated employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+    delete:
+      operationId: deleteEmployee
+      tags: [employees]
+      summary: Delete an employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /shifts:
+    get:
+      operationId: listShifts
+      tags: [shifts]
+      summary: List all shifts
+      responses:
+        "200":
+          description: List of shifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Shift"
+    post:
+      operationId: createShift
+      tags: [shifts]
+      summary: Create a shift
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateShiftBody"
+      responses:
+        "201":
+          description: Created shift
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shift"
+
+  /shifts/{id}:
+    delete:
+      operationId: deleteShift
+      tags: [shifts]
+      summary: Delete a shift
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: List all inventory items
+      responses:
+        "200":
+          description: List of inventory items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+    post:
+      operationId: createInventoryItem
+      tags: [inventory]
+      summary: Create inventory item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryItemBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+
+  /inventory/{id}:
+    put:
+      operationId: updateInventoryItem
+      tags: [inventory]
+      summary: Update inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryItemBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+    delete:
+      operationId: deleteInventoryItem
+      tags: [inventory]
+      summary: Delete inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /inventory/low-stock:
+    get:
+      operationId: getLowStockItems
+      tags: [inventory]
+      summary: Get items below alert threshold
+      responses:
+        "200":
+          description: Low stock items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+
+  /sales:
+    get:
+      operationId: listSales
+      tags: [sales]
+      summary: List daily sales records
+      responses:
+        "200":
+          description: Sales records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SaleRecord"
+    post:
+      operationId: createSaleRecord
+      tags: [sales]
+      summary: Create a sales record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSaleRecordBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleRecord"
+
+  /sales/finances-summary:
+    get:
+      operationId: getFinancesSummary
+      tags: [sales]
+      summary: Get financial summary (totals, averages, popular dishes)
+      responses:
+        "200":
+          description: Financial summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancesSummary"
+
+  /discounts:
+    get:
+      operationId: getDiscount
+      tags: [discounts]
+      summary: Get current smart discount settings
+      responses:
+        "200":
+          description: Discount settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountSettings"
+    put:
+      operationId: updateDiscount
+      tags: [discounts]
+      summary: Update smart discount settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDiscountBody"
+      responses:
+        "200":
+          description: Updated discount settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountSettings"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +371,314 @@ components:
       required:
         - status
 
+    OverviewSummary:
+      type: object
+      properties:
+        todayProfit:
+          type: number
+        todayRevenue:
+          type: number
+        activeStaff:
+          type: integer
+        lowStockAlerts:
+          type: integer
+        tableOccupancy:
+          type: integer
+        tableTotal:
+          type: integer
+        tableOccupancyPercent:
+          type: number
+      required:
+        - todayProfit
+        - todayRevenue
+        - activeStaff
+        - lowStockAlerts
+        - tableOccupancy
+        - tableTotal
+        - tableOccupancyPercent
+
+    MonthlySaleData:
+      type: object
+      properties:
+        month:
+          type: string
+        revenue:
+          type: number
+        profit:
+          type: number
+      required:
+        - month
+        - revenue
+        - profit
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+      required:
+        - id
+        - name
+        - role
+        - email
+        - phone
+        - status
+
+    CreateEmployeeBody:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+      required:
+        - name
+        - role
+        - email
+        - phone
+
+    Shift:
+      type: object
+      properties:
+        id:
+          type: integer
+        employeeId:
+          type: integer
+        employeeName:
+          type: string
+        dayOfWeek:
+          type: string
+          enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+        startTime:
+          type: string
+        endTime:
+          type: string
+      required:
+        - id
+        - employeeId
+        - employeeName
+        - dayOfWeek
+        - startTime
+        - endTime
+
+    CreateShiftBody:
+      type: object
+      properties:
+        employeeId:
+          type: integer
+        dayOfWeek:
+          type: string
+          enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+        startTime:
+          type: string
+        endTime:
+          type: string
+      required:
+        - employeeId
+        - dayOfWeek
+        - startTime
+        - endTime
+
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        alertThreshold:
+          type: number
+        isLowStock:
+          type: boolean
+        costPerUnit:
+          type: number
+      required:
+        - id
+        - name
+        - category
+        - quantity
+        - unit
+        - alertThreshold
+        - isLowStock
+        - costPerUnit
+
+    CreateInventoryItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        alertThreshold:
+          type: number
+        costPerUnit:
+          type: number
+      required:
+        - name
+        - category
+        - quantity
+        - unit
+        - alertThreshold
+        - costPerUnit
+
+    SaleRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        revenue:
+          type: number
+        profit:
+          type: number
+        popularDishes:
+          type: array
+          items:
+            type: string
+        covers:
+          type: integer
+      required:
+        - id
+        - date
+        - revenue
+        - profit
+        - popularDishes
+        - covers
+
+    CreateSaleRecordBody:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        revenue:
+          type: number
+        profit:
+          type: number
+        popularDishes:
+          type: array
+          items:
+            type: string
+        covers:
+          type: integer
+      required:
+        - date
+        - revenue
+        - profit
+        - popularDishes
+        - covers
+
+    FinancesSummary:
+      type: object
+      properties:
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        avgDailyRevenue:
+          type: number
+        avgProfitMargin:
+          type: number
+        topDishes:
+          type: array
+          items:
+            $ref: "#/components/schemas/DishStat"
+        revenueByMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlySaleData"
+      required:
+        - totalRevenue
+        - totalProfit
+        - avgDailyRevenue
+        - avgProfitMargin
+        - topDishes
+        - revenueByMonth
+
+    DishStat:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+      required:
+        - name
+        - count
+
+    DiscountSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+        enabled:
+          type: boolean
+        percentage:
+          type: number
+        startTime:
+          type: string
+        endTime:
+          type: string
+        days:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - enabled
+        - percentage
+        - startTime
+        - endTime
+        - days
+
+    UpdateDiscountBody:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        percentage:
+          type: number
+        startTime:
+          type: string
+        endTime:
+          type: string
+        days:
+          type: array
+          items:
+            type: string
+      required:
+        - enabled
+        - percentage
+        - startTime
+        - endTime
+        - days
