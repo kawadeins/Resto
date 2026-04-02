@@ -11,6 +11,7 @@ import analyticsRouter from "./analytics";
 import menuRouter from "./menu";
 import posRouter from "./pos";
 import notificationsRouter from "./notifications";
+import marketplaceRouter from "./marketplace";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use("/analytics", analyticsRouter);
 router.use("/menu", menuRouter);
 router.use("/pos", posRouter);
 router.use("/notifications", notificationsRouter);
+router.use("/marketplace", marketplaceRouter);
 
 export default router;

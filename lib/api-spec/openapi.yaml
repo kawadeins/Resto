@@ -26,6 +26,8 @@ tags:
     description: Table reservations
   - name: analytics
     description: Business analytics
+  - name: marketplace
+    description: Customer marketplace - restaurants and booking
 
 paths:
   /healthz:
@@ -887,6 +889,120 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PosSale"
+
+  /marketplace/restaurants:
+    get:
+      operationId: listMarketplaceRestaurants
+      tags: [marketplace]
+      summary: List restaurants for customer marketplace
+      parameters:
+        - name: cuisine
+          in: query
+          schema:
+            type: string
+        - name: priceRange
+          in: query
+          schema:
+            type: integer
+        - name: rating
+          in: query
+          schema:
+            type: number
+        - name: openNow
+          in: query
+          schema:
+            type: boolean
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketplaceRestaurant"
+
+  /marketplace/restaurants/{id}:
+    get:
+      operationId: getMarketplaceRestaurant
+      tags: [marketplace]
+      summary: Get single restaurant with menu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Restaurant with menu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceRestaurantDetail"
+
+  /marketplace/flash-deals:
+    get:
+      operationId: listFlashDeals
+      tags: [marketplace]
+      summary: Get active flash deals
+      responses:
+        "200":
+          description: Active flash deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketplaceFlashDeal"
+
+  /marketplace/bookings:
+    post:
+      operationId: createCustomerBooking
+      tags: [marketplace]
+      summary: Create a customer booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerBookingBody"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerBooking"
+
+  /marketplace/my-bookings:
+    get:
+      operationId: listMyBookings
+      tags: [marketplace]
+      summary: Get bookings for a customer email
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerBooking"
 
 components:
   schemas:
@@ -1936,3 +2052,238 @@ components:
           enum: [pending, confirmed, rejected, arrived, cancelled]
       required:
         - status
+
+    MarketplaceRestaurant:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cuisine:
+          type: string
+        cuisineEmoji:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        heroImage:
+          type: string
+          nullable: true
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        priceRange:
+          type: integer
+        openTime:
+          type: string
+        closeTime:
+          type: string
+        openDays:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        isActive:
+          type: boolean
+        isFeatured:
+          type: boolean
+        isPartner:
+          type: boolean
+        isOpenNow:
+          type: boolean
+        hasActiveFlash:
+          type: boolean
+        flashPercentage:
+          type: number
+          nullable: true
+        flashLabel:
+          type: string
+          nullable: true
+        flashMinutesRemaining:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - name
+        - cuisine
+        - cuisineEmoji
+        - description
+        - address
+        - city
+        - phone
+        - email
+        - rating
+        - reviewCount
+        - priceRange
+        - openTime
+        - closeTime
+        - openDays
+        - tags
+        - lat
+        - lng
+        - isActive
+        - isFeatured
+        - isPartner
+        - isOpenNow
+        - hasActiveFlash
+
+    MarketplaceMenuItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+      required:
+        - id
+        - name
+        - description
+        - category
+        - price
+
+    MarketplaceRestaurantDetail:
+      allOf:
+        - $ref: "#/components/schemas/MarketplaceRestaurant"
+        - type: object
+          properties:
+            menu:
+              type: array
+              items:
+                $ref: "#/components/schemas/MarketplaceMenuItem"
+          required:
+            - menu
+
+    MarketplaceFlashDeal:
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        percentage:
+          type: number
+        flashExpiresAt:
+          type: string
+          nullable: true
+        minutesRemaining:
+          type: integer
+          nullable: true
+        restaurant:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            cuisine:
+              type: string
+            cuisineEmoji:
+              type: string
+            heroImage:
+              type: string
+              nullable: true
+      required:
+        - id
+        - label
+        - percentage
+
+    CreateCustomerBookingBody:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        partySize:
+          type: integer
+        notes:
+          type: string
+        restaurantId:
+          type: integer
+      required:
+        - customerName
+        - customerEmail
+        - customerPhone
+        - date
+        - time
+        - partySize
+
+    CustomerBooking:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        partySize:
+          type: integer
+        status:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        restaurant:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            cuisine:
+              type: string
+            heroImage:
+              type: string
+              nullable: true
+      required:
+        - id
+        - customerName
+        - customerEmail
+        - customerPhone
+        - date
+        - time
+        - partySize
+        - status
+        - createdAt

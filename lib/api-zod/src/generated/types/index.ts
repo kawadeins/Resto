@@ -7,6 +7,7 @@
  */
 
 export * from "./activeDiscountStatus";
+export * from "./createCustomerBookingBody";
 export * from "./createEmployeeBody";
 export * from "./createEmployeeBodyStatus";
 export * from "./createInventoryItemBody";
@@ -16,6 +17,8 @@ export * from "./createReservationBodySource";
 export * from "./createSaleRecordBody";
 export * from "./createShiftBody";
 export * from "./createShiftBodyDayOfWeek";
+export * from "./customerBooking";
+export * from "./customerBookingRestaurant";
 export * from "./dailyAnalyticsEntry";
 export * from "./deal";
 export * from "./dealType";
@@ -29,8 +32,15 @@ export * from "./financesSummary";
 export * from "./flashDealRequest";
 export * from "./healthStatus";
 export * from "./inventoryItem";
+export * from "./listMarketplaceRestaurantsParams";
+export * from "./listMyBookingsParams";
 export * from "./listPosSalesParams";
 export * from "./listReservationsParams";
+export * from "./marketplaceFlashDeal";
+export * from "./marketplaceFlashDealRestaurant";
+export * from "./marketplaceMenuItem";
+export * from "./marketplaceRestaurant";
+export * from "./marketplaceRestaurantDetail";
 export * from "./menuIngredient";
 export * from "./menuItem";
 export * from "./menuItemAnalytics";

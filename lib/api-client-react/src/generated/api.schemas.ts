@@ -533,6 +533,98 @@ export interface PatchReservationStatusBody {
   status: PatchReservationStatusBodyStatus;
 }
 
+export interface MarketplaceRestaurant {
+  id: number;
+  name: string;
+  cuisine: string;
+  cuisineEmoji: string;
+  description: string;
+  address: string;
+  city: string;
+  phone: string;
+  email: string;
+  heroImage?: string | null;
+  rating: number;
+  reviewCount: number;
+  priceRange: number;
+  openTime: string;
+  closeTime: string;
+  openDays: string[];
+  tags: string[];
+  lat: number;
+  lng: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  isPartner: boolean;
+  isOpenNow: boolean;
+  hasActiveFlash: boolean;
+  flashPercentage?: number | null;
+  flashLabel?: string | null;
+  flashMinutesRemaining?: number | null;
+}
+
+export interface MarketplaceMenuItem {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+}
+
+export type MarketplaceRestaurantDetail = MarketplaceRestaurant & {
+  menu: MarketplaceMenuItem[];
+};
+
+export type MarketplaceFlashDealRestaurant = {
+  id?: number;
+  name?: string;
+  cuisine?: string;
+  cuisineEmoji?: string;
+  heroImage?: string | null;
+} | null;
+
+export interface MarketplaceFlashDeal {
+  id: number;
+  label: string;
+  percentage: number;
+  flashExpiresAt?: string | null;
+  minutesRemaining?: number | null;
+  restaurant?: MarketplaceFlashDealRestaurant;
+}
+
+export interface CreateCustomerBookingBody {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  partySize: number;
+  notes?: string;
+  restaurantId?: number;
+}
+
+export type CustomerBookingRestaurant = {
+  id?: number;
+  name?: string;
+  cuisine?: string;
+  heroImage?: string | null;
+} | null;
+
+export interface CustomerBooking {
+  id: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  time: string;
+  partySize: number;
+  status: string;
+  notes?: string | null;
+  source?: string | null;
+  createdAt: string;
+  restaurant?: CustomerBookingRestaurant;
+}
+
 export type ListReservationsParams = {
   date?: string;
   status?: string;
@@ -540,4 +632,17 @@ export type ListReservationsParams = {
 
 export type ListPosSalesParams = {
   limit?: number;
+};
+
+export type ListMarketplaceRestaurantsParams = {
+  cuisine?: string;
+  priceRange?: number;
+  rating?: number;
+  openNow?: boolean;
+  featured?: boolean;
+  search?: string;
+};
+
+export type ListMyBookingsParams = {
+  email: string;
 };

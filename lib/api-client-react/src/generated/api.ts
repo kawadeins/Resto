@@ -18,12 +18,14 @@ import type {
 
 import type {
   ActiveDiscountStatus,
+  CreateCustomerBookingBody,
   CreateEmployeeBody,
   CreateInventoryItemBody,
   CreateMenuItemBody,
   CreateReservationBody,
   CreateSaleRecordBody,
   CreateShiftBody,
+  CustomerBooking,
   DailyAnalyticsEntry,
   Deal,
   DiscountBlastRequest,
@@ -32,8 +34,13 @@ import type {
   FlashDealRequest,
   HealthStatus,
   InventoryItem,
+  ListMarketplaceRestaurantsParams,
+  ListMyBookingsParams,
   ListPosSalesParams,
   ListReservationsParams,
+  MarketplaceFlashDeal,
+  MarketplaceRestaurant,
+  MarketplaceRestaurantDetail,
   MenuIngredient,
   MenuItem,
   MenuItemAnalytics,
@@ -4129,6 +4136,460 @@ export function useListPosSales<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getListPosSalesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List restaurants for customer marketplace
+ */
+export const getListMarketplaceRestaurantsUrl = (
+  params?: ListMarketplaceRestaurantsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/marketplace/restaurants?${stringifiedParams}`
+    : `/api/marketplace/restaurants`;
+};
+
+export const listMarketplaceRestaurants = async (
+  params?: ListMarketplaceRestaurantsParams,
+  options?: RequestInit,
+): Promise<MarketplaceRestaurant[]> => {
+  return customFetch<MarketplaceRestaurant[]>(
+    getListMarketplaceRestaurantsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListMarketplaceRestaurantsQueryKey = (
+  params?: ListMarketplaceRestaurantsParams,
+) => {
+  return [`/api/marketplace/restaurants`, ...(params ? [params] : [])] as const;
+};
+
+export const getListMarketplaceRestaurantsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMarketplaceRestaurants>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListMarketplaceRestaurantsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listMarketplaceRestaurants>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListMarketplaceRestaurantsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listMarketplaceRestaurants>>
+  > = ({ signal }) =>
+    listMarketplaceRestaurants(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMarketplaceRestaurants>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMarketplaceRestaurantsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMarketplaceRestaurants>>
+>;
+export type ListMarketplaceRestaurantsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List restaurants for customer marketplace
+ */
+
+export function useListMarketplaceRestaurants<
+  TData = Awaited<ReturnType<typeof listMarketplaceRestaurants>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListMarketplaceRestaurantsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listMarketplaceRestaurants>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMarketplaceRestaurantsQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get single restaurant with menu
+ */
+export const getGetMarketplaceRestaurantUrl = (id: number) => {
+  return `/api/marketplace/restaurants/${id}`;
+};
+
+export const getMarketplaceRestaurant = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MarketplaceRestaurantDetail> => {
+  return customFetch<MarketplaceRestaurantDetail>(
+    getGetMarketplaceRestaurantUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetMarketplaceRestaurantQueryKey = (id: number) => {
+  return [`/api/marketplace/restaurants/${id}`] as const;
+};
+
+export const getGetMarketplaceRestaurantQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMarketplaceRestaurant>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMarketplaceRestaurant>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetMarketplaceRestaurantQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMarketplaceRestaurant>>
+  > = ({ signal }) =>
+    getMarketplaceRestaurant(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMarketplaceRestaurant>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMarketplaceRestaurantQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMarketplaceRestaurant>>
+>;
+export type GetMarketplaceRestaurantQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get single restaurant with menu
+ */
+
+export function useGetMarketplaceRestaurant<
+  TData = Awaited<ReturnType<typeof getMarketplaceRestaurant>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMarketplaceRestaurant>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMarketplaceRestaurantQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get active flash deals
+ */
+export const getListFlashDealsUrl = () => {
+  return `/api/marketplace/flash-deals`;
+};
+
+export const listFlashDeals = async (
+  options?: RequestInit,
+): Promise<MarketplaceFlashDeal[]> => {
+  return customFetch<MarketplaceFlashDeal[]>(getListFlashDealsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListFlashDealsQueryKey = () => {
+  return [`/api/marketplace/flash-deals`] as const;
+};
+
+export const getListFlashDealsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listFlashDeals>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listFlashDeals>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListFlashDealsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listFlashDeals>>> = ({
+    signal,
+  }) => listFlashDeals({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listFlashDeals>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListFlashDealsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listFlashDeals>>
+>;
+export type ListFlashDealsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get active flash deals
+ */
+
+export function useListFlashDeals<
+  TData = Awaited<ReturnType<typeof listFlashDeals>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listFlashDeals>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListFlashDealsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a customer booking
+ */
+export const getCreateCustomerBookingUrl = () => {
+  return `/api/marketplace/bookings`;
+};
+
+export const createCustomerBooking = async (
+  createCustomerBookingBody: CreateCustomerBookingBody,
+  options?: RequestInit,
+): Promise<CustomerBooking> => {
+  return customFetch<CustomerBooking>(getCreateCustomerBookingUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createCustomerBookingBody),
+  });
+};
+
+export const getCreateCustomerBookingMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCustomerBooking>>,
+    TError,
+    { data: BodyType<CreateCustomerBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCustomerBooking>>,
+  TError,
+  { data: BodyType<CreateCustomerBookingBody> },
+  TContext
+> => {
+  const mutationKey = ["createCustomerBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCustomerBooking>>,
+    { data: BodyType<CreateCustomerBookingBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCustomerBooking(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCustomerBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCustomerBooking>>
+>;
+export type CreateCustomerBookingMutationBody =
+  BodyType<CreateCustomerBookingBody>;
+export type CreateCustomerBookingMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a customer booking
+ */
+export const useCreateCustomerBooking = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCustomerBooking>>,
+    TError,
+    { data: BodyType<CreateCustomerBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCustomerBooking>>,
+  TError,
+  { data: BodyType<CreateCustomerBookingBody> },
+  TContext
+> => {
+  return useMutation(getCreateCustomerBookingMutationOptions(options));
+};
+
+/**
+ * @summary Get bookings for a customer email
+ */
+export const getListMyBookingsUrl = (params: ListMyBookingsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/marketplace/my-bookings?${stringifiedParams}`
+    : `/api/marketplace/my-bookings`;
+};
+
+export const listMyBookings = async (
+  params: ListMyBookingsParams,
+  options?: RequestInit,
+): Promise<CustomerBooking[]> => {
+  return customFetch<CustomerBooking[]>(getListMyBookingsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListMyBookingsQueryKey = (params?: ListMyBookingsParams) => {
+  return [`/api/marketplace/my-bookings`, ...(params ? [params] : [])] as const;
+};
+
+export const getListMyBookingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMyBookings>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListMyBookingsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listMyBookings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListMyBookingsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyBookings>>> = ({
+    signal,
+  }) => listMyBookings(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMyBookings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMyBookingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMyBookings>>
+>;
+export type ListMyBookingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get bookings for a customer email
+ */
+
+export function useListMyBookings<
+  TData = Awaited<ReturnType<typeof listMyBookings>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListMyBookingsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listMyBookings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMyBookingsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

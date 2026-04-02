@@ -932,3 +932,164 @@ export const ListPosSalesResponseItem = zod.object({
   notes: zod.string().nullish(),
 });
 export const ListPosSalesResponse = zod.array(ListPosSalesResponseItem);
+
+/**
+ * @summary List restaurants for customer marketplace
+ */
+export const ListMarketplaceRestaurantsQueryParams = zod.object({
+  cuisine: zod.coerce.string().optional(),
+  priceRange: zod.coerce.number().optional(),
+  rating: zod.coerce.number().optional(),
+  openNow: zod.coerce.boolean().optional(),
+  featured: zod.coerce.boolean().optional(),
+  search: zod.coerce.string().optional(),
+});
+
+export const ListMarketplaceRestaurantsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  cuisine: zod.string(),
+  cuisineEmoji: zod.string(),
+  description: zod.string(),
+  address: zod.string(),
+  city: zod.string(),
+  phone: zod.string(),
+  email: zod.string(),
+  heroImage: zod.string().nullish(),
+  rating: zod.number(),
+  reviewCount: zod.number(),
+  priceRange: zod.number(),
+  openTime: zod.string(),
+  closeTime: zod.string(),
+  openDays: zod.array(zod.string()),
+  tags: zod.array(zod.string()),
+  lat: zod.number(),
+  lng: zod.number(),
+  isActive: zod.boolean(),
+  isFeatured: zod.boolean(),
+  isPartner: zod.boolean(),
+  isOpenNow: zod.boolean(),
+  hasActiveFlash: zod.boolean(),
+  flashPercentage: zod.number().nullish(),
+  flashLabel: zod.string().nullish(),
+  flashMinutesRemaining: zod.number().nullish(),
+});
+export const ListMarketplaceRestaurantsResponse = zod.array(
+  ListMarketplaceRestaurantsResponseItem,
+);
+
+/**
+ * @summary Get single restaurant with menu
+ */
+export const GetMarketplaceRestaurantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetMarketplaceRestaurantResponse = zod
+  .object({
+    id: zod.number(),
+    name: zod.string(),
+    cuisine: zod.string(),
+    cuisineEmoji: zod.string(),
+    description: zod.string(),
+    address: zod.string(),
+    city: zod.string(),
+    phone: zod.string(),
+    email: zod.string(),
+    heroImage: zod.string().nullish(),
+    rating: zod.number(),
+    reviewCount: zod.number(),
+    priceRange: zod.number(),
+    openTime: zod.string(),
+    closeTime: zod.string(),
+    openDays: zod.array(zod.string()),
+    tags: zod.array(zod.string()),
+    lat: zod.number(),
+    lng: zod.number(),
+    isActive: zod.boolean(),
+    isFeatured: zod.boolean(),
+    isPartner: zod.boolean(),
+    isOpenNow: zod.boolean(),
+    hasActiveFlash: zod.boolean(),
+    flashPercentage: zod.number().nullish(),
+    flashLabel: zod.string().nullish(),
+    flashMinutesRemaining: zod.number().nullish(),
+  })
+  .and(
+    zod.object({
+      menu: zod.array(
+        zod.object({
+          id: zod.number(),
+          name: zod.string(),
+          description: zod.string(),
+          category: zod.string(),
+          price: zod.number(),
+        }),
+      ),
+    }),
+  );
+
+/**
+ * @summary Get active flash deals
+ */
+export const ListFlashDealsResponseItem = zod.object({
+  id: zod.number(),
+  label: zod.string(),
+  percentage: zod.number(),
+  flashExpiresAt: zod.string().nullish(),
+  minutesRemaining: zod.number().nullish(),
+  restaurant: zod
+    .object({
+      id: zod.number().optional(),
+      name: zod.string().optional(),
+      cuisine: zod.string().optional(),
+      cuisineEmoji: zod.string().optional(),
+      heroImage: zod.string().nullish(),
+    })
+    .nullish(),
+});
+export const ListFlashDealsResponse = zod.array(ListFlashDealsResponseItem);
+
+/**
+ * @summary Create a customer booking
+ */
+export const CreateCustomerBookingBody = zod.object({
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.string(),
+  time: zod.string(),
+  partySize: zod.number(),
+  notes: zod.string().optional(),
+  restaurantId: zod.number().optional(),
+});
+
+/**
+ * @summary Get bookings for a customer email
+ */
+export const ListMyBookingsQueryParams = zod.object({
+  email: zod.coerce.string(),
+});
+
+export const ListMyBookingsResponseItem = zod.object({
+  id: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  customerPhone: zod.string(),
+  date: zod.string(),
+  time: zod.string(),
+  partySize: zod.number(),
+  status: zod.string(),
+  notes: zod.string().nullish(),
+  source: zod.string().nullish(),
+  createdAt: zod.string(),
+  restaurant: zod
+    .object({
+      id: zod.number().optional(),
+      name: zod.string().optional(),
+      cuisine: zod.string().optional(),
+      heroImage: zod.string().nullish(),
+    })
+    .nullish(),
+});
+export const ListMyBookingsResponse = zod.array(ListMyBookingsResponseItem);
