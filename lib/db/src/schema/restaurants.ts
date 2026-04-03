@@ -25,6 +25,9 @@ export const restaurantsTable = pgTable("restaurants", {
   isActive: boolean("is_active").notNull().default(true),
   isFeatured: boolean("is_featured").notNull().default(false),
   isPartner: boolean("is_partner").notNull().default(true),
+  bookingsEnabled: boolean("bookings_enabled").notNull().default(true),
+  onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+  onboardingStep: integer("onboarding_step").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

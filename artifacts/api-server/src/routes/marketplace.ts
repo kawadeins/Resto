@@ -187,6 +187,21 @@ const CreateBookingBody = z.object({
 router.post("/bookings", async (req, res) => {
   try {
     const body = CreateBookingBody.parse(req.body);
+
+    // Enforce bookingsEnabled before accepting reservations
+    const restaurantId = body.restaurantId ?? 1;
+    const [restaurant] = await db
+      .select()
+      .from(restaurantsTable)
+      .where(eq(restaurantsTable.id, restaurantId));
+
+    if (!restaurant) {
+      return void res.status(404).json({ error: "Restaurant not found" });
+    }
+    if (!restaurant.bookingsEnabled) {
+      return void res.status(403).json({ error: "This restaurant is not currently accepting online bookings" });
+    }
+
     const [created] = await db.insert(reservationsTable).values({
       customerName: body.customerName,
       customerEmail: body.customerEmail,

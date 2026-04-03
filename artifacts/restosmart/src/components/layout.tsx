@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -13,6 +13,8 @@ const navigation = [
   { name: "Finances", href: "/finances", icon: DollarSign },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Marketing", href: "/marketing", icon: Megaphone },
+  { name: "Dead Hours", href: "/insights", icon: Lightbulb },
+  { name: "Growth Hub", href: "/campaigns", icon: TrendingUp },
   { name: "Reviews", href: "/reviews", icon: Star },
   { name: "Billing", href: "/billing", icon: CreditCard },
 ];

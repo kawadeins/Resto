@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Timer, ArrowRight, Utensils, Coffee, Pizza, Wine, Compass } from "lucide-react";
+import { Timer, ArrowRight, Utensils, Coffee, Pizza, Wine, Compass, Gift, Star, Zap, RefreshCw, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListFlashDeals, useListMarketplaceRestaurants } from "@workspace/api-client-react";
+import { useListFlashDeals, useListMarketplaceRestaurants, useGetPersonalizedOffers } from "@workspace/api-client-react";
+import { getGetPersonalizedOffersQueryKey } from "@workspace/api-client-react";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useSeo } from "@/hooks/use-seo";
 
 const CUISINES = [
@@ -50,11 +52,120 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
   );
 }
 
+const TIER_GRADIENT: Record<string, string> = {
+  Bronze: "from-amber-900/30 to-amber-800/10 border-amber-700/30",
+  Silver: "from-slate-700/30 to-slate-600/10 border-slate-500/30",
+  Gold: "from-yellow-900/30 to-yellow-800/10 border-yellow-600/30",
+};
+
+const TIER_BADGE: Record<string, string> = {
+  Bronze: "bg-amber-900/40 text-amber-400 border-amber-700/30",
+  Silver: "bg-slate-700/40 text-slate-300 border-slate-500/30",
+  Gold: "bg-yellow-900/40 text-yellow-400 border-yellow-600/30",
+};
+
+const MSG_ICON: Record<string, React.ElementType> = {
+  win_back: RefreshCw,
+  thank_you: Star,
+  flash_blast: Zap,
+  loyalty_reward: Gift,
+};
+
+function PersonalizedSection({ email }: { email: string }) {
+  const { data, isLoading } = useGetPersonalizedOffers(
+    { email },
+    { query: { queryKey: getGetPersonalizedOffersQueryKey({ email }), enabled: !!email } }
+  );
+
+  if (isLoading) {
+    return (
+      <section className="py-8 bg-secondary/20 border-b">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <Skeleton className="h-28 w-full rounded-2xl" />
+        </div>
+      </section>
+    );
+  }
+
+  if (!data) return null;
+
+  const Icon = data.messageType ? (MSG_ICON[data.messageType] ?? Gift) : Gift;
+  const gradient = TIER_GRADIENT[data.tier] ?? TIER_GRADIENT.Bronze;
+  const badgeClass = TIER_BADGE[data.tier] ?? TIER_BADGE.Bronze;
+  const pct = data.tier === "Gold" ? 100 : data.tier === "Silver" ? Math.min(100, Math.round(((data.points - 200) / 300) * 100)) : Math.min(100, Math.round((data.points / 200) * 100));
+
+  return (
+    <section className="py-8 bg-secondary/10 border-b border-border/40">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className={`rounded-2xl border bg-gradient-to-br ${gradient} p-5 md:p-6 flex flex-col md:flex-row gap-5 md:items-center`}>
+          {/* Loyalty status */}
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge className={`text-xs border ${badgeClass}`}>{data.tier} Member</Badge>
+              <span className="text-xs text-muted-foreground">{data.points} pts</span>
+            </div>
+            {data.nextTier ? (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{data.pointsToNextTier} pts to {data.nextTier}</span>
+                  <span>{data.tier} → {data.nextTier}</span>
+                </div>
+                <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-yellow-400 font-medium">You've reached our top Gold tier!</p>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="hidden md:block w-px h-14 bg-border/40" />
+
+          {/* Personalized message */}
+          {data.personalizedMessage && (
+            <div className="flex-[2] flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 shrink-0 mt-0.5">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-foreground leading-relaxed">{data.personalizedMessage}</p>
+                {data.activeFlashDeals.length > 0 && (
+                  <p className="text-xs text-primary mt-1 font-medium">
+                    {data.activeFlashDeals[0].percentage}% flash deal active now
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          <Link href="/my-bookings" className="flex items-center gap-1 text-sm font-medium text-primary hover:underline shrink-0">
+            View rewards <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   useSeo({
     title: "Discover London's Best Restaurants",
     description: "Find and book the best restaurants in London with exclusive flash deals and loyalty rewards.",
   });
+
+  const [customerEmail, setCustomerEmail] = useState<string>("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("restosmart_email");
+      if (saved) setCustomerEmail(saved);
+    }
+  }, []);
 
   const { data: flashDeals, isLoading: loadingDeals } = useListFlashDeals();
   const { data: featured, isLoading: loadingFeatured } = useListMarketplaceRestaurants({ featured: true });
@@ -145,6 +256,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Personalized Offers — shown when email is known */}
+      {customerEmail && <PersonalizedSection email={customerEmail} />}
 
       {/* Categories */}
       <section className="py-12 bg-background border-b">

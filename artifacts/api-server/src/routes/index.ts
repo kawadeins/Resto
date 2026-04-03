@@ -16,6 +16,9 @@ import billingRouter from "./billing";
 import reviewsRouter from "./reviews";
 import loyaltyRouter from "./loyalty";
 import platformRouter from "./platform";
+import insightsRouter from "./insights";
+import onboardingRouter from "./onboarding";
+import campaignsRouter from "./campaigns";
 
 const router: IRouter = Router();
 
@@ -36,5 +39,8 @@ router.use("/billing", billingRouter);
 router.use("/reviews", reviewsRouter);
 router.use("/loyalty", loyaltyRouter);
 router.use("/platform", platformRouter);
+router.use("/insights", insightsRouter);
+router.use("/campaigns", campaignsRouter);
+router.use("/onboarding", onboardingRouter);
 
 export default router;

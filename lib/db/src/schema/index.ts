@@ -12,3 +12,4 @@ export * from "./reviews";
 export * from "./loyalty_points";
 export * from "./subscriptions";
 export * from "./platform_settings";
+export * from "./campaigns";

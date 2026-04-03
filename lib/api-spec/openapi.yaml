@@ -36,6 +36,12 @@ tags:
     description: Loyalty points and leaderboard
   - name: platform
     description: Super-admin platform controls and settings
+  - name: insights
+    description: Dead Hours Killer — smart traffic analysis and discount suggestions
+  - name: onboarding
+    description: Restaurant owner onboarding flow and checklist
+  - name: campaigns
+    description: Growth Hub — customer segmentation, campaigns, and retention analytics
 
 paths:
   /healthz:
@@ -1279,6 +1285,267 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CustomerBooking"
+
+  /insights/heatmap:
+    get:
+      operationId: getInsightsHeatmap
+      tags: [insights]
+      summary: Get weekly booking activity heatmap (day × hour matrix)
+      responses:
+        "200":
+          description: Heatmap data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeatmapData"
+
+  /insights/suggestions:
+    get:
+      operationId: getInsightsSuggestions
+      tags: [insights]
+      summary: Get rule-based discount suggestions for dead hours
+      responses:
+        "200":
+          description: List of smart discount suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InsightSuggestion"
+
+  /insights/daily-summary:
+    get:
+      operationId: getInsightsDailySummary
+      tags: [insights]
+      summary: Get today's insight message and weakest slot
+      responses:
+        "200":
+          description: Daily summary insight
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySummary"
+
+  /insights/outcomes:
+    get:
+      operationId: getInsightsOutcomes
+      tags: [insights]
+      summary: Get outcome tracking for recent discounts
+      responses:
+        "200":
+          description: List of discount outcomes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DiscountOutcome"
+
+  /onboarding/status:
+    get:
+      operationId: getOnboardingStatus
+      tags: [onboarding]
+      summary: Get onboarding checklist and progress
+      responses:
+        "200":
+          description: Onboarding status and checklist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatus"
+
+  /onboarding/step:
+    patch:
+      operationId: updateOnboardingStep
+      tags: [onboarding]
+      summary: Update the current onboarding step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOnboardingStepBody"
+      responses:
+        "200":
+          description: Updated onboarding status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatus"
+
+  /onboarding/enable-bookings:
+    post:
+      operationId: enableBookings
+      tags: [onboarding]
+      summary: Enable online bookings for the restaurant
+      responses:
+        "200":
+          description: Bookings enabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantInfo"
+
+  /onboarding/complete:
+    post:
+      operationId: completeOnboarding
+      tags: [onboarding]
+      summary: Mark onboarding as complete and go live
+      responses:
+        "200":
+          description: Onboarding completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatus"
+
+  /onboarding/restaurant:
+    get:
+      operationId: getMyRestaurant
+      tags: [onboarding]
+      summary: Get restaurant info for onboarding form
+      responses:
+        "200":
+          description: Restaurant information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantInfo"
+    patch:
+      operationId: updateMyRestaurant
+      tags: [onboarding]
+      summary: Update restaurant info during onboarding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRestaurantInfoBody"
+      responses:
+        "200":
+          description: Updated restaurant info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantInfo"
+
+  /campaigns/segments:
+    get:
+      tags: [campaigns]
+      operationId: getCampaignSegments
+      summary: Get customer segmentation overview
+      responses:
+        "200":
+          description: Segment counts and customer previews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignSegmentsResponse"
+
+  /campaigns/retention:
+    get:
+      tags: [campaigns]
+      operationId: getRetentionMetrics
+      summary: Get retention and growth metrics
+      responses:
+        "200":
+          description: Retention metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetentionMetrics"
+
+  /campaigns:
+    get:
+      tags: [campaigns]
+      operationId: listCampaigns
+      summary: List all campaigns
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      tags: [campaigns]
+      operationId: createCampaign
+      summary: Create a new campaign draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaignBody"
+      responses:
+        "201":
+          description: Created campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}/launch:
+    post:
+      tags: [campaigns]
+      operationId: launchCampaign
+      summary: Launch a campaign to target segment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Launched campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}/sends:
+    get:
+      tags: [campaigns]
+      operationId: getCampaignSends
+      summary: Get delivery records for a campaign
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of sends
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignSend"
+
+  /campaigns/personalized:
+    get:
+      tags: [campaigns]
+      operationId: getPersonalizedOffers
+      summary: Get personalized offers and loyalty status for a customer
+      parameters:
+        - in: query
+          name: email
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Personalized data for the customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonalizedOffersResponse"
 
 components:
   schemas:
@@ -2826,3 +3093,419 @@ components:
           type: boolean
         isFeatured:
           type: boolean
+
+    HeatmapHourCell:
+      type: object
+      required: [hour, label, avgPerWeek]
+      properties:
+        hour:
+          type: integer
+        label:
+          type: string
+        avgPerWeek:
+          type: number
+
+    HeatmapDay:
+      type: object
+      required: [day, dayIndex, hours]
+      properties:
+        day:
+          type: string
+        dayIndex:
+          type: integer
+        hours:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapHourCell"
+
+    HeatmapHourLabel:
+      type: object
+      required: [hour, label]
+      properties:
+        hour:
+          type: integer
+        label:
+          type: string
+
+    HeatmapData:
+      type: object
+      required: [days, maxValue, hours]
+      properties:
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapDay"
+        maxValue:
+          type: number
+        hours:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapHourLabel"
+
+    InsightSuggestion:
+      type: object
+      required: [id, type, title, description, dayOfWeek, days, startTime, endTime, suggestedPercentage, severity, avgBookingsPerWeek, reason]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        dayOfWeek:
+          type: string
+        days:
+          type: array
+          items:
+            type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        suggestedPercentage:
+          type: integer
+        severity:
+          type: string
+        avgBookingsPerWeek:
+          type: number
+        reason:
+          type: string
+
+    DailySummary:
+      type: object
+      required: [message, severity, actionType, suggestedPercentage, todayDayName, tomorrowDayName, weakestHour, weakestHourLabel, overallAvgPerSlot]
+      properties:
+        message:
+          type: string
+        severity:
+          type: string
+        actionType:
+          type: string
+        suggestedPercentage:
+          type: integer
+        todayDayName:
+          type: string
+        tomorrowDayName:
+          type: string
+        weakestHour:
+          type: integer
+        weakestHourLabel:
+          type: string
+        overallAvgPerSlot:
+          type: number
+
+    DiscountOutcome:
+      type: object
+      required: [id, label, type, percentage, activatedAt, status, periodLabel]
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        type:
+          type: string
+        percentage:
+          type: number
+        activatedAt:
+          type: string
+        status:
+          type: string
+        bookingsDuringDiscount:
+          type: integer
+          nullable: true
+        historicalBaseline:
+          type: number
+          nullable: true
+        liftPercent:
+          type: integer
+          nullable: true
+        periodLabel:
+          type: string
+
+    ChecklistItem:
+      type: object
+      required: [id, label, description, completed, step]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        completed:
+          type: boolean
+        href:
+          type: string
+          nullable: true
+        step:
+          type: integer
+
+    OnboardingStatus:
+      type: object
+      required: [restaurantId, onboardingCompleted, onboardingStep, bookingsEnabled, checklist, completedCount, totalCount, progressPercent, allChecklistComplete]
+      properties:
+        restaurantId:
+          type: integer
+        onboardingCompleted:
+          type: boolean
+        onboardingStep:
+          type: integer
+        bookingsEnabled:
+          type: boolean
+        checklist:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChecklistItem"
+        completedCount:
+          type: integer
+        totalCount:
+          type: integer
+        progressPercent:
+          type: integer
+        allChecklistComplete:
+          type: boolean
+
+    RestaurantInfo:
+      type: object
+      required: [id, name, cuisine, address, city, openTime, closeTime, bookingsEnabled, onboardingCompleted, onboardingStep]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cuisine:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        openTime:
+          type: string
+        closeTime:
+          type: string
+        bookingsEnabled:
+          type: boolean
+        onboardingCompleted:
+          type: boolean
+        onboardingStep:
+          type: integer
+
+    UpdateRestaurantInfoBody:
+      type: object
+      properties:
+        name:
+          type: string
+        cuisine:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        openTime:
+          type: string
+        closeTime:
+          type: string
+
+    UpdateOnboardingStepBody:
+      type: object
+      required: [step]
+      properties:
+        step:
+          type: integer
+
+    Campaign:
+      type: object
+      required: [id, type, name, status, targetSegment, messageTemplate, totalSent, totalConverted, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        targetSegment:
+          type: string
+        messageTemplate:
+          type: string
+        offerDetails:
+          type: string
+          nullable: true
+        totalSent:
+          type: integer
+        totalConverted:
+          type: integer
+        conversionRate:
+          type: integer
+        sentAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+
+    CampaignSend:
+      type: object
+      required: [id, campaignId, customerEmail, customerName, segment, status, sentAt]
+      properties:
+        id:
+          type: integer
+        campaignId:
+          type: integer
+        customerEmail:
+          type: string
+        customerName:
+          type: string
+        segment:
+          type: string
+        status:
+          type: string
+        sentAt:
+          type: string
+        convertedAt:
+          type: string
+          nullable: true
+
+    CreateCampaignBody:
+      type: object
+      required: [type, name, targetSegment, messageTemplate]
+      properties:
+        type:
+          type: string
+          enum: [win_back, thank_you, flash_blast, loyalty_reward]
+        name:
+          type: string
+        targetSegment:
+          type: string
+          enum: [inactive, new, returning, high_value, all]
+        messageTemplate:
+          type: string
+        offerDetails:
+          type: string
+
+    SegmentInfo:
+      type: object
+      required: [count, label, description]
+      properties:
+        count:
+          type: integer
+        label:
+          type: string
+        description:
+          type: string
+        customers:
+          type: array
+          items:
+            type: object
+
+    CampaignSegmentsResponse:
+      type: object
+      required: [total, segments]
+      properties:
+        total:
+          type: integer
+        segments:
+          type: object
+          properties:
+            new:
+              $ref: "#/components/schemas/SegmentInfo"
+            returning:
+              $ref: "#/components/schemas/SegmentInfo"
+            high_value:
+              $ref: "#/components/schemas/SegmentInfo"
+            inactive:
+              $ref: "#/components/schemas/SegmentInfo"
+
+    RetentionCustomer:
+      type: object
+      required: [email, name, bookingCount, arrivedCount, loyaltyPoints, tier, segment]
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        bookingCount:
+          type: integer
+        arrivedCount:
+          type: integer
+        loyaltyPoints:
+          type: integer
+        tier:
+          type: string
+        segment:
+          type: string
+
+    RetentionMetrics:
+      type: object
+      required: [totalCustomers, repeatRate, repeatCustomers, inactiveCount, atRiskCount, highValueCount, campaignDrivenBookings, rewardRedemptions, topCustomers]
+      properties:
+        totalCustomers:
+          type: integer
+        repeatRate:
+          type: integer
+        repeatCustomers:
+          type: integer
+        inactiveCount:
+          type: integer
+        atRiskCount:
+          type: integer
+        highValueCount:
+          type: integer
+        campaignDrivenBookings:
+          type: integer
+        rewardRedemptions:
+          type: integer
+        topCustomers:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetentionCustomer"
+
+    PersonalizedOffersResponse:
+      type: object
+      required: [segment, tier, points, totalEarned, bookingCount, arrivedCount]
+      properties:
+        segment:
+          type: string
+        tier:
+          type: string
+        points:
+          type: integer
+        totalEarned:
+          type: integer
+        nextTier:
+          type: string
+          nullable: true
+        pointsToNextTier:
+          type: integer
+        bookingCount:
+          type: integer
+        arrivedCount:
+          type: integer
+        personalizedMessage:
+          type: string
+          nullable: true
+        messageType:
+          type: string
+          nullable: true
+        activeFlashDeals:
+          type: array
+          items:
+            type: object
+        recommendations:
+          type: array
+          items:
+            type: object

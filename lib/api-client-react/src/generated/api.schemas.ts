@@ -749,6 +749,243 @@ export interface UpdateSuperAdminRestaurantBody {
   isFeatured?: boolean;
 }
 
+export interface HeatmapHourCell {
+  hour: number;
+  label: string;
+  avgPerWeek: number;
+}
+
+export interface HeatmapDay {
+  day: string;
+  dayIndex: number;
+  hours: HeatmapHourCell[];
+}
+
+export interface HeatmapHourLabel {
+  hour: number;
+  label: string;
+}
+
+export interface HeatmapData {
+  days: HeatmapDay[];
+  maxValue: number;
+  hours: HeatmapHourLabel[];
+}
+
+export interface InsightSuggestion {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  dayOfWeek: string;
+  days: string[];
+  startTime: string;
+  endTime: string;
+  suggestedPercentage: number;
+  severity: string;
+  avgBookingsPerWeek: number;
+  reason: string;
+}
+
+export interface DailySummary {
+  message: string;
+  severity: string;
+  actionType: string;
+  suggestedPercentage: number;
+  todayDayName: string;
+  tomorrowDayName: string;
+  weakestHour: number;
+  weakestHourLabel: string;
+  overallAvgPerSlot: number;
+}
+
+export interface DiscountOutcome {
+  id: number;
+  label: string;
+  type: string;
+  percentage: number;
+  activatedAt: string;
+  status: string;
+  bookingsDuringDiscount?: number | null;
+  historicalBaseline?: number | null;
+  liftPercent?: number | null;
+  periodLabel: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  description: string;
+  completed: boolean;
+  href?: string | null;
+  step: number;
+}
+
+export interface OnboardingStatus {
+  restaurantId: number;
+  onboardingCompleted: boolean;
+  onboardingStep: number;
+  bookingsEnabled: boolean;
+  checklist: ChecklistItem[];
+  completedCount: number;
+  totalCount: number;
+  progressPercent: number;
+  allChecklistComplete: boolean;
+}
+
+export interface RestaurantInfo {
+  id: number;
+  name: string;
+  cuisine: string;
+  description?: string;
+  address: string;
+  city: string;
+  phone?: string;
+  email?: string;
+  openTime: string;
+  closeTime: string;
+  bookingsEnabled: boolean;
+  onboardingCompleted: boolean;
+  onboardingStep: number;
+}
+
+export interface UpdateRestaurantInfoBody {
+  name?: string;
+  cuisine?: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+  openTime?: string;
+  closeTime?: string;
+}
+
+export interface UpdateOnboardingStepBody {
+  step: number;
+}
+
+export interface Campaign {
+  id: number;
+  type: string;
+  name: string;
+  status: string;
+  targetSegment: string;
+  messageTemplate: string;
+  offerDetails?: string | null;
+  totalSent: number;
+  totalConverted: number;
+  conversionRate?: number;
+  sentAt?: string | null;
+  createdAt: string;
+}
+
+export interface CampaignSend {
+  id: number;
+  campaignId: number;
+  customerEmail: string;
+  customerName: string;
+  segment: string;
+  status: string;
+  sentAt: string;
+  convertedAt?: string | null;
+}
+
+export type CreateCampaignBodyType =
+  (typeof CreateCampaignBodyType)[keyof typeof CreateCampaignBodyType];
+
+export const CreateCampaignBodyType = {
+  win_back: "win_back",
+  thank_you: "thank_you",
+  flash_blast: "flash_blast",
+  loyalty_reward: "loyalty_reward",
+} as const;
+
+export type CreateCampaignBodyTargetSegment =
+  (typeof CreateCampaignBodyTargetSegment)[keyof typeof CreateCampaignBodyTargetSegment];
+
+export const CreateCampaignBodyTargetSegment = {
+  inactive: "inactive",
+  new: "new",
+  returning: "returning",
+  high_value: "high_value",
+  all: "all",
+} as const;
+
+export interface CreateCampaignBody {
+  type: CreateCampaignBodyType;
+  name: string;
+  targetSegment: CreateCampaignBodyTargetSegment;
+  messageTemplate: string;
+  offerDetails?: string;
+}
+
+export type SegmentInfoCustomersItem = { [key: string]: unknown };
+
+export interface SegmentInfo {
+  count: number;
+  label: string;
+  description: string;
+  customers?: SegmentInfoCustomersItem[];
+}
+
+export type CampaignSegmentsResponseSegments = {
+  new?: SegmentInfo;
+  returning?: SegmentInfo;
+  high_value?: SegmentInfo;
+  inactive?: SegmentInfo;
+};
+
+export interface CampaignSegmentsResponse {
+  total: number;
+  segments: CampaignSegmentsResponseSegments;
+}
+
+export interface RetentionCustomer {
+  email: string;
+  name: string;
+  bookingCount: number;
+  arrivedCount: number;
+  loyaltyPoints: number;
+  tier: string;
+  segment: string;
+}
+
+export interface RetentionMetrics {
+  totalCustomers: number;
+  repeatRate: number;
+  repeatCustomers: number;
+  inactiveCount: number;
+  atRiskCount: number;
+  highValueCount: number;
+  campaignDrivenBookings: number;
+  rewardRedemptions: number;
+  topCustomers: RetentionCustomer[];
+}
+
+export type PersonalizedOffersResponseActiveFlashDealsItem = {
+  [key: string]: unknown;
+};
+
+export type PersonalizedOffersResponseRecommendationsItem = {
+  [key: string]: unknown;
+};
+
+export interface PersonalizedOffersResponse {
+  segment: string;
+  tier: string;
+  points: number;
+  totalEarned: number;
+  nextTier?: string | null;
+  pointsToNextTier?: number;
+  bookingCount: number;
+  arrivedCount: number;
+  personalizedMessage?: string | null;
+  messageType?: string | null;
+  activeFlashDeals?: PersonalizedOffersResponseActiveFlashDealsItem[];
+  recommendations?: PersonalizedOffersResponseRecommendationsItem[];
+}
+
 export type ListReservationsParams = {
   date?: string;
   status?: string;
@@ -778,5 +1015,9 @@ export type ListMarketplaceRestaurantsParams = {
 };
 
 export type ListMyBookingsParams = {
+  email: string;
+};
+
+export type GetPersonalizedOffersParams = {
   email: string;
 };

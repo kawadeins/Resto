@@ -18,6 +18,9 @@ import Bookings from "@/pages/bookings";
 import Billing from "@/pages/billing";
 import Reviews from "@/pages/reviews";
 import SuperAdmin from "@/pages/super-admin";
+import Insights from "@/pages/insights";
+import Onboarding from "@/pages/onboarding";
+import Campaigns from "@/pages/campaigns";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +48,9 @@ function Router() {
         <Route path="/billing" component={Billing} />
         <Route path="/reviews" component={Reviews} />
         <Route path="/super-admin" component={SuperAdmin} />
+        <Route path="/insights" component={Insights} />
+        <Route path="/onboarding" component={Onboarding} />
+        <Route path="/campaigns" component={Campaigns} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

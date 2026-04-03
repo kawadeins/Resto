@@ -1369,3 +1369,394 @@ export const ListMyBookingsResponseItem = zod.object({
     .nullish(),
 });
 export const ListMyBookingsResponse = zod.array(ListMyBookingsResponseItem);
+
+/**
+ * @summary Get weekly booking activity heatmap (day × hour matrix)
+ */
+export const GetInsightsHeatmapResponse = zod.object({
+  days: zod.array(
+    zod.object({
+      day: zod.string(),
+      dayIndex: zod.number(),
+      hours: zod.array(
+        zod.object({
+          hour: zod.number(),
+          label: zod.string(),
+          avgPerWeek: zod.number(),
+        }),
+      ),
+    }),
+  ),
+  maxValue: zod.number(),
+  hours: zod.array(
+    zod.object({
+      hour: zod.number(),
+      label: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get rule-based discount suggestions for dead hours
+ */
+export const GetInsightsSuggestionsResponseItem = zod.object({
+  id: zod.string(),
+  type: zod.string(),
+  title: zod.string(),
+  description: zod.string(),
+  dayOfWeek: zod.string(),
+  days: zod.array(zod.string()),
+  startTime: zod.string(),
+  endTime: zod.string(),
+  suggestedPercentage: zod.number(),
+  severity: zod.string(),
+  avgBookingsPerWeek: zod.number(),
+  reason: zod.string(),
+});
+export const GetInsightsSuggestionsResponse = zod.array(
+  GetInsightsSuggestionsResponseItem,
+);
+
+/**
+ * @summary Get today's insight message and weakest slot
+ */
+export const GetInsightsDailySummaryResponse = zod.object({
+  message: zod.string(),
+  severity: zod.string(),
+  actionType: zod.string(),
+  suggestedPercentage: zod.number(),
+  todayDayName: zod.string(),
+  tomorrowDayName: zod.string(),
+  weakestHour: zod.number(),
+  weakestHourLabel: zod.string(),
+  overallAvgPerSlot: zod.number(),
+});
+
+/**
+ * @summary Get outcome tracking for recent discounts
+ */
+export const GetInsightsOutcomesResponseItem = zod.object({
+  id: zod.number(),
+  label: zod.string(),
+  type: zod.string(),
+  percentage: zod.number(),
+  activatedAt: zod.string(),
+  status: zod.string(),
+  bookingsDuringDiscount: zod.number().nullish(),
+  historicalBaseline: zod.number().nullish(),
+  liftPercent: zod.number().nullish(),
+  periodLabel: zod.string(),
+});
+export const GetInsightsOutcomesResponse = zod.array(
+  GetInsightsOutcomesResponseItem,
+);
+
+/**
+ * @summary Get onboarding checklist and progress
+ */
+export const GetOnboardingStatusResponse = zod.object({
+  restaurantId: zod.number(),
+  onboardingCompleted: zod.boolean(),
+  onboardingStep: zod.number(),
+  bookingsEnabled: zod.boolean(),
+  checklist: zod.array(
+    zod.object({
+      id: zod.string(),
+      label: zod.string(),
+      description: zod.string(),
+      completed: zod.boolean(),
+      href: zod.string().nullish(),
+      step: zod.number(),
+    }),
+  ),
+  completedCount: zod.number(),
+  totalCount: zod.number(),
+  progressPercent: zod.number(),
+  allChecklistComplete: zod.boolean(),
+});
+
+/**
+ * @summary Update the current onboarding step
+ */
+export const UpdateOnboardingStepBody = zod.object({
+  step: zod.number(),
+});
+
+export const UpdateOnboardingStepResponse = zod.object({
+  restaurantId: zod.number(),
+  onboardingCompleted: zod.boolean(),
+  onboardingStep: zod.number(),
+  bookingsEnabled: zod.boolean(),
+  checklist: zod.array(
+    zod.object({
+      id: zod.string(),
+      label: zod.string(),
+      description: zod.string(),
+      completed: zod.boolean(),
+      href: zod.string().nullish(),
+      step: zod.number(),
+    }),
+  ),
+  completedCount: zod.number(),
+  totalCount: zod.number(),
+  progressPercent: zod.number(),
+  allChecklistComplete: zod.boolean(),
+});
+
+/**
+ * @summary Enable online bookings for the restaurant
+ */
+export const EnableBookingsResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  cuisine: zod.string(),
+  description: zod.string().optional(),
+  address: zod.string(),
+  city: zod.string(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  openTime: zod.string(),
+  closeTime: zod.string(),
+  bookingsEnabled: zod.boolean(),
+  onboardingCompleted: zod.boolean(),
+  onboardingStep: zod.number(),
+});
+
+/**
+ * @summary Mark onboarding as complete and go live
+ */
+export const CompleteOnboardingResponse = zod.object({
+  restaurantId: zod.number(),
+  onboardingCompleted: zod.boolean(),
+  onboardingStep: zod.number(),
+  bookingsEnabled: zod.boolean(),
+  checklist: zod.array(
+    zod.object({
+      id: zod.string(),
+      label: zod.string(),
+      description: zod.string(),
+      completed: zod.boolean(),
+      href: zod.string().nullish(),
+      step: zod.number(),
+    }),
+  ),
+  completedCount: zod.number(),
+  totalCount: zod.number(),
+  progressPercent: zod.number(),
+  allChecklistComplete: zod.boolean(),
+});
+
+/**
+ * @summary Get restaurant info for onboarding form
+ */
+export const GetMyRestaurantResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  cuisine: zod.string(),
+  description: zod.string().optional(),
+  address: zod.string(),
+  city: zod.string(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  openTime: zod.string(),
+  closeTime: zod.string(),
+  bookingsEnabled: zod.boolean(),
+  onboardingCompleted: zod.boolean(),
+  onboardingStep: zod.number(),
+});
+
+/**
+ * @summary Update restaurant info during onboarding
+ */
+export const UpdateMyRestaurantBody = zod.object({
+  name: zod.string().optional(),
+  cuisine: zod.string().optional(),
+  description: zod.string().optional(),
+  address: zod.string().optional(),
+  city: zod.string().optional(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  openTime: zod.string().optional(),
+  closeTime: zod.string().optional(),
+});
+
+export const UpdateMyRestaurantResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  cuisine: zod.string(),
+  description: zod.string().optional(),
+  address: zod.string(),
+  city: zod.string(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  openTime: zod.string(),
+  closeTime: zod.string(),
+  bookingsEnabled: zod.boolean(),
+  onboardingCompleted: zod.boolean(),
+  onboardingStep: zod.number(),
+});
+
+/**
+ * @summary Get customer segmentation overview
+ */
+export const GetCampaignSegmentsResponse = zod.object({
+  total: zod.number(),
+  segments: zod.object({
+    new: zod
+      .object({
+        count: zod.number(),
+        label: zod.string(),
+        description: zod.string(),
+        customers: zod.array(zod.object({}).passthrough()).optional(),
+      })
+      .optional(),
+    returning: zod
+      .object({
+        count: zod.number(),
+        label: zod.string(),
+        description: zod.string(),
+        customers: zod.array(zod.object({}).passthrough()).optional(),
+      })
+      .optional(),
+    high_value: zod
+      .object({
+        count: zod.number(),
+        label: zod.string(),
+        description: zod.string(),
+        customers: zod.array(zod.object({}).passthrough()).optional(),
+      })
+      .optional(),
+    inactive: zod
+      .object({
+        count: zod.number(),
+        label: zod.string(),
+        description: zod.string(),
+        customers: zod.array(zod.object({}).passthrough()).optional(),
+      })
+      .optional(),
+  }),
+});
+
+/**
+ * @summary Get retention and growth metrics
+ */
+export const GetRetentionMetricsResponse = zod.object({
+  totalCustomers: zod.number(),
+  repeatRate: zod.number(),
+  repeatCustomers: zod.number(),
+  inactiveCount: zod.number(),
+  atRiskCount: zod.number(),
+  highValueCount: zod.number(),
+  campaignDrivenBookings: zod.number(),
+  rewardRedemptions: zod.number(),
+  topCustomers: zod.array(
+    zod.object({
+      email: zod.string(),
+      name: zod.string(),
+      bookingCount: zod.number(),
+      arrivedCount: zod.number(),
+      loyaltyPoints: zod.number(),
+      tier: zod.string(),
+      segment: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary List all campaigns
+ */
+export const ListCampaignsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  name: zod.string(),
+  status: zod.string(),
+  targetSegment: zod.string(),
+  messageTemplate: zod.string(),
+  offerDetails: zod.string().nullish(),
+  totalSent: zod.number(),
+  totalConverted: zod.number(),
+  conversionRate: zod.number().optional(),
+  sentAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListCampaignsResponse = zod.array(ListCampaignsResponseItem);
+
+/**
+ * @summary Create a new campaign draft
+ */
+export const CreateCampaignBody = zod.object({
+  type: zod.enum(["win_back", "thank_you", "flash_blast", "loyalty_reward"]),
+  name: zod.string(),
+  targetSegment: zod.enum([
+    "inactive",
+    "new",
+    "returning",
+    "high_value",
+    "all",
+  ]),
+  messageTemplate: zod.string(),
+  offerDetails: zod.string().optional(),
+});
+
+/**
+ * @summary Launch a campaign to target segment
+ */
+export const LaunchCampaignParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const LaunchCampaignResponse = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  name: zod.string(),
+  status: zod.string(),
+  targetSegment: zod.string(),
+  messageTemplate: zod.string(),
+  offerDetails: zod.string().nullish(),
+  totalSent: zod.number(),
+  totalConverted: zod.number(),
+  conversionRate: zod.number().optional(),
+  sentAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Get delivery records for a campaign
+ */
+export const GetCampaignSendsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetCampaignSendsResponseItem = zod.object({
+  id: zod.number(),
+  campaignId: zod.number(),
+  customerEmail: zod.string(),
+  customerName: zod.string(),
+  segment: zod.string(),
+  status: zod.string(),
+  sentAt: zod.string(),
+  convertedAt: zod.string().nullish(),
+});
+export const GetCampaignSendsResponse = zod.array(GetCampaignSendsResponseItem);
+
+/**
+ * @summary Get personalized offers and loyalty status for a customer
+ */
+export const GetPersonalizedOffersQueryParams = zod.object({
+  email: zod.coerce.string(),
+});
+
+export const GetPersonalizedOffersResponse = zod.object({
+  segment: zod.string(),
+  tier: zod.string(),
+  points: zod.number(),
+  totalEarned: zod.number(),
+  nextTier: zod.string().nullish(),
+  pointsToNextTier: zod.number().optional(),
+  bookingCount: zod.number(),
+  arrivedCount: zod.number(),
+  personalizedMessage: zod.string().nullish(),
+  messageType: zod.string().nullish(),
+  activeFlashDeals: zod.array(zod.object({}).passthrough()).optional(),
+  recommendations: zod.array(zod.object({}).passthrough()).optional(),
+});
