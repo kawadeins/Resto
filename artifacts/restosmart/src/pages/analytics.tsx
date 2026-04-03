@@ -1,7 +1,8 @@
-import { useGetPerformanceAnalytics, getGetPerformanceAnalyticsQueryKey, useGetDailyAnalytics, getGetDailyAnalyticsQueryKey, useGetMenuAnalytics, getGetMenuAnalyticsQueryKey } from "@workspace/api-client-react";
+import { Link } from "wouter";
+import { useGetPerformanceAnalytics, getGetPerformanceAnalyticsQueryKey, useGetDailyAnalytics, getGetDailyAnalyticsQueryKey, useGetMenuAnalytics, getGetMenuAnalyticsQueryKey, useGetSubscription, getGetSubscriptionQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Area, AreaChart, Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Legend, XAxis as RechartsXAxis, YAxis as RechartsYAxis } from "recharts";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Calendar, Users } from "lucide-react";
+import { Area, AreaChart, Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Calendar, Users, Lock, BarChart3, Zap, Star, Headphones } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,17 +11,69 @@ import { Badge } from "@/components/ui/badge";
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function Analytics() {
+  const { data: subscription, isLoading: loadingSubscription } = useGetSubscription({
+    query: { queryKey: getGetSubscriptionQueryKey() }
+  });
+  
+  const isPro = subscription?.isActive === true && subscription?.status !== "trial";
+
   const { data: performance, isLoading: loadingPerf } = useGetPerformanceAnalytics({
-    query: { queryKey: getGetPerformanceAnalyticsQueryKey() }
+    query: { queryKey: getGetPerformanceAnalyticsQueryKey(), enabled: isPro }
   });
 
   const { data: dailyData, isLoading: loadingDaily } = useGetDailyAnalytics({
-    query: { queryKey: getGetDailyAnalyticsQueryKey() }
+    query: { queryKey: getGetDailyAnalyticsQueryKey(), enabled: isPro }
   });
 
   const { data: menuAnalytics, isLoading: loadingMenu } = useGetMenuAnalytics({
-    query: { queryKey: getGetMenuAnalyticsQueryKey() }
+    query: { queryKey: getGetMenuAnalyticsQueryKey(), enabled: isPro }
   });
+
+  if (!loadingSubscription && !isPro) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xl">
+          <Card className="border-border bg-card shadow-lg">
+            <CardHeader className="text-center space-y-4 pb-2">
+              <div className="mx-auto bg-muted p-4 rounded-full w-20 h-20 flex items-center justify-center">
+                <Lock className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl">Advanced Analytics</CardTitle>
+                <CardDescription className="mt-2 text-base">Detailed insights are only available on RestoSmart Pro.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                  <span>30-Day Revenue Trends</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
+                  <TrendingUp className="w-5 h-5 text-emerald-500" />
+                  <span>Dish Profitability Matrix</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
+                  <Calendar className="w-5 h-5 text-indigo-500" />
+                  <span>Peak Hours Heatmap</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
+                  <Users className="w-5 h-5 text-amber-500" />
+                  <span>Reservation Source Breakdown</span>
+                </div>
+              </div>
+              
+              <div className="pt-4 flex flex-col items-center">
+                <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-lg w-full sm:w-auto shadow-md">
+                  Unlock Advanced Analytics
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-10">

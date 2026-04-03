@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -13,6 +13,16 @@ const navigation = [
   { name: "Finances", href: "/finances", icon: DollarSign },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Marketing", href: "/marketing", icon: Megaphone },
+  { name: "Reviews", href: "/reviews", icon: Star },
+  { name: "Billing", href: "/billing", icon: CreditCard },
+];
+
+const mobileNavigation = [
+  { name: "Overview", href: "/", icon: LayoutDashboard },
+  { name: "Bookings", href: "/bookings", icon: BookOpen },
+  { name: "Marketing", href: "/marketing", icon: Megaphone },
+  { name: "Reviews", href: "/reviews", icon: Star },
+  { name: "Billing", href: "/billing", icon: CreditCard },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -63,11 +73,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 md:pl-64 overflow-y-auto">
+      <main className="flex-1 md:pl-64 overflow-y-auto pb-16 md:pb-0">
         <div className="min-h-full h-full p-8 relative">
           {children}
         </div>
       </main>
+
+      {/* Mobile Bottom Nav */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-sidebar border-t border-border flex justify-around items-center h-16 px-2">
+        {mobileNavigation.map((item) => {
+          const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-[10px] font-medium">{item.name}</span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -3,12 +3,23 @@ import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2 } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon } from "lucide-react";
 import { Link } from "wouter";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { useGetMarketplaceRestaurant, useCreateCustomerBooking } from "@workspace/api-client-react";
-import { getGetMarketplaceRestaurantQueryKey } from "@workspace/api-client-react";
+import { 
+  useGetMarketplaceRestaurant, 
+  useCreateCustomerBooking,
+  useListReviews,
+  useGetReviewStats,
+  useCreateReview
+} from "@workspace/api-client-react";
+import { 
+  getGetMarketplaceRestaurantQueryKey,
+  getListReviewsQueryKey,
+  getGetReviewStatsQueryKey
+} from "@workspace/api-client-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +29,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useSeo } from "@/hooks/use-seo";
 
 // Generate time slots from 12:00 to 22:30
 const TIME_SLOTS = Array.from({ length: 22 }).map((_, i) => {
@@ -39,17 +53,72 @@ const bookingSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
+const reviewSchema = z.object({
+  customerName: z.string().min(2, "Name required"),
+  customerEmail: z.string().email("Invalid email"),
+  rating: z.number().min(1).max(5),
+  comment: z.string().min(5, "Comment must be at least 5 characters")
+});
+
+type ReviewFormValues = z.infer<typeof reviewSchema>;
+
 export default function Restaurant() {
   const { id } = useParams<{ id: string }>();
   const restaurantId = parseInt(id || "0", 10);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
 
   const { data: restaurant, isLoading } = useGetMarketplaceRestaurant(restaurantId, {
     query: {
       enabled: !!restaurantId,
       queryKey: getGetMarketplaceRestaurantQueryKey(restaurantId)
+    }
+  });
+
+  useSeo({
+    title: restaurant?.name || "Restaurant",
+    description: restaurant?.description || "Book a table",
+    image: restaurant?.heroImage || undefined,
+  });
+
+  const { data: reviews } = useListReviews(
+    { restaurantId },
+    {
+      query: {
+        enabled: !!restaurantId,
+        queryKey: getListReviewsQueryKey({ restaurantId })
+      }
+    }
+  );
+
+  const { data: reviewStats } = useGetReviewStats(
+    { restaurantId },
+    {
+      query: {
+        enabled: !!restaurantId,
+        queryKey: getGetReviewStatsQueryKey({ restaurantId })
+      }
+    }
+  );
+
+  const createReview = useCreateReview({
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "Review submitted!", description: "Thank you for your feedback." });
+        setShowReviewForm(false);
+        reviewForm.reset();
+        setReviewRating(5);
+        queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey({ restaurantId }) });
+        queryClient.invalidateQueries({ queryKey: getGetReviewStatsQueryKey({ restaurantId }) });
+        queryClient.invalidateQueries({ queryKey: getGetMarketplaceRestaurantQueryKey(restaurantId) });
+      },
+      onError: () => {
+        toast({ title: "Error", description: "Failed to submit review.", variant: "destructive" });
+      }
     }
   });
 
@@ -87,6 +156,26 @@ export default function Restaurant() {
       notes: "",
     }
   });
+
+  const reviewForm = useForm<ReviewFormValues>({
+    resolver: zodResolver(reviewSchema),
+    defaultValues: {
+      customerName: "",
+      customerEmail: savedEmail,
+      rating: 5,
+      comment: ""
+    }
+  });
+
+  const onReviewSubmit = (data: ReviewFormValues) => {
+    createReview.mutate({
+      data: {
+        ...data,
+        rating: reviewRating,
+        restaurantId
+      }
+    });
+  };
 
   const onSubmit = (data: BookingFormValues) => {
     // Save email for convenience
@@ -296,6 +385,152 @@ export default function Restaurant() {
                 Menu currently unavailable online.
               </div>
             )}
+          </div>
+
+          {/* Reviews Section */}
+          <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm space-y-8">
+            <h2 className="font-serif text-3xl font-bold">Reviews</h2>
+            
+            {reviewStats && reviewStats.totalCount > 0 ? (
+              <div className="flex flex-col md:flex-row gap-8 items-center border-b pb-8">
+                <div className="text-center md:w-1/3 shrink-0">
+                  <div className="text-6xl font-serif font-bold text-amber-950 mb-2">
+                    {reviewStats.averageRating?.toFixed(1) || "5.0"}
+                  </div>
+                  <div className="flex justify-center text-amber-400 mb-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-5 h-5 ${i < Math.round(reviewStats.averageRating || 5) ? 'fill-current text-amber-400' : 'text-muted'}`} />
+                    ))}
+                  </div>
+                  <div className="text-muted-foreground font-medium">
+                    {reviewStats.totalCount} reviews
+                  </div>
+                </div>
+                
+                <div className="flex-1 w-full space-y-2">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = ((reviewStats.distribution as any)?.[star]) || 0;
+                    const percent = reviewStats.totalCount > 0 ? (count / reviewStats.totalCount) * 100 : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-3 text-sm">
+                        <div className="w-12 flex items-center justify-end gap-1 font-medium text-muted-foreground">
+                          {star} <Star className="w-3 h-3 fill-current text-amber-400" />
+                        </div>
+                        <Progress value={percent} className="h-2 flex-1" />
+                        <div className="w-8 text-right text-muted-foreground">{count}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground border-b border-dashed">
+                No reviews yet. Be the first to leave one!
+              </div>
+            )}
+
+            {/* Review List */}
+            <div className="space-y-6">
+              {reviews?.map((review) => (
+                <div key={review.id} className="pb-6 border-b last:border-0 last:pb-0">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {review.customerName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-bold">{review.customerName}</div>
+                        <div className="text-xs text-muted-foreground">{format(parseISO(review.createdAt), "MMM d, yyyy")}</div>
+                      </div>
+                    </div>
+                    <div className="flex text-amber-400">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-muted'}`} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-card-foreground leading-relaxed">
+                    {review.comment}
+                  </p>
+                  
+                  {review.ownerReply && (
+                    <div className="mt-4 bg-muted/50 border rounded-xl p-4 ml-4 md:ml-12">
+                      <div className="flex items-center gap-2 mb-2 text-sm font-bold">
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Owner's Reply</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {review.ownerReply}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Write a Review Form */}
+            <div className="pt-4 border-t border-dashed">
+              {!showReviewForm ? (
+                <Button variant="outline" className="w-full h-12 rounded-full font-medium" onClick={() => setShowReviewForm(true)}>
+                  Write a Review
+                </Button>
+              ) : (
+                <div className="bg-muted/30 p-6 rounded-2xl border">
+                  <h3 className="font-serif text-xl font-bold mb-4">Share your experience</h3>
+                  <form onSubmit={reviewForm.handleSubmit(onReviewSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Rating</Label>
+                      <div className="flex gap-1 text-amber-400">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <button
+                            type="button"
+                            key={i}
+                            onClick={() => {
+                              setReviewRating(i + 1);
+                              reviewForm.setValue("rating", i + 1);
+                            }}
+                            className="p-1 hover:scale-110 transition-transform"
+                          >
+                            <Star className={`w-8 h-8 ${i < reviewRating ? 'fill-current' : 'text-muted stroke-muted-foreground'}`} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="review-name">Name</Label>
+                        <Input id="review-name" placeholder="John D." {...reviewForm.register("customerName")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="review-email">Email</Label>
+                        <Input id="review-email" type="email" placeholder="john@example.com" {...reviewForm.register("customerEmail")} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="review-comment">Review</Label>
+                      <Textarea 
+                        id="review-comment" 
+                        placeholder="How was the food and service?" 
+                        className="min-h-[100px] resize-none"
+                        {...reviewForm.register("comment")} 
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <Button type="submit" disabled={createReview.isPending} className="flex-1 rounded-full">
+                        {createReview.isPending ? "Submitting..." : "Submit Review"}
+                      </Button>
+                      <Button type="button" variant="outline" className="rounded-full" onClick={() => setShowReviewForm(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>

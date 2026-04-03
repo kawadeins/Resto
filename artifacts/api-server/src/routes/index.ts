@@ -12,6 +12,10 @@ import menuRouter from "./menu";
 import posRouter from "./pos";
 import notificationsRouter from "./notifications";
 import marketplaceRouter from "./marketplace";
+import billingRouter from "./billing";
+import reviewsRouter from "./reviews";
+import loyaltyRouter from "./loyalty";
+import platformRouter from "./platform";
 
 const router: IRouter = Router();
 
@@ -28,5 +32,9 @@ router.use("/menu", menuRouter);
 router.use("/pos", posRouter);
 router.use("/notifications", notificationsRouter);
 router.use("/marketplace", marketplaceRouter);
+router.use("/billing", billingRouter);
+router.use("/reviews", reviewsRouter);
+router.use("/loyalty", loyaltyRouter);
+router.use("/platform", platformRouter);
 
 export default router;

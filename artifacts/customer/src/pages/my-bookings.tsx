@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { format, isPast, parseISO } from "date-fns";
-import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight } from "lucide-react";
-import { useListMyBookings } from "@workspace/api-client-react";
-import { getListMyBookingsQueryKey } from "@workspace/api-client-react";
+import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star } from "lucide-react";
+import { useListMyBookings, useGetLoyaltyBalance } from "@workspace/api-client-react";
+import { getListMyBookingsQueryKey, getGetLoyaltyBalanceQueryKey } from "@workspace/api-client-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { useSeo } from "@/hooks/use-seo";
 
 export default function MyBookings() {
+  useSeo({
+    title: "My Bookings",
+    description: "View and manage your restaurant reservations.",
+  });
+
   const [emailInput, setEmailInput] = useState("");
   const [activeEmail, setActiveEmail] = useState<string>("");
 
@@ -48,6 +55,16 @@ export default function MyBookings() {
       query: {
         enabled: !!activeEmail,
         queryKey: getListMyBookingsQueryKey({ email: activeEmail })
+      }
+    }
+  );
+
+  const { data: loyaltyBalance, isLoading: isLoadingLoyalty } = useGetLoyaltyBalance(
+    activeEmail,
+    {
+      query: {
+        enabled: !!activeEmail,
+        queryKey: getGetLoyaltyBalanceQueryKey(activeEmail)
       }
     }
   );
@@ -142,11 +159,76 @@ export default function MyBookings() {
           <Skeleton className="h-[200px] w-full rounded-2xl" />
           <Skeleton className="h-[200px] w-full rounded-2xl" />
         </div>
-      ) : bookings && bookings.length > 0 ? (
-        <div className="space-y-12">
+      ) : (
+        <div className="space-y-8">
           
-          {upcoming.length > 0 && (
-            <section>
+          {/* Loyalty Points Card */}
+          {loyaltyBalance && (
+            <div className="bg-card border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
+              <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-10 pointer-events-none ${
+                loyaltyBalance.tier.toLowerCase() === 'gold' ? 'bg-yellow-500' :
+                loyaltyBalance.tier.toLowerCase() === 'silver' ? 'bg-slate-400' : 'bg-amber-700'
+              }`}></div>
+              
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center shrink-0 border-4 shadow-inner ${
+                loyaltyBalance.tier.toLowerCase() === 'gold' ? 'bg-yellow-100 border-yellow-300 text-yellow-600' :
+                loyaltyBalance.tier.toLowerCase() === 'silver' ? 'bg-slate-100 border-slate-300 text-slate-600' : 
+                'bg-amber-100 border-amber-200 text-amber-700'
+              }`}>
+                <Trophy className="w-8 h-8" />
+              </div>
+              
+              <div className="flex-1 text-center md:text-left z-10">
+                <div className="flex flex-col md:flex-row md:items-end gap-2 mb-1 justify-center md:justify-start">
+                  <h2 className="font-serif text-3xl font-bold">{loyaltyBalance.points} Points</h2>
+                  <Badge variant="outline" className={`font-bold mb-1 border-2 ${
+                    loyaltyBalance.tier.toLowerCase() === 'gold' ? 'border-yellow-400 text-yellow-600 bg-yellow-50' :
+                    loyaltyBalance.tier.toLowerCase() === 'silver' ? 'border-slate-400 text-slate-600 bg-slate-50' : 
+                    'border-amber-400 text-amber-700 bg-amber-50'
+                  }`}>
+                    {loyaltyBalance.tier.toUpperCase()} TIER
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-sm">Total earned: {loyaltyBalance.totalEarned} pts</p>
+                
+                <div className="mt-4 max-w-md mx-auto md:mx-0">
+                  <div className="flex justify-between text-xs font-medium mb-1.5">
+                    <span>Current Tier</span>
+                    <span>Next Tier</span>
+                  </div>
+                  <Progress 
+                    value={loyaltyBalance.tier.toLowerCase() === 'gold' ? 100 : 
+                          loyaltyBalance.tier.toLowerCase() === 'silver' ? (loyaltyBalance.points / 500) * 100 : 
+                          (loyaltyBalance.points / 200) * 100} 
+                    className="h-2 bg-muted" 
+                  />
+                  <div className="text-xs text-muted-foreground mt-2">
+                    {loyaltyBalance.tier.toLowerCase() === 'gold' ? "You've reached the highest tier!" :
+                     loyaltyBalance.tier.toLowerCase() === 'silver' ? `${Math.max(0, 500 - loyaltyBalance.points)} points to Gold` :
+                     `${Math.max(0, 200 - loyaltyBalance.points)} points to Silver`}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="md:border-l md:pl-6 text-sm text-muted-foreground flex flex-col gap-2 shrink-0 md:w-48 z-10">
+                <div className="font-bold text-foreground">How to earn points:</div>
+                <div className="flex items-start gap-2">
+                  <CalendarCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span>10 pts per completed visit</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Star className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <span>5 pts for each review</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {bookings && bookings.length > 0 ? (
+            <div className="space-y-12">
+              
+              {upcoming.length > 0 && (
+                <section>
               <h2 className="font-serif text-2xl font-bold mb-6 flex items-center gap-2">
                 Upcoming Reservations
                 <Badge variant="secondary" className="rounded-full">{upcoming.length}</Badge>
@@ -262,6 +344,8 @@ export default function MyBookings() {
           </Button>
         </div>
       )}
+      </div>
+    )}
     </div>
   );
 }

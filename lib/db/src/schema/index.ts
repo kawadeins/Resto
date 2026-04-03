@@ -8,3 +8,7 @@ export * from "./menu";
 export * from "./pos_sales";
 export * from "./notifications";
 export * from "./restaurants";
+export * from "./reviews";
+export * from "./loyalty_points";
+export * from "./subscriptions";
+export * from "./platform_settings";

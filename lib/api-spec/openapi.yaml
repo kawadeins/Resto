@@ -28,6 +28,14 @@ tags:
     description: Business analytics
   - name: marketplace
     description: Customer marketplace - restaurants and booking
+  - name: billing
+    description: Subscription and billing management
+  - name: reviews
+    description: Customer reviews and owner replies
+  - name: loyalty
+    description: Loyalty points and leaderboard
+  - name: platform
+    description: Super-admin platform controls and settings
 
 paths:
   /healthz:
@@ -889,6 +897,274 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PosSale"
+
+  /billing/subscription:
+    get:
+      operationId: getSubscription
+      tags: [billing]
+      summary: Get current subscription status
+      responses:
+        "200":
+          description: Current subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  /billing/checkout:
+    post:
+      operationId: startCheckout
+      tags: [billing]
+      summary: Initiate a checkout session to activate subscription
+      responses:
+        "200":
+          description: Checkout session started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResult"
+
+  /billing/cancel:
+    post:
+      operationId: cancelSubscription
+      tags: [billing]
+      summary: Cancel current subscription
+      responses:
+        "200":
+          description: Subscription cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResult"
+
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: List reviews for a restaurant
+      parameters:
+        - name: restaurantId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reviews list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Submit a customer review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewBody"
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /reviews/stats:
+    get:
+      operationId: getReviewStats
+      tags: [reviews]
+      summary: Get review statistics for a restaurant
+      parameters:
+        - name: restaurantId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Review stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewStats"
+
+  /reviews/{id}/reply:
+    post:
+      operationId: replyToReview
+      tags: [reviews]
+      summary: Owner replies to a review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplyToReviewBody"
+      responses:
+        "200":
+          description: Reply saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /loyalty:
+    get:
+      operationId: getLoyaltyLeaderboard
+      tags: [loyalty]
+      summary: Get loyalty points leaderboard
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LoyaltyBalance"
+
+  /loyalty/{email}:
+    get:
+      operationId: getLoyaltyBalance
+      tags: [loyalty]
+      summary: Get loyalty points balance for a customer
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Loyalty balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoyaltyBalance"
+
+  /platform/settings:
+    get:
+      operationId: getPlatformSettings
+      tags: [platform]
+      summary: Get all platform settings
+      responses:
+        "200":
+          description: Platform settings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlatformSetting"
+
+  /platform/settings/{key}:
+    patch:
+      operationId: updatePlatformSetting
+      tags: [platform]
+      summary: Update a platform setting (super-admin only)
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-super-admin-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingBody"
+      responses:
+        "200":
+          description: Setting updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSetting"
+
+  /platform/super-admin/stats:
+    get:
+      operationId: getSuperAdminStats
+      tags: [platform]
+      summary: Get platform-wide statistics (super-admin only)
+      parameters:
+        - name: x-super-admin-key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuperAdminStats"
+
+  /platform/super-admin/restaurants:
+    get:
+      operationId: getSuperAdminRestaurants
+      tags: [platform]
+      summary: Get all restaurants with subscription info (super-admin only)
+      parameters:
+        - name: x-super-admin-key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Restaurants with subscription
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SuperAdminRestaurant"
+
+  /platform/super-admin/restaurants/{id}:
+    patch:
+      operationId: updateSuperAdminRestaurant
+      tags: [platform]
+      summary: Activate, deactivate, or feature a restaurant (super-admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: x-super-admin-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSuperAdminRestaurantBody"
+      responses:
+        "200":
+          description: Restaurant updated
+          content:
+            application/json:
+              schema:
+                type: object
 
   /marketplace/restaurants:
     get:
@@ -2287,3 +2563,266 @@ components:
         - partySize
         - status
         - createdAt
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        restaurantId:
+          type: integer
+        status:
+          type: string
+        planName:
+          type: string
+        amountEur:
+          type: number
+        isActive:
+          type: boolean
+        stripeSessionId:
+          type: string
+          nullable: true
+        stripeCustomerId:
+          type: string
+          nullable: true
+        stripeSubscriptionId:
+          type: string
+          nullable: true
+        currentPeriodStart:
+          type: string
+          nullable: true
+        currentPeriodEnd:
+          type: string
+          nullable: true
+        daysRemaining:
+          type: integer
+          nullable: true
+        cancelledAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - restaurantId
+        - status
+        - planName
+        - amountEur
+        - isActive
+        - createdAt
+
+    CheckoutResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        sessionId:
+          type: string
+        message:
+          type: string
+        subscription:
+          $ref: "#/components/schemas/Subscription"
+      required:
+        - success
+        - message
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        restaurantId:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        bookingId:
+          type: integer
+          nullable: true
+        rating:
+          type: integer
+        comment:
+          type: string
+        ownerReply:
+          type: string
+          nullable: true
+        ownerRepliedAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - restaurantId
+        - customerName
+        - customerEmail
+        - rating
+        - comment
+        - createdAt
+
+    ReviewStats:
+      type: object
+      properties:
+        averageRating:
+          type: number
+          nullable: true
+        totalCount:
+          type: integer
+        distribution:
+          type: object
+      required:
+        - totalCount
+
+    CreateReviewBody:
+      type: object
+      properties:
+        restaurantId:
+          type: integer
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        bookingId:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+      required:
+        - customerName
+        - customerEmail
+        - rating
+        - comment
+
+    ReplyToReviewBody:
+      type: object
+      properties:
+        reply:
+          type: string
+      required:
+        - reply
+
+    LoyaltyBalance:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerEmail:
+          type: string
+        customerName:
+          type: string
+        points:
+          type: integer
+        totalEarned:
+          type: integer
+        tier:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - customerEmail
+        - points
+        - totalEarned
+        - tier
+
+    PlatformSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        value:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - key
+        - value
+        - label
+        - category
+
+    UpdateSettingBody:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value
+
+    SuperAdminStats:
+      type: object
+      properties:
+        restaurants:
+          type: object
+        subscriptions:
+          type: object
+        bookings:
+          type: object
+        reviews:
+          type: object
+        loyalty:
+          type: object
+      required:
+        - restaurants
+        - subscriptions
+        - bookings
+        - reviews
+        - loyalty
+
+    SuperAdminRestaurant:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cuisine:
+          type: string
+        city:
+          type: string
+        isActive:
+          type: boolean
+        isFeatured:
+          type: boolean
+        rating:
+          type: number
+        subscription:
+          type: object
+          nullable: true
+        bookingCount:
+          type: integer
+        reviewCount:
+          type: integer
+        avgRating:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - cuisine
+        - city
+        - isActive
+        - isFeatured
+        - rating
+        - bookingCount
+        - reviewCount
+        - createdAt
+
+    UpdateSuperAdminRestaurantBody:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+        isFeatured:
+          type: boolean

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { reservationsTable } from "@workspace/db";
+import { reservationsTable, loyaltyPointsTable } from "@workspace/db";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -143,6 +143,30 @@ router.patch("/:id/status", async (req, res) => {
       .where(eq(reservationsTable.id, id))
       .returning();
     if (!row) return void res.status(404).json({ error: "Not found" });
+
+    // Award 10 loyalty points when booking is marked as arrived
+    if (status === "arrived" && row.customerEmail) {
+      try {
+        const existing = await db.select().from(loyaltyPointsTable)
+          .where(eq(loyaltyPointsTable.customerEmail, row.customerEmail));
+        if (existing.length === 0) {
+          await db.insert(loyaltyPointsTable).values({
+            customerEmail: row.customerEmail,
+            customerName: row.customerName,
+            points: 10,
+            totalEarned: 10,
+          });
+        } else {
+          await db.update(loyaltyPointsTable).set({
+            customerName: row.customerName,
+            points: existing[0].points + 10,
+            totalEarned: existing[0].totalEarned + 10,
+            updatedAt: new Date(),
+          }).where(eq(loyaltyPointsTable.customerEmail, row.customerEmail));
+        }
+      } catch (_) {}
+    }
+
     res.json(mapReservation(row));
   } catch (err) {
     req.log.error({ err }, "Failed to update reservation status");

@@ -934,6 +934,282 @@ export const ListPosSalesResponseItem = zod.object({
 export const ListPosSalesResponse = zod.array(ListPosSalesResponseItem);
 
 /**
+ * @summary Get current subscription status
+ */
+export const GetSubscriptionResponse = zod.object({
+  id: zod.number(),
+  restaurantId: zod.number(),
+  status: zod.string(),
+  planName: zod.string(),
+  amountEur: zod.number(),
+  isActive: zod.boolean(),
+  stripeSessionId: zod.string().nullish(),
+  stripeCustomerId: zod.string().nullish(),
+  stripeSubscriptionId: zod.string().nullish(),
+  currentPeriodStart: zod.string().nullish(),
+  currentPeriodEnd: zod.string().nullish(),
+  daysRemaining: zod.number().nullish(),
+  cancelledAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Initiate a checkout session to activate subscription
+ */
+export const StartCheckoutResponse = zod.object({
+  success: zod.boolean(),
+  sessionId: zod.string().optional(),
+  message: zod.string(),
+  subscription: zod
+    .object({
+      id: zod.number(),
+      restaurantId: zod.number(),
+      status: zod.string(),
+      planName: zod.string(),
+      amountEur: zod.number(),
+      isActive: zod.boolean(),
+      stripeSessionId: zod.string().nullish(),
+      stripeCustomerId: zod.string().nullish(),
+      stripeSubscriptionId: zod.string().nullish(),
+      currentPeriodStart: zod.string().nullish(),
+      currentPeriodEnd: zod.string().nullish(),
+      daysRemaining: zod.number().nullish(),
+      cancelledAt: zod.string().nullish(),
+      createdAt: zod.string(),
+    })
+    .optional(),
+});
+
+/**
+ * @summary Cancel current subscription
+ */
+export const CancelSubscriptionResponse = zod.object({
+  success: zod.boolean(),
+  sessionId: zod.string().optional(),
+  message: zod.string(),
+  subscription: zod
+    .object({
+      id: zod.number(),
+      restaurantId: zod.number(),
+      status: zod.string(),
+      planName: zod.string(),
+      amountEur: zod.number(),
+      isActive: zod.boolean(),
+      stripeSessionId: zod.string().nullish(),
+      stripeCustomerId: zod.string().nullish(),
+      stripeSubscriptionId: zod.string().nullish(),
+      currentPeriodStart: zod.string().nullish(),
+      currentPeriodEnd: zod.string().nullish(),
+      daysRemaining: zod.number().nullish(),
+      cancelledAt: zod.string().nullish(),
+      createdAt: zod.string(),
+    })
+    .optional(),
+});
+
+/**
+ * @summary List reviews for a restaurant
+ */
+export const ListReviewsQueryParams = zod.object({
+  restaurantId: zod.coerce.number().optional(),
+});
+
+export const ListReviewsResponseItem = zod.object({
+  id: zod.number(),
+  restaurantId: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  bookingId: zod.number().nullish(),
+  rating: zod.number(),
+  comment: zod.string(),
+  ownerReply: zod.string().nullish(),
+  ownerRepliedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListReviewsResponse = zod.array(ListReviewsResponseItem);
+
+/**
+ * @summary Submit a customer review
+ */
+export const CreateReviewBody = zod.object({
+  restaurantId: zod.number().optional(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  bookingId: zod.number().optional(),
+  rating: zod.number(),
+  comment: zod.string(),
+});
+
+/**
+ * @summary Get review statistics for a restaurant
+ */
+export const GetReviewStatsQueryParams = zod.object({
+  restaurantId: zod.coerce.number().optional(),
+});
+
+export const GetReviewStatsResponse = zod.object({
+  averageRating: zod.number().nullish(),
+  totalCount: zod.number(),
+  distribution: zod.object({}).passthrough().optional(),
+});
+
+/**
+ * @summary Owner replies to a review
+ */
+export const ReplyToReviewParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ReplyToReviewBody = zod.object({
+  reply: zod.string(),
+});
+
+export const ReplyToReviewResponse = zod.object({
+  id: zod.number(),
+  restaurantId: zod.number(),
+  customerName: zod.string(),
+  customerEmail: zod.string(),
+  bookingId: zod.number().nullish(),
+  rating: zod.number(),
+  comment: zod.string(),
+  ownerReply: zod.string().nullish(),
+  ownerRepliedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Get loyalty points leaderboard
+ */
+export const GetLoyaltyLeaderboardResponseItem = zod.object({
+  id: zod.number().optional(),
+  customerEmail: zod.string(),
+  customerName: zod.string().optional(),
+  points: zod.number(),
+  totalEarned: zod.number(),
+  tier: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const GetLoyaltyLeaderboardResponse = zod.array(
+  GetLoyaltyLeaderboardResponseItem,
+);
+
+/**
+ * @summary Get loyalty points balance for a customer
+ */
+export const GetLoyaltyBalanceParams = zod.object({
+  email: zod.coerce.string(),
+});
+
+export const GetLoyaltyBalanceResponse = zod.object({
+  id: zod.number().optional(),
+  customerEmail: zod.string(),
+  customerName: zod.string().optional(),
+  points: zod.number(),
+  totalEarned: zod.number(),
+  tier: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+
+/**
+ * @summary Get all platform settings
+ */
+export const GetPlatformSettingsResponseItem = zod.object({
+  id: zod.number(),
+  key: zod.string(),
+  value: zod.string(),
+  label: zod.string(),
+  description: zod.string().optional(),
+  category: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+export const GetPlatformSettingsResponse = zod.array(
+  GetPlatformSettingsResponseItem,
+);
+
+/**
+ * @summary Update a platform setting (super-admin only)
+ */
+export const UpdatePlatformSettingParams = zod.object({
+  key: zod.coerce.string(),
+});
+
+export const UpdatePlatformSettingHeader = zod.object({
+  "x-super-admin-key": zod.string(),
+});
+
+export const UpdatePlatformSettingBody = zod.object({
+  value: zod.string(),
+});
+
+export const UpdatePlatformSettingResponse = zod.object({
+  id: zod.number(),
+  key: zod.string(),
+  value: zod.string(),
+  label: zod.string(),
+  description: zod.string().optional(),
+  category: zod.string(),
+  updatedAt: zod.string().optional(),
+});
+
+/**
+ * @summary Get platform-wide statistics (super-admin only)
+ */
+export const GetSuperAdminStatsHeader = zod.object({
+  "x-super-admin-key": zod.string(),
+});
+
+export const GetSuperAdminStatsResponse = zod.object({
+  restaurants: zod.object({}).passthrough(),
+  subscriptions: zod.object({}).passthrough(),
+  bookings: zod.object({}).passthrough(),
+  reviews: zod.object({}).passthrough(),
+  loyalty: zod.object({}).passthrough(),
+});
+
+/**
+ * @summary Get all restaurants with subscription info (super-admin only)
+ */
+export const GetSuperAdminRestaurantsHeader = zod.object({
+  "x-super-admin-key": zod.string(),
+});
+
+export const GetSuperAdminRestaurantsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  cuisine: zod.string(),
+  city: zod.string(),
+  isActive: zod.boolean(),
+  isFeatured: zod.boolean(),
+  rating: zod.number(),
+  subscription: zod.object({}).passthrough().nullish(),
+  bookingCount: zod.number(),
+  reviewCount: zod.number(),
+  avgRating: zod.number().nullish(),
+  createdAt: zod.string(),
+});
+export const GetSuperAdminRestaurantsResponse = zod.array(
+  GetSuperAdminRestaurantsResponseItem,
+);
+
+/**
+ * @summary Activate, deactivate, or feature a restaurant (super-admin only)
+ */
+export const UpdateSuperAdminRestaurantParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateSuperAdminRestaurantHeader = zod.object({
+  "x-super-admin-key": zod.string(),
+});
+
+export const UpdateSuperAdminRestaurantBody = zod.object({
+  isActive: zod.boolean().optional(),
+  isFeatured: zod.boolean().optional(),
+});
+
+export const UpdateSuperAdminRestaurantResponse = zod.object({}).passthrough();
+
+/**
  * @summary List restaurants for customer marketplace
  */
 export const ListMarketplaceRestaurantsQueryParams = zod.object({

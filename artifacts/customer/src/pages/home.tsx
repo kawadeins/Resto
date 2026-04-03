@@ -1,11 +1,11 @@
-import { useEffect, useState } from "wouter/preact"; // Oops, use React
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Timer, ArrowRight, Utensils, Coffee, Pizza, Wine, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useListFlashDeals, useListMarketplaceRestaurants } from "@workspace/api-client-react";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import React from "react"; // To be safe
+import { useSeo } from "@/hooks/use-seo";
 
 const CUISINES = [
   { name: "Italian", emoji: "🍝" },
@@ -17,9 +17,9 @@ const CUISINES = [
 ];
 
 function CountdownTimer({ expiresAt }: { expiresAt: string }) {
-  const [timeLeft, setTimeLeft] = React.useState<string>("");
+  const [timeLeft, setTimeLeft] = useState<string>("");
 
-  React.useEffect(() => {
+  useEffect(() => {
     const calculateTimeLeft = () => {
       const difference = new Date(expiresAt).getTime() - new Date().getTime();
       
@@ -51,6 +51,11 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
 }
 
 export default function Home() {
+  useSeo({
+    title: "Discover London's Best Restaurants",
+    description: "Find and book the best restaurants in London with exclusive flash deals and loyalty rewards.",
+  });
+
   const { data: flashDeals, isLoading: loadingDeals } = useListFlashDeals();
   const { data: featured, isLoading: loadingFeatured } = useListMarketplaceRestaurants({ featured: true });
   const { data: openNow, isLoading: loadingOpen } = useListMarketplaceRestaurants({ openNow: true });

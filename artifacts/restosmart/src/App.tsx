@@ -15,6 +15,9 @@ import Menu from "@/pages/menu";
 import Pos from "@/pages/pos";
 import Marketing from "@/pages/marketing";
 import Bookings from "@/pages/bookings";
+import Billing from "@/pages/billing";
+import Reviews from "@/pages/reviews";
+import SuperAdmin from "@/pages/super-admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +42,9 @@ function Router() {
         <Route path="/pos" component={Pos} />
         <Route path="/marketing" component={Marketing} />
         <Route path="/bookings" component={Bookings} />
+        <Route path="/billing" component={Billing} />
+        <Route path="/reviews" component={Reviews} />
+        <Route path="/super-admin" component={SuperAdmin} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

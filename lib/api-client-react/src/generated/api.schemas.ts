@@ -625,6 +625,130 @@ export interface CustomerBooking {
   restaurant?: CustomerBookingRestaurant;
 }
 
+export interface Subscription {
+  id: number;
+  restaurantId: number;
+  status: string;
+  planName: string;
+  amountEur: number;
+  isActive: boolean;
+  stripeSessionId?: string | null;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  currentPeriodStart?: string | null;
+  currentPeriodEnd?: string | null;
+  daysRemaining?: number | null;
+  cancelledAt?: string | null;
+  createdAt: string;
+}
+
+export interface CheckoutResult {
+  success: boolean;
+  sessionId?: string;
+  message: string;
+  subscription?: Subscription;
+}
+
+export interface Review {
+  id: number;
+  restaurantId: number;
+  customerName: string;
+  customerEmail: string;
+  bookingId?: number | null;
+  rating: number;
+  comment: string;
+  ownerReply?: string | null;
+  ownerRepliedAt?: string | null;
+  createdAt: string;
+}
+
+export type ReviewStatsDistribution = { [key: string]: unknown };
+
+export interface ReviewStats {
+  averageRating?: number | null;
+  totalCount: number;
+  distribution?: ReviewStatsDistribution;
+}
+
+export interface CreateReviewBody {
+  restaurantId?: number;
+  customerName: string;
+  customerEmail: string;
+  bookingId?: number;
+  rating: number;
+  comment: string;
+}
+
+export interface ReplyToReviewBody {
+  reply: string;
+}
+
+export interface LoyaltyBalance {
+  id?: number;
+  customerEmail: string;
+  customerName?: string;
+  points: number;
+  totalEarned: number;
+  tier: string;
+  updatedAt?: string;
+}
+
+export interface PlatformSetting {
+  id: number;
+  key: string;
+  value: string;
+  label: string;
+  description?: string;
+  category: string;
+  updatedAt?: string;
+}
+
+export interface UpdateSettingBody {
+  value: string;
+}
+
+export type SuperAdminStatsRestaurants = { [key: string]: unknown };
+
+export type SuperAdminStatsSubscriptions = { [key: string]: unknown };
+
+export type SuperAdminStatsBookings = { [key: string]: unknown };
+
+export type SuperAdminStatsReviews = { [key: string]: unknown };
+
+export type SuperAdminStatsLoyalty = { [key: string]: unknown };
+
+export interface SuperAdminStats {
+  restaurants: SuperAdminStatsRestaurants;
+  subscriptions: SuperAdminStatsSubscriptions;
+  bookings: SuperAdminStatsBookings;
+  reviews: SuperAdminStatsReviews;
+  loyalty: SuperAdminStatsLoyalty;
+}
+
+export type SuperAdminRestaurantSubscription = {
+  [key: string]: unknown;
+} | null;
+
+export interface SuperAdminRestaurant {
+  id: number;
+  name: string;
+  cuisine: string;
+  city: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  rating: number;
+  subscription?: SuperAdminRestaurantSubscription;
+  bookingCount: number;
+  reviewCount: number;
+  avgRating?: number | null;
+  createdAt: string;
+}
+
+export interface UpdateSuperAdminRestaurantBody {
+  isActive?: boolean;
+  isFeatured?: boolean;
+}
+
 export type ListReservationsParams = {
   date?: string;
   status?: string;
@@ -633,6 +757,16 @@ export type ListReservationsParams = {
 export type ListPosSalesParams = {
   limit?: number;
 };
+
+export type ListReviewsParams = {
+  restaurantId?: number;
+};
+
+export type GetReviewStatsParams = {
+  restaurantId?: number;
+};
+
+export type UpdateSuperAdminRestaurant200 = { [key: string]: unknown };
 
 export type ListMarketplaceRestaurantsParams = {
   cuisine?: string;

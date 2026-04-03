@@ -8,10 +8,16 @@ import { RestaurantCard } from "@/components/restaurant-card";
 import { useListMarketplaceRestaurants } from "@workspace/api-client-react";
 import { getListMarketplaceRestaurantsQueryKey } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSeo } from "@/hooks/use-seo";
 
 const CUISINES = ["Italian", "Japanese", "Mexican", "Indian", "French", "Thai", "American", "British"];
 
 export default function Explore() {
+  useSeo({
+    title: "Explore Restaurants",
+    description: "Browse and filter London restaurants by cuisine, price, rating, and availability.",
+  });
+
   const [location, setLocation] = useLocation();
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);

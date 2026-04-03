@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListDeals,
@@ -12,6 +13,8 @@ import {
   useSendDiscountBlast,
   useListNotifications,
   getListNotificationsQueryKey,
+  useGetSubscription,
+  getGetSubscriptionQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Clock, Calendar, Bell, Trash2, Plus, Send, CheckCircle2, Tag } from "lucide-react";
+import { Zap, Clock, Calendar, Bell, Trash2, Plus, Send, CheckCircle2, Tag, Lock } from "lucide-react";
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -77,6 +80,11 @@ export default function Marketing() {
     notes: "",
   });
   const [blastForm, setBlastForm] = useState({ title: "", message: "", targetCount: 0 });
+
+  const { data: subscription } = useGetSubscription({
+    query: { queryKey: getGetSubscriptionQueryKey() }
+  });
+  const isPro = subscription?.isActive === true && subscription?.status !== "trial";
 
   const { data: deals, isLoading: loadingDeals } = useListDeals({
     query: { queryKey: getListDealsQueryKey() },
@@ -196,8 +204,22 @@ export default function Marketing() {
       <ActiveDiscountBanner />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="lg:col-span-1">
-          <Card className="border-amber-500/20 bg-amber-500/5 h-full">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="lg:col-span-1 relative">
+          {!isPro && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-background/60 backdrop-blur-sm rounded-xl border border-border">
+              <div className="bg-muted p-4 rounded-full mb-4">
+                <Lock className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Flash Deals — Pro Feature</h3>
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                Upgrade to RestoSmart Pro to access instant flash deals and notification blasts.
+              </p>
+              <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                Upgrade to Pro
+              </Link>
+            </div>
+          )}
+          <Card className={`border-amber-500/20 bg-amber-500/5 h-full ${!isPro ? "opacity-50" : ""}`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-amber-500">
                 <Zap className="h-5 w-5" />
@@ -216,7 +238,7 @@ export default function Marketing() {
               <Button
                 className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold text-base py-6"
                 onClick={handleFlashDeal}
-                disabled={activateFlash.isPending}
+                disabled={activateFlash.isPending || !isPro}
               >
                 <Zap className="mr-2 h-5 w-5" />
                 {activateFlash.isPending ? "Activating..." : "Activate Flash Deal Now"}
@@ -315,8 +337,22 @@ export default function Marketing() {
         </motion.div>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-        <Card>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="relative">
+        {!isPro && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl border border-border">
+             <div className="bg-muted p-4 rounded-full mb-4">
+                <Lock className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Notification Blasts — Pro Feature</h3>
+              <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
+                Upgrade to RestoSmart Pro to reach customers directly with personalized push notifications.
+              </p>
+              <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                Upgrade to Pro
+              </Link>
+          </div>
+        )}
+        <Card className={!isPro ? "opacity-50" : ""}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
@@ -327,7 +363,7 @@ export default function Marketing() {
                 Push deal alerts to registered customer app users. Each blast is logged below.
               </CardDescription>
             </div>
-            <Button variant="outline" onClick={() => setShowBlastForm(true)}>
+            <Button variant="outline" onClick={() => setShowBlastForm(true)} disabled={!isPro}>
               <Bell className="mr-2 h-4 w-4" /> Send Blast
             </Button>
           </CardHeader>

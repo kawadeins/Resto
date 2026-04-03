@@ -18,11 +18,13 @@ import type {
 
 import type {
   ActiveDiscountStatus,
+  CheckoutResult,
   CreateCustomerBookingBody,
   CreateEmployeeBody,
   CreateInventoryItemBody,
   CreateMenuItemBody,
   CreateReservationBody,
+  CreateReviewBody,
   CreateSaleRecordBody,
   CreateShiftBody,
   CustomerBooking,
@@ -32,12 +34,15 @@ import type {
   Employee,
   FinancesSummary,
   FlashDealRequest,
+  GetReviewStatsParams,
   HealthStatus,
   InventoryItem,
   ListMarketplaceRestaurantsParams,
   ListMyBookingsParams,
   ListPosSalesParams,
   ListReservationsParams,
+  ListReviewsParams,
+  LoyaltyBalance,
   MarketplaceFlashDeal,
   MarketplaceRestaurant,
   MarketplaceRestaurantDetail,
@@ -49,18 +54,28 @@ import type {
   OverviewSummary,
   PatchReservationStatusBody,
   PerformanceAnalytics,
+  PlatformSetting,
   PosSale,
   RecordPosSaleBody,
+  ReplyToReviewBody,
   Reservation,
   ReservationStats,
+  Review,
+  ReviewStats,
   SaleRecord,
   ScheduledDealRequest,
   SetMenuItemIngredientsBody,
   Shift,
   ShiftReminder,
+  Subscription,
+  SuperAdminRestaurant,
+  SuperAdminStats,
   ToggleDealBody,
   UpdateMenuItemBody,
   UpdateReservationBody,
+  UpdateSettingBody,
+  UpdateSuperAdminRestaurant200,
+  UpdateSuperAdminRestaurantBody,
   WorkingNowEmployee,
 } from "./api.schemas";
 
@@ -4143,6 +4158,1171 @@ export function useListPosSales<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get current subscription status
+ */
+export const getGetSubscriptionUrl = () => {
+  return `/api/billing/subscription`;
+};
+
+export const getSubscription = async (
+  options?: RequestInit,
+): Promise<Subscription> => {
+  return customFetch<Subscription>(getGetSubscriptionUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSubscriptionQueryKey = () => {
+  return [`/api/billing/subscription`] as const;
+};
+
+export const getGetSubscriptionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSubscription>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscription>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSubscriptionQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubscription>>> = ({
+    signal,
+  }) => getSubscription({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscription>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSubscriptionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSubscription>>
+>;
+export type GetSubscriptionQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get current subscription status
+ */
+
+export function useGetSubscription<
+  TData = Awaited<ReturnType<typeof getSubscription>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscription>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSubscriptionQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Initiate a checkout session to activate subscription
+ */
+export const getStartCheckoutUrl = () => {
+  return `/api/billing/checkout`;
+};
+
+export const startCheckout = async (
+  options?: RequestInit,
+): Promise<CheckoutResult> => {
+  return customFetch<CheckoutResult>(getStartCheckoutUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getStartCheckoutMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startCheckout>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startCheckout>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["startCheckout"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startCheckout>>,
+    void
+  > = () => {
+    return startCheckout(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartCheckoutMutationResult = NonNullable<
+  Awaited<ReturnType<typeof startCheckout>>
+>;
+
+export type StartCheckoutMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Initiate a checkout session to activate subscription
+ */
+export const useStartCheckout = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startCheckout>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof startCheckout>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getStartCheckoutMutationOptions(options));
+};
+
+/**
+ * @summary Cancel current subscription
+ */
+export const getCancelSubscriptionUrl = () => {
+  return `/api/billing/cancel`;
+};
+
+export const cancelSubscription = async (
+  options?: RequestInit,
+): Promise<CheckoutResult> => {
+  return customFetch<CheckoutResult>(getCancelSubscriptionUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCancelSubscriptionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelSubscription>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelSubscription>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["cancelSubscription"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelSubscription>>,
+    void
+  > = () => {
+    return cancelSubscription(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CancelSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cancelSubscription>>
+>;
+
+export type CancelSubscriptionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Cancel current subscription
+ */
+export const useCancelSubscription = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelSubscription>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof cancelSubscription>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getCancelSubscriptionMutationOptions(options));
+};
+
+/**
+ * @summary List reviews for a restaurant
+ */
+export const getListReviewsUrl = (params?: ListReviewsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/reviews?${stringifiedParams}`
+    : `/api/reviews`;
+};
+
+export const listReviews = async (
+  params?: ListReviewsParams,
+  options?: RequestInit,
+): Promise<Review[]> => {
+  return customFetch<Review[]>(getListReviewsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListReviewsQueryKey = (params?: ListReviewsParams) => {
+  return [`/api/reviews`, ...(params ? [params] : [])] as const;
+};
+
+export const getListReviewsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listReviews>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListReviewsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listReviews>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListReviewsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listReviews>>> = ({
+    signal,
+  }) => listReviews(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listReviews>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListReviewsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listReviews>>
+>;
+export type ListReviewsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List reviews for a restaurant
+ */
+
+export function useListReviews<
+  TData = Awaited<ReturnType<typeof listReviews>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListReviewsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listReviews>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListReviewsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Submit a customer review
+ */
+export const getCreateReviewUrl = () => {
+  return `/api/reviews`;
+};
+
+export const createReview = async (
+  createReviewBody: CreateReviewBody,
+  options?: RequestInit,
+): Promise<Review> => {
+  return customFetch<Review>(getCreateReviewUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createReviewBody),
+  });
+};
+
+export const getCreateReviewMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createReview>>,
+    TError,
+    { data: BodyType<CreateReviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createReview>>,
+  TError,
+  { data: BodyType<CreateReviewBody> },
+  TContext
+> => {
+  const mutationKey = ["createReview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createReview>>,
+    { data: BodyType<CreateReviewBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createReview(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateReviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createReview>>
+>;
+export type CreateReviewMutationBody = BodyType<CreateReviewBody>;
+export type CreateReviewMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Submit a customer review
+ */
+export const useCreateReview = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createReview>>,
+    TError,
+    { data: BodyType<CreateReviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createReview>>,
+  TError,
+  { data: BodyType<CreateReviewBody> },
+  TContext
+> => {
+  return useMutation(getCreateReviewMutationOptions(options));
+};
+
+/**
+ * @summary Get review statistics for a restaurant
+ */
+export const getGetReviewStatsUrl = (params?: GetReviewStatsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/reviews/stats?${stringifiedParams}`
+    : `/api/reviews/stats`;
+};
+
+export const getReviewStats = async (
+  params?: GetReviewStatsParams,
+  options?: RequestInit,
+): Promise<ReviewStats> => {
+  return customFetch<ReviewStats>(getGetReviewStatsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetReviewStatsQueryKey = (params?: GetReviewStatsParams) => {
+  return [`/api/reviews/stats`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetReviewStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getReviewStats>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetReviewStatsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReviewStats>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetReviewStatsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getReviewStats>>> = ({
+    signal,
+  }) => getReviewStats(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getReviewStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetReviewStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getReviewStats>>
+>;
+export type GetReviewStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get review statistics for a restaurant
+ */
+
+export function useGetReviewStats<
+  TData = Awaited<ReturnType<typeof getReviewStats>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetReviewStatsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReviewStats>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetReviewStatsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Owner replies to a review
+ */
+export const getReplyToReviewUrl = (id: number) => {
+  return `/api/reviews/${id}/reply`;
+};
+
+export const replyToReview = async (
+  id: number,
+  replyToReviewBody: ReplyToReviewBody,
+  options?: RequestInit,
+): Promise<Review> => {
+  return customFetch<Review>(getReplyToReviewUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(replyToReviewBody),
+  });
+};
+
+export const getReplyToReviewMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof replyToReview>>,
+    TError,
+    { id: number; data: BodyType<ReplyToReviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof replyToReview>>,
+  TError,
+  { id: number; data: BodyType<ReplyToReviewBody> },
+  TContext
+> => {
+  const mutationKey = ["replyToReview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof replyToReview>>,
+    { id: number; data: BodyType<ReplyToReviewBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return replyToReview(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReplyToReviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof replyToReview>>
+>;
+export type ReplyToReviewMutationBody = BodyType<ReplyToReviewBody>;
+export type ReplyToReviewMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Owner replies to a review
+ */
+export const useReplyToReview = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof replyToReview>>,
+    TError,
+    { id: number; data: BodyType<ReplyToReviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof replyToReview>>,
+  TError,
+  { id: number; data: BodyType<ReplyToReviewBody> },
+  TContext
+> => {
+  return useMutation(getReplyToReviewMutationOptions(options));
+};
+
+/**
+ * @summary Get loyalty points leaderboard
+ */
+export const getGetLoyaltyLeaderboardUrl = () => {
+  return `/api/loyalty`;
+};
+
+export const getLoyaltyLeaderboard = async (
+  options?: RequestInit,
+): Promise<LoyaltyBalance[]> => {
+  return customFetch<LoyaltyBalance[]>(getGetLoyaltyLeaderboardUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetLoyaltyLeaderboardQueryKey = () => {
+  return [`/api/loyalty`] as const;
+};
+
+export const getGetLoyaltyLeaderboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLoyaltyLeaderboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLoyaltyLeaderboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLoyaltyLeaderboardQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getLoyaltyLeaderboard>>
+  > = ({ signal }) => getLoyaltyLeaderboard({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLoyaltyLeaderboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLoyaltyLeaderboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLoyaltyLeaderboard>>
+>;
+export type GetLoyaltyLeaderboardQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get loyalty points leaderboard
+ */
+
+export function useGetLoyaltyLeaderboard<
+  TData = Awaited<ReturnType<typeof getLoyaltyLeaderboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLoyaltyLeaderboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLoyaltyLeaderboardQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get loyalty points balance for a customer
+ */
+export const getGetLoyaltyBalanceUrl = (email: string) => {
+  return `/api/loyalty/${email}`;
+};
+
+export const getLoyaltyBalance = async (
+  email: string,
+  options?: RequestInit,
+): Promise<LoyaltyBalance> => {
+  return customFetch<LoyaltyBalance>(getGetLoyaltyBalanceUrl(email), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetLoyaltyBalanceQueryKey = (email: string) => {
+  return [`/api/loyalty/${email}`] as const;
+};
+
+export const getGetLoyaltyBalanceQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLoyaltyBalance>>,
+  TError = ErrorType<unknown>,
+>(
+  email: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getLoyaltyBalance>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetLoyaltyBalanceQueryKey(email);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getLoyaltyBalance>>
+  > = ({ signal }) => getLoyaltyBalance(email, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!email,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLoyaltyBalance>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLoyaltyBalanceQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLoyaltyBalance>>
+>;
+export type GetLoyaltyBalanceQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get loyalty points balance for a customer
+ */
+
+export function useGetLoyaltyBalance<
+  TData = Awaited<ReturnType<typeof getLoyaltyBalance>>,
+  TError = ErrorType<unknown>,
+>(
+  email: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getLoyaltyBalance>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLoyaltyBalanceQueryOptions(email, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get all platform settings
+ */
+export const getGetPlatformSettingsUrl = () => {
+  return `/api/platform/settings`;
+};
+
+export const getPlatformSettings = async (
+  options?: RequestInit,
+): Promise<PlatformSetting[]> => {
+  return customFetch<PlatformSetting[]>(getGetPlatformSettingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPlatformSettingsQueryKey = () => {
+  return [`/api/platform/settings`] as const;
+};
+
+export const getGetPlatformSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPlatformSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPlatformSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPlatformSettingsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPlatformSettings>>
+  > = ({ signal }) => getPlatformSettings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPlatformSettings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPlatformSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPlatformSettings>>
+>;
+export type GetPlatformSettingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all platform settings
+ */
+
+export function useGetPlatformSettings<
+  TData = Awaited<ReturnType<typeof getPlatformSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPlatformSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPlatformSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a platform setting (super-admin only)
+ */
+export const getUpdatePlatformSettingUrl = (key: string) => {
+  return `/api/platform/settings/${key}`;
+};
+
+export const updatePlatformSetting = async (
+  key: string,
+  updateSettingBody: UpdateSettingBody,
+  options?: RequestInit,
+): Promise<PlatformSetting> => {
+  return customFetch<PlatformSetting>(getUpdatePlatformSettingUrl(key), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateSettingBody),
+  });
+};
+
+export const getUpdatePlatformSettingMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePlatformSetting>>,
+    TError,
+    { key: string; data: BodyType<UpdateSettingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePlatformSetting>>,
+  TError,
+  { key: string; data: BodyType<UpdateSettingBody> },
+  TContext
+> => {
+  const mutationKey = ["updatePlatformSetting"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePlatformSetting>>,
+    { key: string; data: BodyType<UpdateSettingBody> }
+  > = (props) => {
+    const { key, data } = props ?? {};
+
+    return updatePlatformSetting(key, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePlatformSettingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePlatformSetting>>
+>;
+export type UpdatePlatformSettingMutationBody = BodyType<UpdateSettingBody>;
+export type UpdatePlatformSettingMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a platform setting (super-admin only)
+ */
+export const useUpdatePlatformSetting = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePlatformSetting>>,
+    TError,
+    { key: string; data: BodyType<UpdateSettingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePlatformSetting>>,
+  TError,
+  { key: string; data: BodyType<UpdateSettingBody> },
+  TContext
+> => {
+  return useMutation(getUpdatePlatformSettingMutationOptions(options));
+};
+
+/**
+ * @summary Get platform-wide statistics (super-admin only)
+ */
+export const getGetSuperAdminStatsUrl = () => {
+  return `/api/platform/super-admin/stats`;
+};
+
+export const getSuperAdminStats = async (
+  options?: RequestInit,
+): Promise<SuperAdminStats> => {
+  return customFetch<SuperAdminStats>(getGetSuperAdminStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSuperAdminStatsQueryKey = () => {
+  return [`/api/platform/super-admin/stats`] as const;
+};
+
+export const getGetSuperAdminStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSuperAdminStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSuperAdminStatsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSuperAdminStats>>
+  > = ({ signal }) => getSuperAdminStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSuperAdminStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSuperAdminStats>>
+>;
+export type GetSuperAdminStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get platform-wide statistics (super-admin only)
+ */
+
+export function useGetSuperAdminStats<
+  TData = Awaited<ReturnType<typeof getSuperAdminStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSuperAdminStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get all restaurants with subscription info (super-admin only)
+ */
+export const getGetSuperAdminRestaurantsUrl = () => {
+  return `/api/platform/super-admin/restaurants`;
+};
+
+export const getSuperAdminRestaurants = async (
+  options?: RequestInit,
+): Promise<SuperAdminRestaurant[]> => {
+  return customFetch<SuperAdminRestaurant[]>(getGetSuperAdminRestaurantsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSuperAdminRestaurantsQueryKey = () => {
+  return [`/api/platform/super-admin/restaurants`] as const;
+};
+
+export const getGetSuperAdminRestaurantsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSuperAdminRestaurants>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminRestaurants>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSuperAdminRestaurantsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSuperAdminRestaurants>>
+  > = ({ signal }) => getSuperAdminRestaurants({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminRestaurants>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSuperAdminRestaurantsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSuperAdminRestaurants>>
+>;
+export type GetSuperAdminRestaurantsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all restaurants with subscription info (super-admin only)
+ */
+
+export function useGetSuperAdminRestaurants<
+  TData = Awaited<ReturnType<typeof getSuperAdminRestaurants>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminRestaurants>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSuperAdminRestaurantsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Activate, deactivate, or feature a restaurant (super-admin only)
+ */
+export const getUpdateSuperAdminRestaurantUrl = (id: number) => {
+  return `/api/platform/super-admin/restaurants/${id}`;
+};
+
+export const updateSuperAdminRestaurant = async (
+  id: number,
+  updateSuperAdminRestaurantBody: UpdateSuperAdminRestaurantBody,
+  options?: RequestInit,
+): Promise<UpdateSuperAdminRestaurant200> => {
+  return customFetch<UpdateSuperAdminRestaurant200>(
+    getUpdateSuperAdminRestaurantUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateSuperAdminRestaurantBody),
+    },
+  );
+};
+
+export const getUpdateSuperAdminRestaurantMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSuperAdminRestaurant>>,
+    TError,
+    { id: number; data: BodyType<UpdateSuperAdminRestaurantBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSuperAdminRestaurant>>,
+  TError,
+  { id: number; data: BodyType<UpdateSuperAdminRestaurantBody> },
+  TContext
+> => {
+  const mutationKey = ["updateSuperAdminRestaurant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSuperAdminRestaurant>>,
+    { id: number; data: BodyType<UpdateSuperAdminRestaurantBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateSuperAdminRestaurant(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSuperAdminRestaurantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSuperAdminRestaurant>>
+>;
+export type UpdateSuperAdminRestaurantMutationBody =
+  BodyType<UpdateSuperAdminRestaurantBody>;
+export type UpdateSuperAdminRestaurantMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Activate, deactivate, or feature a restaurant (super-admin only)
+ */
+export const useUpdateSuperAdminRestaurant = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSuperAdminRestaurant>>,
+    TError,
+    { id: number; data: BodyType<UpdateSuperAdminRestaurantBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSuperAdminRestaurant>>,
+  TError,
+  { id: number; data: BodyType<UpdateSuperAdminRestaurantBody> },
+  TContext
+> => {
+  return useMutation(getUpdateSuperAdminRestaurantMutationOptions(options));
+};
 
 /**
  * @summary List restaurants for customer marketplace
