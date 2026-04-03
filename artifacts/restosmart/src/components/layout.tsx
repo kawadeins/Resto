@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp, Armchair, Wallet } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp, Armchair, Wallet, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 const navigation = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
@@ -31,6 +32,11 @@ const mobileNavigation = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { user, signOut } = useAuth();
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
 
   return (
     <div className="flex h-screen bg-background text-foreground dark overflow-hidden">
@@ -74,6 +80,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
         </div>
+
+        {/* User section */}
+        {user && (
+          <div className="shrink-0 px-4 py-4 border-t border-sidebar-border">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-sidebar-foreground truncate">{user.name}</p>
+                {user.email && (
+                  <p className="text-[10px] text-sidebar-foreground/40 truncate">{user.email}</p>
+                )}
+              </div>
+              <button
+                onClick={signOut}
+                title="Abmelden"
+                className="shrink-0 p-1.5 rounded-md text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Hauptinhalt */}
