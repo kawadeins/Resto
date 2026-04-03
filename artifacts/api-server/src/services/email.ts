@@ -1,8 +1,8 @@
 /**
- * Email notification service using Resend.
- * - Fire-and-forget: failures are logged, never thrown.
- * - Anti-spam: duplicate sends are checked before each dispatch.
- * - All emails are logged to notification_logs table.
+ * E-Mail-Benachrichtigungsdienst via Resend.
+ * - Fire-and-forget: Fehler werden protokolliert, niemals geworfen.
+ * - Anti-Spam: Doppelte Sendungen werden vor jedem Versand geprüft.
+ * - Alle E-Mails werden in notification_logs gespeichert.
  */
 import { Resend } from "resend";
 import { db } from "@workspace/db";
@@ -17,7 +17,7 @@ function getResend() {
   return new Resend(RESEND_API_KEY);
 }
 
-// ─── Anti-spam ────────────────────────────────────────────────────────────────
+// ─── Anti-Spam ────────────────────────────────────────────────────────────────
 async function isDuplicate(
   type: string,
   recipient: string,
@@ -42,7 +42,7 @@ async function isDuplicate(
   return existing.length > 0;
 }
 
-// ─── Log helper ───────────────────────────────────────────────────────────────
+// ─── Log-Helfer ───────────────────────────────────────────────────────────────
 async function logNotification(
   type: string,
   recipient: string,
@@ -61,11 +61,11 @@ async function logNotification(
       errorMessage: errorMessage ?? null,
     });
   } catch {
-    // Never throw from logging
+    // Logging wirft niemals einen Fehler
   }
 }
 
-// ─── Base send ────────────────────────────────────────────────────────────────
+// ─── Basisversand ─────────────────────────────────────────────────────────────
 async function send(opts: {
   to: string;
   subject: string;
@@ -75,13 +75,13 @@ async function send(opts: {
   spamWindowMinutes?: number;
 }): Promise<{ ok: boolean; skipped?: boolean }> {
   if (!EMAIL_ENABLED) {
-    await logNotification(opts.type, opts.to, opts.subject, "skipped", opts.referenceId, "No RESEND_API_KEY configured");
+    await logNotification(opts.type, opts.to, opts.subject, "skipped", opts.referenceId, "Kein RESEND_API_KEY konfiguriert");
     return { ok: false, skipped: true };
   }
 
   const dup = await isDuplicate(opts.type, opts.to, opts.referenceId ?? null, opts.spamWindowMinutes ?? 60);
   if (dup) {
-    await logNotification(opts.type, opts.to, opts.subject, "skipped", opts.referenceId, "Duplicate suppressed");
+    await logNotification(opts.type, opts.to, opts.subject, "skipped", opts.referenceId, "Doppelte Sendung unterdrückt");
     return { ok: true, skipped: true };
   }
 
@@ -108,27 +108,27 @@ async function send(opts: {
   }
 }
 
-// ─── Shared layout ────────────────────────────────────────────────────────────
+// ─── Gemeinsames Layout ────────────────────────────────────────────────────────
 function layout(title: string, body: string) {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f1ec;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1ec;padding:32px 0;">
+<body style="margin:0;padding:0;background:#f0eef8;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0eef8;padding:32px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);">
-        <!-- Header -->
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(99,60,180,0.10);">
+        <!-- Kopfzeile -->
         <tr>
-          <td style="background:#1a1107;padding:28px 36px;text-align:center;">
-            <span style="color:#e07c3a;font-size:22px;font-weight:700;letter-spacing:-0.5px;">RestoSmart</span>
+          <td style="background:linear-gradient(135deg,#7c3aed,#db2777);padding:28px 36px;text-align:center;">
+            <span style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">RestoSmart</span>
           </td>
         </tr>
-        <!-- Body -->
+        <!-- Inhalt -->
         <tr><td style="padding:36px 36px 28px;">${body}</td></tr>
-        <!-- Footer -->
+        <!-- Fußzeile -->
         <tr>
-          <td style="background:#f9f7f4;padding:20px 36px;text-align:center;border-top:1px solid #ede8e0;">
-            <p style="margin:0;font-size:12px;color:#999;">You received this because you use RestoSmart dining. Questions? Reply to this email.</p>
+          <td style="background:#f9f8ff;padding:20px 36px;text-align:center;border-top:1px solid #ede8f8;">
+            <p style="margin:0;font-size:12px;color:#999;">Diese E-Mail wurde gesendet, weil Sie RestoSmart nutzen. Fragen? Antworten Sie einfach auf diese E-Mail.</p>
           </td>
         </tr>
       </table>
@@ -138,7 +138,7 @@ function layout(title: string, body: string) {
 </html>`;
 }
 
-// ─── Booking Confirmation ────────────────────────────────────────────────────
+// ─── Buchungsbestätigung ──────────────────────────────────────────────────────
 export async function sendBookingConfirmation(booking: {
   id: number;
   customerName: string;
@@ -149,29 +149,29 @@ export async function sendBookingConfirmation(booking: {
   restaurantName?: string;
   notes?: string | null;
 }) {
-  const subject = `Booking confirmed — ${booking.date} at ${booking.time}`;
-  const restaurant = booking.restaurantName ?? "the restaurant";
+  const subject = `Buchung bestätigt — ${booking.date} um ${booking.time} Uhr`;
+  const restaurant = booking.restaurantName ?? "dem Restaurant";
 
   const body = `
-    <h1 style="margin:0 0 4px;font-size:26px;color:#1a1107;font-weight:700;">Your table is booked!</h1>
-    <p style="margin:0 0 28px;color:#888;font-size:15px;">We can't wait to see you.</p>
+    <h1 style="margin:0 0 4px;font-size:26px;color:#1a0a2e;font-weight:700;">Ihr Tisch ist reserviert!</h1>
+    <p style="margin:0 0 28px;color:#888;font-size:15px;">Wir freuen uns auf Ihren Besuch.</p>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf8f5;border-radius:8px;border:1px solid #ede8e0;margin-bottom:28px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f8ff;border-radius:12px;border:1px solid #ede8f8;margin-bottom:28px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 6px;font-size:13px;color:#999;text-transform:uppercase;letter-spacing:0.5px;">Reservation details</p>
-          <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1a1107;">${restaurant}</p>
-          <p style="margin:4px 0;font-size:15px;color:#555;">${booking.date} &nbsp;·&nbsp; ${booking.time}</p>
-          <p style="margin:4px 0;font-size:15px;color:#555;">${booking.partySize} ${booking.partySize === 1 ? "guest" : "guests"}</p>
+          <p style="margin:0 0 6px;font-size:13px;color:#999;text-transform:uppercase;letter-spacing:0.5px;">Reservierungsdetails</p>
+          <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1a0a2e;">${restaurant}</p>
+          <p style="margin:4px 0;font-size:15px;color:#555;">${booking.date} &nbsp;·&nbsp; ${booking.time} Uhr</p>
+          <p style="margin:4px 0;font-size:15px;color:#555;">${booking.partySize} ${booking.partySize === 1 ? "Person" : "Personen"}</p>
           ${booking.notes ? `<p style="margin:8px 0 0;font-size:13px;color:#888;font-style:italic;">"${booking.notes}"</p>` : ""}
         </td>
       </tr>
     </table>
 
-    <p style="font-size:15px;color:#444;line-height:1.6;">Hello <strong>${booking.customerName}</strong>,<br>
-    Your reservation has been confirmed. If you need to cancel or make changes, please contact the restaurant directly as soon as possible.</p>
+    <p style="font-size:15px;color:#444;line-height:1.6;">Hallo <strong>${booking.customerName}</strong>,<br>
+    Ihre Reservierung wurde bestätigt. Falls Sie stornieren oder Änderungen vornehmen möchten, wenden Sie sich bitte so bald wie möglich direkt an das Restaurant.</p>
 
-    <p style="margin:20px 0 0;font-size:13px;color:#888;">Reservation ID: #${booking.id}</p>
+    <p style="margin:20px 0 0;font-size:13px;color:#888;">Reservierungs-ID: #${booking.id}</p>
   `;
 
   return send({
@@ -180,16 +180,16 @@ export async function sendBookingConfirmation(booking: {
     html: layout(subject, body),
     type: "booking_confirmation",
     referenceId: booking.id.toString(),
-    spamWindowMinutes: 1440, // 24h per booking
+    spamWindowMinutes: 1440,
   });
 }
 
-// ─── Campaign Email ────────────────────────────────────────────────────────────
+// ─── Kampagnen-E-Mail ──────────────────────────────────────────────────────────
 const CAMPAIGN_TYPE_LABELS: Record<string, string> = {
-  win_back: "We miss you",
-  thank_you: "Thank you for dining with us",
-  flash_blast: "Exclusive deal — limited time",
-  loyalty_reward: "Your loyalty is rewarded",
+  win_back: "Wir vermissen Sie",
+  thank_you: "Danke, dass Sie bei uns gegessen haben",
+  flash_blast: "Exklusives Angebot — nur für kurze Zeit",
+  loyalty_reward: "Ihre Treue wird belohnt",
 };
 
 export async function sendCampaignEmail(opts: {
@@ -199,17 +199,17 @@ export async function sendCampaignEmail(opts: {
   customerName: string;
   messageTemplate: string;
 }) {
-  const label = CAMPAIGN_TYPE_LABELS[opts.campaignType] ?? "A message from us";
+  const label = CAMPAIGN_TYPE_LABELS[opts.campaignType] ?? "Eine Nachricht von uns";
   const subject = label;
 
   const body = `
-    <h1 style="margin:0 0 20px;font-size:24px;color:#1a1107;font-weight:700;">${label}</h1>
-    <p style="font-size:16px;color:#444;line-height:1.7;">Hi <strong>${opts.customerName}</strong>,</p>
+    <h1 style="margin:0 0 20px;font-size:24px;color:#1a0a2e;font-weight:700;">${label}</h1>
+    <p style="font-size:16px;color:#444;line-height:1.7;">Hallo <strong>${opts.customerName}</strong>,</p>
     <p style="font-size:16px;color:#444;line-height:1.7;">${opts.messageTemplate}</p>
     <div style="margin:28px 0;">
-      <a href="#" style="background:#e07c3a;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">Book a Table</a>
+      <a href="#" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Tisch buchen</a>
     </div>
-    <p style="font-size:13px;color:#aaa;margin-top:24px;">You're receiving this because you've dined with us before. We'd love to see you again.</p>
+    <p style="font-size:13px;color:#aaa;margin-top:24px;">Sie erhalten diese Nachricht, weil Sie bereits bei uns gespeist haben. Wir würden uns freuen, Sie wieder begrüßen zu dürfen.</p>
   `;
 
   return send({
@@ -218,35 +218,37 @@ export async function sendCampaignEmail(opts: {
     html: layout(subject, body),
     type: "campaign",
     referenceId: `${opts.campaignId}:${opts.customerEmail}`,
-    spamWindowMinutes: 1440, // 24h per campaign+email
+    spamWindowMinutes: 1440,
   });
 }
 
-// ─── Loyalty Tier Unlock ──────────────────────────────────────────────────────
+// ─── Treueprogramm — Stufen-Upgrade ──────────────────────────────────────────
 export async function sendLoyaltyTierUnlock(opts: {
   customerEmail: string;
   customerName: string;
   tier: string;
   points: number;
 }) {
-  const subject = `You've reached ${opts.tier} tier!`;
+  const tierDE: Record<string, string> = { Bronze: "Bronze", Silver: "Silber", Gold: "Gold" };
+  const tierName = tierDE[opts.tier] ?? opts.tier;
+  const subject = `Sie haben die ${tierName}-Stufe erreicht!`;
 
   const tierColors: Record<string, string> = {
     Silver: "#9ca3af",
     Gold: "#d97706",
   };
-  const color = tierColors[opts.tier] ?? "#6b7280";
+  const color = tierColors[opts.tier] ?? "#7c3aed";
 
   const body = `
     <div style="text-align:center;margin-bottom:24px;">
       <div style="display:inline-block;background:${color}20;border:2px solid ${color};border-radius:50px;padding:8px 24px;">
-        <span style="color:${color};font-weight:700;font-size:18px;">${opts.tier} Member</span>
+        <span style="color:${color};font-weight:700;font-size:18px;">${tierName} Mitglied</span>
       </div>
     </div>
-    <h1 style="margin:0 0 12px;font-size:24px;color:#1a1107;font-weight:700;text-align:center;">Congratulations, ${opts.customerName}!</h1>
-    <p style="font-size:15px;color:#555;line-height:1.7;text-align:center;">You've unlocked <strong>${opts.tier}</strong> status with ${opts.points} loyalty points. Thank you for being one of our most valued guests.</p>
+    <h1 style="margin:0 0 12px;font-size:24px;color:#1a0a2e;font-weight:700;text-align:center;">Herzlichen Glückwunsch, ${opts.customerName}!</h1>
+    <p style="font-size:15px;color:#555;line-height:1.7;text-align:center;">Sie haben mit ${opts.points} Treuepunkten den <strong>${tierName}</strong>-Status freigeschaltet. Vielen Dank, dass Sie zu unseren geschätztesten Gästen gehören.</p>
     <div style="margin:28px 0;text-align:center;">
-      <a href="#" style="background:#e07c3a;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View Your Rewards</a>
+      <a href="#" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Meine Punkte ansehen</a>
     </div>
   `;
 
@@ -256,11 +258,11 @@ export async function sendLoyaltyTierUnlock(opts: {
     html: layout(subject, body),
     type: "loyalty_tier",
     referenceId: `${opts.customerEmail}:${opts.tier}`,
-    spamWindowMinutes: 43200, // 30 days per tier per customer
+    spamWindowMinutes: 43200,
   });
 }
 
-// ─── Flash Deal Alert ─────────────────────────────────────────────────────────
+// ─── Blitzangebot-Benachrichtigung ────────────────────────────────────────────
 export async function sendFlashDealAlert(opts: {
   customerEmail: string;
   customerName: string;
@@ -269,19 +271,19 @@ export async function sendFlashDealAlert(opts: {
   expiresAt: Date;
   dealId: number;
 }) {
-  const expiryStr = opts.expiresAt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  const subject = `${opts.discountPercent}% off tonight — expires at ${expiryStr}`;
+  const expiryStr = opts.expiresAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const subject = `${opts.discountPercent}% Rabatt heute Abend — gültig bis ${expiryStr} Uhr`;
 
   const body = `
-    <div style="background:#fff3e0;border-left:4px solid #e07c3a;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:24px;">
-      <p style="margin:0;font-size:13px;color:#e07c3a;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Flash Deal — Limited Time</p>
+    <div style="background:#fdf0ff;border-left:4px solid #7c3aed;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#7c3aed;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Blitzangebot — Nur für begrenzte Zeit</p>
     </div>
-    <h1 style="margin:0 0 12px;font-size:28px;color:#1a1107;font-weight:700;">${opts.discountPercent}% off your next visit</h1>
-    <p style="font-size:15px;color:#555;line-height:1.7;">Hi <strong>${opts.customerName}</strong>, we're offering an exclusive flash deal at <strong>${opts.restaurantName}</strong> for a limited time only. This offer expires at ${expiryStr} tonight.</p>
+    <h1 style="margin:0 0 12px;font-size:28px;color:#1a0a2e;font-weight:700;">${opts.discountPercent}% Rabatt auf Ihren nächsten Besuch</h1>
+    <p style="font-size:15px;color:#555;line-height:1.7;">Hallo <strong>${opts.customerName}</strong>, wir bieten Ihnen ein exklusives Blitzangebot bei <strong>${opts.restaurantName}</strong> — nur für kurze Zeit. Das Angebot endet heute um ${expiryStr} Uhr.</p>
     <div style="margin:28px 0;">
-      <a href="#" style="background:#e07c3a;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">Book Now &amp; Save</a>
+      <a href="#" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Jetzt buchen &amp; sparen</a>
     </div>
-    <p style="font-size:13px;color:#aaa;">Offer valid for table bookings only. Cannot be combined with other offers.</p>
+    <p style="font-size:13px;color:#aaa;">Nur gültig für Tischbuchungen. Nicht kombinierbar mit anderen Angeboten.</p>
   `;
 
   return send({

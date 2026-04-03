@@ -55,9 +55,9 @@ interface SlotData {
 
 function slotLabel(status: string) {
   switch (status) {
-    case "limited": return " · Limited seats";
-    case "nearly_full": return " · Almost full";
-    case "full": return " · Fully booked";
+    case "limited": return " · Wenige Plätze";
+    case "nearly_full": return " · Fast ausgebucht";
+    case "full": return " · Ausgebucht";
     default: return "";
   }
 }
@@ -73,22 +73,22 @@ function slotClass(status: string) {
 }
 
 const bookingSchema = z.object({
-  customerName: z.string().min(2, "Name must be at least 2 characters"),
-  customerEmail: z.string().email("Invalid email address"),
-  customerPhone: z.string().min(5, "Phone number required"),
-  date: z.string().min(1, "Date required"),
-  time: z.string().min(1, "Time required"),
-  partySize: z.coerce.number().min(1, "Minimum 1 person").max(20, "Maximum 20 people"),
+  customerName: z.string().min(2, "Name muss mindestens 2 Zeichen haben"),
+  customerEmail: z.string().email("Ungültige E-Mail-Adresse"),
+  customerPhone: z.string().min(5, "Telefonnummer erforderlich"),
+  date: z.string().min(1, "Datum erforderlich"),
+  time: z.string().min(1, "Uhrzeit erforderlich"),
+  partySize: z.coerce.number().min(1, "Mindestens 1 Person").max(20, "Maximal 20 Personen"),
   notes: z.string().optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
 const reviewSchema = z.object({
-  customerName: z.string().min(2, "Name required"),
-  customerEmail: z.string().email("Invalid email"),
+  customerName: z.string().min(2, "Name erforderlich"),
+  customerEmail: z.string().email("Ungültige E-Mail"),
   rating: z.number().min(1).max(5),
-  comment: z.string().min(5, "Comment must be at least 5 characters")
+  comment: z.string().min(5, "Kommentar muss mindestens 5 Zeichen haben")
 });
 
 type ReviewFormValues = z.infer<typeof reviewSchema>;
@@ -253,7 +253,7 @@ export default function Restaurant() {
   const createReview = useCreateReview({
     mutation: {
       onSuccess: () => {
-        toast({ title: "Review submitted!", description: "Thank you for your feedback." });
+        toast({ title: "Bewertung eingereicht!", description: "Danke für Ihr Feedback." });
         setShowReviewForm(false);
         reviewForm.reset();
         setReviewRating(5);
@@ -262,7 +262,7 @@ export default function Restaurant() {
         queryClient.invalidateQueries({ queryKey: getGetMarketplaceRestaurantQueryKey(restaurantId) });
       },
       onError: () => {
-        toast({ title: "Error", description: "Failed to submit review.", variant: "destructive" });
+        toast({ title: "Fehler", description: "Bewertung konnte nicht eingereicht werden.", variant: "destructive" });
       }
     }
   });
@@ -272,14 +272,14 @@ export default function Restaurant() {
       onSuccess: () => {
         setBookingSuccess(true);
         toast({
-          title: "Booking confirmed!",
-          description: "We've sent a confirmation to your email.",
+          title: "Buchung bestätigt!",
+          description: "Wir haben eine Bestätigung an Ihre E-Mail gesendet.",
         });
       },
       onError: () => {
         toast({
-          title: "Booking failed",
-          description: "There was an error securing your reservation. Please try again.",
+          title: "Buchung fehlgeschlagen",
+          description: "Bei der Buchung Ihrer Reservierung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
           variant: "destructive"
         });
       }
@@ -365,10 +365,10 @@ export default function Restaurant() {
   if (!restaurant) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
-        <h1 className="font-serif text-4xl font-bold mb-4">Restaurant not found</h1>
-        <p className="text-muted-foreground mb-8">This restaurant may have been removed or is currently unavailable.</p>
+        <h1 className="font-serif text-4xl font-bold mb-4">Restaurant nicht gefunden</h1>
+        <p className="text-muted-foreground mb-8">Dieses Restaurant wurde möglicherweise entfernt oder ist derzeit nicht verfügbar.</p>
         <Button asChild>
-          <Link href="/explore">Browse all restaurants</Link>
+          <Link href="/explore">Alle Restaurants durchsuchen</Link>
         </Button>
       </div>
     );
@@ -423,7 +423,7 @@ export default function Restaurant() {
                   </Badge>
                   <span className="text-muted-foreground font-medium">{"€".repeat(restaurant.priceRange || 2)}</span>
                   {restaurant.isOpenNow && (
-                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">Open Now</Badge>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">Jetzt geöffnet</Badge>
                   )}
                 </div>
                 <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight text-foreground mb-2">
@@ -434,7 +434,7 @@ export default function Restaurant() {
                 {restaurant.hasActiveFlash && (
                   <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive font-semibold px-3 py-1.5 rounded-lg mt-2 border border-destructive/20">
                     <Star className="w-4 h-4 fill-current" />
-                    {restaurant.flashPercentage}% OFF today
+                    {restaurant.flashPercentage}% RABATT heute
                   </div>
                 )}
               </div>
@@ -443,7 +443,7 @@ export default function Restaurant() {
                 <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
                 <div>
                   <div className="font-bold text-xl leading-none text-amber-950">{restaurant.rating.toFixed(1)}</div>
-                  <div className="text-xs font-medium text-amber-800">{restaurant.reviewCount} reviews</div>
+                  <div className="text-xs font-medium text-amber-800">{restaurant.reviewCount} Bewertungen</div>
                 </div>
               </div>
             </div>
@@ -456,7 +456,7 @@ export default function Restaurant() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Address</div>
+                  <div className="font-medium">Adresse</div>
                   <div className="text-muted-foreground">{restaurant.address}</div>
                   <div className="text-muted-foreground">{restaurant.city}</div>
                 </div>
@@ -464,26 +464,26 @@ export default function Restaurant() {
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Hours</div>
+                  <div className="font-medium">Öffnungszeiten</div>
                   <div className="text-muted-foreground">
                     {restaurant.openDays?.join(", ")}
                   </div>
                   <div className="text-muted-foreground">
-                    {restaurant.openTime} - {restaurant.closeTime}
+                    {restaurant.openTime} – {restaurant.closeTime}
                   </div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Contact</div>
+                  <div className="font-medium">Kontakt</div>
                   <div className="text-muted-foreground">{restaurant.phone}</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Email</div>
+                  <div className="font-medium">E-Mail</div>
                   <div className="text-muted-foreground">{restaurant.email}</div>
                 </div>
               </div>
@@ -584,7 +584,7 @@ export default function Restaurant() {
 
           {/* Menu */}
           <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
-            <h2 className="font-serif text-3xl font-bold mb-6">Menu</h2>
+            <h2 className="font-serif text-3xl font-bold mb-6">Speisekarte</h2>
             
             {categories.length > 0 ? (
               <Tabs defaultValue={categories[0]}>
@@ -618,14 +618,14 @@ export default function Restaurant() {
               </Tabs>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                Menu currently unavailable online.
+                Speisekarte derzeit nicht online verfügbar.
               </div>
             )}
           </div>
 
           {/* Reviews Section */}
           <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm space-y-8">
-            <h2 className="font-serif text-3xl font-bold">Reviews</h2>
+            <h2 className="font-serif text-3xl font-bold">Bewertungen</h2>
             
             {reviewStats && reviewStats.totalCount > 0 ? (
               <div className="flex flex-col md:flex-row gap-8 items-center border-b pb-8">
@@ -639,7 +639,7 @@ export default function Restaurant() {
                     ))}
                   </div>
                   <div className="text-muted-foreground font-medium">
-                    {reviewStats.totalCount} reviews
+                    {reviewStats.totalCount} Bewertungen
                   </div>
                 </div>
                 
@@ -661,7 +661,7 @@ export default function Restaurant() {
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground border-b border-dashed">
-                No reviews yet. Be the first to leave one!
+                Noch keine Bewertungen. Seien Sie der Erste!
               </div>
             )}
 
@@ -694,7 +694,7 @@ export default function Restaurant() {
                   {review.ownerReply && (
                     <div className="mt-4 bg-muted/50 border rounded-xl p-4 ml-4 md:ml-12">
                       <div className="flex items-center gap-2 mb-2 text-sm font-bold">
-                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Owner's Reply</Badge>
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Antwort des Inhabers</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {review.ownerReply}
@@ -709,14 +709,14 @@ export default function Restaurant() {
             <div className="pt-4 border-t border-dashed">
               {!showReviewForm ? (
                 <Button variant="outline" className="w-full h-12 rounded-full font-medium" onClick={() => setShowReviewForm(true)}>
-                  Write a Review
+                  Bewertung schreiben
                 </Button>
               ) : (
                 <div className="bg-muted/30 p-6 rounded-2xl border">
-                  <h3 className="font-serif text-xl font-bold mb-4">Share your experience</h3>
+                  <h3 className="font-serif text-xl font-bold mb-4">Teilen Sie Ihre Erfahrung</h3>
                   <form onSubmit={reviewForm.handleSubmit(onReviewSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Rating</Label>
+                      <Label>Bewertung</Label>
                       <div className="flex gap-1 text-amber-400">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <button
@@ -737,19 +737,19 @@ export default function Restaurant() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="review-name">Name</Label>
-                        <Input id="review-name" placeholder="John D." {...reviewForm.register("customerName")} />
+                        <Input id="review-name" placeholder="Max M." {...reviewForm.register("customerName")} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="review-email">Email</Label>
-                        <Input id="review-email" type="email" placeholder="john@example.com" {...reviewForm.register("customerEmail")} />
+                        <Label htmlFor="review-email">E-Mail</Label>
+                        <Input id="review-email" type="email" placeholder="max@beispiel.de" {...reviewForm.register("customerEmail")} />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="review-comment">Review</Label>
+                      <Label htmlFor="review-comment">Kommentar</Label>
                       <Textarea 
                         id="review-comment" 
-                        placeholder="How was the food and service?" 
+                        placeholder="Wie war das Essen und der Service?" 
                         className="min-h-[100px] resize-none"
                         {...reviewForm.register("comment")} 
                       />
@@ -757,10 +757,10 @@ export default function Restaurant() {
 
                     <div className="flex gap-3 pt-2">
                       <Button type="submit" disabled={createReview.isPending} className="flex-1 rounded-full">
-                        {createReview.isPending ? "Submitting..." : "Submit Review"}
+                        {createReview.isPending ? "Wird eingereicht..." : "Bewertung einreichen"}
                       </Button>
                       <Button type="button" variant="outline" className="rounded-full" onClick={() => setShowReviewForm(false)}>
-                        Cancel
+                        Abbrechen
                       </Button>
                     </div>
                   </form>
@@ -788,31 +788,31 @@ export default function Restaurant() {
           <div className="sticky top-24">
             <div className="bg-card border rounded-2xl shadow-lg overflow-hidden">
               <div className="bg-primary/10 p-6 text-center border-b border-primary/10">
-                <h3 className="font-serif text-2xl font-bold text-foreground">Make a Reservation</h3>
+                <h3 className="font-serif text-2xl font-bold text-foreground">Tisch reservieren</h3>
                 {restaurant.availabilityStatus && restaurant.isOpenNow && (
                   <div className="mt-3">
                     {restaurant.availabilityStatus === "available" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/15 text-emerald-700 border border-emerald-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Tables available now
+                        Tische jetzt verfügbar
                       </span>
                     )}
                     {restaurant.availabilityStatus === "limited" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-400/15 text-amber-700 border border-amber-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        Limited seats left — book soon
+                        Wenige Plätze — bald buchen
                       </span>
                     )}
                     {restaurant.availabilityStatus === "nearly_full" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-orange-400/15 text-orange-700 border border-orange-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                        Almost full — secure your table now
+                        Fast ausgebucht — Tisch sichern
                       </span>
                     )}
                     {restaurant.availabilityStatus === "full" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-red-400/15 text-red-700 border border-red-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                        {restaurant.nextAvailableSlot ? `Fully booked · next slot: ${restaurant.nextAvailableSlot}` : "Fully booked for now"}
+                        {restaurant.nextAvailableSlot ? `Ausgebucht · nächster Slot: ${restaurant.nextAvailableSlot}` : "Momentan ausgebucht"}
                       </span>
                     )}
                   </div>
@@ -825,19 +825,19 @@ export default function Restaurant() {
                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <h3 className="font-serif text-2xl font-bold mb-2">You're all set!</h3>
+                    <h3 className="font-serif text-2xl font-bold mb-2">Tisch bestätigt!</h3>
                     <p className="text-muted-foreground mb-6">
-                      Your table at {restaurant.name} is confirmed. We've sent details to your email.
+                      Ihr Tisch bei {restaurant.name} ist reserviert. Wir haben die Details an Ihre E-Mail gesendet.
                     </p>
                     <Button onClick={() => setBookingSuccess(false)} variant="outline" className="w-full rounded-full">
-                      Book another table
+                      Weiteren Tisch buchen
                     </Button>
                   </div>
                 ) : (
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="date">Date</Label>
+                        <Label htmlFor="date">Datum</Label>
                         <div className="relative">
                           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input 
@@ -858,14 +858,14 @@ export default function Restaurant() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="time">Time</Label>
+                        <Label htmlFor="time">Uhrzeit</Label>
                         <Select 
                           onValueChange={(val) => form.setValue("time", val)} 
                           defaultValue={form.getValues("time")}
                         >
                           <SelectTrigger className="w-full">
                             <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder="Select time" />
+                            <SelectValue placeholder="Uhrzeit wählen" />
                           </SelectTrigger>
                           <SelectContent>
                             {slotData ? (
@@ -897,7 +897,7 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="partySize">Party Size</Label>
+                      <Label htmlFor="partySize">Personenzahl</Label>
                       <div className="relative">
                         <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input 
@@ -915,10 +915,10 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customerName">Full Name</Label>
+                      <Label htmlFor="customerName">Vollständiger Name</Label>
                       <Input 
                         id="customerName"
-                        placeholder="John Doe"
+                        placeholder="Max Mustermann"
                         {...form.register("customerName")} 
                       />
                       {form.formState.errors.customerName && (
@@ -927,11 +927,11 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customerEmail">Email</Label>
+                      <Label htmlFor="customerEmail">E-Mail</Label>
                       <Input 
                         id="customerEmail"
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder="max@beispiel.de"
                         {...form.register("customerEmail")} 
                       />
                       {form.formState.errors.customerEmail && (
@@ -940,11 +940,11 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customerPhone">Phone Number</Label>
+                      <Label htmlFor="customerPhone">Telefonnummer</Label>
                       <Input 
                         id="customerPhone"
                         type="tel"
-                        placeholder="+44 7700 900077"
+                        placeholder="+49 170 1234567"
                         {...form.register("customerPhone")} 
                       />
                       {form.formState.errors.customerPhone && (
@@ -953,10 +953,10 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Special Requests (Optional)</Label>
+                      <Label htmlFor="notes">Besondere Wünsche (Optional)</Label>
                       <Textarea 
                         id="notes"
-                        placeholder="Anniversary, dietary requirements..."
+                        placeholder="Jubiläum, Allergien, Kinderstuhl..."
                         className="resize-none h-20"
                         {...form.register("notes")} 
                       />
@@ -967,10 +967,10 @@ export default function Restaurant() {
                       className="w-full rounded-full h-12 text-lg font-medium shadow-md mt-4"
                       disabled={createBooking.isPending}
                     >
-                      {createBooking.isPending ? "Confirming..." : "Confirm Reservation"}
+                      {createBooking.isPending ? "Wird bestätigt..." : "Reservierung bestätigen"}
                     </Button>
                     <p className="text-center text-xs text-muted-foreground mt-4">
-                      By proceeding, you agree to our Terms of Service and Privacy Policy.
+                      Mit dem Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.
                     </p>
                   </form>
                 )}

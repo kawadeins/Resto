@@ -194,7 +194,7 @@ export function MapView({ restaurants, userLat, userLng }: MapViewProps) {
             <Popup className="leaflet-popup-custom">
               <div className="text-sm font-semibold text-blue-600 flex items-center gap-1.5 px-1 py-0.5">
                 <Navigation className="w-3.5 h-3.5" />
-                Your location
+                Mein Standort
               </div>
             </Popup>
           </Marker>
@@ -223,7 +223,7 @@ export function MapView({ restaurants, userLat, userLng }: MapViewProps) {
                   {/* Badges row */}
                   <div className="flex items-center gap-1.5 flex-wrap mb-2">
                     <span className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium ${r.isOpenNow ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                      {r.isOpenNow ? "Open" : "Closed"}
+                      {r.isOpenNow ? "Geöffnet" : "Geschlossen"}
                     </span>
 
                     <span className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-700">
@@ -252,24 +252,24 @@ export function MapView({ restaurants, userLat, userLng }: MapViewProps) {
                       {r.availabilityStatus === "available" && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          Tables available now
+                          Tische verfügbar
                         </span>
                       )}
                       {r.availabilityStatus === "limited" && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                          Limited seats left
+                          Wenige Plätze
                         </span>
                       )}
                       {r.availabilityStatus === "nearly_full" && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">
                           <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
-                          Almost full
+                          Fast ausgebucht
                         </span>
                       )}
                       {r.availabilityStatus === "full" && (
                         <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                          {r.nextAvailableSlot ? `Next slot: ${r.nextAvailableSlot}` : "Fully booked"}
+                          {r.nextAvailableSlot ? `Nächster Slot: ${r.nextAvailableSlot}` : "Ausgebucht"}
                         </span>
                       )}
                     </div>
@@ -291,7 +291,7 @@ export function MapView({ restaurants, userLat, userLng }: MapViewProps) {
                       className="w-full text-xs font-semibold py-2 px-4 rounded-lg text-white"
                       style={{ background: "hsl(var(--primary))" }}
                     >
-                      View & Book
+                      Ansehen & Buchen
                     </button>
                   </Link>
                 </div>
@@ -305,15 +305,15 @@ export function MapView({ restaurants, userLat, userLng }: MapViewProps) {
       <div className="absolute bottom-3 left-3 z-[400] bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md border text-xs space-y-1">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
-          <span className="text-gray-600">Your location</span>
+          <span className="text-gray-600">Mein Standort</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full border-2 border-red-500 bg-white" />
-          <span className="text-gray-600">Flash deal active</span>
+          <span className="text-gray-600">Blitzangebot aktiv</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full border-2 border-gray-300 bg-white" />
-          <span className="text-gray-600">Closed now</span>
+          <span className="text-gray-600">Geschlossen</span>
         </div>
       </div>
     </div>

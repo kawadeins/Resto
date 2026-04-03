@@ -15,15 +15,15 @@ export default function Finances() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Finances & Strategy</h2>
-        <p className="text-muted-foreground mt-2">Revenue analytics and financial performance overview.</p>
+        <h2 className="text-3xl font-bold tracking-tight">Finanzen & Strategie</h2>
+        <p className="text-muted-foreground mt-2">Umsatzanalyse und Überblick über die Finanzleistung.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue YTD</CardTitle>
+              <CardTitle className="text-sm font-medium">Gesamtumsatz (lfd. Jahr)</CardTitle>
               <DollarSign className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -39,7 +39,7 @@ export default function Finances() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Net Profit YTD</CardTitle>
+              <CardTitle className="text-sm font-medium">Nettoprofit (lfd. Jahr)</CardTitle>
               <TrendingUp className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
@@ -55,7 +55,7 @@ export default function Finances() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Profit Margin</CardTitle>
+              <CardTitle className="text-sm font-medium">Ø Gewinnmarge</CardTitle>
               <Percent className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
@@ -71,7 +71,7 @@ export default function Finances() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Daily Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">Ø Tagesumsatz</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -89,7 +89,7 @@ export default function Finances() {
         <motion.div className="col-span-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Monthly Revenue Breakdown</CardTitle>
+              <CardTitle>Monatlicher Umsatzverlauf</CardTitle>
             </CardHeader>
             <CardContent className="pl-0">
               {loadingSummary ? (
@@ -106,7 +106,7 @@ export default function Finances() {
                       <Tooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
-                        formatter={(value: number) => [`€${value.toLocaleString()}`, "Revenue"]}
+                        formatter={(value: number) => [`€${value.toLocaleString()}`, "Umsatz"]}
                       />
                       <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -120,7 +120,7 @@ export default function Finances() {
         <motion.div className="col-span-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <Card className="h-full flex flex-col">
             <CardHeader>
-              <CardTitle>Top Performing Dishes</CardTitle>
+              <CardTitle>Umsatzstärkste Gerichte</CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
               {loadingSummary ? (
@@ -137,7 +137,7 @@ export default function Finances() {
                         </div>
                         <span className="font-medium">{dish.name}</span>
                       </div>
-                      <span className="text-muted-foreground font-mono">{dish.count} ordered</span>
+                      <span className="text-muted-foreground font-mono">{dish.count}× bestellt</span>
                     </div>
                   ))}
                 </div>
@@ -155,15 +155,15 @@ export default function Finances() {
                 <Megaphone className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">Flash Deals & Scheduled Discounts</p>
+                <p className="font-semibold">Blitzangebote & Rabattaktionen</p>
                 <p className="text-sm text-muted-foreground">
-                  Manage your promotional strategy from the dedicated Marketing page.
+                  Verwalten Sie Ihre Werbestrategie auf der Marketing-Seite.
                 </p>
               </div>
             </div>
             <Link href="/marketing">
               <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 flex-shrink-0">
-                Go to Marketing
+                Zum Marketing
               </Button>
             </Link>
           </CardContent>

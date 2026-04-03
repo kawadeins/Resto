@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Clock, Calendar, Bell, Trash2, Plus, Send, CheckCircle2, Tag, Lock } from "lucide-react";
 
-const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS_OF_WEEK = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 function ActiveDiscountBanner() {
   const { data: status } = useGetActiveDiscountStatus({
@@ -51,11 +51,11 @@ function ActiveDiscountBanner() {
       <div className="flex-1">
         <span className="font-bold text-emerald-500">{status.label}</span>
         <span className="text-sm text-muted-foreground ml-2">
-          {status.percentage}% off is live now
+          {status.percentage}% Rabatt ist jetzt aktiv
         </span>
         {status.minutesRemaining != null && (
           <span className="ml-2 text-sm text-emerald-500 font-mono">
-            ({status.minutesRemaining} min remaining)
+            ({status.minutesRemaining} Min. verbleibend)
           </span>
         )}
       </div>
@@ -194,9 +194,9 @@ export default function Marketing() {
     <div className="space-y-8 pb-10">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Marketing & Discounts</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Marketing & Rabatte</h2>
           <p className="text-muted-foreground mt-2">
-            Bridge the gap between empty tables and hungry customers.
+            Leere Tische und hungrige Gäste zusammenbringen.
           </p>
         </div>
       </div>
@@ -210,12 +210,12 @@ export default function Marketing() {
               <div className="bg-muted p-4 rounded-full mb-4">
                 <Lock className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Flash Deals — Pro Feature</h3>
+              <h3 className="text-lg font-semibold mb-2">Blitzangebote — Pro-Feature</h3>
               <p className="text-sm text-muted-foreground text-center mb-4">
-                Upgrade to RestoSmart Pro to access instant flash deals and notification blasts.
+                Upgraden Sie auf RestoSmart Pro, um Blitzangebote und Benachrichtigungen zu nutzen.
               </p>
               <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                Upgrade to Pro
+                Auf Pro upgraden
               </Link>
             </div>
           )}
@@ -223,17 +223,17 @@ export default function Marketing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-amber-500">
                 <Zap className="h-5 w-5" />
-                Flash Deal
+                Blitzangebot
               </CardTitle>
               <CardDescription>
-                Instantly activate a 25% discount for 30 minutes. Perfect for slow periods.
+                Sofort 25% Rabatt für 30 Minuten aktivieren. Ideal für ruhige Zeiten.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-center">
                 <div className="text-4xl font-black text-amber-500 mb-1">25%</div>
-                <div className="text-sm text-muted-foreground">off all dishes</div>
-                <div className="text-xs text-amber-500 mt-2 font-medium">30 minutes only</div>
+                <div className="text-sm text-muted-foreground">auf alle Gerichte</div>
+                <div className="text-xs text-amber-500 mt-2 font-medium">Nur 30 Minuten</div>
               </div>
               <Button
                 className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold text-base py-6"
@@ -241,18 +241,18 @@ export default function Marketing() {
                 disabled={activateFlash.isPending || !isPro}
               >
                 <Zap className="mr-2 h-5 w-5" />
-                {activateFlash.isPending ? "Activating..." : "Activate Flash Deal Now"}
+                {activateFlash.isPending ? "Aktiviere..." : "Blitzangebot jetzt aktivieren"}
               </Button>
               {flashDeals.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground font-medium">Recent Flash Deals</p>
+                  <p className="text-xs text-muted-foreground font-medium">Letzte Blitzangebote</p>
                   {flashDeals.slice(0, 3).map((d) => (
                     <div key={d.id} className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{d.label}</span>
                       {d.isFlashActive ? (
                         <Badge className="bg-emerald-500 text-white text-[10px] border-0 animate-pulse">LIVE</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px]">Expired</Badge>
+                        <Badge variant="outline" className="text-[10px]">Abgelaufen</Badge>
                       )}
                     </div>
                   ))}
@@ -268,12 +268,12 @@ export default function Marketing() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
-                  Scheduled Deals
+                  Geplante Angebote
                 </CardTitle>
-                <CardDescription>Recurring discounts on specific days and times.</CardDescription>
+                <CardDescription>Wiederkehrende Rabatte an bestimmten Tagen und Zeiten.</CardDescription>
               </div>
               <Button size="sm" onClick={() => setShowScheduledForm(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Add Deal
+                <Plus className="mr-2 h-4 w-4" /> Angebot hinzufügen
               </Button>
             </CardHeader>
             <CardContent>
@@ -284,8 +284,8 @@ export default function Marketing() {
               ) : scheduledDeals.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Calendar className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p className="font-medium">No scheduled deals yet.</p>
-                  <p className="text-sm mt-1">Create your first recurring discount above.</p>
+                  <p className="font-medium">Noch keine geplanten Angebote.</p>
+                  <p className="text-sm mt-1">Erstellen Sie oben Ihren ersten wiederkehrenden Rabatt.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -343,12 +343,12 @@ export default function Marketing() {
              <div className="bg-muted p-4 rounded-full mb-4">
                 <Lock className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Notification Blasts — Pro Feature</h3>
+              <h3 className="text-lg font-semibold mb-2">Benachrichtigungen — Pro-Feature</h3>
               <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
-                Upgrade to RestoSmart Pro to reach customers directly with personalized push notifications.
+                Upgraden Sie auf RestoSmart Pro, um Kunden direkt mit personalisierten Benachrichtigungen zu erreichen.
               </p>
               <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                Upgrade to Pro
+                Auf Pro upgraden
               </Link>
           </div>
         )}
@@ -357,14 +357,14 @@ export default function Marketing() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Send className="h-5 w-5 text-primary" />
-                Notification Blast
+                Benachrichtigungsversand
               </CardTitle>
               <CardDescription>
-                Push deal alerts to registered customer app users. Each blast is logged below.
+                Angebotsmeldungen an registrierte Kunden-App-Nutzer senden. Jede Sendung wird protokolliert.
               </CardDescription>
             </div>
             <Button variant="outline" onClick={() => setShowBlastForm(true)} disabled={!isPro}>
-              <Bell className="mr-2 h-4 w-4" /> Send Blast
+              <Bell className="mr-2 h-4 w-4" /> Senden
             </Button>
           </CardHeader>
           <CardContent>
@@ -393,7 +393,7 @@ export default function Marketing() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No blasts sent yet. Reach your customers directly.</p>
+                <p className="text-sm">Noch keine Benachrichtigungen gesendet. Erreichen Sie Ihre Kunden direkt.</p>
               </div>
             )}
           </CardContent>
@@ -403,19 +403,19 @@ export default function Marketing() {
       <Dialog open={showScheduledForm} onOpenChange={setShowScheduledForm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Create Scheduled Deal</DialogTitle>
+            <DialogTitle>Geplantes Angebot erstellen</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Deal Label</Label>
+              <Label>Bezeichnung</Label>
               <Input
-                placeholder="e.g. Monday Lunch Special"
+                placeholder="z.B. Montags-Mittagsspecial"
                 value={scheduledForm.label}
                 onChange={(e) => setScheduledForm((f) => ({ ...f, label: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Discount (%)</Label>
+              <Label>Rabatt (%)</Label>
               <Input
                 type="number"
                 min={1}
@@ -426,7 +426,7 @@ export default function Marketing() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Start Time</Label>
+                <Label>Startzeit</Label>
                 <Input
                   type="time"
                   value={scheduledForm.startTime}
@@ -434,7 +434,7 @@ export default function Marketing() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>End Time</Label>
+                <Label>Endzeit</Label>
                 <Input
                   type="time"
                   value={scheduledForm.endTime}
@@ -443,7 +443,7 @@ export default function Marketing() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Days of Week</Label>
+              <Label>Wochentage</Label>
               <div className="flex flex-wrap gap-2">
                 {DAYS_OF_WEEK.map((day) => (
                   <button
@@ -462,9 +462,9 @@ export default function Marketing() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Notes (optional)</Label>
+              <Label>Notizen (optional)</Label>
               <Textarea
-                placeholder="Internal notes..."
+                placeholder="Interne Notizen..."
                 rows={2}
                 value={scheduledForm.notes}
                 onChange={(e) => setScheduledForm((f) => ({ ...f, notes: e.target.value }))}
@@ -472,9 +472,9 @@ export default function Marketing() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowScheduledForm(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowScheduledForm(false)}>Abbrechen</Button>
             <Button onClick={handleCreateScheduled} disabled={createScheduled.isPending}>
-              {createScheduled.isPending ? "Creating..." : "Create Deal"}
+              {createScheduled.isPending ? "Erstelle..." : "Angebot erstellen"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -483,28 +483,28 @@ export default function Marketing() {
       <Dialog open={showBlastForm} onOpenChange={setShowBlastForm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Send Notification Blast</DialogTitle>
+            <DialogTitle>Benachrichtigung senden</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Title</Label>
+              <Label>Titel</Label>
               <Input
-                placeholder="e.g. 25% Off — Tonight Only!"
+                placeholder="z.B. 25% Rabatt — Nur heute Abend!"
                 value={blastForm.title}
                 onChange={(e) => setBlastForm((f) => ({ ...f, title: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Message</Label>
+              <Label>Nachricht</Label>
               <Textarea
-                placeholder="Show this message at checkout for your discount..."
+                placeholder="Zeigen Sie diese Nachricht beim Bezahlen für Ihren Rabatt..."
                 rows={3}
                 value={blastForm.message}
                 onChange={(e) => setBlastForm((f) => ({ ...f, message: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Estimated Recipients</Label>
+              <Label>Geschätzte Empfänger</Label>
               <Input
                 type="number"
                 min={0}
@@ -514,10 +514,10 @@ export default function Marketing() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBlastForm(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowBlastForm(false)}>Abbrechen</Button>
             <Button onClick={handleSendBlast} disabled={sendBlast.isPending}>
               <Send className="mr-2 h-4 w-4" />
-              {sendBlast.isPending ? "Sending..." : "Send Blast"}
+              {sendBlast.isPending ? "Wird gesendet..." : "Senden"}
             </Button>
           </DialogFooter>
         </DialogContent>

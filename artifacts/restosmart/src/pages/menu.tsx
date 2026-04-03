@@ -30,12 +30,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MenuItem, MenuIngredient } from "@workspace/api-client-react";
 
-const CATEGORIES = ["Starters", "Main Course", "Pasta", "Pizza", "Grill", "Desserts", "Beverages", "Sides"];
+const CATEGORIES = ["Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Grill", "Desserts", "Getränke", "Beilagen"];
 
 const dishSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  category: z.string().min(1, "Category is required"),
-  sellingPrice: z.coerce.number().positive("Price must be positive"),
+  name: z.string().min(2, "Name ist erforderlich"),
+  category: z.string().min(1, "Kategorie ist erforderlich"),
+  sellingPrice: z.coerce.number().positive("Preis muss positiv sein"),
   description: z.string().optional().nullable(),
   isActive: z.boolean().default(true),
 });
@@ -66,7 +66,7 @@ export default function Menu() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: "",
-      category: "Main Course",
+      category: "Hauptgericht",
       sellingPrice: 0,
       description: "",
       isActive: true,
@@ -113,11 +113,11 @@ export default function Menu() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Delete this dish? This will remove all recipe links.")) {
+    if (confirm("Dieses Gericht löschen? Alle Rezeptverknüpfungen werden entfernt.")) {
       deleteMenuItem.mutate({ id }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListMenuItemsQueryKey() });
-          toast({ title: "Dish deleted successfully" });
+          toast({ title: "Gericht erfolgreich gelöscht" });
         }
       });
     }
@@ -141,9 +141,9 @@ export default function Menu() {
 
       queryClient.invalidateQueries({ queryKey: getListMenuItemsQueryKey() });
       setSheetOpen(false);
-      toast({ title: editingDish ? "Dish updated" : "Dish created" });
+      toast({ title: editingDish ? "Gericht aktualisiert" : "Gericht erstellt" });
     } catch (error) {
-      toast({ title: "Failed to save dish", variant: "destructive" });
+      toast({ title: "Gericht konnte nicht gespeichert werden", variant: "destructive" });
     }
   };
 
@@ -167,18 +167,18 @@ export default function Menu() {
     <div className="space-y-8 pb-10">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Menu Management</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Speisekarte verwalten</h2>
           <p className="text-muted-foreground mt-2">
-            Create dishes, link ingredients and track real-time profitability.
+            Gerichte erstellen, Zutaten verknüpfen und Rentabilität in Echtzeit verfolgen.
           </p>
         </div>
         <Button onClick={() => {
           setEditingDish(null);
-          form.reset({ name: "", category: "Main Course", sellingPrice: 0, description: "", isActive: true });
+          form.reset({ name: "", category: "Hauptgericht", sellingPrice: 0, description: "", isActive: true });
           setIngredients([]);
           setSheetOpen(true);
         }}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Dish
+          <Plus className="mr-2 h-4 w-4" /> Gericht hinzufügen
         </Button>
       </div>
 
@@ -186,7 +186,7 @@ export default function Menu() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Active Dishes</CardTitle>
+              <CardTitle className="text-sm font-medium">Aktive Gerichte</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.activeCount}</div>
@@ -196,7 +196,7 @@ export default function Menu() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Average Profit Margin %</CardTitle>
+              <CardTitle className="text-sm font-medium">Ø Gewinnmarge %</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-emerald-500">{stats.avgMargin.toFixed(1)}%</div>
@@ -206,7 +206,7 @@ export default function Menu() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Highest Margin Dish</CardTitle>
+              <CardTitle className="text-sm font-medium">Gericht mit höchster Marge</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.highestMarginDish}</div>
@@ -229,13 +229,13 @@ export default function Menu() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Selling Price</TableHead>
-                    <TableHead className="text-right">Recipe Cost</TableHead>
-                    <TableHead className="text-right">Profit</TableHead>
-                    <TableHead className="text-right">Margin</TableHead>
+                    <TableHead>Kategorie</TableHead>
+                    <TableHead className="text-right">Verkaufspreis</TableHead>
+                    <TableHead className="text-right">Rezeptkosten</TableHead>
+                    <TableHead className="text-right">Gewinn</TableHead>
+                    <TableHead className="text-right">Marge</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Aktionen</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -262,9 +262,9 @@ export default function Menu() {
                       </TableCell>
                       <TableCell>
                         {dish.isActive ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Active</Badge>
+                          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Aktiv</Badge>
                         ) : (
-                          <Badge variant="secondary" className="bg-muted text-muted-foreground">Inactive</Badge>
+                          <Badge variant="secondary" className="bg-muted text-muted-foreground">Inaktiv</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">

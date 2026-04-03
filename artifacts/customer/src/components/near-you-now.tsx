@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "wouter";
-import { Navigation, Star, Clock, ArrowRight, Timer, Flame, MapPin, Armchair } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Navigation, Star, ArrowRight, Timer, Flame, MapPin, Armchair, Zap } from "lucide-react";
 import { rankHyperLocal, urgencyLabel, type ScoredRestaurant } from "@/lib/hyper-local";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
 
@@ -19,22 +17,21 @@ function UrgencyBadge({ sr }: { sr: ScoredRestaurant }) {
   const urgency = urgencyLabel(sr.flashMinutesLeft, sr.isWeakHour, sr.minutesUntilClose);
   if (!urgency) return null;
 
-  const styles = {
-    critical: "bg-red-500 text-white border-red-400 animate-pulse",
-    high: "bg-orange-500 text-white border-orange-400",
-    medium: "bg-primary text-primary-foreground border-primary/60",
-    low: "bg-emerald-600/10 text-emerald-600 border-emerald-600/30",
+  const styles: Record<string, string> = {
+    critical: "bg-red-500 text-white animate-pulse",
+    high: "bg-orange-500 text-white",
+    medium: "bg-gradient-to-r from-primary to-accent text-white",
+    low: "bg-emerald-100 text-emerald-700",
   };
-
-  const icons = {
+  const icons: Record<string, React.ReactNode> = {
     critical: <Flame className="w-3 h-3" />,
     high: <Timer className="w-3 h-3" />,
-    medium: <Flame className="w-3 h-3" />,
-    low: <Clock className="w-3 h-3" />,
+    medium: <Zap className="w-3 h-3" />,
+    low: <Armchair className="w-3 h-3" />,
   };
 
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${styles[urgency.level]}`}>
+    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${styles[urgency.level]}`}>
       {icons[urgency.level]}
       {urgency.text}
     </span>
@@ -44,11 +41,11 @@ function UrgencyBadge({ sr }: { sr: ScoredRestaurant }) {
 function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
   const { restaurant: r, distance, isWeakHour, flashDeal } = sr;
   const urgency = urgencyLabel(sr.flashMinutesLeft, sr.isWeakHour, sr.minutesUntilClose);
-  const distanceText = distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)} km`;
+  const distanceText = distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)} km`;
 
   return (
-    <Link href={`/restaurant/${r.id}`} className="group block h-full">
-      <div className="relative h-full rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-card border border-border group-hover:-translate-y-0.5 group-hover:border-primary/30">
+    <Link href={`/restaurant/${r.id}`} className="block group press-scale h-full">
+      <div className="relative h-full rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-card border border-border group-hover:-translate-y-1">
         {/* Hero image */}
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           {r.heroImage ? (
@@ -58,144 +55,110 @@ function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl bg-muted/60">
+            <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-primary/10 to-accent/10">
               {r.cuisineEmoji}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-          {/* Top badges row */}
-          <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+          {/* Top badges */}
+          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1.5">
-              {/* Rank pill */}
-              {rank <= 1 && (
-                <span className="bg-amber-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1">
+              {rank <= 0 && (
+                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
                   <Flame className="w-2.5 h-2.5" /> Top Pick
                 </span>
               )}
-              {/* Flash deal */}
               {r.hasActiveFlash && r.flashPercentage && (
-                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border text-white backdrop-blur-sm ${
-                  urgency?.level === "critical"
-                    ? "bg-red-600/90 border-red-400/60 animate-pulse"
-                    : "bg-destructive/90 border-white/20"
-                }`}>
-                  {r.flashPercentage}% OFF
+                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full text-white bg-gradient-to-r from-accent to-rose-500 shadow-md">
+                  {r.flashPercentage}% RABATT
                 </span>
               )}
             </div>
-
-            {/* Distance badge */}
-            <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
               <Navigation className="w-3 h-3" />
               {distanceText}
             </div>
           </div>
 
-          {/* Open/closed status */}
-          <div className="absolute bottom-3 left-3">
+          {/* Open / closed */}
+          <div className="absolute bottom-2.5 left-2.5">
             {r.isOpenNow ? (
-              <span className="flex items-center gap-1 bg-emerald-600/90 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1.5 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                Open Now
+                Geöffnet
               </span>
             ) : (
-              <span className="bg-black/60 backdrop-blur-sm text-white/80 text-[11px] px-2.5 py-1 rounded-full">
-                Closed
+              <span className="bg-black/60 backdrop-blur-sm text-white/70 text-[10px] font-semibold px-2.5 py-1 rounded-full">
+                Geschlossen
               </span>
             )}
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-3">
-          {/* Name + rating */}
+        <div className="p-4 space-y-2.5">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-serif text-lg font-bold leading-tight truncate group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-sm leading-tight truncate group-hover:text-primary transition-colors">
                 {r.name}
               </h3>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-sm text-muted-foreground">{r.cuisineEmoji} {r.cuisine}</span>
-                {r.priceRange && (
-                  <>
-                    <span className="text-muted-foreground/50">·</span>
-                    <span className="text-sm text-muted-foreground">{"€".repeat(r.priceRange)}</span>
-                  </>
-                )}
+              <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
+                <span>{r.cuisineEmoji} {r.cuisine}</span>
+                {r.priceRange && <><span className="opacity-40">·</span><span>{"€".repeat(r.priceRange)}</span></>}
               </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0 bg-amber-50 border border-amber-200/60 text-amber-700 px-2 py-1 rounded-lg">
+            <div className="flex items-center gap-1 shrink-0 bg-amber-50 border border-amber-200/60 px-2 py-1 rounded-xl">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-bold text-sm">{r.rating?.toFixed(1)}</span>
+              <span className="font-bold text-xs text-amber-800">{r.rating?.toFixed(1)}</span>
             </div>
           </div>
 
-          {/* Address */}
           {r.address && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-              <MapPin className="w-3 h-3 shrink-0" />
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
+              <MapPin className="w-3 h-3 shrink-0 text-primary/50" />
               {r.address}{r.city ? `, ${r.city}` : ""}
             </p>
           )}
 
-          {/* Urgency / weak hour indicator */}
-          {(urgency || isWeakHour) && (
-            <div>
-              <UrgencyBadge sr={sr} />
-            </div>
-          )}
+          {(urgency || isWeakHour) && <UrgencyBadge sr={sr} />}
 
-          {/* Flash deal detail */}
           {flashDeal && flashDeal.flashExpiresAt && sr.flashMinutesLeft !== null && sr.flashMinutesLeft <= 120 && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               <Timer className="w-3 h-3 inline mr-1" />
-              Flash deal expires at{" "}
-              {new Date(flashDeal.flashExpiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              Angebot bis {new Date(flashDeal.flashExpiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
 
-          {/* Availability chip */}
           {r.isOpenNow && r.availabilityStatus && r.availabilityStatus !== "closed" && (
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="text-[11px]">
               {r.availabilityStatus === "available" && (
-                <span className="flex items-center gap-1 text-emerald-600 font-semibold">
-                  <Armchair className="w-3 h-3" />
-                  Tables available now
+                <span className="flex items-center gap-1 text-emerald-700 font-bold">
+                  <Armchair className="w-3 h-3" /> Tische verfügbar
                 </span>
               )}
               {r.availabilityStatus === "limited" && (
-                <span className="flex items-center gap-1 text-amber-600 font-semibold">
-                  <Armchair className="w-3 h-3" />
-                  Limited seats remaining
+                <span className="flex items-center gap-1 text-amber-700 font-bold">
+                  <Armchair className="w-3 h-3" /> Wenige Plätze
                 </span>
               )}
               {r.availabilityStatus === "nearly_full" && (
-                <span className="flex items-center gap-1 text-orange-500 font-semibold">
-                  <Armchair className="w-3 h-3" />
-                  Almost fully booked
+                <span className="flex items-center gap-1 text-orange-600 font-bold">
+                  <Armchair className="w-3 h-3" /> Fast ausgebucht
                 </span>
               )}
               {r.availabilityStatus === "full" && (
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Armchair className="w-3 h-3" />
-                  {r.nextAvailableSlot ? `Next slot: ${r.nextAvailableSlot}` : "Fully booked"}
+                  {r.nextAvailableSlot ? `Nächster Slot: ${r.nextAvailableSlot}` : "Ausgebucht"}
                 </span>
               )}
             </div>
           )}
 
-          {/* Book Now CTA */}
-          <Button
-            size="sm"
-            className={`w-full rounded-full font-semibold shadow-sm ${r.availabilityStatus === "available" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
-            asChild
-          >
-            <Link href={`/restaurant/${r.id}`}>
-              {r.availabilityStatus === "available" ? "Book Now — Tables Ready" : "View & Book"}
-              <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-            </Link>
-          </Button>
+          <button className={`w-full py-2.5 rounded-2xl text-xs font-bold text-white transition-opacity hover:opacity-90 ${r.availabilityStatus === "available" ? "bg-gradient-to-r from-emerald-500 to-teal-500" : "bg-gradient-to-r from-primary to-accent"}`}>
+            {r.availabilityStatus === "available" ? "Jetzt buchen — Tische frei" : "Ansehen & Buchen"}
+          </button>
         </div>
       </div>
     </Link>
@@ -217,68 +180,46 @@ export function NearYouNow({
 
   if (ranked.length === 0) return null;
 
-  const hasUrgentDeal = ranked.some(
-    (sr) => sr.flashMinutesLeft !== null && sr.flashMinutesLeft <= 120
-  );
+  const hasUrgentDeal = ranked.some(sr => sr.flashMinutesLeft !== null && sr.flashMinutesLeft <= 120);
   const closestKm = ranked[0]?.distance ?? 0;
 
   return (
-    <section className="py-16 relative overflow-hidden">
-      {/* Subtle warm background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-orange-50/30 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
+    <section className="py-10 px-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-primary/3 to-transparent pointer-events-none" />
 
-      <div className="container mx-auto px-4 max-w-6xl relative z-10">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-8 flex-wrap gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
+      <div className="container mx-auto max-w-6xl relative z-10">
+        <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
               <div className="relative">
-                <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center">
-                  <Navigation className="w-4 h-4 text-primary" />
+                <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/30">
+                  <Navigation className="w-4 h-4 text-white" />
                 </div>
                 <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background animate-pulse" />
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-                Near You Now
-              </h2>
+              <h2 className="text-2xl font-extrabold tracking-tight">In Ihrer Nähe</h2>
               {hasUrgentDeal && (
-                <Badge className="bg-red-500 text-white text-xs font-bold animate-pulse border-0">
-                  <Flame className="w-3 h-3 mr-1" /> Deals expiring
-                </Badge>
+                <span className="flex items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">
+                  <Flame className="w-2.5 h-2.5" /> Deals laufen ab
+                </span>
               )}
             </div>
-            <p className="text-muted-foreground text-base">
-              {ranked.length} restaurant{ranked.length !== 1 ? "s" : ""} within{" "}
-              {closestKm < 1
-                ? `${Math.round(closestKm * 1000)}m`
-                : `${closestKm.toFixed(1)}km`}{" "}
-              · ranked by relevance, deals, and distance.
+            <p className="text-sm text-muted-foreground">
+              {ranked.length} Restaurant{ranked.length !== 1 ? "s" : ""} ·{" "}
+              {closestKm < 1 ? `${Math.round(closestKm * 1000)}m` : `${closestKm.toFixed(1)}km`} entfernt
             </p>
           </div>
 
-          <Link
-            href="/explore"
-            className="flex items-center text-sm font-medium text-primary hover:underline whitespace-nowrap"
-          >
-            View all on map <ArrowRight className="w-4 h-4 ml-1" />
+          <Link href="/explore" className="press-scale text-sm font-bold text-primary bg-primary/10 hover:bg-primary/15 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
+            Karte anzeigen <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* Restaurant grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {ranked.map((sr, i) => (
             <NearYouCard key={sr.restaurant.id} sr={sr} rank={i} />
           ))}
         </div>
-
-        {/* Foot note when there are weak hours */}
-        {ranked.some((sr) => sr.isWeakHour) && (
-          <p className="text-xs text-center text-muted-foreground mt-6">
-            <Clock className="w-3 h-3 inline mr-1" />
-            Some restaurants are in quieter hours — great time to get the best tables.
-          </p>
-        )}
       </div>
     </section>
   );

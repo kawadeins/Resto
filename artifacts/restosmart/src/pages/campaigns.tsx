@@ -63,52 +63,52 @@ interface CampaignTemplate {
 const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
   {
     type: "win_back",
-    label: "Win-Back",
-    description: "Re-engage customers who haven't visited in 45+ days",
+    label: "Rückgewinnung",
+    description: "Kunden ansprechen, die seit 45+ Tagen nicht mehr da waren",
     icon: RefreshCw,
     targetSegment: "inactive",
     color: "text-orange-400",
     defaultMessage:
-      "We miss you! It's been a while since your last visit. As a valued guest, we'd love to welcome you back with a special offer exclusively for you.",
+      "Wir vermissen Sie! Es ist schon eine Weile her seit Ihrem letzten Besuch. Als geschätzter Gast würden wir Sie gerne mit einem exklusiven Angebot wieder willkommen heißen.",
   },
   {
     type: "thank_you",
-    label: "Post-Visit Thank You",
-    description: "Thank returning customers and encourage reviews for bonus points",
+    label: "Besuchsdankeschön",
+    description: "Stammkunden danken und zu Bewertungen motivieren",
     icon: Heart,
     targetSegment: "returning",
     color: "text-pink-400",
     defaultMessage:
-      "Thank you for dining with us! We hope you had a wonderful experience. Leave us a review to earn 5 bonus loyalty points — and we can't wait to see you again.",
+      "Vielen Dank für Ihren Besuch! Wir hoffen, Sie hatten ein wunderbares Erlebnis. Hinterlassen Sie uns eine Bewertung und sammeln Sie 5 Bonus-Treuepunkte — wir freuen uns auf Ihr Wiederkommen!",
   },
   {
     type: "flash_blast",
-    label: "Flash Deal Blast",
-    description: "Blast an exclusive time-limited offer to all customers",
+    label: "Blitzangebot-Versand",
+    description: "Exklusives zeitlich begrenztes Angebot an alle Kunden senden",
     icon: Zap,
     targetSegment: "all",
     color: "text-yellow-400",
     defaultMessage:
-      "Exclusive offer alert! We're running a limited-time deal just for our valued customers. Book your table now before it expires — availability is limited!",
+      "Exklusives Angebot! Wir haben ein zeitlich begrenztes Angebot nur für unsere geschätzten Kunden. Reservieren Sie jetzt Ihren Tisch — die Plätze sind begrenzt!",
   },
   {
     type: "loyalty_reward",
-    label: "Loyalty Reward Unlock",
-    description: "Notify high-value guests about their tier status and rewards",
+    label: "Treuebelohnung",
+    description: "Hochwertige Gäste über Stufenstatus und Belohnungen informieren",
     icon: Gift,
     targetSegment: "high_value",
     color: "text-purple-400",
     defaultMessage:
-      "Great news! You're making fantastic progress on your loyalty journey. Check your points — you might be just one visit away from unlocking your next exclusive reward.",
+      "Tolle Neuigkeiten! Sie machen fantastische Fortschritte auf Ihrem Treueweg. Prüfen Sie Ihre Punkte — vielleicht fehlt nur noch ein Besuch bis zu Ihrer nächsten exklusiven Belohnung.",
   },
 ];
 
 const SEGMENT_LABELS: Record<SegmentKey | string, { label: string; color: string }> = {
-  inactive: { label: "Inactive", color: "bg-orange-500/20 text-orange-400" },
-  new: { label: "New", color: "bg-blue-500/20 text-blue-400" },
-  returning: { label: "Returning", color: "bg-green-500/20 text-green-400" },
+  inactive: { label: "Inaktiv", color: "bg-orange-500/20 text-orange-400" },
+  new: { label: "Neu", color: "bg-blue-500/20 text-blue-400" },
+  returning: { label: "Stammkunden", color: "bg-green-500/20 text-green-400" },
   high_value: { label: "High-Value", color: "bg-purple-500/20 text-purple-400" },
-  all: { label: "All", color: "bg-muted text-muted-foreground" },
+  all: { label: "Alle", color: "bg-muted text-muted-foreground" },
 };
 
 const TIER_COLORS: Record<string, string> = {
@@ -235,8 +235,8 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-card border-border">
         <DialogHeader>
-          <DialogTitle>Delivery Log</DialogTitle>
-          <DialogDescription>All recipients for this campaign</DialogDescription>
+          <DialogTitle>Versandprotokoll</DialogTitle>
+          <DialogDescription>Alle Empfänger für diese Kampagne</DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="space-y-2 py-4">
@@ -247,10 +247,10 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-card">
                 <tr className="border-b border-border text-left">
-                  <th className="pb-2 text-muted-foreground font-medium text-xs uppercase pr-4">Customer</th>
+                  <th className="pb-2 text-muted-foreground font-medium text-xs uppercase pr-4">Kunde</th>
                   <th className="pb-2 text-muted-foreground font-medium text-xs uppercase pr-4">Segment</th>
                   <th className="pb-2 text-muted-foreground font-medium text-xs uppercase pr-4">Status</th>
-                  <th className="pb-2 text-muted-foreground font-medium text-xs uppercase">Sent</th>
+                  <th className="pb-2 text-muted-foreground font-medium text-xs uppercase">Gesendet</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -265,11 +265,11 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
                     </td>
                     <td className="py-2 pr-4">
                       {s.status === "converted" ? (
-                        <span className="flex items-center gap-1 text-green-400 text-xs"><CheckCircle2 className="h-3 w-3" />Converted</span>
+                        <span className="flex items-center gap-1 text-green-400 text-xs"><CheckCircle2 className="h-3 w-3" />Konvertiert</span>
                       ) : s.status === "bounced" ? (
-                        <span className="flex items-center gap-1 text-red-400 text-xs"><XCircle className="h-3 w-3" />Bounced</span>
+                        <span className="flex items-center gap-1 text-red-400 text-xs"><XCircle className="h-3 w-3" />Nicht zugestellt</span>
                       ) : (
-                        <span className="flex items-center gap-1 text-blue-400 text-xs"><Send className="h-3 w-3" />Sent</span>
+                        <span className="flex items-center gap-1 text-blue-400 text-xs"><Send className="h-3 w-3" />Gesendet</span>
                       )}
                     </td>
                     <td className="py-2 text-muted-foreground text-xs">
@@ -278,7 +278,7 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
                   </tr>
                 ))}
                 {(!sends || sends.length === 0) && (
-                  <tr><td colSpan={4} className="py-8 text-center text-muted-foreground text-sm">No delivery records found</td></tr>
+                  <tr><td colSpan={4} className="py-8 text-center text-muted-foreground text-sm">Keine Versanddaten gefunden</td></tr>
                 )}
               </tbody>
             </table>
@@ -317,7 +317,7 @@ function CreateCampaignModal({
 
   async function handleLaunch() {
     if (targetCount === 0) {
-      toast({ title: "No customers in this segment", description: "Add more customers to launch this campaign.", variant: "destructive" });
+      toast({ title: "Keine Kunden in diesem Segment", description: "Fügen Sie mehr Kunden hinzu, um diese Kampagne zu starten.", variant: "destructive" });
       return;
     }
     try {
@@ -331,11 +331,11 @@ function CreateCampaignModal({
       });
       await launchCampaign.mutateAsync({ id: created.id });
       await qc.invalidateQueries({ queryKey: getListCampaignsQueryKey() });
-      toast({ title: "Campaign launched!", description: `Sent to ${targetCount} customers.` });
+      toast({ title: "Kampagne gestartet!", description: `An ${targetCount} Kunden gesendet.` });
       onCreated(created.id);
       onClose();
     } catch {
-      toast({ title: "Failed to launch campaign", variant: "destructive" });
+      toast({ title: "Kampagne konnte nicht gestartet werden", variant: "destructive" });
     }
   }
 
@@ -347,7 +347,7 @@ function CreateCampaignModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className={`h-5 w-5 ${template.color}`} />
-            {template.label} Campaign
+            {template.label} Kampagne
           </DialogTitle>
           <DialogDescription>{template.description}</DialogDescription>
         </DialogHeader>
@@ -357,19 +357,19 @@ function CreateCampaignModal({
           <div className="rounded-lg bg-muted/30 border border-border px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Target audience</span>
+              <span className="text-sm text-muted-foreground">Zielgruppe</span>
             </div>
             <div className="flex items-center gap-2">
               <Badge className={SEGMENT_LABELS[template.targetSegment]?.color}>
-                {template.targetSegment === "all" ? "All customers" : SEGMENT_LABELS[template.targetSegment]?.label}
+                {template.targetSegment === "all" ? "Alle Kunden" : SEGMENT_LABELS[template.targetSegment]?.label}
               </Badge>
-              <span className="text-sm font-bold text-foreground">{targetCount} recipients</span>
+              <span className="text-sm font-bold text-foreground">{targetCount} Empfänger</span>
             </div>
           </div>
 
           {/* Campaign name */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Campaign Name</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Kampagnenname</Label>
             <input
               className="w-full bg-muted/30 border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               value={name}
@@ -379,18 +379,18 @@ function CreateCampaignModal({
 
           {/* Message preview */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Message Preview</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Nachrichtenvorschau</Label>
             <Textarea
               className="bg-muted/30 border border-border text-sm text-foreground resize-none min-h-[100px]"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">This message will be sent to all recipients in the selected segment.</p>
+            <p className="text-xs text-muted-foreground">Diese Nachricht wird an alle Empfänger im ausgewählten Segment gesendet.</p>
           </div>
 
           <div className="flex gap-2 pt-1">
             <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
-              Cancel
+              Abbrechen
             </Button>
             <Button
               className="flex-1 gap-2"
@@ -398,7 +398,7 @@ function CreateCampaignModal({
               disabled={isLoading || targetCount === 0}
             >
               <Send className="h-4 w-4" />
-              {isLoading ? "Launching..." : `Launch to ${targetCount} customers`}
+              {isLoading ? "Wird gestartet..." : `An ${targetCount} Kunden senden`}
             </Button>
           </div>
         </div>
@@ -436,46 +436,46 @@ export default function Campaigns() {
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Growth Hub</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Wachstumszentrale</h1>
         <p className="text-muted-foreground mt-1">
-          Bring customers back and increase repeat visits with targeted campaigns.
+          Kunden zurückgewinnen und Wiederholungsbesuche mit gezielten Kampagnen steigern.
         </p>
       </div>
 
       {/* Retention Metrics */}
       <section>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Retention Overview
+          Bindungsübersicht
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <MetricCard
-            label="Repeat Rate"
+            label="Wiederkehrquote"
             value={loadingRetention ? "..." : `${retention?.repeatRate ?? 0}%`}
-            sub="of customers returned"
+            sub="Kunden zurückgekehrt"
             icon={TrendingUp}
             loading={loadingRetention}
             highlight={(retention?.repeatRate ?? 0) >= 40 ? "good" : "warn"}
           />
           <MetricCard
-            label="Repeat Customers"
+            label="Stammkunden"
             value={loadingRetention ? "..." : retention?.repeatCustomers ?? 0}
-            sub="2+ bookings"
+            sub="2+ Buchungen"
             icon={Users}
             loading={loadingRetention}
             highlight="neutral"
           />
           <MetricCard
-            label="Inactive"
+            label="Inaktiv"
             value={loadingRetention ? "..." : retention?.inactiveCount ?? 0}
-            sub="45+ days away"
+            sub="45+ Tage nicht besucht"
             icon={AlertTriangle}
             loading={loadingRetention}
             highlight={(retention?.inactiveCount ?? 0) > 5 ? "warn" : "good"}
           />
           <MetricCard
-            label="At Risk"
+            label="Gefährdet"
             value={loadingRetention ? "..." : retention?.atRiskCount ?? 0}
-            sub="21–44 days away"
+            sub="21–44 Tage nicht besucht"
             icon={Clock}
             loading={loadingRetention}
             highlight={(retention?.atRiskCount ?? 0) > 3 ? "warn" : "neutral"}
@@ -483,15 +483,15 @@ export default function Campaigns() {
           <MetricCard
             label="High-Value"
             value={loadingRetention ? "..." : retention?.highValueCount ?? 0}
-            sub="VIP guests"
+            sub="VIP-Gäste"
             icon={Star}
             loading={loadingRetention}
             highlight="good"
           />
           <MetricCard
-            label="Campaign Bookings"
+            label="Kampagnenbuchungen"
             value={loadingRetention ? "..." : retention?.campaignDrivenBookings ?? 0}
-            sub="last 30 days"
+            sub="Letzte 30 Tage"
             icon={BarChart3}
             loading={loadingRetention}
             highlight={(retention?.campaignDrivenBookings ?? 0) > 0 ? "good" : "neutral"}
@@ -504,7 +504,7 @@ export default function Campaigns() {
         {/* Segments */}
         <div className="lg:col-span-2">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Customer Segments
+            Kundensegmente
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {(["new", "returning", "high_value", "inactive"] as const).map((key) => (
@@ -521,7 +521,7 @@ export default function Campaigns() {
         {/* Top Returning Customers */}
         <div>
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Top Returning Guests
+            Top-Stammgäste
           </h2>
           <Card className="bg-card border border-border">
             <CardContent className="pt-4 pb-3">
@@ -532,7 +532,7 @@ export default function Campaigns() {
               ) : (
                 <div className="space-y-3">
                   {(retention?.topCustomers ?? []).length === 0 && (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No returning customers yet</p>
+                    <p className="text-sm text-muted-foreground py-4 text-center">Noch keine Stammkunden</p>
                   )}
                   {(retention?.topCustomers ?? []).map((c, i) => (
                     <div key={i} className="flex items-center gap-3">
@@ -541,7 +541,7 @@ export default function Campaigns() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                        <p className="text-xs text-muted-foreground">{c.arrivedCount} visits · {c.loyaltyPoints}pts</p>
+                        <p className="text-xs text-muted-foreground">{c.arrivedCount} Besuche · {c.loyaltyPoints}Pkt.</p>
                       </div>
                       <Badge className={`text-[10px] shrink-0 ${TIER_COLORS[c.tier] ? "" : ""} ${SEGMENT_LABELS[c.segment]?.color}`}>
                         {c.tier}
@@ -558,7 +558,7 @@ export default function Campaigns() {
       {/* Campaign Launcher */}
       <section>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Launch a Campaign
+          Kampagne starten
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {CAMPAIGN_TEMPLATES.map((tpl) => {
@@ -586,9 +586,9 @@ export default function Campaigns() {
                 </div>
                 <div className="flex items-center justify-between pt-1">
                   <Badge className={`text-[10px] ${SEGMENT_LABELS[tpl.targetSegment]?.color}`}>
-                    {tpl.targetSegment === "all" ? "All segments" : SEGMENT_LABELS[tpl.targetSegment]?.label}
+                    {tpl.targetSegment === "all" ? "Alle Segmente" : SEGMENT_LABELS[tpl.targetSegment]?.label}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">{count} recipients</span>
+                  <span className="text-xs text-muted-foreground">{count} Empfänger</span>
                 </div>
               </button>
             );

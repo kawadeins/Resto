@@ -15,20 +15,20 @@ export async function sendShiftMorningReminder(opts: {
   confirmUrl: string;
   shiftId: number;
 }) {
-  const subject = `Your shift today: ${opts.startTime}–${opts.endTime}`;
+  const subject = `Ihre Schicht heute: ${opts.startTime}–${opts.endTime} Uhr`;
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
-      <h2 style="color:#111827;margin:0 0 12px">Hi ${opts.employeeName},</h2>
+      <h2 style="color:#111827;margin:0 0 12px">Hallo ${opts.employeeName},</h2>
       <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px">
-        You have a shift today from <strong>${opts.startTime}</strong> to <strong>${opts.endTime}</strong>.
-        Please arrive on time and confirm your attendance below — it helps your manager plan the day.
+        Sie haben heute eine Schicht von <strong>${opts.startTime}</strong> bis <strong>${opts.endTime} Uhr</strong>.
+        Bitte kommen Sie pünktlich und bestätigen Sie Ihre Anwesenheit unten — das hilft Ihrem Vorgesetzten bei der Tagesplanung.
       </p>
       <a href="${opts.confirmUrl}"
          style="display:inline-block;padding:13px 28px;background:#16a34a;color:#fff;border-radius:8px;font-size:15px;text-decoration:none;font-weight:600;letter-spacing:0.01em">
-        I'm Here — Confirm Arrival
+        Ich bin da — Anwesenheit bestätigen
       </a>
       <p style="color:#9ca3af;font-size:12px;margin-top:32px;border-top:1px solid #f3f4f6;padding-top:16px">
-        RestoSmart &bull; This is an automated shift reminder. If you believe this was sent in error, contact your manager.
+        RestoSmart &bull; Automatische Schichterinnerung. Falls Sie diese E-Mail irrtümlich erhalten haben, wenden Sie sich an Ihren Vorgesetzten.
       </p>
     </div>
   `;
@@ -42,7 +42,7 @@ export async function sendShiftMorningReminder(opts: {
       status = "sent";
     } catch (err: any) {
       status = "failed";
-      errorMessage = err?.message ?? "Unknown error";
+      errorMessage = err?.message ?? "Unbekannter Fehler";
     }
   }
 
@@ -67,20 +67,20 @@ export async function sendShiftPreReminder(opts: {
   shiftId: number;
   minutesUntil: number;
 }) {
-  const subject = `Starting in ${opts.minutesUntil} min: Your shift at ${opts.startTime}`;
+  const subject = `In ${opts.minutesUntil} Min. beginnt Ihre Schicht um ${opts.startTime} Uhr`;
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
-      <h2 style="color:#111827;margin:0 0 12px">Hi ${opts.employeeName},</h2>
+      <h2 style="color:#111827;margin:0 0 12px">Hallo ${opts.employeeName},</h2>
       <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px">
-        Your shift starts in <strong>${opts.minutesUntil} minutes</strong>
-        (${opts.startTime}–${opts.endTime}). Head over now and don't forget to confirm when you arrive.
+        Ihre Schicht beginnt in <strong>${opts.minutesUntil} Minuten</strong>
+        (${opts.startTime}–${opts.endTime} Uhr). Machen Sie sich jetzt auf den Weg und vergessen Sie nicht, Ihre Anwesenheit bei der Ankunft zu bestätigen.
       </p>
       <a href="${opts.confirmUrl}"
          style="display:inline-block;padding:13px 28px;background:#2563eb;color:#fff;border-radius:8px;font-size:15px;text-decoration:none;font-weight:600;letter-spacing:0.01em">
-        I'm Here — Confirm Arrival
+        Ich bin da — Anwesenheit bestätigen
       </a>
       <p style="color:#9ca3af;font-size:12px;margin-top:32px;border-top:1px solid #f3f4f6;padding-top:16px">
-        RestoSmart &bull; Automated shift reminder.
+        RestoSmart &bull; Automatische Schichterinnerung.
       </p>
     </div>
   `;
@@ -94,7 +94,7 @@ export async function sendShiftPreReminder(opts: {
       status = "sent";
     } catch (err: any) {
       status = "failed";
-      errorMessage = err?.message ?? "Unknown error";
+      errorMessage = err?.message ?? "Unbekannter Fehler";
     }
   }
 
@@ -110,7 +110,7 @@ export async function sendShiftPreReminder(opts: {
   return status;
 }
 
-// Generic email sender — logs to notification_logs, never throws
+// Generischer E-Mail-Versand — protokolliert in notification_logs, wirft niemals
 export async function sendEmail(opts: {
   to: string;
   subject: string;

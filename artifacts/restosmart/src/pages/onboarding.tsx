@@ -35,11 +35,11 @@ import {
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
 const STEPS = [
-  { label: "Your restaurant", icon: Store },
-  { label: "Menu", icon: UtensilsCrossed },
-  { label: "Staff", icon: Users },
-  { label: "Bookings", icon: BookOpen },
-  { label: "Discount", icon: Megaphone },
+  { label: "Ihr Restaurant", icon: Store },
+  { label: "Speisekarte", icon: UtensilsCrossed },
+  { label: "Personal", icon: Users },
+  { label: "Buchungen", icon: BookOpen },
+  { label: "Rabatt", icon: Megaphone },
 ];
 
 function StepIndicator({ current }: { current: number }) {
@@ -129,15 +129,15 @@ function Step1({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Tell us about your restaurant</h3>
+        <h3 className="text-xl font-bold">Erzählen Sie uns von Ihrem Restaurant</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          This information will appear on the customer marketplace.
+          Diese Informationen erscheinen im Kunden-Marktplatz.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label>Restaurant name *</Label>
+          <Label>Restaurantname *</Label>
           <Input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -145,15 +145,15 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Cuisine type *</Label>
+          <Label>Küchenstil *</Label>
           <Input
             value={form.cuisine}
             onChange={(e) => setForm((f) => ({ ...f, cuisine: e.target.value }))}
-            placeholder="e.g. Italian, Indian, Japanese"
+            placeholder="z.B. Italienisch, Indisch, Japanisch"
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Street address *</Label>
+          <Label>Straße und Hausnummer *</Label>
           <Input
             value={form.address}
             onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
@@ -161,7 +161,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>City *</Label>
+          <Label>Stadt *</Label>
           <Input
             value={form.city}
             onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
@@ -169,7 +169,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Phone number *</Label>
+          <Label>Telefonnummer *</Label>
           <Input
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -177,7 +177,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Email</Label>
+          <Label>E-Mail</Label>
           <Input
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -187,11 +187,11 @@ function Step1({
       </div>
 
       <div className="space-y-1.5">
-        <Label>Short description</Label>
+        <Label>Kurzbeschreibung</Label>
         <Input
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-          placeholder="What makes your restaurant special? (optional)"
+          placeholder="Was macht Ihr Restaurant besonders? (optional)"
         />
       </div>
 
@@ -201,7 +201,7 @@ function Step1({
           onClick={() => onNext(form)}
           disabled={!isValid || isPending}
         >
-          Save & Continue
+          Speichern & Weiter
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
@@ -224,9 +224,9 @@ function Step2({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Add your menu</h3>
+        <h3 className="text-xl font-bold">Speisekarte hinzufügen</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          At least one active menu item is required before customers can see your restaurant.
+          Mindestens ein aktives Menüelement ist erforderlich, bevor Kunden Ihr Restaurant sehen können.
         </p>
       </div>
 
@@ -237,13 +237,13 @@ function Step2({
         <div className="flex-1">
           <p className="font-semibold">
             {menuCount === 0
-              ? "No menu items yet"
-              : `${menuCount} menu item${menuCount !== 1 ? "s" : ""} added`}
+              ? "Noch keine Speisekarte"
+              : `${menuCount} Gericht${menuCount !== 1 ? "e" : ""} hinzugefügt`}
           </p>
           <p className="text-sm text-muted-foreground">
             {menuCount === 0
-              ? "Add dishes, drinks, or set menus so customers know what to expect."
-              : "Great start! You can add more items any time from the Menu page."}
+              ? "Gerichte, Getränke oder Menüs hinzufügen, damit Kunden wissen, was sie erwartet."
+              : "Guter Start! Sie können jederzeit auf der Speisekartenseite weitere Einträge hinzufügen."}
           </p>
         </div>
         {menuCount > 0 && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -252,11 +252,11 @@ function Step2({
       {menuCount === 0 && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
           <p className="text-sm text-muted-foreground mb-3">
-            Head to the Menu page to add your first dish. Come back here when you're done.
+            Gehen Sie zur Speisekartenseite und fügen Sie Ihr erstes Gericht hinzu.
           </p>
           <Button variant="outline" size="sm" onClick={() => navigate("/menu")} className="gap-1.5">
             <UtensilsCrossed className="h-4 w-4" />
-            Go to Menu
+            Zur Speisekarte
           </Button>
         </div>
       )}
@@ -264,14 +264,14 @@ function Step2({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Zurück
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onNext}>
-            Skip for now
+            Überspringen
           </Button>
           <Button onClick={onNext} disabled={menuCount === 0} className="gap-2">
-            Continue
+            Weiter
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -295,9 +295,9 @@ function Step3({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Add your team</h3>
+        <h3 className="text-xl font-bold">Team hinzufügen</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Set up your staff so you can assign shifts and manage your team.
+          Richten Sie Ihr Personal ein, um Schichten zuzuweisen und Ihr Team zu verwalten.
         </p>
       </div>
 
@@ -308,13 +308,13 @@ function Step3({
         <div className="flex-1">
           <p className="font-semibold">
             {staffCount === 0
-              ? "No staff members yet"
-              : `${staffCount} team member${staffCount !== 1 ? "s" : ""} added`}
+              ? "Noch keine Mitarbeiter"
+              : `${staffCount} Teammitglied${staffCount !== 1 ? "er" : ""} hinzugefügt`}
           </p>
           <p className="text-sm text-muted-foreground">
             {staffCount === 0
-              ? "Add your chefs, servers, and managers to start scheduling shifts."
-              : "Your team is set up. You can add more staff from the Staff page anytime."}
+              ? "Fügen Sie Köche, Kellner und Manager hinzu, um mit der Schichtplanung zu beginnen."
+              : "Ihr Team ist eingerichtet. Sie können jederzeit weiteres Personal hinzufügen."}
           </p>
         </div>
         {staffCount > 0 && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -323,11 +323,11 @@ function Step3({
       {staffCount === 0 && (
         <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
           <p className="text-sm text-muted-foreground mb-3">
-            Go to the Staff page to add your first team member, then come back here.
+            Gehen Sie zur Personalseite, um Ihr erstes Teammitglied hinzuzufügen.
           </p>
           <Button variant="outline" size="sm" onClick={() => navigate("/staff")} className="gap-1.5">
             <Users className="h-4 w-4" />
-            Go to Staff
+            Zum Personal
           </Button>
         </div>
       )}
@@ -335,14 +335,14 @@ function Step3({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Zurück
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onNext}>
-            Skip for now
+            Überspringen
           </Button>
           <Button onClick={onNext} className="gap-2">
-            {staffCount > 0 ? "Continue" : "Skip & Continue"}
+            {staffCount > 0 ? "Weiter" : "Überspringen & Weiter"}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -369,9 +369,9 @@ function Step4({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Enable online bookings</h3>
+        <h3 className="text-xl font-bold">Online-Buchungen aktivieren</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Once enabled, customers can find and book your restaurant through the marketplace. This is required before you go live.
+          Nach der Aktivierung können Kunden Ihr Restaurant über den Marktplatz finden und buchen. Dies ist erforderlich, bevor Sie live gehen.
         </p>
       </div>
 
@@ -390,12 +390,12 @@ function Step4({
           </div>
           <div className="flex-1">
             <p className="font-semibold">
-              {bookingsEnabled ? "Online bookings are enabled" : "Online bookings are disabled"}
+              {bookingsEnabled ? "Online-Buchungen sind aktiviert" : "Online-Buchungen sind deaktiviert"}
             </p>
             <p className="text-sm text-muted-foreground">
               {bookingsEnabled
-                ? "Customers can now discover and book your restaurant in the marketplace."
-                : "Enable this to let customers book directly from the marketplace — no calls needed."}
+                ? "Kunden können Ihr Restaurant jetzt im Marktplatz entdecken und buchen."
+                : "Aktivieren Sie dies, damit Kunden direkt über den Marktplatz buchen können — ohne Anruf."}
             </p>
           </div>
           {bookingsEnabled && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -409,7 +409,7 @@ function Step4({
               disabled={isPending}
             >
               <BookOpen className="h-4 w-4" />
-              Enable Bookings Now
+              Buchungen jetzt aktivieren
             </Button>
           </div>
         )}
@@ -418,10 +418,10 @@ function Step4({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Zurück
         </Button>
         <Button onClick={onNext} disabled={!bookingsEnabled} className="gap-2">
-          Continue
+          Weiter
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
@@ -444,9 +444,9 @@ function Step5({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Attract your first customers</h3>
+        <h3 className="text-xl font-bold">Erste Kunden gewinnen</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          A launch discount is the fastest way to get your first bookings. You can skip this and create one later.
+          Ein Eröffnungsrabatt ist der schnellste Weg zu Ihren ersten Buchungen. Sie können dies überspringen.
         </p>
       </div>
 
@@ -454,9 +454,9 @@ function Step5({
         <div className="flex items-start gap-3 mb-4">
           <Zap className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-amber-400">Why offer a launch discount?</p>
+            <p className="font-semibold text-amber-400">Warum einen Eröffnungsrabatt anbieten?</p>
             <p className="text-sm text-muted-foreground mt-1">
-              New restaurants that launch with a 15–25% opening offer typically get 3× more bookings in their first week than those that don't.
+              Neue Restaurants, die mit einem 15–25%-Angebot starten, erhalten in der ersten Woche typischerweise 3× mehr Buchungen.
             </p>
           </div>
         </div>
@@ -467,10 +467,10 @@ function Step5({
           </div>
           <div className="flex-1">
             <p className="font-medium text-sm">
-              {discountCount === 0 ? "No discounts yet" : `${discountCount} discount${discountCount !== 1 ? "s" : ""} created`}
+              {discountCount === 0 ? "Noch keine Rabatte" : `${discountCount} Rabatt${discountCount !== 1 ? "e" : ""} erstellt`}
             </p>
             <p className="text-xs text-muted-foreground">
-              {discountCount === 0 ? "Create a flash deal or scheduled discount from the Marketing page." : "You're ready to go. Manage your offers from Marketing anytime."}
+              {discountCount === 0 ? "Erstellen Sie ein Blitzangebot oder geplanten Rabatt auf der Marketingseite." : "Sie sind startklar. Verwalten Sie Ihre Angebote jederzeit über Marketing."}
             </p>
           </div>
           {discountCount > 0 && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />}
@@ -478,21 +478,21 @@ function Step5({
 
         <Button variant="outline" size="sm" onClick={() => navigate("/marketing")} className="gap-1.5">
           <Megaphone className="h-4 w-4" />
-          Go to Marketing
+          Zum Marketing
         </Button>
       </div>
 
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Zurück
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onNext}>
-            Skip for now
+            Überspringen
           </Button>
           <Button onClick={onNext} className="gap-2">
-            {discountCount > 0 ? "Continue" : "Skip & Continue"}
+            {discountCount > 0 ? "Weiter" : "Überspringen & Weiter"}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -519,9 +519,9 @@ function StepSuccess({
         <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="h-9 w-9 text-emerald-500" />
         </div>
-        <h3 className="text-2xl font-bold">You're almost live</h3>
+        <h3 className="text-2xl font-bold">Fast startklar</h3>
         <p className="text-muted-foreground mt-2">
-          Review your setup summary, then go live to start accepting bookings.
+          Überprüfen Sie Ihre Einrichtung, dann gehen Sie live und beginnen Sie mit der Annahme von Buchungen.
         </p>
       </div>
 
@@ -540,6 +540,7 @@ function StepSuccess({
               <Badge variant="outline" className="ml-auto text-xs text-muted-foreground">
                 Optional
               </Badge>
+              
             )}
           </div>
         ))}
@@ -552,10 +553,10 @@ function StepSuccess({
           disabled={isPending}
         >
           <Zap className="h-4 w-4" />
-          Go Live Now
+          Jetzt live gehen
         </Button>
         <Button variant="outline" className="flex-1" onClick={() => navigate("/")}>
-          Go to Dashboard
+          Zum Dashboard
         </Button>
       </div>
     </div>
@@ -575,7 +576,7 @@ function QuickActions({
 
   return (
     <div className="flex flex-wrap gap-2 mb-6">
-      <span className="text-xs text-muted-foreground self-center">Quick add:</span>
+      <span className="text-xs text-muted-foreground self-center">Schnell hinzufügen:</span>
       {incomplete.map((item) => (
         <Button
           key={item.id}

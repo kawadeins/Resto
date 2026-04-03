@@ -1,12 +1,11 @@
 import { Link } from "wouter";
-import { Star, Clock, MapPin, TrendingDown, Navigation, Armchair } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Star, Clock, MapPin, TrendingDown, Navigation, Armchair, Zap } from "lucide-react";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
 
 interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
   showFlashDeal?: boolean;
-  distance?: number; // km — computed from Haversine
+  distance?: number;
 }
 
 function formatDistance(km: number): string {
@@ -18,20 +17,20 @@ function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant })
   const status = restaurant.availabilityStatus;
   if (!restaurant.isOpenNow || !status || status === "closed") return null;
 
-  const config: Record<string, { label: string; cls: string }> = {
-    available: { label: "Tables available", cls: "bg-emerald-500/20 text-emerald-700 border-emerald-300/40" },
-    limited:   { label: "Limited seats",    cls: "bg-amber-400/20 text-amber-700 border-amber-300/40" },
-    nearly_full: { label: "Nearly full",    cls: "bg-orange-400/20 text-orange-700 border-orange-300/40" },
-    full:      { label: "Fully booked",     cls: "bg-red-400/20 text-red-700 border-red-300/40" },
-    paused:    { label: "Not taking bookings", cls: "bg-muted text-muted-foreground border-border" },
+  const config: Record<string, { label: string; dot: string; cls: string }> = {
+    available:   { label: "Tische frei",         dot: "bg-emerald-500", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    limited:     { label: "Wenige Plätze",        dot: "bg-amber-400",   cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    nearly_full: { label: "Fast ausgebucht",      dot: "bg-orange-500",  cls: "bg-orange-50 text-orange-700 border-orange-200" },
+    full:        { label: "Ausgebucht",           dot: "bg-red-400",     cls: "bg-red-50 text-red-600 border-red-200" },
+    paused:      { label: "Keine Buchungen",      dot: "bg-gray-400",    cls: "bg-gray-50 text-gray-500 border-gray-200" },
   };
 
   const c = config[status];
   if (!c) return null;
 
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${c.cls}`}>
-      <Armchair className="w-2.5 h-2.5" />
+    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border ${c.cls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
       {c.label}
     </span>
   );
@@ -40,100 +39,112 @@ function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant })
 export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: RestaurantCardProps) {
   const priceString = "€".repeat(restaurant.priceRange || 2);
   const isAvailable = restaurant.isOpenNow && restaurant.availabilityStatus === "available";
-  
+  const hasFlash = showFlashDeal && restaurant.hasActiveFlash;
+
   return (
-    <Link href={`/restaurant/${restaurant.id}`} className="block group">
-      <div className={`relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-1 duration-300 ${isAvailable ? "ring-1 ring-emerald-400/20" : ""}`}>
+    <Link href={`/restaurant/${restaurant.id}`} className="block group press-scale">
+      <div className={`relative overflow-hidden rounded-3xl bg-card border transition-all duration-300
+        ${isAvailable ? "border-emerald-200 shadow-lg shadow-emerald-100" : "border-border shadow-md shadow-black/5"}
+        group-hover:shadow-xl group-hover:-translate-y-1`}
+      >
         {/* Image */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           {restaurant.heroImage ? (
-            <img 
-              src={restaurant.heroImage} 
-              alt={restaurant.name} 
+            <img
+              src={restaurant.heroImage}
+              alt={restaurant.name}
               className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-secondary text-secondary-foreground font-serif text-3xl">
-              {restaurant.name.charAt(0)}
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 text-5xl">
+              {restaurant.cuisineEmoji || "🍽️"}
             </div>
           )}
-          
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+          {/* Top-left badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {restaurant.isOpenNow ? (
-              <Badge variant="secondary" className="bg-green-500/90 text-white hover:bg-green-600 border-none backdrop-blur-sm shadow-sm">
-                Open
-              </Badge>
+              <span className="inline-flex items-center gap-1.5 bg-emerald-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                Geöffnet
+              </span>
             ) : (
-              <Badge variant="secondary" className="bg-zinc-800/80 text-white hover:bg-zinc-900 border-none backdrop-blur-sm shadow-sm">
-                Closed
-              </Badge>
+              <span className="inline-flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white/80 text-[11px] font-semibold px-3 py-1.5 rounded-full">
+                Geschlossen
+              </span>
             )}
-            
-            {showFlashDeal && restaurant.hasActiveFlash && (
-              <Badge variant="destructive" className="bg-destructive/90 hover:bg-destructive border-none backdrop-blur-sm shadow-sm flex items-center gap-1 font-bold">
-                <TrendingDown className="w-3 h-3" />
-                {restaurant.flashPercentage}% OFF
-              </Badge>
+            {hasFlash && (
+              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-accent to-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md shadow-rose-200 animate-pulse">
+                <Zap className="w-3 h-3" />
+                {restaurant.flashPercentage}% RABATT
+              </span>
             )}
           </div>
-          
+
+          {/* Rating bubble — bottom right */}
           <div className="absolute bottom-3 right-3">
-            <Badge variant="secondary" className="bg-white/90 text-black hover:bg-white border-none backdrop-blur-sm shadow-sm flex items-center gap-1 font-medium">
+            <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-lg">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              {restaurant.rating.toFixed(1)}
-            </Badge>
+              <span className="font-bold text-sm text-foreground">{restaurant.rating.toFixed(1)}</span>
+            </div>
           </div>
+
+          {/* Distance bubble — bottom left */}
+          {distance !== undefined && (
+            <div className="absolute bottom-3 left-3">
+              <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-md text-xs font-semibold text-primary">
+                <Navigation className="w-3 h-3" />
+                {formatDistance(distance)}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="font-serif font-bold text-lg leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+        <div className="p-4 space-y-3">
+          {/* Name + price */}
+          <div className="flex justify-between items-start gap-2">
+            <h3 className="font-bold text-base leading-tight line-clamp-1 text-foreground group-hover:text-primary transition-colors">
               {restaurant.name}
             </h3>
-          </div>
-          
-          <div className="flex items-center text-sm text-muted-foreground mb-2 gap-2">
-            <span className="flex items-center gap-1">
-              <span className="text-base leading-none">{restaurant.cuisineEmoji}</span>
-              {restaurant.cuisine}
-            </span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-            <span className="font-medium">{priceString}</span>
+            <span className="shrink-0 text-sm font-semibold text-muted-foreground">{priceString}</span>
           </div>
 
-          {/* Availability chip */}
-          <div className="mb-2.5">
+          {/* Cuisine chip */}
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+              <span className="text-sm leading-none">{restaurant.cuisineEmoji}</span>
+              {restaurant.cuisine}
+            </span>
             <AvailabilityChip restaurant={restaurant} />
           </div>
 
+          {/* Meta info */}
           <div className="space-y-1.5 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span className="line-clamp-1 flex-1">{restaurant.address}, {restaurant.city}</span>
-              {distance !== undefined && (
-                <span className="shrink-0 flex items-center gap-0.5 text-primary font-semibold">
-                  <Navigation className="w-3 h-3" />
-                  {formatDistance(distance)}
-                </span>
-              )}
+              <MapPin className="w-3.5 h-3.5 shrink-0 text-primary/60" />
+              <span className="line-clamp-1">{restaurant.address}, {restaurant.city}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" />
-              <span>{restaurant.openTime} - {restaurant.closeTime}</span>
+              <Clock className="w-3.5 h-3.5 shrink-0 text-primary/60" />
+              <span>{restaurant.openTime} – {restaurant.closeTime}</span>
             </div>
           </div>
-          
+
+          {/* Tags */}
           {restaurant.tags && restaurant.tags.length > 0 && (
-            <div className="mt-3 flex gap-1.5 overflow-hidden">
+            <div className="flex gap-1.5 flex-wrap">
               {restaurant.tags.slice(0, 2).map(tag => (
-                <span key={tag} className="px-2 py-0.5 rounded-md bg-secondary text-[10px] font-medium text-secondary-foreground whitespace-nowrap">
+                <span key={tag} className="px-2.5 py-0.5 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground">
                   {tag}
                 </span>
               ))}
               {restaurant.tags.length > 2 && (
-                <span className="px-2 py-0.5 rounded-md bg-secondary text-[10px] font-medium text-secondary-foreground">
+                <span className="px-2.5 py-0.5 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground">
                   +{restaurant.tags.length - 2}
                 </span>
               )}

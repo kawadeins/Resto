@@ -19,8 +19,8 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 export default function MyBookings() {
   useSeo({
-    title: "My Bookings",
-    description: "View and manage your restaurant reservations.",
+    title: "Meine Buchungen",
+    description: "Restaurantreservierungen anzeigen und verwalten.",
   });
 
   const { toast } = useToast();
@@ -84,13 +84,13 @@ export default function MyBookings() {
         }),
       }).then(r => { if (!r.ok) throw new Error("Failed"); return r.json(); }),
     onSuccess: (_, vars) => {
-      toast({ title: "Review submitted — thank you! You earned 5 loyalty points." });
+      toast({ title: "Bewertung eingereicht — danke! Sie haben 5 Treuepunkte verdient." });
       setSubmittedReviewIds(prev => new Set(prev).add(vars.bookingId));
       setReviewingBookingId(null);
       setReviewComment("");
       setReviewRating(5);
     },
-    onError: () => toast({ title: "Failed to submit review", variant: "destructive" }),
+    onError: () => toast({ title: "Bewertung konnte nicht eingereicht werden", variant: "destructive" }),
   });
 
   const { data: loyaltyBalance, isLoading: isLoadingLoyalty } = useGetLoyaltyBalance(
@@ -108,12 +108,12 @@ export default function MyBookings() {
       case "confirmed":
       case "seated":
       case "completed":
-        return <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">Confirmed</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">Bestätigt</Badge>;
       case "pending":
-        return <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200">Pending</Badge>;
+        return <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200">Ausstehend</Badge>;
       case "rejected":
       case "cancelled":
-        return <Badge variant="secondary" className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200">Cancelled</Badge>;
+        return <Badge variant="secondary" className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200">Storniert</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -126,9 +126,9 @@ export default function MyBookings() {
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <CalendarCheck className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="font-serif text-3xl font-bold text-center mb-2">My Bookings</h1>
+          <h1 className="font-serif text-3xl font-bold text-center mb-2">Meine Buchungen</h1>
           <p className="text-center text-muted-foreground mb-8">
-            Enter the email address you used to make your reservations to view your itinerary.
+            Geben Sie die E-Mail-Adresse ein, mit der Sie Ihre Reservierungen vorgenommen haben.
           </p>
           
           <form onSubmit={handleLogin} className="space-y-4">
@@ -144,7 +144,7 @@ export default function MyBookings() {
               />
             </div>
             <Button type="submit" className="w-full h-12 rounded-full font-bold">
-              Find My Bookings
+              Meine Buchungen finden
             </Button>
           </form>
         </div>
@@ -175,16 +175,16 @@ export default function MyBookings() {
     <div className="container mx-auto px-4 max-w-4xl py-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
         <div>
-          <h1 className="font-serif text-4xl font-bold mb-2">My Bookings</h1>
+          <h1 className="font-serif text-4xl font-bold mb-2">Meine Buchungen</h1>
           <p className="text-muted-foreground flex items-center gap-2">
-            Logged in as <span className="font-medium text-foreground">{activeEmail}</span>
+            Angemeldet als <span className="font-medium text-foreground">{activeEmail}</span>
             <button onClick={handleLogout} className="text-xs text-primary hover:underline ml-2">
-              (Change)
+              (Ändern)
             </button>
           </p>
         </div>
         <Button asChild variant="outline" className="rounded-full">
-          <Link href="/explore">Book another table</Link>
+          <Link href="/explore">Weiteren Tisch buchen</Link>
         </Button>
       </div>
 
@@ -214,7 +214,7 @@ export default function MyBookings() {
               
               <div className="flex-1 text-center md:text-left z-10">
                 <div className="flex flex-col md:flex-row md:items-end gap-2 mb-1 justify-center md:justify-start">
-                  <h2 className="font-serif text-3xl font-bold">{loyaltyBalance.points} Points</h2>
+                  <h2 className="font-serif text-3xl font-bold">{loyaltyBalance.points} Punkte</h2>
                   <Badge variant="outline" className={`font-bold mb-1 border-2 ${
                     loyaltyBalance.tier.toLowerCase() === 'gold' ? 'border-yellow-400 text-yellow-600 bg-yellow-50' :
                     loyaltyBalance.tier.toLowerCase() === 'silver' ? 'border-slate-400 text-slate-600 bg-slate-50' : 
@@ -223,12 +223,12 @@ export default function MyBookings() {
                     {loyaltyBalance.tier.toUpperCase()} TIER
                   </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm">Total earned: {loyaltyBalance.totalEarned} pts</p>
+                <p className="text-muted-foreground text-sm">Gesamt verdient: {loyaltyBalance.totalEarned} Pkt.</p>
                 
                 <div className="mt-4 max-w-md mx-auto md:mx-0">
                   <div className="flex justify-between text-xs font-medium mb-1.5">
-                    <span>Current Tier</span>
-                    <span>Next Tier</span>
+                    <span>Aktuelle Stufe</span>
+                    <span>Nächste Stufe</span>
                   </div>
                   <Progress 
                     value={loyaltyBalance.tier.toLowerCase() === 'gold' ? 100 : 
@@ -237,22 +237,22 @@ export default function MyBookings() {
                     className="h-2 bg-muted" 
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    {loyaltyBalance.tier.toLowerCase() === 'gold' ? "You've reached the highest tier!" :
-                     loyaltyBalance.tier.toLowerCase() === 'silver' ? `${Math.max(0, 500 - loyaltyBalance.points)} points to Gold` :
-                     `${Math.max(0, 200 - loyaltyBalance.points)} points to Silver`}
+                    {loyaltyBalance.tier.toLowerCase() === 'gold' ? "Sie haben die höchste Stufe erreicht!" :
+                     loyaltyBalance.tier.toLowerCase() === 'silver' ? `${Math.max(0, 500 - loyaltyBalance.points)} Punkte bis Gold` :
+                     `${Math.max(0, 200 - loyaltyBalance.points)} Punkte bis Silber`}
                   </div>
                 </div>
               </div>
               
               <div className="md:border-l md:pl-6 text-sm text-muted-foreground flex flex-col gap-2 shrink-0 md:w-48 z-10">
-                <div className="font-bold text-foreground">How to earn points:</div>
+                <div className="font-bold text-foreground">So sammeln Sie Punkte:</div>
                 <div className="flex items-start gap-2">
                   <CalendarCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <span>10 pts per completed visit</span>
+                  <span>10 Pkt. pro abgeschlossenen Besuch</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <Star className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <span>5 pts for each review</span>
+                  <span>5 Pkt. pro Bewertung</span>
                 </div>
               </div>
             </div>
@@ -264,7 +264,7 @@ export default function MyBookings() {
               {upcoming.length > 0 && (
                 <section>
               <h2 className="font-serif text-2xl font-bold mb-6 flex items-center gap-2">
-                Upcoming Reservations
+                Bevorstehende Reservierungen
                 <Badge variant="secondary" className="rounded-full">{upcoming.length}</Badge>
               </h2>
               <div className="space-y-4">
@@ -296,7 +296,7 @@ export default function MyBookings() {
                       
                       <div className="text-sm text-muted-foreground mb-4">
                         {booking.restaurant?.cuisine && (
-                          <span>{booking.restaurant.cuisine} cuisine</span>
+                          <span>{booking.restaurant.cuisine}</span>
                         )}
                       </div>
 
@@ -307,11 +307,11 @@ export default function MyBookings() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4 text-primary" />
-                          <span className="font-medium">{booking.partySize} people</span>
+                          <span className="font-medium">{booking.partySize} Personen</span>
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground col-span-2">
                           <CalendarCheck className="w-4 h-4" />
-                          <span>Booked under {booking.customerName}</span>
+                          <span>Gebucht auf {booking.customerName}</span>
                         </div>
                       </div>
                     </div>
@@ -319,7 +319,7 @@ export default function MyBookings() {
                     <div className="shrink-0 flex items-center justify-center md:border-l md:pl-6">
                       <Button asChild variant="ghost" className="w-full md:w-auto rounded-full hover:bg-primary hover:text-white transition-colors">
                         <Link href={`/restaurant/${booking.restaurant?.id}`}>
-                          View Restaurant
+                          Restaurant ansehen
                         </Link>
                       </Button>
                     </div>
@@ -331,7 +331,7 @@ export default function MyBookings() {
 
           {past.length > 0 && (
             <section>
-              <h2 className="font-serif text-2xl font-bold mb-6 text-muted-foreground">Past Reservations</h2>
+              <h2 className="font-serif text-2xl font-bold mb-6 text-muted-foreground">Vergangene Reservierungen</h2>
               <div className="space-y-3">
                 {past.map(booking => {
                   const isCompleted = booking.status === "completed" || booking.status === "seated" || booking.status === "confirmed";
@@ -354,7 +354,7 @@ export default function MyBookings() {
                             {getStatusBadge(booking.status)}
                           </div>
                           <p className="text-sm text-muted-foreground mt-0.5">
-                            {format(parseISO(booking.date), "MMM d, yyyy")} at {booking.time} · Party of {booking.partySize}
+                            {format(parseISO(booking.date), "dd.MM.yyyy")} um {booking.time} · {booking.partySize} Personen
                           </p>
                         </div>
 
@@ -365,13 +365,13 @@ export default function MyBookings() {
                             className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
                             <Star className="w-3.5 h-3.5" />
-                            Leave a Review
+                            Bewertung schreiben
                           </button>
                         )}
                         {hasReviewed && (
                           <span className="shrink-0 flex items-center gap-1 text-xs font-medium text-emerald-600">
                             <Star className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
-                            Reviewed
+                            Bewertet
                           </span>
                         )}
                       </div>
@@ -380,7 +380,7 @@ export default function MyBookings() {
                       {isReviewing && (
                         <div className="px-5 pb-5 border-t border-border/50 pt-4 space-y-3 bg-muted/30">
                           <div className="text-sm font-semibold">
-                            How was your visit to {booking.restaurant?.name}?
+                            Wie war Ihr Besuch bei {booking.restaurant?.name}?
                           </div>
 
                           {/* Star picker */}
@@ -395,12 +395,12 @@ export default function MyBookings() {
                               </button>
                             ))}
                             <span className="ml-2 text-sm text-muted-foreground self-center">
-                              {reviewRating === 5 ? "Excellent" : reviewRating === 4 ? "Good" : reviewRating === 3 ? "Average" : reviewRating === 2 ? "Poor" : "Terrible"}
+                              {reviewRating === 5 ? "Ausgezeichnet" : reviewRating === 4 ? "Gut" : reviewRating === 3 ? "Mittel" : reviewRating === 2 ? "Schlecht" : "Sehr schlecht"}
                             </span>
                           </div>
 
                           <Textarea
-                            placeholder="Tell us about your experience..."
+                            placeholder="Erzählen Sie von Ihrem Besuch..."
                             value={reviewComment}
                             onChange={(e) => setReviewComment(e.target.value)}
                             className="min-h-[80px] text-sm"
@@ -413,7 +413,7 @@ export default function MyBookings() {
                               size="sm"
                               onClick={() => setReviewingBookingId(null)}
                             >
-                              Cancel
+                              Abbrechen
                             </Button>
                             <Button
                               size="sm"
@@ -425,10 +425,10 @@ export default function MyBookings() {
                               className="gap-1.5"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
-                              {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                              {submitReviewMutation.isPending ? "Wird eingereicht..." : "Bewertung einreichen"}
                             </Button>
                           </div>
-                          <p className="text-xs text-muted-foreground">You'll earn 5 loyalty points for your review.</p>
+                          <p className="text-xs text-muted-foreground">Sie erhalten 5 Treuepunkte für Ihre Bewertung.</p>
                         </div>
                       )}
                     </div>
@@ -444,14 +444,14 @@ export default function MyBookings() {
           <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
             <CalendarCheck className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h2 className="font-serif text-3xl font-bold mb-4">No bookings yet</h2>
+          <h2 className="font-serif text-3xl font-bold mb-4">Noch keine Buchungen</h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg">
-            Looks like you haven't made any reservations with this email address. 
-            Ready to find your next great meal?
+            Mit dieser E-Mail-Adresse wurden noch keine Reservierungen vorgenommen.
+            Bereit für Ihr nächstes großartiges Erlebnis?
           </p>
           <Button asChild size="lg" className="rounded-full px-8 shadow-lg">
             <Link href="/explore">
-              Explore Restaurants <ArrowRight className="w-5 h-5 ml-2" />
+              Restaurants entdecken <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </Button>
         </div>

@@ -153,9 +153,9 @@ function SuggestionsPanel() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetInsightsSuggestionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetInsightsOutcomesQueryKey() });
-        toast({ title: "Flash deal activated", description: "Your discount is live in the marketplace." });
+        toast({ title: "Blitzangebot aktiviert", description: "Ihr Rabatt ist jetzt im Marktplatz live." });
       },
-      onError: () => toast({ title: "Failed to activate flash deal", variant: "destructive" }),
+      onError: () => toast({ title: "Blitzangebot konnte nicht aktiviert werden", variant: "destructive" }),
     },
   });
 
@@ -199,8 +199,8 @@ function SuggestionsPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
         <CheckCircle2 className="h-10 w-10 mb-3 text-emerald-500/50" />
-        <p className="font-medium">No dead hours detected</p>
-        <p className="text-sm mt-1">Your schedule looks well-distributed. Check back after more bookings come in.</p>
+        <p className="font-medium">Keine Leerstunden erkannt</p>
+        <p className="text-sm mt-1">Ihr Buchungsplan sieht gut verteilt aus. Prüfen Sie nach weiteren Buchungen erneut.</p>
       </div>
     );
   }
@@ -245,7 +245,7 @@ function SuggestionsPanel() {
                 disabled={isPending}
               >
                 <Zap className="h-3.5 w-3.5" />
-                Apply Now
+                Jetzt anwenden
               </Button>
             </div>
           </div>
@@ -274,7 +274,7 @@ function OutcomesSection() {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
         <Activity className="h-8 w-8 mb-2 opacity-20" />
-        <p className="text-sm">No discounts have run yet. Apply a suggestion above to start tracking outcomes.</p>
+        <p className="text-sm">Noch keine Rabatte gestartet. Wenden Sie oben eine Empfehlung an.</p>
       </div>
     );
   }
@@ -302,27 +302,27 @@ function OutcomesSection() {
                     : "text-xs bg-muted/50 text-muted-foreground"
                 }
               >
-                {isActive ? "Active" : o.status === "completed" ? "Done" : "Paused"}
+                {isActive ? "Aktiv" : o.status === "completed" ? "Abgeschlossen" : "Pausiert"}
               </Badge>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Discount</p>
+                <p className="text-xs text-muted-foreground">Rabatt</p>
                 <p className="font-bold text-primary">{o.percentage}% off</p>
               </div>
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Bookings</p>
+                <p className="text-xs text-muted-foreground">Buchungen</p>
                 <p className="font-bold">
                   {o.bookingsDuringDiscount != null ? o.bookingsDuringDiscount : "—"}
                 </p>
               </div>
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Lift</p>
+                <p className="text-xs text-muted-foreground">Steigerung</p>
                 {isNeutral ? (
                   <p className="font-bold text-muted-foreground flex items-center gap-1">
                     <Minus className="h-3 w-3" />
-                    {isActive ? "Running" : "No data"}
+                    {isActive ? "Läuft" : "Keine Daten"}
                   </p>
                 ) : isPositive ? (
                   <p className="font-bold text-emerald-500 flex items-center gap-1">
@@ -340,7 +340,7 @@ function OutcomesSection() {
 
             {o.historicalBaseline != null && (
               <p className="text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border">
-                Baseline: {o.historicalBaseline} avg bookings
+                Basis: Ø {o.historicalBaseline} Buchungen
               </p>
             )}
           </div>
@@ -404,7 +404,7 @@ function DailyInsightBanner() {
           disabled={flashMutation.isPending}
         >
           <Zap className="h-3 w-3" />
-          Activate Flash
+          Blitzangebot
         </Button>
       )}
     </motion.div>
@@ -417,9 +417,9 @@ export default function Insights() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dead Hours Killer</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Leerstunden-Killer</h2>
         <p className="text-muted-foreground mt-2">
-          Rule-based traffic analysis that tells you exactly when and how to fill quiet tables.
+          Regelbasierte Besucheranalyse, die Ihnen genau sagt, wann und wie Sie freie Tische füllen.
         </p>
       </div>
 
@@ -437,10 +437,10 @@ export default function Insights() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Activity className="h-5 w-5 text-primary" />
-                Weekly Activity Heatmap
+                Wöchentliche Aktivitäts-Heatmap
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Average bookings per slot over the last 90 days. Darker = busier, lighter = opportunity.
+                Ø Buchungen pro Zeitfenster der letzten 90 Tage. Dunkler = mehr Betrieb, heller = Chance.
               </p>
             </CardHeader>
             <CardContent>
@@ -460,10 +460,10 @@ export default function Insights() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Zap className="h-5 w-5 text-amber-500" />
-                Smart Suggestions
+                Clevere Empfehlungen
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                One click creates the discount and makes it live in the marketplace instantly.
+                Ein Klick erstellt den Rabatt und macht ihn sofort im Marktplatz live.
               </p>
             </CardHeader>
             <CardContent>
@@ -483,10 +483,10 @@ export default function Insights() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <ArrowUpRight className="h-5 w-5 text-emerald-500" />
-              Discount Outcomes
+              Rabatt-Ergebnisse
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Tracking booking lift and performance for discounts activated in the last 30 days.
+              Buchungssteigerung und Leistung für Rabatte der letzten 30 Tage.
             </p>
           </CardHeader>
           <CardContent>

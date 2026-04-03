@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Explore from "@/pages/explore";
 import Restaurant from "@/pages/restaurant";
 import MyBookings from "@/pages/my-bookings";
+import Profile from "@/pages/profile";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/explore" component={Explore} />
       <Route path="/restaurant/:id" component={Restaurant} />
       <Route path="/my-bookings" component={MyBookings} />
+      <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -8,12 +8,12 @@ import { motion } from "framer-motion";
 import { CheckCircle2, CreditCard, Lock, Zap, BarChart3, Users, Headphones, Star } from "lucide-react";
 
 const FEATURES = [
-  { icon: Zap, text: "Flash Deals & Discounts" },
-  { icon: BarChart3, text: "Advanced Analytics" },
-  { icon: Users, text: "Customer Marketplace" },
-  { icon: Star, text: "Loyalty & Reviews" },
-  { icon: Headphones, text: "Priority Support" },
-  { icon: Lock, text: "Super Admin Access" }
+  { icon: Zap, text: "Blitzangebote & Rabatte" },
+  { icon: BarChart3, text: "Erweiterte Analysen" },
+  { icon: Users, text: "Kunden-Marktplatz" },
+  { icon: Star, text: "Treueprogramm & Bewertungen" },
+  { icon: Headphones, text: "Prioritäts-Support" },
+  { icon: Lock, text: "Super-Admin-Zugang" }
 ];
 
 export default function Billing() {
@@ -33,23 +33,23 @@ export default function Billing() {
           // In a real app, we would redirect to Stripe checkout.
           // Here we just simulate success.
           setShowSuccess(true);
-          toast({ title: "Subscription activated successfully" });
+          toast({ title: "Abonnement erfolgreich aktiviert" });
         } else {
-          toast({ title: "Checkout failed", variant: "destructive" });
+          toast({ title: "Checkout fehlgeschlagen", variant: "destructive" });
         }
       },
-      onError: () => toast({ title: "Failed to start checkout", variant: "destructive" })
+      onError: () => toast({ title: "Checkout konnte nicht gestartet werden", variant: "destructive" })
     });
   };
 
   const handleCancel = () => {
     cancelSubscription.mutate({}, {
-      onSuccess: () => toast({ title: "Subscription cancelled" }),
-      onError: () => toast({ title: "Failed to cancel subscription", variant: "destructive" })
+      onSuccess: () => toast({ title: "Abonnement gekündigt" }),
+      onError: () => toast({ title: "Kündigung fehlgeschlagen", variant: "destructive" })
     });
   };
 
-  if (isLoading) return <div className="p-8">Loading...</div>;
+  if (isLoading) return <div className="p-8">Laden...</div>;
 
   const isActive = subscription?.isActive;
   const isTrial = subscription?.status === "trial";
@@ -63,15 +63,15 @@ export default function Billing() {
               <div className="mx-auto bg-emerald-500/20 p-4 rounded-full w-20 h-20 flex items-center justify-center mb-4">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500" />
               </div>
-              <CardTitle className="text-2xl text-emerald-500">Subscription Active</CardTitle>
-              <CardDescription>Welcome to RestoSmart Pro</CardDescription>
+              <CardTitle className="text-2xl text-emerald-500">Abonnement aktiv</CardTitle>
+              <CardDescription>Willkommen bei RestoSmart Pro</CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-muted-foreground text-sm">
-                Your payment was successful. All premium features are now unlocked.
+                Ihre Zahlung war erfolgreich. Alle Premium-Funktionen sind jetzt freigeschaltet.
               </p>
               <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold" onClick={() => window.location.href = "/"}>
-                Go to Dashboard
+                Zum Dashboard
               </Button>
             </CardContent>
           </Card>
@@ -83,8 +83,8 @@ export default function Billing() {
   return (
     <div className="space-y-8 pb-10 max-w-5xl mx-auto">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Subscription & Billing</h2>
-        <p className="text-muted-foreground mt-2">Manage your plan and billing details.</p>
+        <h2 className="text-3xl font-bold tracking-tight">Abonnement & Abrechnung</h2>
+        <p className="text-muted-foreground mt-2">Verwalten Sie Ihren Plan und Ihre Abrechnungsdetails.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -93,9 +93,9 @@ export default function Billing() {
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
                 RestoSmart Pro
-                {isActive && !isTrial && <Badge className="bg-emerald-500">Active</Badge>}
+                {isActive && !isTrial && <Badge className="bg-emerald-500">Aktiv</Badge>}
               </CardTitle>
-              <CardDescription>Everything you need to run your restaurant</CardDescription>
+              <CardDescription>Alles, was Sie für Ihr Restaurant brauchen</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-baseline gap-1">
@@ -120,18 +120,18 @@ export default function Billing() {
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
           <Card className="h-full flex flex-col">
             <CardHeader>
-              <CardTitle>Current Status</CardTitle>
-              <CardDescription>Your billing overview</CardDescription>
+              <CardTitle>Aktueller Status</CardTitle>
+              <CardDescription>Ihre Abrechnungsübersicht</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 space-y-6">
               {isTrial && (
                 <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-lg">
                   <div className="flex items-center gap-2 text-amber-500 font-medium mb-1">
                     <Zap className="w-4 h-4" />
-                    Trial Active
+                    Testphase aktiv
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    You have {subscription.daysRemaining ?? 0} days remaining on your free trial.
+                    Sie haben noch {subscription.daysRemaining ?? 0} Tage in Ihrer kostenlosen Testphase.
                   </p>
                 </div>
               )}
@@ -144,12 +144,12 @@ export default function Billing() {
                       <p className="font-semibold">{subscription.planName}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Amount</p>
-                      <p className="font-semibold">€{subscription.amountEur}/month</p>
+                      <p className="text-sm font-medium text-muted-foreground">Betrag</p>
+                      <p className="font-semibold">€{subscription.amountEur}/Monat</p>
                     </div>
                     {subscription.currentPeriodEnd && (
                       <div className="col-span-2">
-                        <p className="text-sm font-medium text-muted-foreground">Next billing date</p>
+                        <p className="text-sm font-medium text-muted-foreground">Nächstes Abrechnungsdatum</p>
                         <p className="font-semibold">{new Date(subscription.currentPeriodEnd).toLocaleDateString()}</p>
                       </div>
                     )}
@@ -161,8 +161,8 @@ export default function Billing() {
                     <CreditCard className="w-8 h-8 text-muted-foreground" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-1">Activate RestoSmart Pro</h3>
-                    <p className="text-sm text-muted-foreground">Upgrade now to unlock all premium features and grow your business.</p>
+                    <h3 className="font-semibold text-lg mb-1">RestoSmart Pro aktivieren</h3>
+                    <p className="text-sm text-muted-foreground">Jetzt upgraden und alle Premium-Funktionen freischalten.</p>
                   </div>
                 </div>
               )}
@@ -170,7 +170,7 @@ export default function Billing() {
             <CardFooter className="border-t pt-6">
               {isActive && !isTrial ? (
                 <Button variant="destructive" className="w-full" onClick={handleCancel} disabled={cancelSubscription.isPending}>
-                  Cancel Subscription
+                  Abonnement kündigen
                 </Button>
               ) : (
                 <Button 
@@ -180,7 +180,7 @@ export default function Billing() {
                   disabled={startCheckout.isPending}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
-                  {startCheckout.isPending ? "Processing..." : "Upgrade to Pro — €30/month"}
+                  {startCheckout.isPending ? "Verarbeite..." : "Auf Pro upgraden — €30/Monat"}
                 </Button>
               )}
             </CardFooter>

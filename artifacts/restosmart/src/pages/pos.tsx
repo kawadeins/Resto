@@ -21,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, Clock, CheckCircle2, TrendingUp, DollarSign } from "lucide-react";
 import type { MenuItem, PosSale } from "@workspace/api-client-react";
 
-const CATEGORIES = ["All", "Starters", "Main Course", "Pasta", "Pizza", "Grill", "Desserts", "Beverages", "Sides"];
+const CATEGORIES = ["Alle", "Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Grill", "Desserts", "Getränke", "Beilagen"];
 
 export default function Pos() {
   const { toast } = useToast();
@@ -45,7 +45,7 @@ export default function Pos() {
   const filteredMenu = useMemo(() => {
     if (!menuItems) return [];
     let items = menuItems.filter(i => i.isActive);
-    if (selectedCategory !== "All") {
+    if (selectedCategory !== "Alle") {
       items = items.filter(i => i.category === selectedCategory);
     }
     return items;
@@ -72,12 +72,12 @@ export default function Pos() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListMenuItemsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListPosSalesQueryKey({ params: { limit: 50 } }) });
-        toast({ title: "Sale recorded. Inventory deducted automatically." });
+        toast({ title: "Verkauf erfasst. Lagerbestand automatisch abgezogen." });
         setSellingDish(null);
         setQuantity(1);
         setNotes("");
       },
-      onError: () => toast({ title: "Failed to record sale", variant: "destructive" })
+      onError: () => toast({ title: "Verkauf konnte nicht erfasst werden", variant: "destructive" })
     });
   };
 
@@ -86,11 +86,11 @@ export default function Pos() {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return "Just now";
-    if (diffMin < 60) return `${diffMin} min ago`;
+    if (diffMin < 1) return "Gerade eben";
+    if (diffMin < 60) return `Vor ${diffMin} Min.`;
     const diffHours = Math.floor(diffMin / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return "Yesterday";
+    if (diffHours < 24) return `Vor ${diffHours} Std.`;
+    return "Gestern";
   };
 
   return (
@@ -98,13 +98,13 @@ export default function Pos() {
       {/* Left Column: Menu Grid */}
       <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Point of Sale</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Kassensystem</h2>
           <p className="text-muted-foreground mt-1">
-            Record dish sales and auto-deduct ingredients from inventory.
+            Verkäufe erfassen und Zutaten automatisch aus dem Lager abziehen.
           </p>
         </div>
 
-        <Tabs defaultValue="All" onValueChange={setSelectedCategory} className="mb-6">
+        <Tabs defaultValue="Alle" onValueChange={setSelectedCategory} className="mb-6">
           <TabsList className="bg-card border border-border flex flex-wrap h-auto gap-1 p-1">
             {CATEGORIES.map(cat => (
               <TabsTrigger key={cat} value={cat} className="px-4 py-2 text-xs">
@@ -148,7 +148,7 @@ export default function Pos() {
                       €{item.sellingPrice.toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground mb-4">
-                      Recipe Cost: €{item.recipeCost.toFixed(2)}
+                      Rezeptkosten: €{item.recipeCost.toFixed(2)}
                     </div>
                     <Button 
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
@@ -157,7 +157,7 @@ export default function Pos() {
                         setSellingDish(item);
                       }}
                     >
-                      <ShoppingCart className="mr-2 h-4 w-4" /> Sell
+                      <ShoppingCart className="mr-2 h-4 w-4" /> Verkaufen
                     </Button>
                   </CardContent>
                 </Card>
@@ -172,7 +172,7 @@ export default function Pos() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
-            Recent Sales
+            Letzte Verkäufe
           </h3>
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
             Live
@@ -201,7 +201,7 @@ export default function Pos() {
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2">
                       <Badge className="h-4 px-1 text-[9px] bg-muted text-muted-foreground">x{sale.quantity}</Badge>
-                      <span className="text-emerald-500/70 font-mono">+{sale.totalProfit.toFixed(2)} profit</span>
+                      <span className="text-emerald-500/70 font-mono">+{sale.totalProfit.toFixed(2)} Gewinn</span>
                     </div>
                     <div className="text-muted-foreground">{formatTimeAgo(sale.soldAt)}</div>
                   </div>
@@ -213,8 +213,8 @@ export default function Pos() {
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
                 <ShoppingCart className="h-6 w-6 opacity-20" />
               </div>
-              <p className="text-sm font-medium">No sales recorded yet.</p>
-              <p className="text-xs">Start recording sales from the menu grid.</p>
+              <p className="text-sm font-medium">Noch keine Verkäufe erfasst.</p>
+              <p className="text-xs">Starten Sie mit der Erfassung aus dem Speisekartengitter.</p>
             </div>
           )}
         </div>
@@ -222,7 +222,7 @@ export default function Pos() {
         <div className="mt-auto p-4 bg-primary/5 rounded-xl border border-primary/10 space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4" /> Today's Profit
+              <TrendingUp className="h-4 w-4" /> Heutiger Gewinn
             </div>
             <div className="text-xl font-bold text-emerald-500">
               €{todayStats.profit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -230,7 +230,7 @@ export default function Pos() {
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <DollarSign className="h-4 w-4" /> Today's Revenue
+              <DollarSign className="h-4 w-4" /> Heutiger Umsatz
             </div>
             <div className="text-xl font-bold">
               €{todayStats.revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -243,14 +243,14 @@ export default function Pos() {
       <Dialog open={!!sellingDish} onOpenChange={(open) => !open && setSellingDish(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Record Sale: {sellingDish?.name}</DialogTitle>
+            <DialogTitle>Verkauf erfassen: {sellingDish?.name}</DialogTitle>
             <DialogDescription>
-              Recording this sale will automatically deduct required ingredients from inventory.
+              Dieser Verkauf zieht die benötigten Zutaten automatisch aus dem Lager ab.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="quantity" className="text-right">Quantity</Label>
+              <Label htmlFor="quantity" className="text-right">Menge</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -261,10 +261,10 @@ export default function Pos() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">Notes</Label>
+              <Label htmlFor="notes" className="text-right">Notizen</Label>
               <Textarea
                 id="notes"
-                placeholder="Special requests or table info..."
+                placeholder="Sonderwünsche oder Tischinfo..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="col-span-3 h-20"
@@ -272,23 +272,23 @@ export default function Pos() {
             </div>
             <div className="bg-muted/30 p-4 rounded-lg space-y-2 text-sm mt-4 border border-border/50">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Revenue:</span>
+                <span className="text-muted-foreground">Gesamtumsatz:</span>
                 <span className="font-bold text-emerald-500">€{((sellingDish?.sellingPrice || 0) * quantity).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Est. Total Profit:</span>
+                <span className="text-muted-foreground">Gesch. Gesamtgewinn:</span>
                 <span className="font-bold text-emerald-400">€{((sellingDish?.absoluteProfit || 0) * quantity).toFixed(2)}</span>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSellingDish(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setSellingDish(null)}>Abbrechen</Button>
             <Button 
               className="bg-emerald-600 hover:bg-emerald-500 text-white"
               onClick={handleConfirmSale}
               disabled={recordSale.isPending}
             >
-              {recordSale.isPending ? "Confirming..." : "Confirm Sale"}
+              {recordSale.isPending ? "Bestätige..." : "Verkauf bestätigen"}
             </Button>
           </DialogFooter>
         </DialogContent>

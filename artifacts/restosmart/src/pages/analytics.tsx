@@ -39,33 +39,33 @@ export default function Analytics() {
                 <Lock className="w-10 h-10 text-muted-foreground" />
               </div>
               <div>
-                <CardTitle className="text-2xl">Advanced Analytics</CardTitle>
-                <CardDescription className="mt-2 text-base">Detailed insights are only available on RestoSmart Pro.</CardDescription>
+                <CardTitle className="text-2xl">Erweiterte Analysen</CardTitle>
+                <CardDescription className="mt-2 text-base">Detaillierte Einblicke sind nur in RestoSmart Pro verfügbar.</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
                   <BarChart3 className="w-5 h-5 text-primary" />
-                  <span>30-Day Revenue Trends</span>
+                  <span>30-Tage-Umsatztrends</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
                   <TrendingUp className="w-5 h-5 text-emerald-500" />
-                  <span>Dish Profitability Matrix</span>
+                  <span>Gerichts-Rentabilitätsmatrix</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
                   <Calendar className="w-5 h-5 text-indigo-500" />
-                  <span>Peak Hours Heatmap</span>
+                  <span>Stoßzeiten-Heatmap</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm p-3 rounded-lg border bg-muted/20">
                   <Users className="w-5 h-5 text-amber-500" />
-                  <span>Reservation Source Breakdown</span>
+                  <span>Reservierungsquellen</span>
                 </div>
               </div>
               
               <div className="pt-4 flex flex-col items-center">
                 <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-lg w-full sm:w-auto shadow-md">
-                  Unlock Advanced Analytics
+                  Analysen freischalten
                 </Link>
               </div>
             </CardContent>
@@ -79,11 +79,11 @@ export default function Analytics() {
     <div className="space-y-8 pb-10">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analytics & Intelligence</h2>
-          <p className="text-muted-foreground mt-2">Deep dive into your business performance.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Analysen & Intelligenz</h2>
+          <p className="text-muted-foreground mt-2">Tiefgehende Einblicke in Ihre Unternehmensleistung.</p>
         </div>
         <div className="text-sm text-muted-foreground font-mono bg-muted/30 px-3 py-1.5 rounded-md border">
-          Live • Updated Just Now
+          Live • Gerade aktualisiert
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function Analytics() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">This Month Revenue</CardTitle>
+                    <CardTitle className="text-sm font-medium">Umsatz diesen Monat</CardTitle>
                     <DollarSign className="h-4 w-4 text-emerald-500" />
                   </CardHeader>
                   <CardContent>
@@ -114,7 +114,7 @@ export default function Analytics() {
                         </div>
                         <div className={`text-xs mt-1 flex items-center ${revenueGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
                           {revenueGrowth >= 0 ? <ArrowUpRight className="mr-1 h-3 w-3" /> : <ArrowDownRight className="mr-1 h-3 w-3" />}
-                          {Math.abs(revenueGrowth).toFixed(1)}% vs last month
+                          {Math.abs(revenueGrowth).toFixed(1)}% vs. Vormonat
                         </div>
                       </>
                     )}
@@ -125,7 +125,7 @@ export default function Analytics() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">This Month Profit</CardTitle>
+                    <CardTitle className="text-sm font-medium">Gewinn diesen Monat</CardTitle>
                     <TrendingUp className="h-4 w-4 text-indigo-500" />
                   </CardHeader>
                   <CardContent>
@@ -136,7 +136,7 @@ export default function Analytics() {
                         </div>
                         <div className={`text-xs mt-1 flex items-center ${profitGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
                           {profitGrowth >= 0 ? <ArrowUpRight className="mr-1 h-3 w-3" /> : <ArrowDownRight className="mr-1 h-3 w-3" />}
-                          {Math.abs(profitGrowth).toFixed(1)}% vs last month
+                          {Math.abs(profitGrowth).toFixed(1)}% vs. Vormonat
                         </div>
                       </>
                     )}
@@ -147,7 +147,7 @@ export default function Analytics() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Revenue (12m)</CardTitle>
+                    <CardTitle className="text-sm font-medium">Gesamtumsatz (12 Mon.)</CardTitle>
                     <Calendar className="h-4 w-4 text-amber-500" />
                   </CardHeader>
                   <CardContent>
@@ -157,7 +157,7 @@ export default function Analytics() {
                           €{(performance?.totalRevenue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
-                          Avg €{(performance?.avgMonthlyRevenue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}/month
+                          Ø €{(performance?.avgMonthlyRevenue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}/Monat
                         </div>
                       </>
                     )}
@@ -168,7 +168,7 @@ export default function Analytics() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
+                    <CardTitle className="text-sm font-medium">Gewinnmarge</CardTitle>
                     <Users className="h-4 w-4 text-primary" />
                   </CardHeader>
                   <CardContent>
@@ -178,7 +178,7 @@ export default function Analytics() {
                           {(performance?.profitMarginOverall ?? 0).toFixed(1)}%
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
-                          Overall 12-month average
+                          Ø der letzten 12 Monate
                         </div>
                       </>
                     )}
@@ -194,8 +194,8 @@ export default function Analytics() {
         <motion.div className="col-span-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Daily Performance (30 Days)</CardTitle>
-              <CardDescription>Revenue, profit, and reservations trend</CardDescription>
+              <CardTitle>Tagesleistung (30 Tage)</CardTitle>
+              <CardDescription>Umsatz-, Gewinn- und Reservierungstrend</CardDescription>
             </CardHeader>
             <CardContent className="pl-0">
               {loadingDaily ? (
@@ -236,9 +236,9 @@ export default function Analytics() {
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
                       <Legend verticalAlign="top" height={36} />
-                      <Line yAxisId="left" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} />
-                      <Line yAxisId="left" type="monotone" dataKey="profit" name="Profit" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} />
-                      <Line yAxisId="right" type="stepAfter" dataKey="reservations" name="Reservations" stroke="hsl(35, 91%, 54%)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                      <Line yAxisId="left" type="monotone" dataKey="revenue" name="Umsatz" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} />
+                      <Line yAxisId="left" type="monotone" dataKey="profit" name="Gewinn" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} />
+                      <Line yAxisId="right" type="stepAfter" dataKey="reservations" name="Reservierungen" stroke="hsl(35, 91%, 54%)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -250,8 +250,8 @@ export default function Analytics() {
         <motion.div className="col-span-1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Reservations by Source</CardTitle>
-              <CardDescription>Where your bookings come from</CardDescription>
+              <CardTitle>Reservierungen nach Quelle</CardTitle>
+              <CardDescription>Woher Ihre Buchungen kommen</CardDescription>
             </CardHeader>
             <CardContent>
               {loadingPerf ? (
@@ -297,8 +297,8 @@ export default function Analytics() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
         <Card>
           <CardHeader>
-            <CardTitle>Peak Hours Heatmap</CardTitle>
-            <CardDescription>Average covers seated per hour</CardDescription>
+            <CardTitle>Stoßzeiten-Heatmap</CardTitle>
+            <CardDescription>Ø Gedecke pro Stunde</CardDescription>
           </CardHeader>
           <CardContent className="pl-0">
             {loadingPerf ? (
@@ -317,7 +317,7 @@ export default function Analytics() {
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                       itemStyle={{ color: 'hsl(var(--foreground))' }}
                     />
-                    <Bar dataKey="covers" name="Avg Covers" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="covers" name="Ø Gedecke" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                       {performance?.peakHours?.map((entry, index) => (
                         <Cell key={`cell-${index}`} fillOpacity={0.4 + (entry.covers / Math.max(...(performance?.peakHours.map(h => h.covers) || [1]))) * 0.6} />
                       ))}
@@ -334,7 +334,7 @@ export default function Analytics() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Top Profitable Dishes by Total Profit</CardTitle>
+              <CardTitle>Gewinnstärkste Gerichte</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingMenu ? (
@@ -370,7 +370,7 @@ export default function Analytics() {
                       <Tooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
-                        formatter={(value: number) => [`€${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Total Profit"]}
+                        formatter={(value: number) => [`€${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Gesamtgewinn"]}
                       />
                       <Bar dataKey="totalProfit" radius={[0, 4, 4, 0]}>
                         {menuAnalytics?.sort((a, b) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 8).map((entry, index) => {
@@ -392,7 +392,7 @@ export default function Analytics() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Dish Profitability Breakdown</CardTitle>
+              <CardTitle>Gerichts-Rentabilität im Detail</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingMenu ? (
@@ -406,12 +406,12 @@ export default function Analytics() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Dish</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead className="text-right">Price</TableHead>
-                        <TableHead className="text-right">Cost</TableHead>
-                        <TableHead className="text-right">Profit</TableHead>
-                        <TableHead className="text-right">Margin</TableHead>
+                        <TableHead>Gericht</TableHead>
+                        <TableHead>Kategorie</TableHead>
+                        <TableHead className="text-right">Preis</TableHead>
+                        <TableHead className="text-right">Kosten</TableHead>
+                        <TableHead className="text-right">Gewinn</TableHead>
+                        <TableHead className="text-right">Marge</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

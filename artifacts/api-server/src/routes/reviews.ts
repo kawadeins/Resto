@@ -183,23 +183,33 @@ router.post("/send-request", async (req, res) => {
     const [restaurant] = await db.select().from(restaurantsTable)
       .where(eq(restaurantsTable.id, restaurantId));
 
-    const restaurantName = restaurant?.name ?? "our restaurant";
+    const restaurantName = restaurant?.name ?? "unserem Restaurant";
 
     await sendEmail({
       to: reservation.customerEmail,
-      subject: `How was your visit to ${restaurantName}?`,
+      subject: `Wie war Ihr Besuch bei ${restaurantName}?`,
       html: `
-        <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-          <h2 style="color:#1a1a1a">Hi ${reservation.customerName},</h2>
-          <p>Thank you for dining with us at <strong>${restaurantName}</strong> on ${reservation.date}.</p>
-          <p>We'd love to hear about your experience! Your feedback helps us improve and helps other diners make great choices.</p>
-          <div style="text-align:center;margin:32px 0">
-            <a href="${process.env.CUSTOMER_APP_URL ?? "https://restosmart.replit.app"}/my-bookings?review=${reservationId}"
-               style="background:#e85d04;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px">
-              Leave a Review
-            </a>
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#f0eef8;padding:24px 0">
+          <div style="background:#fff;border-radius:16px;overflow:hidden;max-width:560px;margin:0 auto;box-shadow:0 2px 16px rgba(99,60,180,0.10)">
+            <div style="background:linear-gradient(135deg,#7c3aed,#db2777);padding:28px 36px;text-align:center">
+              <span style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px">RestoSmart</span>
+            </div>
+            <div style="padding:36px">
+              <h2 style="color:#1a0a2e;margin:0 0 16px">Hallo ${reservation.customerName},</h2>
+              <p style="color:#444;line-height:1.6;margin:0 0 12px">Vielen Dank, dass Sie bei <strong>${restaurantName}</strong> am ${reservation.date} gespeist haben.</p>
+              <p style="color:#444;line-height:1.6;margin:0 0 28px">Wir würden uns sehr freuen, von Ihren Eindrücken zu hören! Ihr Feedback hilft uns, uns zu verbessern, und unterstützt andere Gäste bei ihrer Wahl.</p>
+              <div style="text-align:center;margin:0 0 28px">
+                <a href="${process.env.CUSTOMER_APP_URL ?? "https://restosmart.replit.app"}/my-bookings?review=${reservationId}"
+                   style="background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px">
+                  Bewertung schreiben
+                </a>
+              </div>
+              <p style="color:#999;font-size:13px;text-align:center">Das dauert nur 30 Sekunden und bedeutet uns sehr viel.</p>
+            </div>
+            <div style="background:#f9f8ff;padding:20px 36px;text-align:center;border-top:1px solid #ede8f8">
+              <p style="margin:0;font-size:12px;color:#999">Diese E-Mail wurde gesendet, weil Sie RestoSmart nutzen. Fragen? Antworten Sie einfach auf diese E-Mail.</p>
+            </div>
           </div>
-          <p style="color:#666;font-size:13px">This only takes 30 seconds and means a lot to us.</p>
         </div>
       `,
     });
