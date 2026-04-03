@@ -31,9 +31,9 @@ import type { Reservation } from "@workspace/api-client-react";
 import { format } from "date-fns";
 
 const reservationSchema = z.object({
-  customerName: z.string().min(2, "Name is required"),
-  customerEmail: z.string().email("Invalid email").or(z.literal("")),
-  customerPhone: z.string().min(5, "Phone is required"),
+  customerName: z.string().min(2, "Name ist erforderlich"),
+  customerEmail: z.string().email("Ungültige E-Mail-Adresse").or(z.literal("")),
+  customerPhone: z.string().min(5, "Telefonnummer ist erforderlich"),
   date: z.string(),
   time: z.string(),
   partySize: z.coerce.number().min(1).max(20),
@@ -51,6 +51,21 @@ const statusColors = {
   seated: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   completed: "bg-slate-500/10 text-slate-400 border-slate-500/20",
   cancelled: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "Ausstehend",
+  confirmed: "Bestätigt",
+  seated: "Platziert",
+  completed: "Abgeschlossen",
+  cancelled: "Storniert",
+};
+
+const sourceLabels: Record<string, string> = {
+  phone: "Telefon",
+  online: "Online",
+  walkin: "Walk-in",
+  direct: "Direkt",
 };
 
 export default function Reservations() {
@@ -106,9 +121,9 @@ export default function Reservations() {
             queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
             setSheetOpen(false);
-            toast({ title: "Reservation updated" });
+            toast({ title: "Reservierung aktualisiert" });
           },
-          onError: () => toast({ title: "Update failed", variant: "destructive" })
+          onError: () => toast({ title: "Aktualisierung fehlgeschlagen", variant: "destructive" })
         }
       );
     } else {
@@ -120,9 +135,9 @@ export default function Reservations() {
             queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
             setSheetOpen(false);
             form.reset();
-            toast({ title: "Reservation created" });
+            toast({ title: "Reservierung erstellt" });
           },
-          onError: () => toast({ title: "Creation failed", variant: "destructive" })
+          onError: () => toast({ title: "Erstellen fehlgeschlagen", variant: "destructive" })
         }
       );
     }
@@ -155,21 +170,21 @@ export default function Reservations() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
-          toast({ title: `Status updated to ${status}` });
+          toast({ title: `Status auf "${statusLabels[status]}" gesetzt` });
         }
       }
     );
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this reservation?")) {
+    if (confirm("Möchten Sie diese Reservierung wirklich löschen?")) {
       deleteReservation.mutate(
         { id },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
-            toast({ title: "Reservation deleted" });
+            toast({ title: "Reservierung gelöscht" });
           }
         }
       );
@@ -180,8 +195,8 @@ export default function Reservations() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Reservations</h2>
-          <p className="text-muted-foreground mt-2">Manage your tables and bookings.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Reservierungen</h2>
+          <p className="text-muted-foreground mt-2">Tische und Buchungen verwalten.</p>
         </div>
         <Sheet open={sheetOpen} onOpenChange={(open) => {
           setSheetOpen(open);
@@ -191,11 +206,11 @@ export default function Reservations() {
           }
         }}>
           <SheetTrigger asChild>
-            <Button size="lg" className="shadow-lg"><Plus className="mr-2 h-5 w-5" /> New Reservation</Button>
+            <Button size="lg" className="shadow-lg"><Plus className="mr-2 h-5 w-5" /> Neue Reservierung</Button>
           </SheetTrigger>
           <SheetContent className="sm:max-w-[500px] overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>{editingReservation ? "Edit Reservation" : "New Reservation"}</SheetTitle>
+              <SheetTitle>{editingReservation ? "Reservierung bearbeiten" : "Neue Reservierung"}</SheetTitle>
             </SheetHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -204,7 +219,7 @@ export default function Reservations() {
                   name="customerName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Customer Name</FormLabel>
+                      <FormLabel>Name des Gastes</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -216,7 +231,7 @@ export default function Reservations() {
                     name="customerPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone</FormLabel>
+                        <FormLabel>Telefon</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -227,7 +242,7 @@ export default function Reservations() {
                     name="customerEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email (Optional)</FormLabel>
+                        <FormLabel>E-Mail (optional)</FormLabel>
                         <FormControl><Input type="email" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -240,7 +255,7 @@ export default function Reservations() {
                     name="date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Date</FormLabel>
+                        <FormLabel>Datum</FormLabel>
                         <FormControl><Input type="date" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -251,7 +266,7 @@ export default function Reservations() {
                     name="time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Time</FormLabel>
+                        <FormLabel>Uhrzeit</FormLabel>
                         <FormControl><Input type="time" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -264,7 +279,7 @@ export default function Reservations() {
                     name="partySize"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Party Size</FormLabel>
+                        <FormLabel>Personenzahl</FormLabel>
                         <FormControl><Input type="number" min={1} max={20} {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -275,7 +290,7 @@ export default function Reservations() {
                     name="tableNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Table No. (Optional)</FormLabel>
+                        <FormLabel>Tischnr. (optional)</FormLabel>
                         <FormControl><Input type="number" {...field} value={field.value || ''} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -288,16 +303,16 @@ export default function Reservations() {
                     name="source"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Source</FormLabel>
+                        <FormLabel>Quelle</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="Quelle wählen" /></SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="phone">Phone</SelectItem>
+                            <SelectItem value="phone">Telefon</SelectItem>
                             <SelectItem value="online">Online</SelectItem>
                             <SelectItem value="walkin">Walk-in</SelectItem>
-                            <SelectItem value="direct">Direct</SelectItem>
+                            <SelectItem value="direct">Direkt</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -313,14 +328,14 @@ export default function Reservations() {
                           <FormLabel>Status</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                              <SelectTrigger><SelectValue placeholder="Status wählen" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="seated">Seated</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="pending">Ausstehend</SelectItem>
+                              <SelectItem value="confirmed">Bestätigt</SelectItem>
+                              <SelectItem value="seated">Platziert</SelectItem>
+                              <SelectItem value="completed">Abgeschlossen</SelectItem>
+                              <SelectItem value="cancelled">Storniert</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -334,14 +349,14 @@ export default function Reservations() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormLabel>Hinweise (optional)</FormLabel>
                       <FormControl><Textarea className="resize-none" {...field} value={field.value || ''} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" className="w-full mt-6" disabled={createReservation.isPending || updateReservation.isPending}>
-                  {editingReservation ? "Save Changes" : "Create Reservation"}
+                  {editingReservation ? "Änderungen speichern" : "Reservierung erstellen"}
                 </Button>
               </form>
             </Form>
@@ -353,7 +368,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Today</CardTitle>
+              <CardTitle className="text-sm font-medium">Heute gesamt</CardTitle>
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -366,7 +381,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
+              <CardTitle className="text-sm font-medium">Ausstehend</CardTitle>
               <Clock className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
@@ -379,7 +394,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
+              <CardTitle className="text-sm font-medium">Bestätigt</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
@@ -392,7 +407,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Seated</CardTitle>
+              <CardTitle className="text-sm font-medium">Platziert</CardTitle>
               <CheckSquare className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -405,7 +420,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Covers</CardTitle>
+              <CardTitle className="text-sm font-medium">Gäste gesamt</CardTitle>
               <Users className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -422,22 +437,22 @@ export default function Reservations() {
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6">
             <Tabs defaultValue="today" onValueChange={(v) => setDateFilter(v as any)} className="w-[400px]">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="today">Today</TabsTrigger>
-                <TabsTrigger value="week">This Week</TabsTrigger>
-                <TabsTrigger value="all">All Time</TabsTrigger>
+                <TabsTrigger value="today">Heute</TabsTrigger>
+                <TabsTrigger value="week">Diese Woche</TabsTrigger>
+                <TabsTrigger value="all">Alle</TabsTrigger>
               </TabsList>
             </Tabs>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter Status" />
+                <SelectValue placeholder="Status filtern" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="seated">Seated</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="all">Alle Status</SelectItem>
+                <SelectItem value="pending">Ausstehend</SelectItem>
+                <SelectItem value="confirmed">Bestätigt</SelectItem>
+                <SelectItem value="seated">Platziert</SelectItem>
+                <SelectItem value="completed">Abgeschlossen</SelectItem>
+                <SelectItem value="cancelled">Storniert</SelectItem>
               </SelectContent>
             </Select>
           </CardHeader>
@@ -454,11 +469,11 @@ export default function Reservations() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Party</TableHead>
-                      <TableHead>Table</TableHead>
-                      <TableHead>Source</TableHead>
+                      <TableHead>Uhrzeit</TableHead>
+                      <TableHead>Gast</TableHead>
+                      <TableHead>Personen</TableHead>
+                      <TableHead>Tisch</TableHead>
+                      <TableHead>Quelle</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -488,11 +503,11 @@ export default function Reservations() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span className="capitalize text-sm">{res.source}</span>
+                          <span className="text-sm">{sourceLabels[res.source] ?? res.source}</span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`capitalize ${statusColors[res.status as keyof typeof statusColors] || ''}`}>
-                            {res.status}
+                          <Badge variant="outline" className={statusColors[res.status as keyof typeof statusColors] || ''}>
+                            {statusLabels[res.status] ?? res.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -502,22 +517,22 @@ export default function Reservations() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "confirmed")}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-indigo-500" /> Confirm
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-indigo-500" /> Bestätigen
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "seated")}>
-                                <CheckSquare className="mr-2 h-4 w-4 text-emerald-500" /> Seat
+                                <CheckSquare className="mr-2 h-4 w-4 text-emerald-500" /> Platzieren
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "completed")}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-slate-500" /> Complete
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-slate-500" /> Abschließen
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "cancelled")}>
-                                <XCircle className="mr-2 h-4 w-4 text-rose-500" /> Cancel
+                                <XCircle className="mr-2 h-4 w-4 text-rose-500" /> Stornieren
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleEdit(res)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Edit Details
+                                <Pencil className="mr-2 h-4 w-4" /> Details bearbeiten
                               </DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(res.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                <Trash2 className="mr-2 h-4 w-4" /> Löschen
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -527,7 +542,7 @@ export default function Reservations() {
                     {!reservations?.length && (
                       <TableRow>
                         <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                          No reservations found for these filters.
+                          Keine Reservierungen gefunden.
                         </TableCell>
                       </TableRow>
                     )}

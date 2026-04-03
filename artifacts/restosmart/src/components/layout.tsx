@@ -3,30 +3,30 @@ import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, Utens
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Overview", href: "/", icon: LayoutDashboard },
-  { name: "Bookings", href: "/bookings", icon: BookOpen },
-  { name: "Reservations", href: "/reservations", icon: Calendar },
-  { name: "Tables", href: "/tables", icon: Armchair },
-  { name: "Staff", href: "/staff", icon: Users },
-  { name: "Payroll", href: "/payroll", icon: Wallet },
-  { name: "Inventory", href: "/inventory", icon: Package },
-  { name: "Menu", href: "/menu", icon: UtensilsCrossed },
-  { name: "POS", href: "/pos", icon: ShoppingCart },
-  { name: "Finances", href: "/finances", icon: DollarSign },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Übersicht", href: "/", icon: LayoutDashboard },
+  { name: "Buchungen", href: "/bookings", icon: BookOpen },
+  { name: "Reservierungen", href: "/reservations", icon: Calendar },
+  { name: "Tische", href: "/tables", icon: Armchair },
+  { name: "Personal", href: "/staff", icon: Users },
+  { name: "Gehaltsabrechnung", href: "/payroll", icon: Wallet },
+  { name: "Inventar", href: "/inventory", icon: Package },
+  { name: "Speisekarte", href: "/menu", icon: UtensilsCrossed },
+  { name: "Kassenterminal", href: "/pos", icon: ShoppingCart },
+  { name: "Finanzen", href: "/finances", icon: DollarSign },
+  { name: "Analyse", href: "/analytics", icon: BarChart3 },
   { name: "Marketing", href: "/marketing", icon: Megaphone },
-  { name: "Dead Hours", href: "/insights", icon: Lightbulb },
-  { name: "Growth Hub", href: "/campaigns", icon: TrendingUp },
-  { name: "Reviews", href: "/reviews", icon: Star },
-  { name: "Billing", href: "/billing", icon: CreditCard },
+  { name: "Tote Stunden", href: "/insights", icon: Lightbulb },
+  { name: "Wachstum", href: "/campaigns", icon: TrendingUp },
+  { name: "Bewertungen", href: "/reviews", icon: Star },
+  { name: "Abrechnung", href: "/billing", icon: CreditCard },
 ];
 
 const mobileNavigation = [
-  { name: "Overview", href: "/", icon: LayoutDashboard },
-  { name: "Bookings", href: "/bookings", icon: BookOpen },
+  { name: "Übersicht", href: "/", icon: LayoutDashboard },
+  { name: "Buchungen", href: "/bookings", icon: BookOpen },
   { name: "Marketing", href: "/marketing", icon: Megaphone },
-  { name: "Reviews", href: "/reviews", icon: Star },
-  { name: "Billing", href: "/billing", icon: CreditCard },
+  { name: "Bewertungen", href: "/reviews", icon: Star },
+  { name: "Abrechnung", href: "/billing", icon: CreditCard },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-background text-foreground dark overflow-hidden">
-      {/* Sidebar */}
+      {/* Seitenleiste */}
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50 border-r border-border bg-sidebar">
         <div className="flex h-16 shrink-0 items-center px-6 border-b border-sidebar-border bg-sidebar-primary/5">
           <div className="flex items-center gap-2">
@@ -76,14 +76,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Hauptinhalt */}
       <main className="flex-1 md:pl-64 overflow-y-auto pb-16 md:pb-0">
         <div className="min-h-full h-full p-8 relative">
           {children}
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
+      {/* Mobile-Navigation unten */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-sidebar border-t border-border flex justify-around items-center h-16 px-2">
         {mobileNavigation.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));

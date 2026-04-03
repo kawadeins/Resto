@@ -5,14 +5,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
 
   const navItems = [
-    { href: "/", label: "Home", icon: <UtensilsCrossed className="w-5 h-5" /> },
-    { href: "/explore", label: "Explore", icon: <Compass className="w-5 h-5" /> },
-    { href: "/my-bookings", label: "Bookings", icon: <CalendarCheck className="w-5 h-5" /> },
+    { href: "/", label: "Startseite", icon: <UtensilsCrossed className="w-5 h-5" /> },
+    { href: "/explore", label: "Entdecken", icon: <Compass className="w-5 h-5" /> },
+    { href: "/my-bookings", label: "Buchungen", icon: <CalendarCheck className="w-5 h-5" /> },
   ];
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
-      {/* Desktop Header */}
+      {/* Desktop-Kopfzeile */}
       <header className="hidden md:flex sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-primary font-serif text-2xl font-bold tracking-tight">
@@ -37,12 +37,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Hauptinhalt */}
       <main className="flex-1 w-full pb-20 md:pb-0">
         {children}
       </main>
 
-      {/* Mobile Bottom Nav */}
+      {/* Mobile-Navigation unten */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-[0_-4px_20px_rgba(0,0,0,0.05)] safe-area-bottom">
         <div className="flex items-center justify-around h-16 px-4">
           {navItems.map((item) => {
@@ -63,11 +63,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
       
-      {/* Footer (Desktop) */}
+      {/* Fußzeile (Desktop) */}
       <footer className="hidden md:block py-12 bg-muted/30 border-t mt-auto">
         <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-          <p className="font-serif italic text-lg text-foreground mb-4">Good food, good people.</p>
-          &copy; {new Date().getFullYear()} RestoSmart Customer. All rights reserved.
+          <p className="font-serif italic text-lg text-foreground mb-4">Gutes Essen, gute Menschen.</p>
+          &copy; {new Date().getFullYear()} RestoSmart. Alle Rechte vorbehalten.
         </div>
       </footer>
     </div>

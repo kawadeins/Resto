@@ -61,12 +61,12 @@ function statusColor(s: AvailabilityStatus) {
 
 function statusLabel(s: AvailabilityStatus) {
   switch (s) {
-    case "available": return "Available";
-    case "limited": return "Limited";
-    case "nearly_full": return "Nearly Full";
-    case "full": return "Full";
-    case "closed": return "Closed";
-    case "paused": return "Paused";
+    case "available": return "Verfügbar";
+    case "limited": return "Begrenzt";
+    case "nearly_full": return "Fast voll";
+    case "full": return "Voll";
+    case "closed": return "Geschlossen";
+    case "paused": return "Pausiert";
   }
 }
 
@@ -144,7 +144,7 @@ export default function Tables() {
         const updated = await res.json();
         setSettings(updated);
         setForm(updated);
-        toast({ title: "Settings saved", description: "Capacity settings have been updated." });
+        toast({ title: "Einstellungen gespeichert", description: "Kapazitätseinstellungen wurden aktualisiert." });
         fetchAll(selectedDate);
       }
     } finally {
@@ -163,10 +163,10 @@ export default function Tables() {
       if (res.ok) {
         const data = await res.json();
         toast({
-          title: pause ? "Availability paused" : "Availability resumed",
+          title: pause ? "Verfügbarkeit pausiert" : "Verfügbarkeit fortgesetzt",
           description: pause
-            ? `Walk-ins and bookings paused${data.pausedUntil ? " for " + pauseDuration + " min" : ""}.`
-            : "Restaurant is accepting bookings again.",
+            ? `Walk-ins und Buchungen pausiert${data.pausedUntil ? " für " + pauseDuration + " Min." : ""}.`
+            : "Das Restaurant nimmt wieder Buchungen an.",
         });
         fetchAll(selectedDate);
       }
@@ -190,98 +190,100 @@ export default function Tables() {
 
   const maxWeekly = Math.max(...(overview?.weeklyPattern.map((w) => w.avgGuests) ?? [1]), 1);
 
+  const wochentage = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Kopfzeile */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <Armchair className="w-8 h-8 text-primary" />
-            Tables & Availability
+            Tische & Verfügbarkeit
           </h1>
-          <p className="text-muted-foreground mt-1">Manage capacity settings and monitor live occupancy</p>
+          <p className="text-muted-foreground mt-1">Kapazitätseinstellungen verwalten und Auslastung live überwachen</p>
         </div>
 
-        {/* Pause / Resume */}
+        {/* Pause / Fortsetzen */}
         <div className="flex items-center gap-3">
           {isPaused ? (
             <div className="flex items-center gap-2">
               <Badge variant="destructive" className="animate-pulse px-3 py-1">
                 <PauseCircle className="w-3.5 h-3.5 mr-1" />
-                Bookings Paused
+                Buchungen pausiert
                 {pausedUntil && (
-                  <span className="ml-1 opacity-75">· until {format(new Date(pausedUntil), "HH:mm")}</span>
+                  <span className="ml-1 opacity-75">· bis {format(new Date(pausedUntil), "HH:mm")} Uhr</span>
                 )}
               </Badge>
               <Button size="sm" variant="outline" onClick={() => handlePause(false)} disabled={pausing} className="gap-1.5">
                 <PlayCircle className="w-4 h-4" />
-                Resume
+                Fortsetzen
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Select value={pauseDuration} onValueChange={setPauseDuration}>
-                <SelectTrigger className="w-36 h-9">
+                <SelectTrigger className="w-40 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="30">Pause 30 min</SelectItem>
-                  <SelectItem value="60">Pause 1 hour</SelectItem>
-                  <SelectItem value="120">Pause 2 hours</SelectItem>
-                  <SelectItem value="0">Pause indefinitely</SelectItem>
+                  <SelectItem value="30">30 Min. pausieren</SelectItem>
+                  <SelectItem value="60">1 Std. pausieren</SelectItem>
+                  <SelectItem value="120">2 Std. pausieren</SelectItem>
+                  <SelectItem value="0">Unbegrenzt pausieren</SelectItem>
                 </SelectContent>
               </Select>
               <Button size="sm" variant="outline" className="gap-1.5 text-orange-400 border-orange-400/40 hover:bg-orange-500/10" onClick={() => handlePause(true)} disabled={pausing}>
                 <PauseCircle className="w-4 h-4" />
-                Pause
+                Pausieren
               </Button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Live Summary Cards */}
+      {/* Live-Übersichtskarten */}
       {overview && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Now</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Jetzt</div>
             <div className="flex items-end gap-2">
               <StatusBadge status={nowSlot?.status ?? (isPaused ? "paused" : "closed")} />
             </div>
             <div className="text-xs text-muted-foreground mt-1.5">
-              {nowSlot ? `${nowSlot.availableSeats} seats free` : "No active slot"}
+              {nowSlot ? `${nowSlot.availableSeats} Plätze frei` : "Kein aktiver Zeitslot"}
             </div>
           </div>
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Today's Guests</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Heutige Gäste</div>
             <div className="text-2xl font-bold">{overview.summary.totalGuests}</div>
-            <div className="text-xs text-muted-foreground">{overview.summary.totalReservations} reservations</div>
+            <div className="text-xs text-muted-foreground">{overview.summary.totalReservations} Reservierungen</div>
           </div>
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Peak Slot</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Spitzenzeit</div>
             <div className="text-2xl font-bold">{overview.summary.peakSlot ?? "—"}</div>
-            <div className="text-xs text-muted-foreground">{overview.summary.peakOccupancy}% occupancy</div>
+            <div className="text-xs text-muted-foreground">{overview.summary.peakOccupancy}% Auslastung</div>
           </div>
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Remaining Today</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Noch verfügbar</div>
             <div className="text-2xl font-bold">{overview.summary.remainingCapacity}</div>
-            <div className="text-xs text-muted-foreground">of {overview.seatingCapacity} seats</div>
+            <div className="text-xs text-muted-foreground">von {overview.seatingCapacity} Plätzen</div>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Capacity Settings */}
+        {/* Kapazitätseinstellungen */}
         <div className="bg-card border rounded-2xl p-6 space-y-5">
           <div className="flex items-center gap-2 mb-2">
             <Settings className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-base">Capacity Settings</h2>
+            <h2 className="font-semibold text-base">Kapazitätseinstellungen</h2>
           </div>
 
           {form && (
             <>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Total Tables</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Tische gesamt</Label>
                 <Input
                   type="number"
                   min={1}
@@ -293,7 +295,7 @@ export default function Tables() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Seating Capacity (guests)</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Sitzkapazität (Gäste)</Label>
                 <Input
                   type="number"
                   min={1}
@@ -305,7 +307,7 @@ export default function Tables() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Slot Duration (min)</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Slotdauer (Min.)</Label>
                 <Select
                   value={String(form.slotDurationMinutes)}
                   onValueChange={(v) => setForm({ ...form, slotDurationMinutes: parseInt(v) })}
@@ -314,18 +316,18 @@ export default function Tables() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="60">60 min (1 hour)</SelectItem>
-                    <SelectItem value="90">90 min (1.5 hours)</SelectItem>
-                    <SelectItem value="120">120 min (2 hours)</SelectItem>
-                    <SelectItem value="150">150 min (2.5 hours)</SelectItem>
-                    <SelectItem value="180">180 min (3 hours)</SelectItem>
+                    <SelectItem value="60">60 Min. (1 Std.)</SelectItem>
+                    <SelectItem value="90">90 Min. (1,5 Std.)</SelectItem>
+                    <SelectItem value="120">120 Min. (2 Std.)</SelectItem>
+                    <SelectItem value="150">150 Min. (2,5 Std.)</SelectItem>
+                    <SelectItem value="180">180 Min. (3 Std.)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">How long each seated booking occupies the table</p>
+                <p className="text-xs text-muted-foreground">Wie lange ein Tisch pro Buchung belegt ist</p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Max Party Size</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Max. Gruppengröße</Label>
                 <Input
                   type="number"
                   min={1}
@@ -338,8 +340,8 @@ export default function Tables() {
 
               <div className="flex items-center justify-between py-1 border-t border-border">
                 <div>
-                  <div className="text-sm font-medium">Accept Walk-ins</div>
-                  <div className="text-xs text-muted-foreground">Show walk-in availability to customers</div>
+                  <div className="text-sm font-medium">Walk-ins akzeptieren</div>
+                  <div className="text-xs text-muted-foreground">Walk-in-Verfügbarkeit für Kunden anzeigen</div>
                 </div>
                 <Switch
                   checked={form.walkInsEnabled}
@@ -349,18 +351,18 @@ export default function Tables() {
 
               <Button onClick={handleSave} disabled={saving} className="w-full gap-2">
                 <Save className="w-4 h-4" />
-                {saving ? "Saving..." : "Save Settings"}
+                {saving ? "Wird gespeichert..." : "Einstellungen speichern"}
               </Button>
             </>
           )}
         </div>
 
-        {/* Today's Slot Heatmap */}
+        {/* Slot-Heatmap */}
         <div className="lg:col-span-2 bg-card border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <BarChart2 className="w-4 h-4 text-primary" />
-              <h2 className="font-semibold text-base">Slot Occupancy</h2>
+              <h2 className="font-semibold text-base">Slot-Auslastung</h2>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -380,7 +382,7 @@ export default function Tables() {
             </div>
           ) : overview && overview.slots.length > 0 ? (
             <div className="space-y-2">
-              {/* Legend */}
+              {/* Legende */}
               <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3 flex-wrap">
                 {(["available", "limited", "nearly_full", "full"] as AvailabilityStatus[]).map((s) => (
                   <span key={s} className="flex items-center gap-1.5">
@@ -396,7 +398,7 @@ export default function Tables() {
                   <div key={slot.time} className={`flex items-center gap-3 rounded-lg px-2 py-1.5 ${isNow ? "bg-primary/10 ring-1 ring-primary/30" : ""}`}>
                     <span className={`text-xs font-mono w-12 shrink-0 ${isNow ? "text-primary font-bold" : "text-muted-foreground"}`}>
                       {slot.time}
-                      {isNow && <span className="ml-1 text-[10px]">now</span>}
+                      {isNow && <span className="ml-1 text-[10px]">jetzt</span>}
                     </span>
                     <div className="flex-1 bg-muted rounded-full h-4 relative overflow-hidden">
                       <div
@@ -415,26 +417,26 @@ export default function Tables() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
               <Calendar className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-sm">No slot data for this date</p>
+              <p className="text-sm">Keine Slot-Daten für dieses Datum</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Weekly Pattern + Fastest Slots */}
+      {/* Wochenmuster + Schnellste Slots */}
       {overview && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Weekly Busy Pattern */}
+          {/* Wöchentliches Auslastungsmuster */}
           <div className="bg-card border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="font-semibold text-base">Weekly Busy Pattern</h2>
-              <span className="text-xs text-muted-foreground ml-auto">last 4 weeks avg</span>
+              <h2 className="font-semibold text-base">Wöchentliches Auslastungsmuster</h2>
+              <span className="text-xs text-muted-foreground ml-auto">Ø letzte 4 Wochen</span>
             </div>
             <div className="flex items-end gap-2 h-28">
               {overview.weeklyPattern.map((day) => {
                 const height = maxWeekly > 0 ? Math.round((day.avgGuests / maxWeekly) * 100) : 0;
-                const isToday = day.day === ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
+                const isToday = day.day === wochentage[new Date().getDay()];
                 return (
                   <div key={day.short} className="flex-1 flex flex-col items-center gap-1">
                     <div className="text-xs text-muted-foreground">{day.avgGuests > 0 ? day.avgGuests : ""}</div>
@@ -451,12 +453,12 @@ export default function Tables() {
             </div>
           </div>
 
-          {/* Fastest-Filling Slots */}
+          {/* Schnellste Slots */}
           <div className="bg-card border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <Zap className="w-4 h-4 text-amber-400" />
-              <h2 className="font-semibold text-base">Fastest-Filling Slots</h2>
-              <span className="text-xs text-muted-foreground ml-auto">historically busiest</span>
+              <h2 className="font-semibold text-base">Schnellst ausgebuchte Slots</h2>
+              <span className="text-xs text-muted-foreground ml-auto">historisch am stärksten</span>
             </div>
             {overview.fastestSlots.length > 0 ? (
               <div className="space-y-3">
@@ -467,18 +469,18 @@ export default function Tables() {
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{slot.time}</div>
-                      <div className="text-xs text-muted-foreground">{slot.guests} total guests in period</div>
+                      <div className="text-xs text-muted-foreground">{slot.guests} Gäste gesamt im Zeitraum</div>
                     </div>
-                    {i === 0 && <Badge className="bg-amber-400/15 text-amber-400 border-amber-400/30 text-xs">Peak</Badge>}
+                    {i === 0 && <Badge className="bg-amber-400/15 text-amber-400 border-amber-400/30 text-xs">Spitze</Badge>}
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground pt-1">Consider opening extra tables or running a deal during peak slots to maximise covers.</p>
+                <p className="text-xs text-muted-foreground pt-1">Erwägen Sie, zu Stoßzeiten zusätzliche Tische zu öffnen oder einen Deal zu starten, um die Auslastung zu maximieren.</p>
               </div>
             ) : (
               <div className="text-center py-10 text-muted-foreground text-sm">
                 <Clock className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                Not enough historical data yet
+                Noch nicht genug historische Daten
               </div>
             )}
           </div>

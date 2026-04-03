@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { shiftsTable, employeesTable, shiftAttendanceTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendShiftMorningReminder, sendShiftPreReminder } from "../lib/email";
+import { getUnavailableEmployeeIds } from "../lib/staff-availability";
 
 const router = Router();
 
@@ -57,7 +58,11 @@ function computeLiveStatus(
 async function getTodayShifts() {
   const now = new Date();
   const dayOfWeek = DAYS[now.getDay()];
-  return db
+  const todayStr = now.toISOString().split("T")[0];
+
+  const unavailable = await getUnavailableEmployeeIds(dayOfWeek, todayStr);
+
+  const rows = await db
     .select({
       shiftId: shiftsTable.id,
       employeeId: employeesTable.id,
@@ -70,6 +75,8 @@ async function getTodayShifts() {
     .from(shiftsTable)
     .innerJoin(employeesTable, eq(shiftsTable.employeeId, employeesTable.id))
     .where(and(eq(shiftsTable.dayOfWeek, dayOfWeek), eq(employeesTable.status, "active")));
+
+  return rows.filter((r) => !unavailable.has(r.employeeId));
 }
 
 async function ensureAttendanceRecord(shiftId: number, employeeId: number, date: string) {

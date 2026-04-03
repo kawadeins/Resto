@@ -16,3 +16,5 @@ export * from "./campaigns";
 export * from "./notification_logs";
 export * from "./pilot_feedback";
 export * from "./shift_attendance";
+export * from "./employee_off_days";
+export * from "./employee_vacations";

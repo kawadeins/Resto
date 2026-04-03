@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { shiftsTable, employeesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateShiftBody, DeleteShiftParams } from "@workspace/api-zod";
+import { getUnavailableEmployeeIds } from "../lib/staff-availability";
 
 const router = Router();
 
@@ -13,11 +14,18 @@ function timeToMinutes(time: string): number {
   return h * 60 + (m || 0);
 }
 
+function todayDate(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
 router.get("/working-now", async (req, res) => {
   try {
     const now = new Date();
     const dayOfWeek = DAYS[now.getDay()];
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const todayStr = todayDate();
+
+    const unavailable = await getUnavailableEmployeeIds(dayOfWeek, todayStr);
 
     const rows = await db
       .select({
@@ -33,15 +41,16 @@ router.get("/working-now", async (req, res) => {
       .innerJoin(employeesTable, eq(shiftsTable.employeeId, employeesTable.id))
       .where(eq(shiftsTable.dayOfWeek, dayOfWeek));
 
-    const workingNow = rows.filter((r) => {
-      const startMin = timeToMinutes(r.startTime);
-      const endMin = timeToMinutes(r.endTime);
-      // Handle overnight shifts
-      if (endMin < startMin) {
-        return currentMinutes >= startMin || currentMinutes < endMin;
-      }
-      return currentMinutes >= startMin && currentMinutes < endMin;
-    });
+    const workingNow = rows
+      .filter((r) => !unavailable.has(r.employeeId))
+      .filter((r) => {
+        const startMin = timeToMinutes(r.startTime);
+        const endMin = timeToMinutes(r.endTime);
+        if (endMin < startMin) {
+          return currentMinutes >= startMin || currentMinutes < endMin;
+        }
+        return currentMinutes >= startMin && currentMinutes < endMin;
+      });
 
     const result = workingNow.map((r) => {
       const endMin = timeToMinutes(r.endTime);
@@ -72,6 +81,9 @@ router.get("/upcoming-reminders", async (req, res) => {
     const dayOfWeek = DAYS[now.getDay()];
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const windowEnd = currentMinutes + 30;
+    const todayStr = todayDate();
+
+    const unavailable = await getUnavailableEmployeeIds(dayOfWeek, todayStr);
 
     const rows = await db
       .select({
@@ -87,6 +99,7 @@ router.get("/upcoming-reminders", async (req, res) => {
       .where(eq(shiftsTable.dayOfWeek, dayOfWeek));
 
     const reminders = rows
+      .filter((r) => !unavailable.has(r.employeeId))
       .filter((r) => {
         const startMin = timeToMinutes(r.startTime);
         return startMin > currentMinutes && startMin <= windowEnd;

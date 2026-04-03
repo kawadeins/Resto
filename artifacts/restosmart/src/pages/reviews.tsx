@@ -98,10 +98,10 @@ export default function Reviews() {
         body: JSON.stringify({ reservationId }),
       }).then(r => r.json()),
     onSuccess: (_, reservationId) => {
-      toast({ title: "Review request sent successfully" });
+      toast({ title: "Bewertungsanfrage erfolgreich gesendet" });
       queryClient.invalidateQueries({ queryKey: ["review-pending-requests"] });
     },
-    onError: () => toast({ title: "Failed to send review request", variant: "destructive" }),
+    onError: () => toast({ title: "Bewertungsanfrage konnte nicht gesendet werden", variant: "destructive" }),
   });
 
   const ratingSyncMutation = useMutation({
@@ -109,14 +109,14 @@ export default function Reviews() {
       fetch(`${API_BASE}/api/reviews/rating-sync`, { method: "POST" }).then(r => r.json()),
     onSuccess: (data) => {
       if (data.skipped) {
-        toast({ title: "No reviews to sync" });
+        toast({ title: "Keine Bewertungen zum Synchronisieren" });
       } else {
-        toast({ title: `Rating synced: ${data.averageRating} from ${data.totalCount} reviews` });
+        toast({ title: `Bewertung synchronisiert: ${data.averageRating} aus ${data.totalCount} Bewertungen` });
       }
       queryClient.invalidateQueries({ queryKey: getGetReviewStatsQueryKey() });
       queryClient.invalidateQueries({ queryKey: ["review-insights"] });
     },
-    onError: () => toast({ title: "Rating sync failed", variant: "destructive" }),
+    onError: () => toast({ title: "Bewertungssynchronisierung fehlgeschlagen", variant: "destructive" }),
   });
 
   const handleReply = (id: number) => {
@@ -125,13 +125,13 @@ export default function Reviews() {
       { id, data: { reply: replyText } },
       {
         onSuccess: () => {
-          toast({ title: "Reply posted successfully" });
+          toast({ title: "Antwort erfolgreich gesendet" });
           setReplyingTo(null);
           setReplyText("");
           queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey() });
           queryClient.invalidateQueries({ queryKey: ["review-insights"] });
         },
-        onError: () => toast({ title: "Failed to post reply", variant: "destructive" })
+        onError: () => toast({ title: "Antwort konnte nicht gesendet werden", variant: "destructive" })
       }
     );
   };
@@ -155,18 +155,18 @@ export default function Reviews() {
     insights?.trend === "down" ? "text-red-500" : "text-muted-foreground";
 
   const tabs: { key: FilterTab; label: string; count?: number }[] = [
-    { key: "all", label: "All", count: reviews?.length },
-    { key: "needs_attention", label: "Needs Attention", count: insights?.needsAttention?.length },
-    { key: "unreplied", label: "Unreplied", count: insights?.unrepliedCount },
-    { key: "positive", label: "Positive (4-5)", count: reviews?.filter(r => r.rating >= 4).length },
+    { key: "all", label: "Alle", count: reviews?.length },
+    { key: "needs_attention", label: "Handlungsbedarf", count: insights?.needsAttention?.length },
+    { key: "unreplied", label: "Ohne Antwort", count: insights?.unrepliedCount },
+    { key: "positive", label: "Positiv (4–5)", count: reviews?.filter(r => r.rating >= 4).length },
   ];
 
   return (
     <div className="space-y-8 pb-10">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Reviews & Reputation</h2>
-          <p className="text-muted-foreground mt-2">Manage feedback, reply to customers, and track your reputation score.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Bewertungen & Reputation</h2>
+          <p className="text-muted-foreground mt-2">Feedback verwalten, Kunden antworten und Ihren Ruf im Blick behalten.</p>
         </div>
         <Button
           variant="outline"
@@ -176,7 +176,7 @@ export default function Reviews() {
           className="gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${ratingSyncMutation.isPending ? "animate-spin" : ""}`} />
-          Sync Rating
+          Bewertung synchronisieren
         </Button>
       </div>
 
@@ -185,13 +185,13 @@ export default function Reviews() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Reviews</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Bewertungen gesamt</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{insights?.totalCount ?? 0}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <MessageSquare className="w-3 h-3" />
-                {insights?.recentCount ?? 0} in last 30 days
+                {insights?.recentCount ?? 0} in den letzten 30 Tagen
               </div>
             </CardContent>
           </Card>
@@ -200,7 +200,7 @@ export default function Reviews() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Average Rating</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Durchschnittsbewertung</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function Reviews() {
                 {insights?.trend && <TrendIcon className={`w-5 h-5 ${trendColor}`} />}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                {insights?.recentAvg ? `Last 30d: ${insights.recentAvg.toFixed(1)}` : "No recent data"}
+                {insights?.recentAvg ? `Letzte 30 Tage: ${insights.recentAvg.toFixed(1)}` : "Keine aktuellen Daten"}
               </div>
             </CardContent>
           </Card>
@@ -217,13 +217,13 @@ export default function Reviews() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reply Rate</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Antwortrate</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{insights?.replyRate ?? 0}%</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <MessageCircleReply className="w-3 h-3" />
-                {insights?.repliedCount ?? 0} of {insights?.totalCount ?? 0} replied
+                {insights?.repliedCount ?? 0} von {insights?.totalCount ?? 0} beantwortet
               </div>
             </CardContent>
           </Card>
@@ -234,14 +234,14 @@ export default function Reviews() {
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 {insights?.needsAttention?.length ? <AlertTriangle className="w-3 h-3 text-orange-500" /> : null}
-                Needs Attention
+                Handlungsbedarf
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={`text-3xl font-bold ${insights?.needsAttention?.length ? "text-orange-500" : ""}`}>
                 {insights?.needsAttention?.length ?? 0}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Low rating, no reply</div>
+              <div className="text-xs text-muted-foreground mt-1">Niedrige Bewertung, keine Antwort</div>
             </CardContent>
           </Card>
         </motion.div>
@@ -256,10 +256,10 @@ export default function Reviews() {
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Mail className="w-4 h-4 text-primary" />
-                    Pending Review Requests
+                    Ausstehende Bewertungsanfragen
                   </CardTitle>
                   <CardDescription className="mt-0.5">
-                    {pendingRequests!.length} recent completed visit{pendingRequests!.length !== 1 ? "s" : ""} without a review request
+                    {pendingRequests!.length} kürzlich abgeschlossene{pendingRequests!.length !== 1 ? " Besuche" : "r Besuch"} ohne Bewertungsanfrage
                   </CardDescription>
                 </div>
               </div>
@@ -270,7 +270,7 @@ export default function Reviews() {
                   <div key={r.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-background border border-border/50">
                     <div>
                       <div className="font-medium text-sm">{r.customerName}</div>
-                      <div className="text-xs text-muted-foreground">{r.date} at {r.time} · Party of {r.partySize}</div>
+                      <div className="text-xs text-muted-foreground">{r.date} um {r.time} · {r.partySize} Personen</div>
                     </div>
                     <Button
                       size="sm"
@@ -280,7 +280,7 @@ export default function Reviews() {
                       disabled={sendRequestMutation.isPending}
                     >
                       <Send className="w-3.5 h-3.5" />
-                      Send Request
+                      Anfrage senden
                     </Button>
                   </div>
                 ))}
@@ -296,8 +296,8 @@ export default function Reviews() {
         <motion.div className="lg:col-span-1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
           <Card className="sticky top-6">
             <CardHeader>
-              <CardTitle>Rating Distribution</CardTitle>
-              <CardDescription>Breakdown by star rating</CardDescription>
+              <CardTitle>Bewertungsverteilung</CardTitle>
+              <CardDescription>Aufschlüsselung nach Sternebewertung</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[220px] w-full">
@@ -325,9 +325,9 @@ export default function Reviews() {
               {insights?.recentAvg !== null && insights?.previousAvg !== null && (
                 <div className={`mt-4 text-sm flex items-center gap-2 font-medium ${trendColor}`}>
                   <TrendIcon className="w-4 h-4" />
-                  {insights?.trend === "up" && "Rating trending up vs last month"}
-                  {insights?.trend === "down" && "Rating trending down vs last month"}
-                  {insights?.trend === "stable" && "Rating stable vs last month"}
+                  {insights?.trend === "up" && "Bewertung steigt im Vergleich zum Vormonat"}
+                  {insights?.trend === "down" && "Bewertung sinkt im Vergleich zum Vormonat"}
+                  {insights?.trend === "stable" && "Bewertung stabil im Vergleich zum Vormonat"}
                 </div>
               )}
             </CardContent>
@@ -365,12 +365,12 @@ export default function Reviews() {
           </div>
 
           {loadingReviews ? (
-            <div className="p-8 text-center text-muted-foreground">Loading reviews...</div>
+            <div className="p-8 text-center text-muted-foreground">Bewertungen werden geladen…</div>
           ) : filteredReviews.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <MessageSquare className="w-12 h-12 mb-4 opacity-20" />
-                <p>{activeTab === "all" ? "No reviews yet." : "No reviews in this category."}</p>
+                <p>{activeTab === "all" ? "Noch keine Bewertungen." : "Keine Bewertungen in dieser Kategorie."}</p>
               </CardContent>
             </Card>
           ) : (
@@ -390,7 +390,7 @@ export default function Reviews() {
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(review.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+                          {new Date(review.createdAt).toLocaleDateString("de-DE", { year: "numeric", month: "long", day: "numeric" })}
                         </div>
                       </div>
                     </div>
@@ -405,9 +405,9 @@ export default function Reviews() {
                       <div className="absolute -left-[17px] top-0 bottom-4 w-px bg-border/50" />
                       <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-primary">
                         <User className="w-3 h-3" />
-                        Owner Reply
+                        Antwort des Inhabers
                         <span className="text-muted-foreground font-normal ml-auto">
-                          {review.ownerRepliedAt ? new Date(review.ownerRepliedAt).toLocaleDateString() : ""}
+                          {review.ownerRepliedAt ? new Date(review.ownerRepliedAt).toLocaleDateString("de-DE") : ""}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground">{review.ownerReply}</p>
@@ -415,16 +415,16 @@ export default function Reviews() {
                   ) : replyingTo === review.id ? (
                     <div className="mt-4 space-y-3">
                       <Textarea
-                        placeholder="Write your reply..."
+                        placeholder="Ihre Antwort eingeben…"
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         className="min-h-[100px]"
                         autoFocus
                       />
                       <div className="flex gap-2 justify-end">
-                        <Button variant="ghost" size="sm" onClick={() => { setReplyingTo(null); setReplyText(""); }}>Cancel</Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setReplyingTo(null); setReplyText(""); }}>Abbrechen</Button>
                         <Button size="sm" onClick={() => handleReply(review.id)} disabled={replyMutation.isPending || !replyText.trim()}>
-                          {replyMutation.isPending ? "Posting..." : "Post Reply"}
+                          {replyMutation.isPending ? "Wird gesendet…" : "Antwort senden"}
                         </Button>
                       </div>
                     </div>
@@ -436,7 +436,7 @@ export default function Reviews() {
                       onClick={() => { setReplyingTo(review.id); setReplyText(""); }}
                     >
                       <MessageCircleReply className="w-4 h-4 mr-2" />
-                      {review.rating <= 3 ? "Reply Now" : "Reply"}
+                      {review.rating <= 3 ? "Jetzt antworten" : "Antworten"}
                     </Button>
                   )}
                 </CardContent>

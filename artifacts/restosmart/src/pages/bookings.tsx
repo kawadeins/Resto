@@ -16,11 +16,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Users, Clock, MessageSquare, CheckCircle2, XCircle, ChevronRight, Search } from "lucide-react";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  pending: { label: "Pending", className: "text-amber-500 border-amber-500/30 bg-amber-500/5" },
-  confirmed: { label: "Confirmed", className: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5" },
-  rejected: { label: "Rejected", className: "text-rose-500 border-rose-500/30 bg-rose-500/5" },
-  arrived: { label: "Arrived", className: "text-blue-500 border-blue-500/30 bg-blue-500/5" },
-  cancelled: { label: "Cancelled", className: "text-muted-foreground border-border bg-muted/20" },
+  pending: { label: "Ausstehend", className: "text-amber-500 border-amber-500/30 bg-amber-500/5" },
+  confirmed: { label: "Bestätigt", className: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5" },
+  rejected: { label: "Abgelehnt", className: "text-rose-500 border-rose-500/30 bg-rose-500/5" },
+  arrived: { label: "Eingetroffen", className: "text-blue-500 border-blue-500/30 bg-blue-500/5" },
+  cancelled: { label: "Storniert", className: "text-muted-foreground border-border bg-muted/20" },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -34,7 +34,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  return date.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" });
 }
 
 export default function Bookings() {
@@ -57,10 +57,10 @@ export default function Bookings() {
       { id, data: { status } },
       {
         onSuccess: () => {
-          toast({ title: `Booking marked as ${status}.` });
+          toast({ title: `Buchung als "${STATUS_CONFIG[status]?.label ?? status}" markiert.` });
           queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey(params) });
         },
-        onError: () => toast({ title: "Failed to update booking", variant: "destructive" }),
+        onError: () => toast({ title: "Buchung konnte nicht aktualisiert werden", variant: "destructive" }),
       }
     );
   };
@@ -92,9 +92,9 @@ export default function Bookings() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Bookings</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Buchungen</h2>
         <p className="text-muted-foreground mt-2">
-          Manage reservations, confirm arrivals, and track expected covers.
+          Reservierungen verwalten, Ankünfte bestätigen und erwartete Gäste verfolgen.
         </p>
       </div>
 
@@ -104,9 +104,9 @@ export default function Bookings() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Total Bookings</p>
+                  <p className="text-xs text-muted-foreground font-medium">Buchungen gesamt</p>
                   <p className="text-2xl font-bold mt-1">{filtered.length}</p>
-                  <p className="text-xs text-muted-foreground mt-1">for selected date</p>
+                  <p className="text-xs text-muted-foreground mt-1">für ausgewähltes Datum</p>
                 </div>
                 <Calendar className="h-8 w-8 text-primary/30" />
               </div>
@@ -118,12 +118,12 @@ export default function Bookings() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Expected Revenue</p>
+                  <p className="text-xs text-muted-foreground font-medium">Erwarteter Umsatz</p>
                   <p className="text-2xl font-bold mt-1 text-emerald-500">
-                    €{expectedRevenue.toLocaleString()}
+                    {expectedRevenue.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {totalCoversConfirmed} confirmed covers
+                    {totalCoversConfirmed} bestätigte Gäste
                   </p>
                 </div>
                 <CheckCircle2 className="h-8 w-8 text-emerald-500/30" />
@@ -136,9 +136,9 @@ export default function Bookings() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Live Traffic</p>
+                  <p className="text-xs text-muted-foreground font-medium">Live-Verkehr</p>
                   <p className="text-2xl font-bold mt-1 text-blue-500">{liveTraffic}</p>
-                  <p className="text-xs text-muted-foreground mt-1">bookings in next 2 hours</p>
+                  <p className="text-xs text-muted-foreground mt-1">Buchungen in den nächsten 2 Std.</p>
                 </div>
                 <Clock className="h-8 w-8 text-blue-500/30" />
               </div>
@@ -151,14 +151,14 @@ export default function Bookings() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1">
-              <CardTitle>Reservation Table</CardTitle>
-              <CardDescription>Confirm, reject, or mark customers as arrived.</CardDescription>
+              <CardTitle>Reservierungsübersicht</CardTitle>
+              <CardDescription>Bestätigen, ablehnen oder Gäste als eingetroffen markieren.</CardDescription>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Nach Name suchen..."
                   className="pl-9 w-48"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -172,15 +172,15 @@ export default function Bookings() {
               />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-36">
-                  <SelectValue placeholder="All statuses" />
+                  <SelectValue placeholder="Alle Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="arrived">Arrived</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="all">Alle Status</SelectItem>
+                  <SelectItem value="pending">Ausstehend</SelectItem>
+                  <SelectItem value="confirmed">Bestätigt</SelectItem>
+                  <SelectItem value="arrived">Eingetroffen</SelectItem>
+                  <SelectItem value="rejected">Abgelehnt</SelectItem>
+                  <SelectItem value="cancelled">Storniert</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -196,8 +196,8 @@ export default function Bookings() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">No bookings found</p>
-              <p className="text-sm mt-1">Try adjusting the date or status filter.</p>
+              <p className="font-medium">Keine Buchungen gefunden</p>
+              <p className="text-sm mt-1">Datum oder Statusfilter anpassen.</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -217,11 +217,11 @@ export default function Bookings() {
                       </div>
                       <div className="flex items-center gap-1.5 text-sm">
                         <Users className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                        <span>{r.partySize} guests</span>
+                        <span>{r.partySize} Gäste</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-sm">
                         <Clock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                        <span>{formatDate(r.date)} at {r.time}</span>
+                        <span>{formatDate(r.date)} um {r.time} Uhr</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         {r.notes ? (
@@ -230,7 +230,7 @@ export default function Bookings() {
                             <span className="truncate">{r.notes}</span>
                           </>
                         ) : (
-                          <span className="italic opacity-50">No special requests</span>
+                          <span className="italic opacity-50">Keine besonderen Wünsche</span>
                         )}
                       </div>
                     </div>
@@ -244,7 +244,7 @@ export default function Bookings() {
                             onClick={() => handleStatusChange(r.id, "confirmed")}
                             disabled={patchStatus.isPending}
                           >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Confirm
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Bestätigen
                           </Button>
                           <Button
                             size="sm"
@@ -253,7 +253,7 @@ export default function Bookings() {
                             onClick={() => handleStatusChange(r.id, "rejected")}
                             disabled={patchStatus.isPending}
                           >
-                            <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
+                            <XCircle className="h-3.5 w-3.5 mr-1" /> Ablehnen
                           </Button>
                         </>
                       )}
@@ -264,7 +264,7 @@ export default function Bookings() {
                           onClick={() => handleStatusChange(r.id, "arrived")}
                           disabled={patchStatus.isPending}
                         >
-                          <ChevronRight className="h-3.5 w-3.5 mr-1" /> Mark Arrived
+                          <ChevronRight className="h-3.5 w-3.5 mr-1" /> Eingetroffen
                         </Button>
                       )}
                     </div>

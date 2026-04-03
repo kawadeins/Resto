@@ -20,12 +20,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { InventoryItem } from "@workspace/api-client-react";
 
 const itemSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  category: z.string().min(2, "Category is required"),
-  quantity: z.coerce.number().min(0, "Quantity cannot be negative"),
-  unit: z.string().min(1, "Unit is required"),
-  alertThreshold: z.coerce.number().min(0, "Threshold cannot be negative"),
-  costPerUnit: z.coerce.number().min(0, "Cost cannot be negative"),
+  name: z.string().min(2, "Name ist erforderlich"),
+  category: z.string().min(2, "Kategorie ist erforderlich"),
+  quantity: z.coerce.number().min(0, "Menge darf nicht negativ sein"),
+  unit: z.string().min(1, "Einheit ist erforderlich"),
+  alertThreshold: z.coerce.number().min(0, "Schwellenwert darf nicht negativ sein"),
+  costPerUnit: z.coerce.number().min(0, "Kosten dürfen nicht negativ sein"),
 });
 
 type ItemFormValues = z.infer<typeof itemSchema>;
@@ -65,9 +65,9 @@ export default function Inventory() {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             setDialogOpen(false);
-            toast({ title: "Item updated successfully" });
+            toast({ title: "Artikel erfolgreich aktualisiert" });
           },
-          onError: () => toast({ title: "Failed to update item", variant: "destructive" })
+          onError: () => toast({ title: "Artikel konnte nicht aktualisiert werden", variant: "destructive" })
         }
       );
     } else {
@@ -78,9 +78,9 @@ export default function Inventory() {
             queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             setDialogOpen(false);
             form.reset();
-            toast({ title: "Item created successfully" });
+            toast({ title: "Artikel erfolgreich erstellt" });
           },
-          onError: () => toast({ title: "Failed to create item", variant: "destructive" })
+          onError: () => toast({ title: "Artikel konnte nicht erstellt werden", variant: "destructive" })
         }
       );
     }
@@ -100,13 +100,13 @@ export default function Inventory() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this item?")) {
+    if (confirm("Möchten Sie diesen Artikel wirklich löschen?")) {
       deleteItem.mutate(
         { id },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
-            toast({ title: "Item deleted" });
+            toast({ title: "Artikel gelöscht" });
           }
         }
       );
@@ -117,8 +117,8 @@ export default function Inventory() {
     <div className="space-y-8 pb-10">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Inventory</h2>
-          <p className="text-muted-foreground mt-2">Manage stock levels and track ingredient costs.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Inventar</h2>
+          <p className="text-muted-foreground mt-2">Lagerbestände verwalten und Zutatenkosten verfolgen.</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => {
           setDialogOpen(open);
@@ -128,11 +128,11 @@ export default function Inventory() {
           }
         }}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" /> Add Item</Button>
+            <Button><Plus className="mr-2 h-4 w-4" /> Artikel hinzufügen</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
+              <DialogTitle>{editingItem ? "Artikel bearbeiten" : "Neuen Artikel hinzufügen"}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -141,7 +141,7 @@ export default function Inventory() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Item Name</FormLabel>
+                      <FormLabel>Artikelname</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,8 +152,8 @@ export default function Inventory() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <FormControl><Input {...field} placeholder="e.g. Meat, Produce, Beverage" /></FormControl>
+                      <FormLabel>Kategorie</FormLabel>
+                      <FormControl><Input {...field} placeholder="z. B. Fleisch, Gemüse, Getränke" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -164,7 +164,7 @@ export default function Inventory() {
                     name="quantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Current Stock</FormLabel>
+                        <FormLabel>Aktueller Bestand</FormLabel>
                         <FormControl><Input type="number" step="0.1" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -175,8 +175,8 @@ export default function Inventory() {
                     name="unit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Unit</FormLabel>
-                        <FormControl><Input {...field} placeholder="e.g. kg, L, pcs" /></FormControl>
+                        <FormLabel>Einheit</FormLabel>
+                        <FormControl><Input {...field} placeholder="z. B. kg, L, Stk." /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -188,7 +188,7 @@ export default function Inventory() {
                     name="alertThreshold"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Low Stock Alert At</FormLabel>
+                        <FormLabel>Mindestbestand-Alarm bei</FormLabel>
                         <FormControl><Input type="number" step="0.1" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -199,7 +199,7 @@ export default function Inventory() {
                     name="costPerUnit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cost per Unit ($)</FormLabel>
+                        <FormLabel>Kosten pro Einheit (€)</FormLabel>
                         <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -207,7 +207,7 @@ export default function Inventory() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={createItem.isPending || updateItem.isPending}>
-                  {editingItem ? "Save Changes" : "Create Item"}
+                  {editingItem ? "Änderungen speichern" : "Artikel erstellen"}
                 </Button>
               </form>
             </Form>
@@ -218,7 +218,7 @@ export default function Inventory() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Stock List</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Lagerliste</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -231,10 +231,10 @@ export default function Inventory() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Stock</TableHead>
-                    <TableHead className="text-right">Cost</TableHead>
+                    <TableHead>Artikel</TableHead>
+                    <TableHead>Kategorie</TableHead>
+                    <TableHead className="text-right">Bestand</TableHead>
+                    <TableHead className="text-right">Kosten</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
@@ -254,11 +254,11 @@ export default function Inventory() {
                           </span>
                         </TableCell>
                         <TableCell className="text-right font-mono text-muted-foreground">
-                          ${item.costPerUnit.toFixed(2)}
+                          €{item.costPerUnit.toFixed(2)}
                         </TableCell>
                         <TableCell>
                           {isLowStock ? (
-                            <Badge variant="destructive" className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-rose-500/20">Low Stock</Badge>
+                            <Badge variant="destructive" className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-rose-500/20">Niedriger Bestand</Badge>
                           ) : (
                             <Badge variant="default" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">OK</Badge>
                           )}
@@ -270,10 +270,10 @@ export default function Inventory() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleEdit(item)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                                <Pencil className="mr-2 h-4 w-4" /> Bearbeiten
                               </DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                <Trash2 className="mr-2 h-4 w-4" /> Löschen
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -284,7 +284,7 @@ export default function Inventory() {
                   {!inventory?.length && (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                        No inventory items found.
+                        Keine Inventarartikel gefunden.
                       </TableCell>
                     </TableRow>
                   )}
