@@ -24,6 +24,13 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 - **`artifacts/restosmart`** — Frontend React + Vite app (preview path: `/`)
 - **`artifacts/api-server`** — Express 5 backend API (preview path: `/api`)
 
+## Key Database Tables
+- `employees`, `shifts` — staff and weekly shift schedule
+- `shift_attendance` — per-shift daily attendance records (status, confirmation timestamp, reminder deduplication)
+- `notification_logs` — all email/notification audit trail
+- `reservations`, `discounts`, `pos_sales`, `inventory` — core operations
+- `pilot_feedback` — pilot programme feedback
+
 ## Features (Phase 1)
 
 ### Overview Dashboard

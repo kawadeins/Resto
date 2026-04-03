@@ -15,3 +15,4 @@ export * from "./platform_settings";
 export * from "./campaigns";
 export * from "./notification_logs";
 export * from "./pilot_feedback";
+export * from "./shift_attendance";

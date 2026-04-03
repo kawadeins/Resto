@@ -19,7 +19,7 @@ import {
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame } from "lucide-react";
+import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame, UserCheck, UserX, ClipboardList, Send, RefreshCw } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -146,6 +146,47 @@ export default function Overview() {
     queryKey: ["local-reach"],
     queryFn: () => fetch("/api/discounts/local-reach").then((r) => r.json()),
     staleTime: 2 * 60 * 1000,
+  });
+
+  type AttendanceRecord = {
+    shiftId: number;
+    attendanceId: number;
+    employeeId: number;
+    employeeName: string;
+    employeeEmail: string;
+    role: string;
+    startTime: string;
+    endTime: string;
+    status: "pending" | "confirmed" | "late" | "missed";
+    confirmedAt: string | null;
+    morningReminderSent: boolean;
+    preShiftReminderSent: boolean;
+    confirmToken: string;
+  };
+
+  const { data: attendanceToday, isLoading: loadingAttendance, refetch: refetchAttendance } = useQuery<AttendanceRecord[]>({
+    queryKey: ["attendance-today"],
+    queryFn: () => fetch("/api/attendance/today").then((r) => r.json()),
+    refetchInterval: 60000,
+  });
+
+  const confirmAttendance = useMutation({
+    mutationFn: (attendanceId: number) =>
+      fetch("/api/attendance/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attendanceId }),
+      }).then((r) => r.json()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["attendance-today"] }); },
+  });
+
+  const sendReminders = useMutation({
+    mutationFn: () =>
+      fetch("/api/attendance/send-reminders", { method: "POST" }).then((r) => r.json()),
+    onSuccess: (data) => {
+      toast({ title: `Reminders sent (${data.remindersSent ?? 0} of ${data.totalShifts ?? 0} staff)` });
+      queryClient.invalidateQueries({ queryKey: ["attendance-today"] });
+    },
   });
 
   const showOnboardingBanner = onboardingStatus && !onboardingStatus.onboardingCompleted;
@@ -584,6 +625,129 @@ export default function Overview() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Today's Staff Status */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                <CardTitle>Today's Staff Status</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={() => refetchAttendance()}
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Refresh
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={() => sendReminders.mutate()}
+                  disabled={sendReminders.isPending}
+                >
+                  <Send className="h-3 w-3" />
+                  {sendReminders.isPending ? "Sending…" : "Send Reminders"}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Live attendance tracking — refreshes every minute. Employees confirm via email link.</p>
+          </CardHeader>
+          <CardContent>
+            {loadingAttendance ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 w-full" />)}
+              </div>
+            ) : !attendanceToday || attendanceToday.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+                <Users className="h-8 w-8 mb-2 opacity-20" />
+                <p className="text-sm">No shifts scheduled for today</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* Summary row */}
+                <div className="flex gap-3 mb-4 flex-wrap">
+                  {[
+                    { label: "On shift", value: attendanceToday.length, color: "text-foreground" },
+                    { label: "Confirmed", value: attendanceToday.filter(r => r.status === "confirmed").length, color: "text-emerald-500" },
+                    { label: "Late", value: attendanceToday.filter(r => r.status === "late").length, color: "text-amber-500" },
+                    { label: "Pending", value: attendanceToday.filter(r => r.status === "pending").length, color: "text-muted-foreground" },
+                    { label: "Missed", value: attendanceToday.filter(r => r.status === "missed").length, color: "text-red-500" },
+                  ].map(stat => (
+                    <div key={stat.label} className="text-center px-4 py-2 rounded-lg bg-muted/40 border border-border min-w-[70px]">
+                      <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
+                      <div className="text-[11px] text-muted-foreground">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Per-employee rows */}
+                {attendanceToday.map((rec) => {
+                  const statusConfig = {
+                    confirmed: { label: "Confirmed", icon: UserCheck, className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+                    late:      { label: "Late",      icon: UserCheck, className: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
+                    pending:   { label: "Pending",   icon: Circle,    className: "bg-muted/50 text-muted-foreground border-border" },
+                    missed:    { label: "Missed",    icon: UserX,     className: "bg-red-500/10 text-red-400 border-red-500/30" },
+                  }[rec.status];
+                  const StatusIcon = statusConfig.icon;
+                  const canConfirm = rec.status === "pending" || rec.status === "late";
+
+                  return (
+                    <div key={rec.attendanceId} className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`flex items-center justify-center h-8 w-8 rounded-full shrink-0 border ${statusConfig.className}`}>
+                          <StatusIcon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{rec.employeeName}</p>
+                          <p className="text-xs text-muted-foreground">{rec.role}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right hidden sm:block">
+                          <p className="text-xs font-medium text-foreground">{rec.startTime} – {rec.endTime}</p>
+                          {rec.confirmedAt && (
+                            <p className="text-[11px] text-muted-foreground">
+                              Arrived {new Date(rec.confirmedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          )}
+                          {!rec.confirmedAt && rec.morningReminderSent && (
+                            <p className="text-[11px] text-muted-foreground">Reminder sent</p>
+                          )}
+                        </div>
+
+                        <Badge variant="outline" className={`text-xs shrink-0 ${statusConfig.className}`}>
+                          {statusConfig.label}
+                        </Badge>
+
+                        {canConfirm && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs gap-1 shrink-0"
+                            onClick={() => confirmAttendance.mutate(rec.attendanceId)}
+                            disabled={confirmAttendance.isPending}
+                          >
+                            <UserCheck className="h-3 w-3" />
+                            <span className="hidden sm:inline">Mark Present</span>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Local Reach Analytics */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>

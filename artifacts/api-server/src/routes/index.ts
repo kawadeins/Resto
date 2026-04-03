@@ -20,6 +20,7 @@ import insightsRouter from "./insights";
 import onboardingRouter from "./onboarding";
 import campaignsRouter from "./campaigns";
 import pilotRouter from "./pilot";
+import attendanceRouter from "./attendance";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use("/insights", insightsRouter);
 router.use("/campaigns", campaignsRouter);
 router.use("/pilot", pilotRouter);
 router.use("/onboarding", onboardingRouter);
+router.use("/attendance", attendanceRouter);
 
 export default router;
