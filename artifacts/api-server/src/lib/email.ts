@@ -109,3 +109,43 @@ export async function sendShiftPreReminder(opts: {
 
   return status;
 }
+
+// Generic email sender — logs to notification_logs, never throws
+export async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  type?: string;
+  referenceId?: string;
+}): Promise<"sent" | "skipped" | "failed"> {
+  const type = opts.type ?? "generic";
+  let status: "sent" | "skipped" | "failed" = "skipped";
+  let errorMessage: string | undefined;
+
+  if (EMAIL_ENABLED && resend) {
+    try {
+      const result = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+      });
+      status = result.error ? "failed" : "sent";
+      if (result.error) errorMessage = result.error.message;
+    } catch (err) {
+      status = "failed";
+      errorMessage = String(err);
+    }
+  }
+
+  await db.insert(notificationLogsTable).values({
+    type,
+    recipient: opts.to,
+    subject: opts.subject,
+    status,
+    referenceId: opts.referenceId,
+    errorMessage,
+  }).catch(() => {});
+
+  return status;
+}

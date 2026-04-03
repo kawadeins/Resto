@@ -4,6 +4,7 @@ import { restaurantsTable, discountsTable, menuItemsTable, reservationsTable } f
 import { sql, eq, and, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 import { sendBookingConfirmation } from "../services/email";
+import { computeLiveAvailability, buildSlots } from "../lib/availability";
 
 const router = Router();
 
@@ -29,7 +30,13 @@ async function getActiveFlash() {
   ) ?? null;
 }
 
-function mapRestaurant(r: typeof restaurantsTable.$inferSelect, flashDeal: typeof discountsTable.$inferSelect | null) {
+type AvailInfo = { status: string; availableSeats: number; nextAvailableSlot: string | null };
+
+function mapRestaurant(
+  r: typeof restaurantsTable.$inferSelect,
+  flashDeal: typeof discountsTable.$inferSelect | null,
+  avail?: AvailInfo
+) {
   const now = new Date();
   const open = isOpen(r);
   const hasFlash = flashDeal != null;
@@ -65,13 +72,32 @@ function mapRestaurant(r: typeof restaurantsTable.$inferSelect, flashDeal: typeo
     flashPercentage: hasFlash && r.id === 1 ? parseFloat(flashDeal!.percentage) : null,
     flashLabel: hasFlash && r.id === 1 ? flashDeal!.label : null,
     flashMinutesRemaining: hasFlash && r.id === 1 ? minutesRemaining : null,
+    // Availability engine
+    availabilityStatus: avail?.status ?? (open ? "available" : "closed"),
+    availableSeats: avail?.availableSeats ?? null,
+    nextAvailableSlot: avail?.nextAvailableSlot ?? null,
+    tableCapacity: r.tableCapacity ?? 20,
+    seatingCapacity: r.seatingCapacity ?? 80,
+    slotDurationMinutes: r.slotDurationMinutes ?? 90,
+    maxPartySize: r.maxPartySize ?? 8,
+    walkInsEnabled: r.walkInsEnabled ?? true,
   };
+}
+
+async function getTodayReservations() {
+  const today = new Date().toISOString().split("T")[0];
+  return db.select({
+    time: reservationsTable.time,
+    partySize: reservationsTable.partySize,
+    status: reservationsTable.status,
+  }).from(reservationsTable).where(eq(reservationsTable.date, today));
 }
 
 router.get("/restaurants", async (req, res) => {
   try {
     const { cuisine, priceRange, rating, openNow, search, featured } = req.query as Record<string, string>;
     const flash = await getActiveFlash();
+    const todayRes = await getTodayReservations();
 
     let rows = await db.select().from(restaurantsTable).where(eq(restaurantsTable.isActive, true));
 
@@ -103,7 +129,22 @@ router.get("/restaurants", async (req, res) => {
       );
     }
 
-    res.json(rows.map((r) => mapRestaurant(r, flash)));
+    res.json(rows.map((r) => {
+      const open = isOpen(r);
+      const avail = computeLiveAvailability(
+        {
+          isOpenNow: open,
+          seatingCapacity: r.seatingCapacity ?? 80,
+          slotDurationMinutes: r.slotDurationMinutes ?? 90,
+          availabilityPaused: r.availabilityPaused ?? false,
+          availabilityPausedUntil: r.availabilityPausedUntil ?? null,
+          openTime: r.openTime,
+          closeTime: r.closeTime,
+        },
+        todayRes
+      );
+      return mapRestaurant(r, flash, avail);
+    }));
   } catch (err) {
     req.log.error({ err }, "Failed to list restaurants");
     res.status(500).json({ error: "Failed to list restaurants" });
@@ -116,7 +157,24 @@ router.get("/restaurants/:id", async (req, res) => {
     const flash = await getActiveFlash();
     const rows = await db.select().from(restaurantsTable).where(eq(restaurantsTable.id, id));
     if (rows.length === 0) return void res.status(404).json({ error: "Not found" });
-    const restaurant = mapRestaurant(rows[0], flash);
+    const r = rows[0];
+
+    const todayRes = await getTodayReservations();
+    const open = isOpen(r);
+    const avail = computeLiveAvailability(
+      {
+        isOpenNow: open,
+        seatingCapacity: r.seatingCapacity ?? 80,
+        slotDurationMinutes: r.slotDurationMinutes ?? 90,
+        availabilityPaused: r.availabilityPaused ?? false,
+        availabilityPausedUntil: r.availabilityPausedUntil ?? null,
+        openTime: r.openTime,
+        closeTime: r.closeTime,
+      },
+      todayRes
+    );
+
+    const restaurant = mapRestaurant(r, flash, avail);
 
     const menuItems = await db
       .select()
@@ -136,6 +194,46 @@ router.get("/restaurants/:id", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to get restaurant");
     res.status(500).json({ error: "Failed to get restaurant" });
+  }
+});
+
+// GET /api/marketplace/slots?restaurantId=1&date=YYYY-MM-DD
+router.get("/slots", async (req, res) => {
+  try {
+    const restaurantId = parseInt((req.query.restaurantId as string) ?? "1") || 1;
+    const date = (req.query.date as string) ?? new Date().toISOString().split("T")[0];
+
+    const [r] = await db.select().from(restaurantsTable).where(eq(restaurantsTable.id, restaurantId));
+    if (!r) return void res.status(404).json({ error: "Restaurant not found" });
+
+    const dayReservations = await db.select({
+      time: reservationsTable.time,
+      partySize: reservationsTable.partySize,
+      status: reservationsTable.status,
+    }).from(reservationsTable).where(eq(reservationsTable.date, date));
+
+    const slots = buildSlots(
+      r.openTime,
+      r.closeTime,
+      r.slotDurationMinutes ?? 90,
+      r.seatingCapacity ?? 80,
+      dayReservations
+    );
+
+    res.json({
+      date,
+      restaurantId,
+      openTime: r.openTime,
+      closeTime: r.closeTime,
+      seatingCapacity: r.seatingCapacity ?? 80,
+      slotDurationMinutes: r.slotDurationMinutes ?? 90,
+      maxPartySize: r.maxPartySize ?? 8,
+      walkInsEnabled: r.walkInsEnabled ?? true,
+      slots,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get slots");
+    res.status(500).json({ error: "Failed to get slot availability" });
   }
 });
 
@@ -189,7 +287,6 @@ router.post("/bookings", async (req, res) => {
   try {
     const body = CreateBookingBody.parse(req.body);
 
-    // Enforce bookingsEnabled before accepting reservations
     const restaurantId = body.restaurantId ?? 1;
     const [restaurant] = await db
       .select()
@@ -203,6 +300,14 @@ router.post("/bookings", async (req, res) => {
       return void res.status(403).json({ error: "This restaurant is not currently accepting online bookings" });
     }
 
+    // Check if availability is paused
+    if (restaurant.availabilityPaused) {
+      const until = restaurant.availabilityPausedUntil;
+      if (!until || until > new Date()) {
+        return void res.status(409).json({ error: "The restaurant is temporarily not accepting new bookings right now. Please try again later or call us." });
+      }
+    }
+
     const [created] = await db.insert(reservationsTable).values({
       customerName: body.customerName,
       customerEmail: body.customerEmail,
@@ -214,6 +319,19 @@ router.post("/bookings", async (req, res) => {
       status: "pending",
       source: "customer",
     }).returning();
+
+    // Non-blocking email confirmation
+    try {
+      await sendBookingConfirmation({
+        customerName: body.customerName,
+        customerEmail: body.customerEmail,
+        date: body.date,
+        time: body.time,
+        partySize: body.partySize,
+        restaurantName: restaurant.name,
+      });
+    } catch {}
+
     res.status(201).json(created);
   } catch (err) {
     req.log.error({ err }, "Failed to create customer booking");

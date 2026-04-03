@@ -561,6 +561,15 @@ export interface MarketplaceRestaurant {
   flashPercentage?: number | null;
   flashLabel?: string | null;
   flashMinutesRemaining?: number | null;
+  // Availability engine fields
+  availabilityStatus?: "available" | "limited" | "nearly_full" | "full" | "closed" | "paused";
+  availableSeats?: number | null;
+  nextAvailableSlot?: string | null;
+  tableCapacity?: number;
+  seatingCapacity?: number;
+  slotDurationMinutes?: number;
+  maxPartySize?: number;
+  walkInsEnabled?: boolean;
 }
 
 export interface MarketplaceMenuItem {

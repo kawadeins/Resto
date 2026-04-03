@@ -21,6 +21,8 @@ import SuperAdmin from "@/pages/super-admin";
 import Insights from "@/pages/insights";
 import Onboarding from "@/pages/onboarding";
 import Campaigns from "@/pages/campaigns";
+import Tables from "@/pages/tables";
+import Payroll from "@/pages/payroll";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +53,8 @@ function Router() {
         <Route path="/insights" component={Insights} />
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/campaigns" component={Campaigns} />
+        <Route path="/tables" component={Tables} />
+        <Route path="/payroll" component={Payroll} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

@@ -34,12 +34,43 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 
-// Generate time slots from 12:00 to 22:30
-const TIME_SLOTS = Array.from({ length: 22 }).map((_, i) => {
-  const hour = Math.floor(i / 2) + 12;
-  const minute = i % 2 === 0 ? "00" : "30";
-  return `${hour}:${minute}`;
-});
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
+interface SlotInfo {
+  time: string;
+  status: "available" | "limited" | "nearly_full" | "full" | "closed" | "paused";
+  bookedGuests: number;
+  seatingCapacity: number;
+  availableSeats: number;
+  percentage: number;
+}
+
+interface SlotData {
+  openTime: string;
+  closeTime: string;
+  seatingCapacity: number;
+  slots: SlotInfo[];
+  walkInsEnabled: boolean;
+}
+
+function slotLabel(status: string) {
+  switch (status) {
+    case "limited": return " · Limited seats";
+    case "nearly_full": return " · Almost full";
+    case "full": return " · Fully booked";
+    default: return "";
+  }
+}
+
+function slotClass(status: string) {
+  switch (status) {
+    case "available": return "";
+    case "limited": return "text-amber-600";
+    case "nearly_full": return "text-orange-500";
+    case "full": return "opacity-40 line-through";
+    default: return "";
+  }
+}
 
 const bookingSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters"),
@@ -71,6 +102,8 @@ export default function Restaurant() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
+  const [slotData, setSlotData] = useState<SlotData | null>(null);
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
   const { data: restaurant, isLoading } = useGetMarketplaceRestaurant(restaurantId, {
     query: {
@@ -140,6 +173,15 @@ export default function Restaurant() {
       }
     }
   });
+
+  // Fetch slot availability whenever the selected date changes
+  useEffect(() => {
+    if (!restaurantId || !selectedDate) return;
+    fetch(`${API_BASE}/api/marketplace/slots?restaurantId=${restaurantId}&date=${selectedDate}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setSlotData(data))
+      .catch(() => {});
+  }, [restaurantId, selectedDate]);
 
   // Load email from localStorage if available
   const savedEmail = typeof window !== 'undefined' ? localStorage.getItem("restosmart_email") || "" : "";
@@ -541,6 +583,34 @@ export default function Restaurant() {
             <div className="bg-card border rounded-2xl shadow-lg overflow-hidden">
               <div className="bg-primary/10 p-6 text-center border-b border-primary/10">
                 <h3 className="font-serif text-2xl font-bold text-foreground">Make a Reservation</h3>
+                {restaurant.availabilityStatus && restaurant.isOpenNow && (
+                  <div className="mt-3">
+                    {restaurant.availabilityStatus === "available" && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/15 text-emerald-700 border border-emerald-300/40 px-3 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Tables available now
+                      </span>
+                    )}
+                    {restaurant.availabilityStatus === "limited" && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-400/15 text-amber-700 border border-amber-300/40 px-3 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        Limited seats left — book soon
+                      </span>
+                    )}
+                    {restaurant.availabilityStatus === "nearly_full" && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-orange-400/15 text-orange-700 border border-orange-300/40 px-3 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                        Almost full — secure your table now
+                      </span>
+                    )}
+                    {restaurant.availabilityStatus === "full" && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-red-400/15 text-red-700 border border-red-300/40 px-3 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        {restaurant.nextAvailableSlot ? `Fully booked · next slot: ${restaurant.nextAvailableSlot}` : "Fully booked for now"}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               
               <div className="p-6">
@@ -569,7 +639,11 @@ export default function Restaurant() {
                             type="date" 
                             className="pl-9"
                             min={format(new Date(), "yyyy-MM-dd")}
-                            {...form.register("date")} 
+                            {...form.register("date")}
+                            onChange={(e) => {
+                              form.setValue("date", e.target.value);
+                              setSelectedDate(e.target.value);
+                            }}
                           />
                         </div>
                         {form.formState.errors.date && (
@@ -588,11 +662,26 @@ export default function Restaurant() {
                             <SelectValue placeholder="Select time" />
                           </SelectTrigger>
                           <SelectContent>
-                            {TIME_SLOTS.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
+                            {slotData ? (
+                              slotData.slots.map((slot) => (
+                                <SelectItem
+                                  key={slot.time}
+                                  value={slot.time}
+                                  disabled={slot.status === "full"}
+                                  className={slotClass(slot.status)}
+                                >
+                                  {slot.time}{slotLabel(slot.status)}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              Array.from({ length: 22 }, (_, i) => {
+                                const hour = Math.floor(i / 2) + 12;
+                                const minute = i % 2 === 0 ? "00" : "30";
+                                return `${String(hour).padStart(2, "0")}:${minute}`;
+                              }).map((time) => (
+                                <SelectItem key={time} value={time}>{time}</SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                         {form.formState.errors.time && (

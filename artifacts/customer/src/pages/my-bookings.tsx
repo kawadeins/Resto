@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { format, isPast, parseISO } from "date-fns";
-import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star } from "lucide-react";
+import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star, MessageSquare } from "lucide-react";
 import { useListMyBookings, useGetLoyaltyBalance } from "@workspace/api-client-react";
 import { getListMyBookingsQueryKey, getGetLoyaltyBalanceQueryKey } from "@workspace/api-client-react";
+import { useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
 import { useSeo } from "@/hooks/use-seo";
+import { useToast } from "@/hooks/use-toast";
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 export default function MyBookings() {
   useSeo({
@@ -18,8 +23,13 @@ export default function MyBookings() {
     description: "View and manage your restaurant reservations.",
   });
 
+  const { toast } = useToast();
   const [emailInput, setEmailInput] = useState("");
   const [activeEmail, setActiveEmail] = useState<string>("");
+  const [reviewingBookingId, setReviewingBookingId] = useState<number | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittedReviewIds, setSubmittedReviewIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     // Check local storage for existing email on mount
@@ -58,6 +68,30 @@ export default function MyBookings() {
       }
     }
   );
+
+  const submitReviewMutation = useMutation({
+    mutationFn: (data: { bookingId: number; restaurantId: number }) =>
+      fetch(`${API_BASE}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId: data.restaurantId,
+          customerName: activeEmail.split("@")[0] || "Guest",
+          customerEmail: activeEmail,
+          bookingId: data.bookingId,
+          rating: reviewRating,
+          comment: reviewComment,
+        }),
+      }).then(r => { if (!r.ok) throw new Error("Failed"); return r.json(); }),
+    onSuccess: (_, vars) => {
+      toast({ title: "Review submitted — thank you! You earned 5 loyalty points." });
+      setSubmittedReviewIds(prev => new Set(prev).add(vars.bookingId));
+      setReviewingBookingId(null);
+      setReviewComment("");
+      setReviewRating(5);
+    },
+    onError: () => toast({ title: "Failed to submit review", variant: "destructive" }),
+  });
 
   const { data: loyaltyBalance, isLoading: isLoadingLoyalty } = useGetLoyaltyBalance(
     activeEmail,
@@ -298,30 +332,108 @@ export default function MyBookings() {
           {past.length > 0 && (
             <section>
               <h2 className="font-serif text-2xl font-bold mb-6 text-muted-foreground">Past Reservations</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {past.map(booking => (
-                  <div key={booking.id} className="bg-card border rounded-xl p-5 flex gap-4 opacity-75 hover:opacity-100 transition-opacity">
-                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                      {booking.restaurant?.heroImage ? (
-                        <img src={booking.restaurant.heroImage} alt="" className="w-full h-full object-cover grayscale" />
-                      ) : (
-                        <CalendarCheck className="w-6 h-6 text-muted-foreground" />
+              <div className="space-y-3">
+                {past.map(booking => {
+                  const isCompleted = booking.status === "completed" || booking.status === "seated" || booking.status === "confirmed";
+                  const hasReviewed = submittedReviewIds.has(booking.id);
+                  const isReviewing = reviewingBookingId === booking.id;
+
+                  return (
+                    <div key={booking.id} className="bg-card border rounded-xl overflow-hidden">
+                      <div className="p-5 flex gap-4">
+                        <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                          {booking.restaurant?.heroImage ? (
+                            <img src={booking.restaurant.heroImage} alt="" className="w-full h-full object-cover grayscale" />
+                          ) : (
+                            <CalendarCheck className="w-5 h-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start gap-2">
+                            <h4 className="font-bold line-clamp-1">{booking.restaurant?.name}</h4>
+                            {getStatusBadge(booking.status)}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {format(parseISO(booking.date), "MMM d, yyyy")} at {booking.time} · Party of {booking.partySize}
+                          </p>
+                        </div>
+
+                        {/* Review CTA */}
+                        {isCompleted && !hasReviewed && !isReviewing && booking.status !== "cancelled" && booking.status !== "rejected" && (
+                          <button
+                            onClick={() => { setReviewingBookingId(booking.id); setReviewRating(5); setReviewComment(""); }}
+                            className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
+                          >
+                            <Star className="w-3.5 h-3.5" />
+                            Leave a Review
+                          </button>
+                        )}
+                        {hasReviewed && (
+                          <span className="shrink-0 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                            <Star className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" />
+                            Reviewed
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Inline review form */}
+                      {isReviewing && (
+                        <div className="px-5 pb-5 border-t border-border/50 pt-4 space-y-3 bg-muted/30">
+                          <div className="text-sm font-semibold">
+                            How was your visit to {booking.restaurant?.name}?
+                          </div>
+
+                          {/* Star picker */}
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <button
+                                key={star}
+                                onClick={() => setReviewRating(star)}
+                                className="transition-transform hover:scale-110"
+                              >
+                                <Star className={`w-7 h-7 ${star <= reviewRating ? "fill-amber-400 text-amber-400" : "text-muted"}`} />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-muted-foreground self-center">
+                              {reviewRating === 5 ? "Excellent" : reviewRating === 4 ? "Good" : reviewRating === 3 ? "Average" : reviewRating === 2 ? "Poor" : "Terrible"}
+                            </span>
+                          </div>
+
+                          <Textarea
+                            placeholder="Tell us about your experience..."
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            className="min-h-[80px] text-sm"
+                            autoFocus
+                          />
+
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setReviewingBookingId(null)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => submitReviewMutation.mutate({
+                                bookingId: booking.id,
+                                restaurantId: booking.restaurant?.id ?? 1,
+                              })}
+                              disabled={submitReviewMutation.isPending || reviewComment.trim().length < 3}
+                              className="gap-1.5"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">You'll earn 5 loyalty points for your review.</p>
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold line-clamp-1">{booking.restaurant?.name}</h4>
-                        {getStatusBadge(booking.status)}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {format(parseISO(booking.date), "MMM d, yyyy")} • {booking.time}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Party of {booking.partySize}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           )}

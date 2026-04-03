@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Star, Clock, MapPin, TrendingDown, Navigation } from "lucide-react";
+import { Star, Clock, MapPin, TrendingDown, Navigation, Armchair } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
 
@@ -14,13 +14,37 @@ function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`;
 }
 
+function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant }) {
+  const status = restaurant.availabilityStatus;
+  if (!restaurant.isOpenNow || !status || status === "closed") return null;
+
+  const config: Record<string, { label: string; cls: string }> = {
+    available: { label: "Tables available", cls: "bg-emerald-500/20 text-emerald-700 border-emerald-300/40" },
+    limited:   { label: "Limited seats",    cls: "bg-amber-400/20 text-amber-700 border-amber-300/40" },
+    nearly_full: { label: "Nearly full",    cls: "bg-orange-400/20 text-orange-700 border-orange-300/40" },
+    full:      { label: "Fully booked",     cls: "bg-red-400/20 text-red-700 border-red-300/40" },
+    paused:    { label: "Not taking bookings", cls: "bg-muted text-muted-foreground border-border" },
+  };
+
+  const c = config[status];
+  if (!c) return null;
+
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${c.cls}`}>
+      <Armchair className="w-2.5 h-2.5" />
+      {c.label}
+    </span>
+  );
+}
+
 export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: RestaurantCardProps) {
   const priceString = "€".repeat(restaurant.priceRange || 2);
+  const isAvailable = restaurant.isOpenNow && restaurant.availabilityStatus === "available";
   
   return (
     <Link href={`/restaurant/${restaurant.id}`} className="block group">
-      <div className="relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-1 duration-300">
-        {/* Image Aspect */}
+      <div className={`relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-1 duration-300 ${isAvailable ? "ring-1 ring-emerald-400/20" : ""}`}>
+        {/* Image */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
           {restaurant.heroImage ? (
             <img 
@@ -55,10 +79,10 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
           </div>
           
           <div className="absolute bottom-3 right-3">
-             <Badge variant="secondary" className="bg-white/90 text-black hover:bg-white border-none backdrop-blur-sm shadow-sm flex items-center gap-1 font-medium">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                {restaurant.rating.toFixed(1)}
-              </Badge>
+            <Badge variant="secondary" className="bg-white/90 text-black hover:bg-white border-none backdrop-blur-sm shadow-sm flex items-center gap-1 font-medium">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              {restaurant.rating.toFixed(1)}
+            </Badge>
           </div>
         </div>
 
@@ -70,13 +94,18 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             </h3>
           </div>
           
-          <div className="flex items-center text-sm text-muted-foreground mb-3 gap-2">
+          <div className="flex items-center text-sm text-muted-foreground mb-2 gap-2">
             <span className="flex items-center gap-1">
               <span className="text-base leading-none">{restaurant.cuisineEmoji}</span>
               {restaurant.cuisine}
             </span>
-            <span className="w-1 h-1 rounded-full bg-muted-foreground/30"></span>
+            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
             <span className="font-medium">{priceString}</span>
+          </div>
+
+          {/* Availability chip */}
+          <div className="mb-2.5">
+            <AvailabilityChip restaurant={restaurant} />
           </div>
 
           <div className="space-y-1.5 text-xs text-muted-foreground">

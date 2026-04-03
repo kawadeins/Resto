@@ -14,6 +14,7 @@ export const reservationsTable = pgTable("reservations", {
   tableNumber: integer("table_number"),
   notes: text("notes"),
   source: text("source").notNull().default("direct"),
+  reviewRequestSentAt: timestamp("review_request_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

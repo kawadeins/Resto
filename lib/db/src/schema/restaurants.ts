@@ -30,6 +30,14 @@ export const restaurantsTable = pgTable("restaurants", {
   onboardingStep: integer("onboarding_step").notNull().default(0),
   pilotMode: boolean("pilot_mode").notNull().default(false),
   pilotActivatedAt: timestamp("pilot_activated_at", { withTimezone: true }),
+  // Capacity & availability
+  tableCapacity: integer("table_capacity").notNull().default(20),
+  seatingCapacity: integer("seating_capacity").notNull().default(80),
+  slotDurationMinutes: integer("slot_duration_minutes").notNull().default(90),
+  maxPartySize: integer("max_party_size").notNull().default(8),
+  walkInsEnabled: boolean("walk_ins_enabled").notNull().default(true),
+  availabilityPaused: boolean("availability_paused").notNull().default(false),
+  availabilityPausedUntil: timestamp("availability_paused_until", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

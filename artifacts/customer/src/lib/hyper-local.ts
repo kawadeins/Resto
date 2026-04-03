@@ -55,7 +55,14 @@ export function computeHyperLocalScore(
       : false;
   const weakHourScore = isWeakHour ? 1.5 : 0;
 
-  const score = distScore + openScore + dealScore + ratingScore + weakHourScore;
+  // Availability boost: surface open restaurants with free tables higher
+  const availStatus = restaurant.availabilityStatus;
+  const availScore =
+    availStatus === "available" ? 2 :
+    availStatus === "limited" ? 1 :
+    0;
+
+  const score = distScore + openScore + dealScore + ratingScore + weakHourScore + availScore;
 
   const flashMinutesLeft =
     flashDeal?.flashExpiresAt

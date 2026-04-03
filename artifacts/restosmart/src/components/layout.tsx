@@ -1,12 +1,14 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp, Armchair, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
   { name: "Bookings", href: "/bookings", icon: BookOpen },
   { name: "Reservations", href: "/reservations", icon: Calendar },
+  { name: "Tables", href: "/tables", icon: Armchair },
   { name: "Staff", href: "/staff", icon: Users },
+  { name: "Payroll", href: "/payroll", icon: Wallet },
   { name: "Inventory", href: "/inventory", icon: Package },
   { name: "Menu", href: "/menu", icon: UtensilsCrossed },
   { name: "POS", href: "/pos", icon: ShoppingCart },

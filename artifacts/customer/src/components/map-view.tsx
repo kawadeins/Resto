@@ -246,6 +246,35 @@ export function MapView({ restaurants, userLat, userLng }: MapViewProps) {
                     )}
                   </div>
 
+                  {/* Availability chip */}
+                  {r.isOpenNow && r.availabilityStatus && r.availabilityStatus !== "closed" && (
+                    <div className="mb-2">
+                      {r.availabilityStatus === "available" && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Tables available now
+                        </span>
+                      )}
+                      {r.availabilityStatus === "limited" && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          Limited seats left
+                        </span>
+                      )}
+                      {r.availabilityStatus === "nearly_full" && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                          Almost full
+                        </span>
+                      )}
+                      {r.availabilityStatus === "full" && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                          {r.nextAvailableSlot ? `Next slot: ${r.nextAvailableSlot}` : "Fully booked"}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Address */}
                   <p className="text-xs text-gray-500 mb-3 line-clamp-1">
                     {r.address}, {r.city}

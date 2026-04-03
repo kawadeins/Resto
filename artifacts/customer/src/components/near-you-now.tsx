@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "wouter";
-import { Navigation, Star, Clock, ArrowRight, Timer, Flame, MapPin } from "lucide-react";
+import { Navigation, Star, Clock, ArrowRight, Timer, Flame, MapPin, Armchair } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { rankHyperLocal, urgencyLabel, type ScoredRestaurant } from "@/lib/hyper-local";
@@ -155,14 +155,45 @@ function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
             </p>
           )}
 
+          {/* Availability chip */}
+          {r.isOpenNow && r.availabilityStatus && r.availabilityStatus !== "closed" && (
+            <div className="flex items-center gap-1.5 text-xs">
+              {r.availabilityStatus === "available" && (
+                <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                  <Armchair className="w-3 h-3" />
+                  Tables available now
+                </span>
+              )}
+              {r.availabilityStatus === "limited" && (
+                <span className="flex items-center gap-1 text-amber-600 font-semibold">
+                  <Armchair className="w-3 h-3" />
+                  Limited seats remaining
+                </span>
+              )}
+              {r.availabilityStatus === "nearly_full" && (
+                <span className="flex items-center gap-1 text-orange-500 font-semibold">
+                  <Armchair className="w-3 h-3" />
+                  Almost fully booked
+                </span>
+              )}
+              {r.availabilityStatus === "full" && (
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Armchair className="w-3 h-3" />
+                  {r.nextAvailableSlot ? `Next slot: ${r.nextAvailableSlot}` : "Fully booked"}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Book Now CTA */}
           <Button
             size="sm"
-            className="w-full rounded-full font-semibold shadow-sm"
+            className={`w-full rounded-full font-semibold shadow-sm ${r.availabilityStatus === "available" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
             asChild
           >
             <Link href={`/restaurant/${r.id}`}>
-              Book Now <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+              {r.availabilityStatus === "available" ? "Book Now — Tables Ready" : "View & Book"}
+              <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
             </Link>
           </Button>
         </div>

@@ -21,6 +21,8 @@ import onboardingRouter from "./onboarding";
 import campaignsRouter from "./campaigns";
 import pilotRouter from "./pilot";
 import attendanceRouter from "./attendance";
+import availabilityRouter from "./availability";
+import performanceRouter from "./performance";
 
 const router: IRouter = Router();
 
@@ -46,5 +48,7 @@ router.use("/campaigns", campaignsRouter);
 router.use("/pilot", pilotRouter);
 router.use("/onboarding", onboardingRouter);
 router.use("/attendance", attendanceRouter);
+router.use("/availability", availabilityRouter);
+router.use("/performance", performanceRouter);
 
 export default router;
