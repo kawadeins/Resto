@@ -25,6 +25,7 @@ import Onboarding from "@/pages/onboarding";
 import Campaigns from "@/pages/campaigns";
 import Tables from "@/pages/tables";
 import Payroll from "@/pages/payroll";
+import Profile from "@/pages/profile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +82,7 @@ function ProtectedRouter() {
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/tables" component={Tables} />
         <Route path="/payroll" component={Payroll} />
+        <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

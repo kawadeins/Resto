@@ -18,3 +18,4 @@ export * from "./pilot_feedback";
 export * from "./shift_attendance";
 export * from "./employee_off_days";
 export * from "./employee_vacations";
+export * from "./booking_plans";

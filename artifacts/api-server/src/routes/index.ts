@@ -25,6 +25,8 @@ import availabilityRouter from "./availability";
 import performanceRouter from "./performance";
 import employeeDaysRouter from "./employee-days";
 import employeeVacationsRouter from "./employee-vacations";
+import bookingPlansRouter from "./booking-plans";
+import profileRouter from "./profile";
 
 const router: IRouter = Router();
 
@@ -54,5 +56,7 @@ router.use("/availability", availabilityRouter);
 router.use("/performance", performanceRouter);
 router.use("/employee-days", employeeDaysRouter);
 router.use("/employee-vacations", employeeVacationsRouter);
+router.use("/booking-plans", bookingPlansRouter);
+router.use("/profile", profileRouter);
 
 export default router;

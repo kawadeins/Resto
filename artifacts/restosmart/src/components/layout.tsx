@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp, Armchair, Wallet, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp, Armchair, Wallet, LogOut, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 
 const navigation = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
+  { name: "Mein Profil", href: "/profile", icon: UserCircle },
   { name: "Buchungen", href: "/bookings", icon: BookOpen },
   { name: "Reservierungen", href: "/reservations", icon: Calendar },
   { name: "Tische", href: "/tables", icon: Armchair },

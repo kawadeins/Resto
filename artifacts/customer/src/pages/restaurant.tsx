@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
@@ -92,6 +92,118 @@ const reviewSchema = z.object({
 });
 
 type ReviewFormValues = z.infer<typeof reviewSchema>;
+
+function extractYouTubeId(url: string): string {
+  const match = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+  return match?.[1] ?? "";
+}
+
+function PhotoGallery({ photos, restaurantName }: { photos: string[]; restaurantName: string }) {
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const prev = () => setLightbox((i) => (i !== null ? (i - 1 + photos.length) % photos.length : null));
+  const next = () => setLightbox((i) => (i !== null ? (i + 1) % photos.length : null));
+
+  return (
+    <>
+      <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
+        <h2 className="font-serif text-3xl font-bold mb-5">Galerie</h2>
+        <div className={`grid gap-3 ${photos.length === 1 ? "grid-cols-1" : photos.length === 2 ? "grid-cols-2" : photos.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
+          {photos.map((photo, idx) => (
+            <button
+              key={idx}
+              onClick={() => setLightbox(idx)}
+              className={`group relative overflow-hidden rounded-xl bg-muted transition-transform hover:scale-[1.02] cursor-pointer ${idx === 0 && photos.length >= 4 ? "sm:col-span-2 sm:row-span-2" : ""}`}
+              style={{ aspectRatio: idx === 0 && photos.length >= 4 ? "1/1" : "4/3" }}
+            >
+              <img src={photo} alt={`${restaurantName} ${idx + 1}`} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <ExternalLink className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Lightbox */}
+      {lightbox !== null && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center" onClick={() => setLightbox(null)}>
+          <button className="absolute top-4 right-4 text-white/80 hover:text-white" onClick={() => setLightbox(null)}>
+            <X className="w-8 h-8" />
+          </button>
+          <button className="absolute left-4 text-white/80 hover:text-white p-2" onClick={(e) => { e.stopPropagation(); prev(); }}>
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+          <img
+            src={photos[lightbox]}
+            alt={`${restaurantName} ${lightbox + 1}`}
+            className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button className="absolute right-4 text-white/80 hover:text-white p-2" onClick={(e) => { e.stopPropagation(); next(); }}>
+            <ChevronRight className="w-8 h-8" />
+          </button>
+          <div className="absolute bottom-4 text-white/60 text-sm">
+            {lightbox + 1} / {photos.length}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function LiveMap({
+  lat, lng, name, address, city, googleMapsUrl,
+}: {
+  lat: number; lng: number; name: string; address: string; city: string; googleMapsUrl?: string;
+}) {
+  const delta = 0.008;
+  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+  const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
+  const fullLink = googleMapsUrl || `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=16`;
+
+  return (
+    <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
+      <div className="px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-primary" />
+          <div>
+            <h2 className="font-serif text-2xl font-bold leading-tight">Standort</h2>
+            <p className="text-sm text-muted-foreground">{address}, {city}</p>
+          </div>
+        </div>
+        <a
+          href={fullLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <ExternalLink className="w-4 h-4" />
+          In Maps öffnen
+        </a>
+      </div>
+      <div className="h-64 sm:h-80 w-full relative">
+        <iframe
+          src={osmUrl}
+          className="w-full h-full border-0"
+          title={`Karte von ${name}`}
+          loading="lazy"
+        />
+        <div className="absolute bottom-3 right-3">
+          <a
+            href={fullLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-background/90 backdrop-blur-sm border rounded-lg text-xs font-semibold shadow-md hover:bg-background transition-colors"
+          >
+            <MapPin className="w-3.5 h-3.5 text-red-500" />
+            Route planen
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Restaurant() {
   const { id } = useParams<{ id: string }>();
@@ -386,7 +498,89 @@ export default function Restaurant() {
                 ))}
               </div>
             )}
+
+            {/* Social & Official Links */}
+            {(restaurant.instagram || restaurant.facebook || restaurant.tiktok || restaurant.website || restaurant.googleMapsUrl) && (
+              <div className="mt-4 pt-4 border-t flex flex-wrap gap-2">
+                {restaurant.instagram && (
+                  <a href={restaurant.instagram} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <Instagram className="w-3.5 h-3.5" />
+                    Instagram
+                  </a>
+                )}
+                {restaurant.facebook && (
+                  <a href={restaurant.facebook} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <Facebook className="w-3.5 h-3.5" />
+                    Facebook
+                  </a>
+                )}
+                {restaurant.tiktok && (
+                  <a href={restaurant.tiktok} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground text-background text-xs font-semibold hover:opacity-80 transition-opacity shadow-sm">
+                    <span className="font-black text-[10px]">TT</span>
+                    TikTok
+                  </a>
+                )}
+                {restaurant.website && (
+                  <a href={restaurant.website} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <Globe className="w-3.5 h-3.5" />
+                    Website
+                  </a>
+                )}
+                {restaurant.googleMapsUrl && (
+                  <a href={restaurant.googleMapsUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500 text-white text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <MapPin className="w-3.5 h-3.5" />
+                    Google Maps
+                  </a>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Photo Gallery */}
+          {restaurant.photos && restaurant.photos.length > 0 && (
+            <PhotoGallery photos={restaurant.photos} restaurantName={restaurant.name} />
+          )}
+
+          {/* Presentation Video */}
+          {restaurant.videoUrl && (
+            <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-6 pt-6 pb-3 flex items-center gap-2">
+                <PlayCircle className="w-5 h-5 text-primary" />
+                <h2 className="font-serif text-2xl font-bold">Unser Restaurant</h2>
+              </div>
+              <div className="aspect-video w-full bg-muted">
+                {restaurant.videoUrl.includes("youtube.com") || restaurant.videoUrl.includes("youtu.be") ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${extractYouTubeId(restaurant.videoUrl)}`}
+                    className="w-full h-full"
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                ) : restaurant.videoUrl.includes("vimeo.com") ? (
+                  <iframe
+                    src={`https://player.vimeo.com/video/${restaurant.videoUrl.split("/").pop()}`}
+                    className="w-full h-full"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video src={restaurant.videoUrl} controls className="w-full h-full object-cover" />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* About / Story */}
+          {restaurant.about && (
+            <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
+              <h2 className="font-serif text-3xl font-bold mb-4">Unsere Geschichte</h2>
+              <p className="text-muted-foreground text-lg leading-relaxed whitespace-pre-line">{restaurant.about}</p>
+            </div>
+          )}
 
           {/* Menu */}
           <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
@@ -574,6 +768,18 @@ export default function Restaurant() {
               )}
             </div>
           </div>
+
+          {/* Live Map */}
+          {(restaurant.lat && restaurant.lng) && (
+            <LiveMap
+              lat={restaurant.lat}
+              lng={restaurant.lng}
+              name={restaurant.name}
+              address={restaurant.address}
+              city={restaurant.city}
+              googleMapsUrl={restaurant.googleMapsUrl}
+            />
+          )}
 
         </div>
 
