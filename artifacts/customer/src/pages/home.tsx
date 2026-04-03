@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Timer, ArrowRight, Utensils, Coffee, Pizza, Wine, Compass, Gift, Star, Zap, RefreshCw, ChevronRight } from "lucide-react";
+import { Timer, ArrowRight, Compass, Gift, Star, Zap, RefreshCw, ChevronRight, Navigation, MapPin, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useListFlashDeals, useListMarketplaceRestaurants, useGetPersonalizedOffers } from "@workspace/api-client-react";
 import { getGetPersonalizedOffersQueryKey } from "@workspace/api-client-react";
@@ -8,6 +8,9 @@ import { RestaurantCard } from "@/components/restaurant-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useSeo } from "@/hooks/use-seo";
+import { useGeolocation } from "@/hooks/use-geolocation";
+import { Input } from "@/components/ui/input";
+import { NearYouNow } from "@/components/near-you-now";
 
 const CUISINES = [
   { name: "Italian", emoji: "🍝" },
@@ -159,6 +162,9 @@ export default function Home() {
   });
 
   const [customerEmail, setCustomerEmail] = useState<string>("");
+  const [manualCity, setManualCity] = useState("");
+  const [showCityFallback, setShowCityFallback] = useState(false);
+  const geo = useGeolocation();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -167,9 +173,18 @@ export default function Home() {
     }
   }, []);
 
+  // When geo is denied, offer manual fallback
+  useEffect(() => {
+    if (geo.status === "denied" || geo.status === "unavailable") {
+      setShowCityFallback(true);
+    }
+  }, [geo.status]);
+
   const { data: flashDeals, isLoading: loadingDeals } = useListFlashDeals();
   const { data: featured, isLoading: loadingFeatured } = useListMarketplaceRestaurants({ featured: true });
   const { data: openNow, isLoading: loadingOpen } = useListMarketplaceRestaurants({ openNow: true });
+  const { data: allRestaurants } = useListMarketplaceRestaurants({});
+
 
   const activeDeal = flashDeals?.[0]; // Show first active deal in hero
 
@@ -188,13 +203,67 @@ export default function Home() {
                 Curated dining experiences in London. From hidden gems to Michelin stars.
               </p>
               
-              <div className="pt-2 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <div className="pt-2 flex flex-col sm:flex-row gap-4 justify-center md:justify-start flex-wrap">
                 <Button asChild size="lg" className="rounded-full px-8 h-14 text-base shadow-lg shadow-primary/25">
                   <Link href="/explore">
                     Explore Restaurants <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>
                 </Button>
+
+                {/* Location button */}
+                {geo.status === "idle" && (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="rounded-full px-6 h-14 text-base border-primary/30 hover:border-primary/60 hover:bg-primary/5"
+                    onClick={geo.request}
+                  >
+                    <Navigation className="w-5 h-5 mr-2 text-primary" />
+                    Near Me
+                  </Button>
+                )}
+                {geo.status === "requesting" && (
+                  <Button size="lg" variant="outline" className="rounded-full px-6 h-14 text-base" disabled>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Detecting location...
+                  </Button>
+                )}
+                {geo.status === "granted" && (
+                  <div className="flex items-center gap-2 h-14 px-4 rounded-full border border-primary/30 bg-primary/5 text-sm font-medium text-primary">
+                    <Navigation className="w-4 h-4" />
+                    Location active
+                    <button onClick={geo.clear} className="ml-1 text-muted-foreground hover:text-foreground">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {/* Geo error / manual fallback */}
+              {showCityFallback && geo.status !== "granted" && (
+                <div className="mt-2 space-y-2">
+                  {geo.error && (
+                    <p className="text-sm text-amber-600 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 shrink-0" /> {geo.error}
+                    </p>
+                  )}
+                  <div className="flex gap-2 max-w-sm">
+                    <Input
+                      placeholder="Enter your city or area..."
+                      value={manualCity}
+                      onChange={(e) => setManualCity(e.target.value)}
+                      className="h-10 rounded-full px-4 text-sm bg-background/80"
+                    />
+                    {manualCity && (
+                      <Button asChild size="sm" className="rounded-full h-10 px-4 shrink-0">
+                        <Link href={`/explore?search=${encodeURIComponent(manualCity)}`}>
+                          Search
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Flash Deal Hero Card */}
@@ -259,6 +328,18 @@ export default function Home() {
 
       {/* Personalized Offers — shown when email is known */}
       {customerEmail && <PersonalizedSection email={customerEmail} />}
+
+      {/* Near You Now — hyper-local boost engine */}
+      {geo.status === "granted" && geo.lat !== null && geo.lng !== null && allRestaurants && allRestaurants.length > 0 && (
+        <NearYouNow
+          restaurants={allRestaurants}
+          flashDeals={flashDeals ?? []}
+          userLat={geo.lat}
+          userLng={geo.lng}
+          maxCount={4}
+          radiusKm={10}
+        />
+      )}
 
       {/* Categories */}
       <section className="py-12 bg-background border-b">

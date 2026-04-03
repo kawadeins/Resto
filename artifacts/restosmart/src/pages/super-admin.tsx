@@ -7,8 +7,49 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Lock, ShieldAlert, Activity, Users, Settings2, TrendingUp, Search, Calendar, Star, Store, Check, X } from "lucide-react";
+import { Lock, ShieldAlert, Activity, Users, Settings2, TrendingUp, Search, Calendar, Star, Store, Check, X, Rocket, AlertTriangle, MessageSquare, BarChart2 } from "lucide-react";
 import type { SuperAdminStats, SuperAdminRestaurant, PlatformSetting } from "@workspace/api-client-react";
+
+type PilotRestaurantMetric = {
+  id: number;
+  name: string;
+  pilotMode: boolean;
+  pilotActivatedAt: string | null;
+  hoursSinceActivation: number | null;
+  readinessScore: number;
+  bookings: number;
+  arrivedBookings: number;
+  menuItemCount: number;
+  discountCount: number;
+  estimatedRevenue: number;
+  feedbackCount: number;
+  avgRating: number | null;
+  is24hAlert: boolean;
+  criteria: Record<string, boolean>;
+};
+
+type PilotDashboard = {
+  summary: {
+    totalPilotRestaurants: number;
+    activeRestaurants: number;
+    totalBookingsGenerated: number;
+    arrivedBookings: number;
+    estimatedRevenueImpact: number;
+    repeatCustomers: number;
+    totalFeedbackItems: number;
+    activeCampaigns: number;
+    mostActiveRestaurant: string | null;
+  };
+  restaurants: PilotRestaurantMetric[];
+  recentFeedback: Array<{
+    id: number;
+    restaurantId: number;
+    rating: number | null;
+    message: string;
+    category: string;
+    createdAt: string;
+  }>;
+};
 
 export default function SuperAdmin() {
   const { toast } = useToast();
@@ -53,6 +94,36 @@ export default function SuperAdmin() {
     }),
     enabled: isAuthenticated,
     retry: false
+  });
+
+  const { data: pilotDashboard, isLoading: loadingPilot } = useQuery<PilotDashboard>({
+    queryKey: ["pilot-dashboard", adminKey],
+    queryFn: () => fetch("/api/pilot/dashboard", { headers: { "x-super-admin-key": adminKey } }).then(r => {
+      if (!r.ok) throw new Error("Unauthorized");
+      return r.json();
+    }),
+    enabled: isAuthenticated,
+    retry: false,
+    refetchInterval: 30000,
+  });
+
+  const activatePilot = useMutation({
+    mutationFn: async ({ restaurantId, activate }: { restaurantId: number; activate: boolean }) => {
+      const path = activate ? "activate" : "deactivate";
+      const res = await fetch(`/api/pilot/${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-super-admin-key": adminKey },
+        body: JSON.stringify({ restaurantId }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: (_, vars) => {
+      toast({ title: vars.activate ? "Pilot mode activated — all features unlocked." : "Pilot mode deactivated." });
+      queryClient.invalidateQueries({ queryKey: ["pilot-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["super-admin-restaurants"] });
+    },
+    onError: () => toast({ title: "Failed to update pilot status", variant: "destructive" }),
   });
 
   useEffect(() => {
@@ -294,6 +365,133 @@ export default function SuperAdmin() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pilot Programme Dashboard */}
+      <Card className="border-amber-500/20">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-amber-500">
+                <Rocket className="w-5 h-5" />
+                Pilot Programme
+              </CardTitle>
+              <CardDescription>Real-world launch control — activate to unlock all Pro features for free</CardDescription>
+            </div>
+            {pilotDashboard && (
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30">
+                  {pilotDashboard.summary.totalPilotRestaurants} active pilots
+                </Badge>
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
+                  {pilotDashboard.summary.totalBookings} total bookings
+                </Badge>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loadingPilot ? (
+            <div className="p-8 text-center text-muted-foreground">Loading pilot data...</div>
+          ) : !pilotDashboard ? (
+            <div className="p-8 text-center text-muted-foreground">No pilot data available.</div>
+          ) : (
+            <div className="space-y-4">
+              {pilotDashboard.restaurants.map((r) => (
+                <div
+                  key={r.id}
+                  className={`rounded-lg border p-4 flex flex-col md:flex-row md:items-center gap-4 ${
+                    r.pilotMode
+                      ? "bg-amber-500/5 border-amber-500/25"
+                      : "bg-card border-border"
+                  }`}
+                >
+                  {/* Name & status */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-semibold">{r.name}</span>
+                      {r.pilotMode ? (
+                        <Badge className="bg-amber-500/15 text-amber-500 border-amber-500/30 text-xs">
+                          Pilot Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                          Pilot Off
+                        </Badge>
+                      )}
+                      {r.pilotActivatedAt && (
+                        <span className="text-xs text-muted-foreground">
+                          since {new Date(r.pilotActivatedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <BarChart2 className="w-3.5 h-3.5" />
+                        Readiness {r.readinessScore ?? "-"}%
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {r.totalBookings} bookings
+                      </span>
+                      {r.bookingsAfterActivation !== undefined && r.pilotMode && (
+                        <span className="flex items-center gap-1 text-emerald-500">
+                          +{r.bookingsAfterActivation} since pilot
+                        </span>
+                      )}
+                      {r.feedbackCount !== undefined && r.feedbackCount > 0 && (
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          {r.feedbackCount} feedback{r.avgFeedbackRating ? ` · ${r.avgFeedbackRating.toFixed(1)} avg` : ""}
+                        </span>
+                      )}
+                    </div>
+                    {r.readinessScore !== undefined && r.readinessScore < 100 && (
+                      <div className="mt-2">
+                        <div className="flex items-center gap-1 text-xs text-amber-600 mb-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          Readiness {r.readinessScore}% — some criteria not met
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-1.5">
+                          <div
+                            className="bg-amber-500 h-1.5 rounded-full transition-all"
+                            style={{ width: `${r.readinessScore}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Activate / Deactivate */}
+                  <Button
+                    size="sm"
+                    variant={r.pilotMode ? "outline" : "default"}
+                    className={
+                      r.pilotMode
+                        ? "text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 border-rose-500/30"
+                        : "bg-amber-500 hover:bg-amber-600 text-black font-semibold"
+                    }
+                    onClick={() => activatePilot.mutate({ restaurantId: r.id, activate: !r.pilotMode })}
+                    disabled={activatePilot.isPending}
+                  >
+                    {r.pilotMode ? (
+                      <><X className="w-3.5 h-3.5 mr-1.5" />Deactivate Pilot</>
+                    ) : (
+                      <><Rocket className="w-3.5 h-3.5 mr-1.5" />Launch Pilot</>
+                    )}
+                  </Button>
+                </div>
+              ))}
+
+              {pilotDashboard.restaurants.length === 0 && (
+                <div className="py-10 text-center text-muted-foreground">
+                  <Rocket className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  No restaurants in the pilot programme yet.
+                </div>
+              )}
             </div>
           )}
         </CardContent>

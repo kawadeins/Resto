@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { restaurantsTable, discountsTable, menuItemsTable, reservationsTable } from "@workspace/db";
 import { sql, eq, and, gte, lte } from "drizzle-orm";
 import { z } from "zod";
+import { sendBookingConfirmation } from "../services/email";
 
 const router = Router();
 

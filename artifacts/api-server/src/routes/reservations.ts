@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { reservationsTable, loyaltyPointsTable } from "@workspace/db";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
+import { sendBookingConfirmation, sendLoyaltyTierUnlock } from "../services/email";
 import {
   CreateReservationBody,
   UpdateReservationBody,

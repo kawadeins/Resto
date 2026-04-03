@@ -16,8 +16,10 @@ import {
   useGetInsightsDailySummary,
   getGetInsightsDailySummaryQueryKey,
 } from "@workspace/api-client-react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight } from "lucide-react";
+import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,8 +27,62 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+
+type PilotStatus = {
+  pilotMode: boolean;
+  pilotActivatedAt: string | null;
+  isPilotActive: boolean;
+  is24hAlert: boolean;
+  readinessScore: number;
+  criteria: Record<string, boolean>;
+  totalBookings: number;
+  totalCustomers: number;
+  restaurantName: string;
+};
+
+const FEEDBACK_CATEGORIES = [
+  { value: "bookings", label: "Bookings" },
+  { value: "revenue", label: "Revenue" },
+  { value: "marketing", label: "Marketing" },
+  { value: "general", label: "General" },
+] as const;
 
 export default function Overview() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackCategory, setFeedbackCategory] = useState<"bookings" | "revenue" | "marketing" | "general">("general");
+  const [feedbackSent, setFeedbackSent] = useState(false);
+
+  const { data: pilotStatus } = useQuery<PilotStatus>({
+    queryKey: ["pilot-status"],
+    queryFn: () => fetch("/api/pilot/status").then(r => r.json()),
+    refetchInterval: 60000,
+  });
+
+  const submitFeedback = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/pilot/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: feedbackText, rating: feedbackRating || undefined, category: feedbackCategory }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Feedback submitted — thank you!" });
+      setFeedbackText("");
+      setFeedbackRating(0);
+      setFeedbackSent(true);
+      queryClient.invalidateQueries({ queryKey: ["pilot-status"] });
+    },
+    onError: () => toast({ title: "Failed to submit feedback", variant: "destructive" }),
+  });
+
   const { data: summary, isLoading: loadingSummary } = useGetOverviewSummary({
     query: { queryKey: getGetOverviewSummaryQueryKey() }
   });
@@ -59,16 +115,107 @@ export default function Overview() {
     query: { queryKey: getGetInsightsDailySummaryQueryKey(), staleTime: 5 * 60 * 1000 }
   });
 
+  const { data: localReach, isLoading: loadingLocalReach } = useQuery<{
+    activeDeals: number;
+    totalDeals: number;
+    bookingsThisWeek: number;
+    totalBookingsDuringDeals: number;
+    totalEstimatedImpressions: number;
+    overallConversionRate: number;
+    topDeal: {
+      id: number;
+      label: string;
+      percentage: number;
+      isActive: boolean;
+      type: string;
+      bookingsDuringPeriod: number;
+      estimatedImpressions: number;
+      conversionRate: number;
+    } | null;
+    deals: Array<{
+      id: number;
+      label: string;
+      percentage: number;
+      isActive: boolean;
+      type: string;
+      bookingsDuringPeriod: number;
+      estimatedImpressions: number;
+      conversionRate: number;
+    }>;
+  }>({
+    queryKey: ["local-reach"],
+    queryFn: () => fetch("/api/discounts/local-reach").then((r) => r.json()),
+    staleTime: 2 * 60 * 1000,
+  });
+
   const showOnboardingBanner = onboardingStatus && !onboardingStatus.onboardingCompleted;
 
   return (
     <div className="space-y-8 pb-10">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
-        <p className="text-muted-foreground mt-2">
-          Your cockpit for today's performance and key metrics.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
+            {pilotStatus?.pilotMode && (
+              <Badge className="bg-violet-500/15 text-violet-400 border-violet-500/30 gap-1 text-xs font-semibold">
+                <Rocket className="h-3 w-3" />
+                Pilot Programme
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground mt-2">
+            Your cockpit for today's performance and key metrics.
+          </p>
+        </div>
+        {pilotStatus?.pilotMode && (
+          <div className="shrink-0 text-right">
+            <div className="text-xs text-muted-foreground">Pilot readiness</div>
+            <div className="text-2xl font-bold text-violet-400">{pilotStatus.readinessScore}%</div>
+            <div className="h-1.5 w-28 rounded-full bg-muted overflow-hidden mt-1">
+              <div
+                className="h-full bg-violet-500 rounded-full transition-all"
+                style={{ width: `${pilotStatus.readinessScore}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Pilot 24h activity alert */}
+      {pilotStatus?.is24hAlert && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-lg border border-amber-500/40 bg-amber-500/8 p-4"
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-amber-400 text-sm">No bookings in your first 24 hours</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Your restaurant is live but no customers have booked yet. Here's what to do right now:
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Link href="/discounts">
+                  <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+                    Boost Discount
+                  </Button>
+                </Link>
+                <Link href="/campaigns">
+                  <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+                    Launch Flash Deal
+                  </Button>
+                </Link>
+                <Link href="/dead-hours">
+                  <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+                    Fill Dead Hours
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Onboarding banner */}
       {showOnboardingBanner && (
@@ -437,6 +584,228 @@ export default function Overview() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Local Reach Analytics */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                <CardTitle>Local Reach & Deal Performance</CardTitle>
+              </div>
+              {localReach && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
+                    {localReach.activeDeals} active deal{localReach.activeDeals !== 1 ? "s" : ""}
+                  </Badge>
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30 text-xs">
+                    ~{localReach.totalEstimatedImpressions.toLocaleString()} local impressions
+                  </Badge>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              How your active deals are reaching and converting nearby customers. Impressions are estimates based on deal activity windows.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {loadingLocalReach ? (
+              <div className="space-y-3">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            ) : !localReach || localReach.totalDeals === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+                <MapPin className="h-10 w-10 mb-3 opacity-20" />
+                <p className="text-sm font-medium">No deals configured yet</p>
+                <p className="text-xs mt-1">Create a flash deal or scheduled discount to start reaching nearby customers.</p>
+                <Link href="/discounts" className="mt-4 text-xs text-primary hover:underline flex items-center gap-1">
+                  Go to Deals <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Summary metrics row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-lg bg-muted/40 border text-center">
+                    <div className="text-2xl font-bold text-foreground">{localReach.bookingsThisWeek}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Bookings this week</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/40 border text-center">
+                    <div className="text-2xl font-bold text-primary">{localReach.totalBookingsDuringDeals}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">During deal windows</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/40 border text-center">
+                    <div className="text-2xl font-bold text-foreground">{localReach.totalEstimatedImpressions.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Est. impressions</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/40 border text-center">
+                    <div className="text-2xl font-bold text-emerald-500">{localReach.overallConversionRate}%</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Conversion rate</div>
+                  </div>
+                </div>
+
+                {/* Top deal highlight */}
+                {localReach.topDeal && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                    <div className="p-2 rounded-lg bg-amber-500/10 shrink-0">
+                      <Flame className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold truncate">{localReach.topDeal.label}</span>
+                        <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 text-xs border">
+                          {localReach.topDeal.percentage}% off · Top performer
+                        </Badge>
+                        {localReach.topDeal.isActive && (
+                          <span className="flex items-center gap-1 text-xs text-emerald-500 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live now
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-4 mt-1 text-xs text-muted-foreground flex-wrap">
+                        <span>{localReach.topDeal.bookingsDuringPeriod} bookings during deal</span>
+                        <span>~{localReach.topDeal.estimatedImpressions} impressions</span>
+                        <span>{localReach.topDeal.conversionRate}% conversion</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Deal list */}
+                {localReach.deals.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">All Deals Performance</p>
+                    <div className="rounded-lg border divide-y divide-border overflow-hidden">
+                      {localReach.deals.map((deal) => (
+                        <div key={deal.id} className="flex items-center gap-3 px-4 py-3 bg-card hover:bg-muted/30 transition-colors">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${deal.isActive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/30"}`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium truncate">{deal.label}</span>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{deal.percentage}% off</Badge>
+                              <span className="text-[10px] text-muted-foreground capitalize bg-muted px-1.5 py-0.5 rounded">{deal.type}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground shrink-0">
+                            <div className="text-right hidden sm:block">
+                              <div className="font-semibold text-foreground">{deal.bookingsDuringPeriod}</div>
+                              <div>bookings</div>
+                            </div>
+                            <div className="text-right hidden md:block">
+                              <div className="font-semibold text-foreground">~{deal.estimatedImpressions}</div>
+                              <div>impressions</div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`font-semibold ${deal.conversionRate > 1 ? "text-emerald-500" : "text-foreground"}`}>
+                                {deal.conversionRate}%
+                              </div>
+                              <div>conv.</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground/60 flex items-center gap-1">
+                  <BarChart2 className="h-3 w-3" />
+                  Impressions are platform estimates based on deal activity windows. Bookings are cross-referenced with actual reservation timestamps.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Pilot Feedback Widget — only shown when in pilot mode */}
+      {pilotStatus?.pilotMode && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="border-violet-500/20 bg-violet-500/5">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MessageSquare className="h-4 w-4 text-violet-400" />
+                How is RestoSmart helping your restaurant?
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">Your feedback shapes what we build next. All responses are stored.</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {feedbackSent ? (
+                <div className="flex items-center gap-2 text-sm text-emerald-400 py-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Feedback received — thank you for helping us improve.
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Rate your experience</p>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setFeedbackRating(star)}
+                          className="transition-transform hover:scale-110"
+                        >
+                          <Star
+                            className={`h-6 w-6 transition-colors ${
+                              star <= feedbackRating
+                                ? "text-amber-400 fill-amber-400"
+                                : "text-muted-foreground/40"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Category</p>
+                    <div className="flex flex-wrap gap-2">
+                      {FEEDBACK_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.value}
+                          type="button"
+                          onClick={() => setFeedbackCategory(cat.value)}
+                          className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                            feedbackCategory === cat.value
+                              ? "bg-violet-500/20 text-violet-400 border-violet-500/40"
+                              : "text-muted-foreground border-muted hover:border-violet-500/30"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <Textarea
+                    placeholder="Tell us what's working, what's not, or what you wish you had..."
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    className="resize-none text-sm min-h-[80px] bg-background"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      className="bg-violet-600 hover:bg-violet-700 text-white"
+                      disabled={!feedbackText.trim() || submitFeedback.isPending}
+                      onClick={() => submitFeedback.mutate()}
+                    >
+                      {submitFeedback.isPending ? "Sending..." : "Send Feedback"}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 }

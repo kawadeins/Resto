@@ -19,6 +19,7 @@ import platformRouter from "./platform";
 import insightsRouter from "./insights";
 import onboardingRouter from "./onboarding";
 import campaignsRouter from "./campaigns";
+import pilotRouter from "./pilot";
 
 const router: IRouter = Router();
 
@@ -41,6 +42,7 @@ router.use("/loyalty", loyaltyRouter);
 router.use("/platform", platformRouter);
 router.use("/insights", insightsRouter);
 router.use("/campaigns", campaignsRouter);
+router.use("/pilot", pilotRouter);
 router.use("/onboarding", onboardingRouter);
 
 export default router;

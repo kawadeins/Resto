@@ -1,14 +1,20 @@
 import { Link } from "wouter";
-import { Star, Clock, MapPin, TrendingDown } from "lucide-react";
+import { Star, Clock, MapPin, TrendingDown, Navigation } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
 
 interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
   showFlashDeal?: boolean;
+  distance?: number; // km — computed from Haversine
 }
 
-export function RestaurantCard({ restaurant, showFlashDeal = false }: RestaurantCardProps) {
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(1)} km`;
+}
+
+export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: RestaurantCardProps) {
   const priceString = "€".repeat(restaurant.priceRange || 2);
   
   return (
@@ -75,8 +81,14 @@ export function RestaurantCard({ restaurant, showFlashDeal = false }: Restaurant
 
           <div className="space-y-1.5 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="line-clamp-1">{restaurant.address}, {restaurant.city}</span>
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              <span className="line-clamp-1 flex-1">{restaurant.address}, {restaurant.city}</span>
+              {distance !== undefined && (
+                <span className="shrink-0 flex items-center gap-0.5 text-primary font-semibold">
+                  <Navigation className="w-3 h-3" />
+                  {formatDistance(distance)}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />

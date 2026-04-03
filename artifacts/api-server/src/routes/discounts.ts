@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { discountsTable, notificationsTable } from "@workspace/db";
+import { reservationsTable } from "@workspace/db";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, gte, and } from "drizzle-orm";
 
 const router = Router();
 
@@ -238,6 +239,116 @@ router.get("/", async (req, res) => {
     res.json(rows.map(mapDeal));
   } catch (err) {
     res.status(500).json({ error: "Failed to list deals" });
+  }
+});
+
+router.get("/local-reach", async (req, res) => {
+  try {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [allDiscounts, recentBookings] = await Promise.all([
+      db.select().from(discountsTable).orderBy(discountsTable.createdAt),
+      db.select().from(reservationsTable).where(gte(reservationsTable.createdAt, thirtyDaysAgo)),
+    ]);
+
+    const mappedDeals = allDiscounts.map(mapDeal);
+    const activeDeals = mappedDeals.filter((d) => d.isFlashActive || (d.enabled && d.type === "scheduled"));
+    const flashDeals = mappedDeals.filter((d) => d.type === "flash");
+
+    // For flash deals: count bookings made during the deal's active window
+    const dealPerformance = flashDeals.map((deal) => {
+      const dealCreatedAt = new Date(deal.createdAt);
+      const dealExpiry = deal.flashExpiresAt ? new Date(deal.flashExpiresAt) : new Date(dealCreatedAt.getTime() + 4 * 60 * 60 * 1000);
+
+      const bookingsDuringDeal = recentBookings.filter((b) => {
+        const bTime = new Date(b.createdAt);
+        return bTime >= dealCreatedAt && bTime <= dealExpiry;
+      }).length;
+
+      // Estimate impressions: 50/hour × hours active
+      const hoursActive = Math.max(1, (dealExpiry.getTime() - dealCreatedAt.getTime()) / (1000 * 60 * 60));
+      const estimatedImpressions = Math.round(hoursActive * 25);
+
+      return {
+        id: deal.id,
+        label: deal.label || `${deal.percentage}% Flash Deal`,
+        percentage: deal.percentage,
+        isActive: deal.isFlashActive,
+        type: deal.type,
+        bookingsDuringPeriod: bookingsDuringDeal,
+        estimatedImpressions,
+        conversionRate: estimatedImpressions > 0 ? parseFloat(((bookingsDuringDeal / estimatedImpressions) * 100).toFixed(1)) : 0,
+        flashExpiresAt: deal.flashExpiresAt,
+        flashMinutesRemaining: deal.flashMinutesRemaining,
+        createdAt: deal.createdAt,
+      };
+    });
+
+    // Scheduled deal reach
+    const scheduledDeals = mappedDeals.filter((d) => d.type === "scheduled" && d.enabled);
+    const scheduledPerformance = scheduledDeals.map((deal) => {
+      // Bookings made during the deal's time window (rough: time of day)
+      const [startH, startM] = (deal.startTime || "00:00").split(":").map(Number);
+      const [endH, endM] = (deal.endTime || "23:59").split(":").map(Number);
+      const startMins = startH * 60 + startM;
+      const endMins = endH * 60 + endM;
+
+      const bookingsDuringWindow = recentBookings.filter((b) => {
+        const bDate = new Date(b.createdAt);
+        const bMins = bDate.getHours() * 60 + bDate.getMinutes();
+        const dayName = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][bDate.getDay()];
+        const dayMatch = deal.days.length === 0 || deal.days.some((d: string) => d.toLowerCase() === dayName);
+        return dayMatch && bMins >= startMins && bMins <= endMins;
+      }).length;
+
+      const windowHours = Math.max(0.5, (endMins - startMins) / 60);
+      const estimatedDailyImpressions = Math.round(windowHours * 20);
+      const daysRunning = Math.max(1, Math.round((now.getTime() - new Date(deal.createdAt).getTime()) / (1000 * 60 * 60 * 24)));
+      const estimatedImpressions = estimatedDailyImpressions * Math.min(daysRunning, 30);
+
+      return {
+        id: deal.id,
+        label: deal.label || `${deal.percentage}% Scheduled Deal`,
+        percentage: deal.percentage,
+        isActive: deal.enabled,
+        type: deal.type,
+        bookingsDuringPeriod: bookingsDuringWindow,
+        estimatedImpressions,
+        conversionRate: estimatedImpressions > 0 ? parseFloat(((bookingsDuringWindow / estimatedImpressions) * 100).toFixed(1)) : 0,
+        startTime: deal.startTime,
+        endTime: deal.endTime,
+        days: deal.days,
+        createdAt: deal.createdAt,
+      };
+    });
+
+    const allDealPerformance = [...dealPerformance, ...scheduledPerformance]
+      .sort((a, b) => b.bookingsDuringPeriod - a.bookingsDuringPeriod);
+
+    const topDeal = allDealPerformance[0] ?? null;
+
+    const recentWeekBookings = recentBookings.filter((b) => new Date(b.createdAt) >= sevenDaysAgo).length;
+    const totalBookingsDuringDeals = allDealPerformance.reduce((s, d) => s + d.bookingsDuringPeriod, 0);
+    const totalEstimatedImpressions = allDealPerformance.reduce((s, d) => s + d.estimatedImpressions, 0);
+
+    res.json({
+      activeDeals: activeDeals.length,
+      totalDeals: allDiscounts.length,
+      deals: allDealPerformance,
+      topDeal,
+      bookingsThisWeek: recentWeekBookings,
+      totalBookingsDuringDeals,
+      totalEstimatedImpressions,
+      overallConversionRate:
+        totalEstimatedImpressions > 0
+          ? parseFloat(((totalBookingsDuringDeals / totalEstimatedImpressions) * 100).toFixed(1))
+          : 0,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to compute local reach");
+    res.status(500).json({ error: "Failed to compute local reach" });
   }
 });
 

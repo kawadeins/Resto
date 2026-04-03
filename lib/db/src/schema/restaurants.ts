@@ -28,6 +28,8 @@ export const restaurantsTable = pgTable("restaurants", {
   bookingsEnabled: boolean("bookings_enabled").notNull().default(true),
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   onboardingStep: integer("onboarding_step").notNull().default(0),
+  pilotMode: boolean("pilot_mode").notNull().default(false),
+  pilotActivatedAt: timestamp("pilot_activated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

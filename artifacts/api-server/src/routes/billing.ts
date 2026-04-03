@@ -4,6 +4,13 @@ import { subscriptionsTable, restaurantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
+async function getRestaurantPilotMode(): Promise<boolean> {
+  try {
+    const [r] = await db.select({ pilotMode: restaurantsTable.pilotMode }).from(restaurantsTable).where(eq(restaurantsTable.id, 1));
+    return r?.pilotMode ?? false;
+  } catch { return false; }
+}
+
 const router = Router();
 
 function mapSub(s: typeof subscriptionsTable.$inferSelect) {
@@ -34,12 +41,15 @@ function mapSub(s: typeof subscriptionsTable.$inferSelect) {
 // GET /api/billing/subscription — get current subscription for restaurant 1
 router.get("/subscription", async (req, res) => {
   try {
+    const isPilot = await getRestaurantPilotMode();
     let rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
     if (rows.length === 0) {
       const [created] = await db.insert(subscriptionsTable).values({ restaurantId: 1, status: "inactive" }).returning();
-      return void res.json(mapSub(created));
+      const mapped = mapSub(created);
+      return void res.json({ ...mapped, isPilot, isActive: isPilot || mapped.isActive });
     }
-    res.json(mapSub(rows[0]));
+    const mapped = mapSub(rows[0]);
+    res.json({ ...mapped, isPilot, isActive: isPilot || mapped.isActive });
   } catch (err) {
     req.log.error({ err }, "Failed to get subscription");
     res.status(500).json({ error: "Failed to get subscription" });
