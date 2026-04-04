@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Star, Clock, MapPin, Navigation, Zap, Coffee, Wine, UtensilsCrossed } from "lucide-react";
+import { Star, Clock, MapPin, Navigation, Zap, Coffee, Wine, UtensilsCrossed, ArrowRight } from "lucide-react";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
 import { useMemo } from "react";
 import { scoreLiveActivity } from "@/lib/live-activity";
@@ -54,6 +54,19 @@ function getTypeConfig(businessType?: BizType) {
   return TYPE_CONFIG[businessType ?? "restaurant"] ?? TYPE_CONFIG.restaurant;
 }
 
+const CUISINE_DE: Record<string, string> = {
+  Austrian:      "Österreichisch",
+  Burgers:       "Burger",
+  French:        "Französisch",
+  Indian:        "Indisch",
+  International: "International",
+  Italian:       "Italienisch",
+  Japanese:      "Japanisch",
+  Vegetarian:    "Vegetarisch",
+  Cocktails:     "Cocktails",
+  "Café":        "Café",
+};
+
 const BOOST_LABELS: Record<string, string> = {
   breakfast_boost:  "Frühstücks-Boost",
   lunch_boost:      "Mittags-Boost",
@@ -97,7 +110,10 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
   // Live activity score
   const { mode } = useLifestyleMode();
   const live = useMemo(() => scoreLiveActivity(restaurant, mode), [restaurant, mode]);
-  const showLiveBadge = live.primaryBadge && live.intensity !== "quiet";
+  // Only show meaningful live signals — "Aktiv" (active intensity) is redundant with the "Geöffnet" badge
+  const showLiveBadge = live.primaryBadge &&
+    live.intensity !== "quiet" &&
+    live.intensity !== "active";
 
   return (
     <Link href={`/restaurant/${restaurant.id}`} className="block group press-scale">
@@ -186,20 +202,18 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             </span>
             <span className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">
               <span className="text-sm leading-none">{restaurant.cuisineEmoji}</span>
-              {restaurant.cuisine}
+              {CUISINE_DE[restaurant.cuisine] ?? restaurant.cuisine}
             </span>
             <AvailabilityChip restaurant={restaurant} />
           </div>
 
-          {/* Live badge + social cue */}
-          {(showLiveBadge || true) && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {showLiveBadge && live.primaryBadge && (
-                <LiveBadge badge={live.primaryBadge} />
-              )}
-              <SocialCueChip restaurantId={restaurant.id} variant="card" />
-            </div>
-          )}
+          {/* Live badge + social cue — only render row when there's a meaningful signal */}
+          <div className="flex items-center gap-2 flex-wrap min-h-0">
+            {showLiveBadge && live.primaryBadge && (
+              <LiveBadge badge={live.primaryBadge} />
+            )}
+            <SocialCueChip restaurantId={restaurant.id} variant="card" />
+          </div>
 
           {/* Meta info */}
           <div className="space-y-1.5 text-xs text-muted-foreground">
@@ -213,19 +227,22 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             </div>
           </div>
 
-          {/* Tags */}
+          {/* Tags — show 1 primary tag only to reduce visual noise */}
           {restaurant.tags && restaurant.tags.length > 0 && (
-            <div className="flex gap-1.5 flex-wrap">
-              {restaurant.tags.slice(0, 2).map(tag => (
-                <span key={tag} className="px-2.5 py-0.5 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground">
-                  {tag}
-                </span>
-              ))}
-              {restaurant.tags.length > 2 && (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex gap-1.5">
                 <span className="px-2.5 py-0.5 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground">
-                  +{restaurant.tags.length - 2}
+                  {restaurant.tags[0]}
                 </span>
-              )}
+                {restaurant.tags.length > 1 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-muted text-[10px] font-semibold text-muted-foreground/60">
+                    +{restaurant.tags.length - 1}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-bold text-primary/70 flex items-center gap-0.5 shrink-0">
+                Ansehen <ArrowRight className="w-2.5 h-2.5" />
+              </span>
             </div>
           )}
         </div>

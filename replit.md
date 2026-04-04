@@ -221,6 +221,18 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 - **A-3a Fixed**: `customer/profile.tsx` — `handleGoToDashboard()` redirect fixed from `window.location.origin + "/"` (customer homepage) to `window.location.origin + "/restosmart/"` (actual restosmart dashboard). Same fix applied to `OwnerPremiumCard` and the settings panel dashboard link (both previously redirected to `"/"`).
 - **B-8 Fixed**: `digital-twin.ts` — `getTwinInsightLabel` no longer uses `Math.random()` for label selection; uses deterministic index based on `bizAff` value (stable per-user, no UI flickering).
 
+## Product Polish Pass (Phase 4)
+
+- **P-1 Fixed**: `restaurant-card.tsx` — Removed redundant "Aktiv" badge (green chip that duplicated the "Geöffnet" status badge already on the image). Only truly meaningful live signals (Trending, Hot, Lunch-Rush, Happy Hour, etc.) now appear.
+- **P-2 Fixed**: `restaurant-card.tsx` — Removed `|| true` bug on line 195 that forced the live badge / social cue row to always render even when both were empty, adding invisible whitespace.
+- **P-3 Added**: `restaurant-card.tsx` — Added compact "Ansehen →" CTA in the tag row of each card for clearer click affordance.
+- **P-4 Fixed**: `restaurant-card.tsx` — Tags reduced from showing 2 + overflow to 1 + compact overflow count for less visual noise.
+- **P-5 Fixed**: `restaurant-card.tsx`, `restaurant.tsx`, `home.tsx` — Added `CUISINE_DE` translation map; cuisine labels now display in German ("Italienisch" not "Italian", "Französisch" not "French", etc.) everywhere in the customer UI (cards, detail page, hero flash deal card).
+- **P-6 Added**: `home.tsx` — Added "Restaurants" quick-filter button to the hero alongside "Cafés" and "Bars" so all 3 business types are represented.
+- **P-7 Fixed**: `home.tsx` — Improved the empty-state message in dynamic sections from plain "Derzeit keine Einträge gefunden." to a friendly emoji + two-line German message.
+- **P-8 Fixed**: `restaurant.tsx` — Opening days now rendered in German with smart range compression ("Täglich" for all 7 days, "Mo–Fr" for weekday ranges, etc.) instead of raw English day names from the DB.
+- **P-9 Fixed (data)**: DB — Cleared stale `/uploads/1775263577451-cdhspu5d5xt.png` hero image path from restaurant 1 ("Resto"), which was rendering a broken chat screenshot. Now falls back to the clean 🥐 croissant emoji gradient placeholder.
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

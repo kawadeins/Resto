@@ -38,6 +38,44 @@ import { recordHabitEvent } from "@/lib/habit-engine";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
+const DAY_DE: Record<string, string> = {
+  Monday: "Mo", Tuesday: "Di", Wednesday: "Mi", Thursday: "Do",
+  Friday: "Fr", Saturday: "Sa", Sunday: "So",
+};
+
+const DAYS_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+const CUISINE_DE: Record<string, string> = {
+  Austrian:      "Österreichisch",
+  Burgers:       "Burger",
+  French:        "Französisch",
+  Indian:        "Indisch",
+  International: "International",
+  Italian:       "Italienisch",
+  Japanese:      "Japanisch",
+  Vegetarian:    "Vegetarisch",
+  Cocktails:     "Cocktails",
+  "Café":        "Café",
+};
+
+function formatOpenDays(days: string[] | undefined): string {
+  if (!days || days.length === 0) return "–";
+  const sorted = [...days].sort((a, b) => DAYS_ORDER.indexOf(a) - DAYS_ORDER.indexOf(b));
+  if (sorted.length === 7) return "Täglich";
+  const ranges: string[] = [];
+  let start = sorted[0], prev = sorted[0];
+  for (let i = 1; i <= sorted.length; i++) {
+    const cur = sorted[i];
+    if (cur && DAYS_ORDER.indexOf(cur) === DAYS_ORDER.indexOf(prev) + 1) {
+      prev = cur;
+    } else {
+      ranges.push(start === prev ? DAY_DE[start] : `${DAY_DE[start]}–${DAY_DE[prev]}`);
+      start = cur; prev = cur;
+    }
+  }
+  return ranges.join(", ");
+}
+
 interface SlotInfo {
   time: string;
   status: "available" | "limited" | "nearly_full" | "full" | "closed" | "paused";
@@ -446,7 +484,7 @@ export default function Restaurant() {
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="text-2xl">{restaurant.cuisineEmoji}</span>
                   <Badge variant="secondary" className="font-medium text-sm">
-                    {restaurant.cuisine}
+                    {CUISINE_DE[restaurant.cuisine] ?? restaurant.cuisine}
                   </Badge>
                   <span className="text-muted-foreground font-medium">{"€".repeat(restaurant.priceRange || 2)}</span>
                   {restaurant.isOpenNow && (
@@ -500,7 +538,7 @@ export default function Restaurant() {
                 <div>
                   <div className="font-medium">Öffnungszeiten</div>
                   <div className="text-muted-foreground">
-                    {restaurant.openDays?.join(", ")}
+                    {formatOpenDays(restaurant.openDays)}
                   </div>
                   <div className="text-muted-foreground">
                     {restaurant.openTime} – {restaurant.closeTime}

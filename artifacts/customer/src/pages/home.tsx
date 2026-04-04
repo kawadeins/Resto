@@ -36,6 +36,12 @@ import { VibeOnboarding } from "@/components/vibe-onboarding";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
+const CUISINE_DE: Record<string, string> = {
+  Austrian: "Österreichisch", Burgers: "Burger", French: "Französisch",
+  Indian: "Indisch", International: "International", Italian: "Italienisch",
+  Japanese: "Japanisch", Vegetarian: "Vegetarisch", Cocktails: "Cocktails",
+};
+
 // ─── Cuisine bubbles ──────────────────────────────────────────────────────────
 
 const CUISINES = [
@@ -229,8 +235,10 @@ function DynamicSection({
               </div>
             ))
           ) : (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              Derzeit keine Einträge gefunden.
+            <div className="col-span-full text-center py-16 text-muted-foreground">
+              <div className="text-3xl mb-3">🍽️</div>
+              <p className="font-semibold text-foreground">Keine Lokale verfügbar</p>
+              <p className="text-sm mt-1">Schau später wieder vorbei oder entdecke alle Lokale.</p>
             </div>
           )}
         </div>
@@ -447,6 +455,9 @@ export default function Home() {
                   />
                 )}
 
+                <Link href="/explore?businessType=restaurant" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-primary/20 bg-primary/5 text-primary text-sm font-semibold press-scale hover:bg-primary/10 transition-colors">
+                  <UtensilsCrossed className="w-4 h-4" /> Restaurants
+                </Link>
                 <Link href="/explore?businessType=cafe" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-amber-300 bg-amber-50 text-amber-800 text-sm font-semibold press-scale hover:bg-amber-100 transition-colors">
                   <Coffee className="w-4 h-4" /> Cafés
                 </Link>
@@ -510,7 +521,7 @@ export default function Home() {
                       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         <div className="flex items-center gap-2 text-white/70 mb-1 text-sm">
                           <span className="text-lg">{activeDeal.restaurant.cuisineEmoji}</span>
-                          <span className="font-semibold uppercase tracking-wider text-xs">{activeDeal.restaurant.cuisine}</span>
+                          <span className="font-semibold uppercase tracking-wider text-xs">{CUISINE_DE[activeDeal.restaurant.cuisine] ?? activeDeal.restaurant.cuisine}</span>
                         </div>
                         <h3 className="text-2xl font-extrabold mb-3">{activeDeal.restaurant.name}</h3>
                         <div className="w-full py-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-center text-sm font-bold">
@@ -547,7 +558,7 @@ export default function Home() {
                         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                           <div className="flex items-center gap-2 text-white/70 mb-1 text-sm">
                             <span className="text-lg">{topR.cuisineEmoji}</span>
-                            <span className="font-semibold uppercase tracking-wider text-xs">{topR.cuisine}</span>
+                            <span className="font-semibold uppercase tracking-wider text-xs">{CUISINE_DE[(topR as any).cuisine] ?? (topR as any).cuisine}</span>
                           </div>
                           <h3 className="text-2xl font-extrabold mb-1">{topR.name}</h3>
                           <p className="text-white/70 text-xs mb-3 line-clamp-1">{topR.address}</p>
