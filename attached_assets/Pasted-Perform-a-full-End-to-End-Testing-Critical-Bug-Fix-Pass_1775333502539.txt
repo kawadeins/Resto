@@ -1,0 +1,331 @@
+Perform a full "End-to-End Testing & Critical Bug Fix Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT add new features.
+Do NOT redesign the app.
+Do NOT refactor working systems unnecessarily.
+
+This is a full-system validation + bug-fix task.
+
+========================
+GOAL
+========================
+
+Simulate real user behavior across ALL core flows and identify:
+
+- broken flows
+- inconsistent states
+- missing data persistence
+- incorrect navigation
+- wrong permissions
+- misleading UI behavior
+- fake or disconnected systems
+
+Then FIX all critical and high-impact issues.
+
+This pass must expose real problems and fix them.
+
+========================
+1. USER FLOW TESTING (FULL PATH)
+========================
+
+Simulate a real user journey step by step:
+
+Flow:
+- open app
+- login (Apple / Google if available)
+- land on homepage
+- scroll discovery sections
+- interact with filters (restaurant / café / bar)
+- open place card
+- view place details
+- view map
+- check offers
+- create booking OR create plan
+- check notifications/reminders
+- go back to profile
+- edit preferences
+- return to homepage
+
+For each step verify:
+- action actually works
+- data is real and consistent
+- no UI dead clicks
+- no broken navigation
+- no empty or fake states
+
+Fix any broken step.
+
+========================
+2. BUSINESS OWNER FLOW TESTING
+========================
+
+Simulate full premium business journey:
+
+Flow:
+- user opens profile
+- enters premium business section
+- subscribes (or simulate active premium)
+- enters dashboard
+- business_type is correctly applied (restaurant / café / bar)
+- edit business profile
+- upload/edit content
+- create offer
+- view analytics
+- exit dashboard back to profile
+
+Verify:
+- premium access gating works
+- dashboard loads correctly
+- data persists
+- no duplicate premium prompts
+- exit does NOT log out user incorrectly
+
+Fix all inconsistencies.
+
+========================
+3. FOUNDER FLOW TESTING
+========================
+
+Test founder/admin access:
+
+- access founder route
+- verify route protection (non-founder cannot access)
+- check revenue panels
+- check business stats
+- check city breakdown
+- check monetization panels
+- check upsell insights
+
+Ensure:
+- no broken widgets
+- no empty misleading panels
+- no fake numbers
+- safe fallback if data missing
+
+========================
+4. AUTH + SESSION TESTING
+========================
+
+Test session behavior thoroughly:
+
+- login
+- refresh app
+- navigate across screens
+- enter dashboard
+- exit dashboard
+- logout fully
+
+Verify:
+- session persists correctly
+- no unexpected logout
+- no redirect to wrong login screen
+- no double auth states
+- correct user identity across all screens
+
+========================
+5. ROUTING + NAVIGATION TEST
+========================
+
+Test navigation between:
+
+- homepage
+- profile
+- premium entry
+- owner dashboard
+- map
+- discovery
+- place page
+- plans
+- activity/social
+
+Check:
+- back navigation works correctly
+- no loops
+- no dead routes
+- no incorrect redirects
+- history behaves logically
+
+Fix all navigation issues.
+
+========================
+6. DATA PERSISTENCE TEST
+========================
+
+Test saving and retrieving data:
+
+- profile edits
+- preferences
+- allergies
+- dietary settings
+- business profile updates
+- offers
+- bookings
+- plans (meal + group)
+- friend connections
+- feedback submissions
+
+Verify:
+- data saves correctly
+- data loads correctly after refresh
+- no reset or loss of data
+- UI reflects real stored state
+
+========================
+7. MAP + LOCATION TEST
+========================
+
+Test location-based behavior:
+
+- location permission granted
+- location denied fallback
+- nearby sorting
+- map markers
+- place detail map
+- distance calculation
+
+Verify:
+- correct coordinates used
+- no crashes if missing location
+- correct “near you” logic
+- markers match real data
+
+========================
+8. BOOKING + PLAN TEST
+========================
+
+Test:
+
+- booking creation
+- booking state
+- booking reminders
+- meal plan creation
+- group plan creation
+- participant addition
+- invite flow
+- join/decline (if exists)
+
+Verify:
+- no broken flows
+- no duplicate plans
+- correct linking between users
+- correct reminder timing
+
+========================
+9. NOTIFICATION + REMINDER TEST
+========================
+
+Test all notification types:
+
+- booking reminders
+- meal plan reminders
+- group plan reminders
+- smart offers notifications
+- feedback prompts
+- social notifications
+
+Verify:
+- no duplicate notifications
+- correct user targeting
+- correct timing
+- correct content
+- no spam behavior
+
+========================
+10. FEATURE REALITY CHECK (VERY IMPORTANT)
+========================
+
+Audit major systems and verify if they are REAL:
+
+- smart offers
+- live activity
+- heat map
+- social activity
+- instant plans
+- auto plans
+- habit system
+- feedback system
+
+For each:
+- confirm real logic exists
+- confirm data-backed behavior
+- remove or tone down anything fake or misleading
+
+Do NOT leave fake intelligence.
+
+========================
+11. EMPTY + EDGE STATE TESTING
+========================
+
+Simulate:
+
+- new user (no data)
+- no restaurants nearby
+- no friends
+- no bookings
+- no plans
+- no offers
+
+Ensure:
+- proper empty states
+- no crashes
+- clear messaging
+- app still feels functional
+
+========================
+12. CRITICAL BUG FIXING (PRIORITY)
+========================
+
+Fix issues in this order:
+
+1. CRITICAL:
+- crashes
+- auth issues
+- broken routing
+- data not saving
+- wrong access
+
+2. HIGH:
+- broken flows
+- wrong data
+- map issues
+- notification errors
+
+3. MEDIUM:
+- UI inconsistencies
+- missing states
+- minor polish
+
+========================
+13. FINAL REPORT (MANDATORY)
+========================
+
+At the end, produce a structured report:
+
+A. Fully working systems
+B. Fixed critical issues
+C. Fixed high issues
+D. Remaining issues (if any)
+E. Systems still partial/incomplete
+F. Systems disabled due to being misleading
+
+Be honest.
+No fake “everything is perfect”.
+
+========================
+FINAL GOAL
+========================
+
+After this pass, RestoMaster should:
+
+- behave reliably
+- have no critical bugs
+- have clean user flows
+- have consistent data
+- feel like a real working product
+
+This is the step that turns the app from:
+“impressive demo”
+
+into:
+“real usable platform”

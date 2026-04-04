@@ -444,11 +444,13 @@ export default function Restaurant() {
                   {restaurant.isOpenNow && (
                     <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">Jetzt geöffnet</Badge>
                   )}
-                  {/* Verified operator badge */}
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/8 border border-primary/25 px-2.5 py-1 rounded-full">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Geprüfter Betreiber
-                  </span>
+                  {/* Verified operator badge — only for registered platform partners */}
+                  {restaurant.isPartner && (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/8 border border-primary/25 px-2.5 py-1 rounded-full">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Geprüfter Betreiber
+                    </span>
+                  )}
                 </div>
                 <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight text-foreground mb-2">
                   {restaurant.name}

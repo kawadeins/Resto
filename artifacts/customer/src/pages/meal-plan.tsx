@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "").replace(/\/[^/]*$/, "") + "/api-server/api";
+const API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
 
 const DAYS = [
   { id: "Monday", short: "Mo", label: "Montag" },
@@ -583,6 +583,12 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
 export default function MealPlan() {
   const [email, setEmail] = useState(() => localStorage.getItem("restosmart_email") ?? "");
   const [inputEmail, setInputEmail] = useState("");
+
+  useEffect(() => {
+    const sync = () => setEmail(localStorage.getItem("restosmart_email") ?? "");
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
   const [activeTab, setActiveTab] = useState<"personal" | "group">("personal");
   const [selectedDay, setSelectedDay] = useState(TODAY_EN);
   const [showCreateGroup, setShowCreateGroup] = useState(false);

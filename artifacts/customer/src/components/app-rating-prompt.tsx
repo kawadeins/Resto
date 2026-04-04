@@ -11,12 +11,7 @@ const COOLDOWN_DAYS = 14;               // don't re-show for 14 days
 const SESSION_KEY = "rs_rating_shown";  // sessionStorage – once per tab
 const DATE_KEY    = "rs_rating_last";   // localStorage – last shown date
 
-const API_BASE = (() => {
-  const base = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-  if (base) return base;
-  const b = import.meta.env.BASE_URL ?? "/";
-  return b.replace(/\/$/, "").replace(/\/[^/]*$/, "") + "/api-server";
-})();
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function canShowPrompt(): boolean {

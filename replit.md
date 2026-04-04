@@ -116,6 +116,21 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 - Resend library, `FROM_EMAIL` env var, logs to notification_logs, never throws
 - Generic `sendEmail()` helper in `artifacts/api-server/src/lib/email.ts`
 
+## API URL Pattern (CRITICAL)
+
+All `fetch` calls in `artifacts/customer/src` **must** use:
+```ts
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+// Then: fetch(`${API_BASE}/api/some-route`)
+```
+`VITE_API_URL` is intentionally `""` (empty). The Replit proxy routes `/api/...` → the API server automatically.
+**Never** use path manipulation fallbacks like `BASE_URL.replace(...)` — they produce broken URLs like `/customer/api-server/api/...`.
+
+## File Uploads
+
+- API server serves uploads at both `/uploads/:file` (direct) and `/api/uploads/:file` (proxy-accessible)
+- `artifacts/api-server/src/routes/marketplace.ts` normalises all `heroImage`/`photos` paths from `/uploads/` → `/api/uploads/` so images load through the Replit proxy
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

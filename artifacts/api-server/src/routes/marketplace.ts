@@ -55,9 +55,15 @@ function mapRestaurant(
     city: r.city,
     phone: r.phone ?? "",
     email: r.email ?? "",
-    heroImage: r.heroImage ?? null,
+    heroImage: r.heroImage
+      ? r.heroImage.startsWith("/uploads/")
+        ? `/api/uploads/${r.heroImage.slice("/uploads/".length)}`
+        : r.heroImage
+      : null,
     about: r.about ?? "",
-    photos: r.photos ?? [],
+    photos: (r.photos ?? []).map((p: string) =>
+      p.startsWith("/uploads/") ? `/api/uploads/${p.slice("/uploads/".length)}` : p
+    ),
     videoUrl: r.videoUrl ?? "",
     instagram: r.instagram ?? "",
     facebook: r.facebook ?? "",

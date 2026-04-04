@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays } from "lucide-react";
+import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays, Users } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -9,6 +9,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/explore", label: "Entdecken", icon: Compass },
     { href: "/meal-plan", label: "Essensplan", icon: CalendarDays },
     { href: "/my-bookings", label: "Buchungen", icon: CalendarCheck },
+    { href: "/friends", label: "Freunde", icon: Users },
     { href: "/profile", label: "Profil", icon: UserCircle },
   ];
 
@@ -55,7 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Mobile bottom nav — glassy pill design */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div className="mx-3 mb-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-border/60 shadow-xl shadow-black/10 px-2 py-2">
-          <div className="flex items-center justify-around">
+          <div className="flex items-center justify-around gap-0.5">
             {navItems.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               const Icon = item.icon;
@@ -63,16 +64,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="press-scale flex flex-col items-center gap-1 w-16 py-1"
+                  className="press-scale flex flex-col items-center gap-0.5 flex-1 py-1 min-w-0"
                 >
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
                     isActive
                       ? "bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/30"
                       : "bg-transparent"
                   }`}>
-                    <Icon className={`w-5 h-5 transition-colors ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                    <Icon className={`w-4.5 h-4.5 transition-colors ${isActive ? "text-white" : "text-muted-foreground"}`} />
                   </div>
-                  <span className={`text-[10px] font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                  <span className={`text-[9px] font-semibold transition-colors truncate w-full text-center ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                     {item.label}
                   </span>
                 </Link>

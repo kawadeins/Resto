@@ -3,12 +3,7 @@ import { X, Calendar, Clock, ChefHat, Users, Bell, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
-const API_BASE = (() => {
-  const base = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-  if (base) return base;
-  const b = import.meta.env.BASE_URL ?? "/";
-  return b.replace(/\/$/, "").replace(/\/[^/]*$/, "") + "/api-server";
-})();
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 interface Reminder {
   id: string;
