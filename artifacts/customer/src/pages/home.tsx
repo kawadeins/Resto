@@ -32,20 +32,21 @@ import { getFriends, getFriendRadar, type FriendProfile, type RadarZone } from "
 import { evaluateAutoPlans } from "@/lib/auto-plans-engine";
 import type { UserContext } from "@/lib/smart-offers";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
+import { VibeOnboarding } from "@/components/vibe-onboarding";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 // ─── Cuisine bubbles ──────────────────────────────────────────────────────────
 
 const CUISINES = [
-  { name: "Italienisch", emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
-  { name: "Japanisch",   emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
-  { name: "Mexikanisch", emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
-  { name: "Indisch",     emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
-  { name: "Französisch", emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
-  { name: "Thailändisch",emoji: "🍜", from: "from-emerald-400", to: "to-teal-600" },
-  { name: "Amerikanisch",emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
-  { name: "Britisch",    emoji: "🫖", from: "from-blue-400",    to: "to-indigo-600" },
+  { name: "Österreichisch", emoji: "🥩", from: "from-stone-400",   to: "to-amber-600" },
+  { name: "Italienisch",    emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
+  { name: "Japanisch",      emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
+  { name: "Mexikanisch",    emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
+  { name: "Indisch",        emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
+  { name: "Französisch",    emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
+  { name: "Vegetarisch",    emoji: "🌿", from: "from-emerald-400", to: "to-teal-600" },
+  { name: "Amerikanisch",   emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
 ];
 
 // ─── Countdown Timer ─────────────────────────────────────────────────────────
@@ -245,19 +246,19 @@ function HeroHeadlineHighlight({ text, highlight }: { text: string; highlight: s
 }
 
 const HEADLINE_MAP: Record<string, { pre: string; highlight: string }> = {
-  morning:   { pre: "Starten Sie Ihren Tag mit dem", highlight: "perfekten Kaffee." },
-  lunch:     { pre: "Zeit für eine perfekte", highlight: "Mittagspause." },
-  afternoon: { pre: "Machen Sie eine Pause beim", highlight: "besten Kaffee." },
-  evening:   { pre: "Ihr perfekter Abend", highlight: "beginnt hier." },
-  night:     { pre: "Die Nacht", highlight: "gehört Ihnen." },
+  morning:   { pre: "Guten Morgen Wien —", highlight: "Ihr Kaffee wartet." },
+  lunch:     { pre: "Was isst Wien gerade?", highlight: "Finden Sie es heraus." },
+  afternoon: { pre: "Die besten Spots", highlight: "Wiens für Sie." },
+  evening:   { pre: "Was geht heute Abend", highlight: "in Wien?" },
+  night:     { pre: "Wien schläft nicht.", highlight: "Die Nacht gehört Ihnen." },
 };
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
   useSeo({
-    title: "Restaurants, Cafés & Bars entdecken",
-    description: "Entdecken und buchen Sie die besten Restaurants, Cafés und Bars mit exklusiven Angeboten.",
+    title: "RestoSmart Wien — Restaurants, Cafés & Bars entdecken",
+    description: "Die besten Restaurants, Cafés und Bars in Wien. Jetzt entdecken, buchen und exklusive Angebote sichern.",
   });
 
   const { mode, config, track, interactions } = useLifestyleMode();
@@ -351,6 +352,9 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
+
+      {/* ── VIBE ONBOARDING (first visit only) ── */}
+      <VibeOnboarding />
 
       {/* ── ACTIVE PLANS BANNER (incoming invitations) ── */}
       {customerEmail && <ActivePlansBanner email={customerEmail} />}
@@ -516,16 +520,55 @@ export default function Home() {
                     </div>
                   </div>
                 </Link>
-              ) : (
-                <div className="bg-card border border-border/50 rounded-3xl p-8 text-center shadow-xl aspect-[4/5] flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-5 text-4xl">⚡</div>
-                  <h3 className="font-bold text-xl mb-2">Keine Blitzangebote</h3>
-                  <p className="text-muted-foreground text-sm mb-6">Schauen Sie später für exklusive Rabatte vorbei.</p>
-                  <Button asChild variant="outline" className="rounded-2xl">
-                    <Link href="/explore">Alle entdecken</Link>
-                  </Button>
-                </div>
-              )}
+              ) : (() => {
+                const topR = allRestaurants
+                  ? [...allRestaurants].sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))[0]
+                  : null;
+                return topR ? (
+                  <Link href={`/restaurant/${topR.id}`} className="block press-scale group">
+                    <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-primary/15">
+                      <div className="aspect-[4/5] bg-muted">
+                        {topR.heroImage ? (
+                          <img
+                            src={topR.heroImage}
+                            alt={topR.name}
+                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white font-bold px-3 py-1.5 rounded-2xl text-sm flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                            <span>Beliebt in Wien</span>
+                          </div>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                          <div className="flex items-center gap-2 text-white/70 mb-1 text-sm">
+                            <span className="text-lg">{topR.cuisineEmoji}</span>
+                            <span className="font-semibold uppercase tracking-wider text-xs">{topR.cuisine}</span>
+                          </div>
+                          <h3 className="text-2xl font-extrabold mb-1">{topR.name}</h3>
+                          <p className="text-white/70 text-xs mb-3 line-clamp-1">{topR.address}</p>
+                          <div className="w-full py-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-center text-sm font-bold">
+                            Jetzt ansehen →
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="bg-card border border-border/50 rounded-3xl p-8 text-center shadow-xl aspect-[4/5] flex flex-col items-center justify-center">
+                    <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-5 text-4xl">🍽️</div>
+                    <h3 className="font-bold text-xl mb-2">Wien entdecken</h3>
+                    <p className="text-muted-foreground text-sm mb-6">Die besten Restaurants, Cafés und Bars der Stadt.</p>
+                    <Button asChild className="rounded-2xl bg-gradient-to-br from-primary to-accent border-0">
+                      <Link href="/explore">Jetzt entdecken</Link>
+                    </Button>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

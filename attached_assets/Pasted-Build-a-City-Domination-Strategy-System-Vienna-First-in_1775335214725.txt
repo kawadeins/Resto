@@ -1,0 +1,240 @@
+Build a "City Domination Strategy System (Vienna First)" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random features.
+Do NOT expand globally.
+
+Focus ONLY on dominating ONE city:
+👉 Vienna
+
+========================
+GOAL
+========================
+
+Make RestoMaster the go-to app in Vienna for:
+
+- restaurants 🍽️
+- cafés ☕
+- bars 🍸
+
+The app should feel:
+👉 everywhere
+👉 always useful
+👉 always relevant
+
+========================
+1. CITY FOCUS MODE (CRITICAL)
+========================
+
+Lock the platform temporarily to Vienna-first experience.
+
+Ensure:
+- all discovery prioritizes Vienna
+- map defaults to Vienna
+- content density is high in Vienna
+- demo + real data heavily concentrated in Vienna
+
+User must feel:
+👉 “This app is built for my city”
+
+========================
+2. DENSITY STRATEGY (VERY IMPORTANT)
+========================
+
+Increase perceived and real density:
+
+- many places per district
+- multiple categories per area
+- cafés, restaurants, bars mixed
+
+Focus districts:
+- 1st district (Innere Stadt)
+- 2nd (Leopoldstadt)
+- 6th–7th (young/social areas)
+- 9th (students)
+- 15th–16th (local life)
+
+App must NEVER feel empty.
+
+========================
+3. CATEGORY DOMINATION
+========================
+
+Win by category:
+
+☕ Cafés (morning dominance)
+🍽️ Lunch spots (midday dominance)
+🍸 Bars (night dominance)
+
+Ensure:
+- each category feels strong
+- each time of day has content
+
+========================
+4. TIME-BASED CITY EXPERIENCE
+========================
+
+Activate daily rhythm:
+
+Morning:
+👉 Coffee + breakfast
+
+Lunch:
+👉 quick meals nearby
+
+Evening:
+👉 dinner + chill cafés
+
+Night:
+👉 bars + nightlife
+
+Vienna must feel:
+👉 alive throughout the day
+
+========================
+5. LOCAL DISCOVERY POWER
+========================
+
+Strengthen:
+
+- “Near You Now”
+- “Trending in Vienna”
+- “Hot Tonight”
+- “Best Cafés in Your Area”
+
+Everything must feel:
+👉 hyper-local
+
+========================
+6. BUSINESS ACQUISITION STRATEGY 💰
+========================
+
+Target local businesses:
+
+Focus:
+- cafés first (easiest entry)
+- then restaurants
+- then bars
+
+Inside app:
+Show businesses:
+
+- demand nearby
+- user activity
+- missed visibility
+
+Trigger:
+👉 “You could be shown to nearby users right now”
+
+Goal:
+👉 convert first 10–20 premium businesses in Vienna
+
+========================
+7. SOCIAL + LIVE CITY FEEL
+========================
+
+Use:
+
+- trending labels
+- busy zones
+- “popular now”
+- “people going here”
+
+Make Vienna feel:
+👉 alive
+👉 active
+👉 social
+
+========================
+8. LOCAL GROWTH LOOP
+========================
+
+Create Vienna loop:
+
+User → finds place → goes → tells friends → invites → more users
+
+Support:
+- instant plans
+- group plans
+- social discovery
+
+========================
+9. MICRO-INFLUENCE EFFECT
+========================
+
+Simulate early network effect:
+
+- highlight popular spots
+- show activity (real or aggregated)
+- show repeat places
+
+Users must feel:
+👉 “people use this”
+
+========================
+10. NOTIFICATION STRATEGY (LOCAL)
+========================
+
+Examples:
+
+- “This café near you is popular this morning”
+- “Bars in your area are getting busy”
+- “Perfect lunch near you”
+
+Only Vienna-relevant.
+
+========================
+11. FIRST 100 USERS EXPERIENCE
+========================
+
+Optimize for first users:
+
+- fast experience
+- no empty screens
+- clear value
+- easy actions
+
+First users must:
+👉 love it immediately
+
+========================
+12. METRICS TO TRACK
+========================
+
+Track Vienna-specific:
+
+- daily active users
+- place views
+- map interactions
+- bookings / plans
+- return rate
+- premium conversions
+
+========================
+13. DO NOT EXPAND YET
+========================
+
+DO NOT:
+- add new cities
+- expand globally
+- dilute focus
+
+Win Vienna FIRST.
+
+========================
+FINAL GOAL
+========================
+
+When someone in Vienna opens RestoMaster:
+
+They feel:
+- “This app is made for Vienna”
+- “I can always find something”
+- “I want to open this daily”
+
+RestoMaster becomes:
+
+🔥 Vienna’s food + coffee + nightlife app
+🔥 high-density local platform
+🔥 ready for expansion AFTER domination

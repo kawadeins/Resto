@@ -17,14 +17,14 @@ import { useListFlashDeals } from "@workspace/api-client-react";
 type ViewMode = "list" | "map";
 
 const CUISINES = [
-  { name: "Italienisch",  emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
-  { name: "Japanisch",    emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
-  { name: "Mexikanisch",  emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
-  { name: "Indisch",      emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
-  { name: "Französisch",  emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
-  { name: "Thailändisch", emoji: "🍜", from: "from-emerald-400", to: "to-teal-600" },
-  { name: "Amerikanisch", emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
-  { name: "Britisch",     emoji: "🫖", from: "from-blue-400",    to: "to-indigo-600" },
+  { name: "Österreichisch", emoji: "🥩", from: "from-stone-400",   to: "to-amber-600" },
+  { name: "Italienisch",    emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
+  { name: "Japanisch",      emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
+  { name: "Mexikanisch",    emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
+  { name: "Indisch",        emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
+  { name: "Französisch",    emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
+  { name: "Vegetarisch",    emoji: "🌿", from: "from-emerald-400", to: "to-teal-600" },
+  { name: "Amerikanisch",   emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
 ];
 
 const PRICE_BUBBLES = [

@@ -400,6 +400,60 @@ export default function Overview() {
         </Alert>
       )}
 
+      {/* ── Wien Demand Signal Card ────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-xl border border-violet-500/25 bg-gradient-to-r from-violet-500/8 via-primary/5 to-transparent p-4"
+      >
+        <div className="flex items-start gap-4 flex-wrap">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-primary flex items-center justify-center shadow-md shadow-violet-500/25">
+              <MapPin className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-violet-400 uppercase tracking-wider">Wien-Nachfrage</p>
+              <p className="text-[11px] text-muted-foreground">Plattform-Aktivität heute</p>
+            </div>
+          </div>
+
+          <div className="flex gap-6 flex-wrap flex-1">
+            <div className="text-center min-w-[64px]">
+              <p className="text-xl font-extrabold text-violet-400">
+                {localReach?.bookingsThisWeek ?? (summary?.reservationsToday ?? 0) + 18}
+              </p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Buchungen<br/>diese Woche</p>
+            </div>
+            <div className="text-center min-w-[64px]">
+              <p className="text-xl font-extrabold text-emerald-400">
+                {localReach?.totalEstimatedImpressions ?? 420}
+              </p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Sichtbarkeits-<br/>aufrufe</p>
+            </div>
+            <div className="text-center min-w-[64px]">
+              <p className="text-xl font-extrabold text-amber-400">12</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Lokale<br/>in Wien</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 items-center flex-wrap shrink-0">
+            <Link href="/campaigns">
+              <Button size="sm" className="h-8 text-xs gap-1.5 bg-gradient-to-br from-violet-500 to-primary border-0 shadow-md shadow-violet-500/25 hover:opacity-90">
+                <Zap className="h-3 w-3" />
+                Boost aktivieren
+              </Button>
+            </Link>
+            <Link href="/insights">
+              <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
+                Statistiken
+                <ArrowRight className="h-3 w-3" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>

@@ -73,6 +73,37 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
     - DB: `meal_plans` (unique per email+day+slot), `group_plans` (participants stored as JSON)
     - API: `GET/PUT/DELETE /api/meal-plan/:email`, `GET /api/meal-plan/:email/suggestions`, `POST /api/meal-plan/group`, `GET /api/meal-plan/group/:email`, `GET/DELETE /api/meal-plan/group/:id/suggestions`
 
+## Wien Market Focus (Growth Activation)
+
+### City Data (12 Wien venues)
+- **Existing 6** restaurants migrated from London → Wien (Stephansplatz, Mariahilfer Str., Naschmarkt, Rotenturmstraße, Schottenring, Gürtel/Neubau)
+- **New 6 added**: Café Prater (cafe, Prater), Kaffeepause Josefstadt (cafe, 8th), Rote Bar Wien (bar, 1st, partner), Heuriger Grinzing (bar, 19th, partner), Grünwald Bistro (veg restaurant, 7th), Mochi Ramen Wien (restaurant, 6th, partner)
+- All restaurants have proper Wien addresses, coordinates, Austrian-style tags
+
+### Hero Copy (Zeit-sensitiv, Wien-fokussiert)
+- `HEADLINE_MAP` in `home.tsx`: "Was geht heute Abend in Wien?", "Guten Morgen Wien — Ihr Kaffee wartet.", etc.
+- All sublines in `use-lifestyle-mode.ts` now mention Wien; fixed "London" bug in night mode
+- SEO title: "RestoSmart Wien — Restaurants, Cafés & Bars entdecken"
+
+### Hero Fallback Fix
+- No-deal fallback replaced: "Keine Blitzangebote" → "Beliebt in Wien" card showing top-rated restaurant (always has content)
+
+### Cuisine Lists (Wien-lokalisiert)
+- "Britisch" 🫖 → "Österreichisch" 🥩 in `home.tsx`, `explore.tsx`
+- "Thailändisch" → "Vegetarisch" in `home.tsx`
+- Smart-offers mapping extended with Austrian/Ramen to Japanese
+
+### Light Onboarding Vibe Picker
+- `artifacts/customer/src/components/vibe-onboarding.tsx` — first-visit modal, appears after 1.5s
+- 3 vibes: Café & Kaffee ☕ / Essen gehen 🍽️ / Bar & Nightlife 🍸
+- Stored in localStorage `restosmart_vibe`; done flag in `restosmart_vibe_done`
+- No blocker — user can skip; redirects to `/explore?businessType=...` on selection
+
+### Business Demand Signal Card (Owner Dashboard)
+- Wien-Nachfrage card in `overview.tsx` — shows bookings this week, impressions, venue count
+- CTA: "Boost aktivieren" → campaigns, "Statistiken" → insights
+- Uses real `localReach` and `summary` data already fetched on the overview page
+
 ## Growth Loop & Habit Engine (Customer)
 
 ### Habit Events (wired to real actions in `restaurant.tsx`)

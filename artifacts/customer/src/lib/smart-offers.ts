@@ -44,8 +44,9 @@ export interface SmartOffer {
 // Restaurant cuisine field uses German strings (Italienisch, Japanisch…)
 
 const CUISINE_ID_TO_GERMAN: Record<string, string[]> = {
+  Austrian:       ["Österreichisch", "Austrian", "Wiener", "Schnitzel", "Heuriger"],
   Italian:        ["Italienisch", "Italian"],
-  Japanese:       ["Japanisch", "Japanese", "Sushi"],
+  Japanese:       ["Japanisch", "Japanese", "Sushi", "Ramen"],
   French:         ["Französisch", "French"],
   Indian:         ["Indisch", "Indian"],
   Mexican:        ["Mexikanisch", "Mexican"],
