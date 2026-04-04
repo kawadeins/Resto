@@ -212,7 +212,7 @@ export default function Marketing() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Blitzangebote — Pro-Feature</h3>
               <p className="text-sm text-muted-foreground text-center mb-4">
-                Upgraden Sie auf RestoSmart Pro, um Blitzangebote und Benachrichtigungen zu nutzen.
+                Upgraden Sie auf RestoSmart Business Premium, um Blitzangebote und Benachrichtigungen zu nutzen.
               </p>
               <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
                 Auf Pro upgraden
@@ -345,7 +345,7 @@ export default function Marketing() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Benachrichtigungen — Pro-Feature</h3>
               <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
-                Upgraden Sie auf RestoSmart Pro, um Kunden direkt mit personalisierten Benachrichtigungen zu erreichen.
+                Upgraden Sie auf RestoSmart Business Premium, um Kunden direkt mit personalisierten Benachrichtigungen zu erreichen.
               </p>
               <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
                 Auf Pro upgraden

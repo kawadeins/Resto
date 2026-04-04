@@ -540,10 +540,11 @@ export default function ForBusiness() {
               <div className="absolute top-3 right-3 bg-gradient-to-r from-primary to-accent text-white text-[10px] font-black px-2.5 py-1 rounded-full">
                 EMPFOHLEN
               </div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Premium</p>
-              <p className="text-2xl font-extrabold text-foreground mb-4">
-                €49 <span className="text-sm font-normal text-muted-foreground">/ Monat</span>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Business Premium</p>
+              <p className="text-2xl font-extrabold text-foreground mb-1">
+                €39,90 <span className="text-sm font-normal text-muted-foreground">/ Monat</span>
               </p>
+              <p className="text-xs text-primary font-semibold mb-4">RestoSmart Business Premium</p>
               <div className="space-y-2.5">
                 {[
                   "Alles aus Kostenlos",

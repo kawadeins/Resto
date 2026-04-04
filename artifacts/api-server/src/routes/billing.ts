@@ -71,6 +71,8 @@ router.post("/checkout", async (req, res) => {
       [sub] = await db.insert(subscriptionsTable).values({
         restaurantId: 1,
         status: "active",
+        planName: "RestoSmart Business Premium",
+        amountEur: "39.90",
         stripeSessionId: sessionId,
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
@@ -79,6 +81,8 @@ router.post("/checkout", async (req, res) => {
       [sub] = await db.update(subscriptionsTable)
         .set({
           status: "active",
+          planName: "RestoSmart Business Premium",
+          amountEur: "39.90",
           stripeSessionId: sessionId,
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,

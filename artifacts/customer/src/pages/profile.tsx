@@ -478,14 +478,14 @@ function PremiumModal({
                   <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                     <Crown className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">Business Premium</span>
+                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">RestoSmart Business Premium</span>
                 </div>
                 <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Alles was Ihr Betrieb braucht</h2>
-                <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Verwaltungssystem für Restaurants, Cafés und Bars — Buchungen, Personal, Marketing und mehr.</p>
+                <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Wachstumspaket für Restaurants, Cafés und Bars — Sichtbarkeit, Buchungen, Analytics und mehr.</p>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-serif font-bold">€29</span>
+                  <span className="text-4xl font-serif font-bold">€39,90</span>
                   <span className="text-white/70 text-sm">/Monat</span>
-                  <span className="ml-2 text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">30 Tage kostenlos</span>
+                  <span className="ml-2 text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">Pilot: Demo-Zugang</span>
                 </div>
               </div>
             </div>
@@ -538,7 +538,7 @@ function PremiumModal({
                 onClick={() => setStep(1)}
               >
                 <Crown className="w-4 h-4 mr-2" />
-                {getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Premium — 30 Tage kostenlos
+                {getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)}-Dashboard freischalten
               </Button>
               <button onClick={onClose} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
                 Vielleicht später
@@ -707,17 +707,17 @@ function OwnerPremiumCard({
               <Crown className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="text-[10px] font-bold tracking-widest uppercase text-primary">Für Restaurantbesitzer</span>
+              <span className="text-[10px] font-bold tracking-widest uppercase text-primary">Für {bizLabel}besitzer</span>
             </div>
-            <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text border border-primary/30 px-2.5 py-0.5 rounded-full">Premium</span>
+            <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text border border-primary/30 px-2.5 py-0.5 rounded-full">Business Premium</span>
           </div>
 
           {/* Headline */}
           <h3 className="font-serif text-xl font-bold leading-snug mb-1.5">
-            Führen Sie Ihr Restaurant professionell
+            {bizEmoji} {bizLabel} professionell führen
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Reservierungen, Personal, Speisekarte, Kasse und Marketing — alles in einem Dashboard.
+            Sichtbarkeit, Buchungen, Personal, Marketing und Analytics — alles in einem Betriebsdashboard.
           </p>
 
           {/* Mini feature chips */}
@@ -1549,8 +1549,8 @@ export default function Profile() {
                     <Store className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">Restaurant Premium freischalten</div>
-                    <div className="text-xs text-muted-foreground">Für Restaurantbesitzer und Betreiber</div>
+                    <div className="text-sm font-medium">Business Premium freischalten</div>
+                    <div className="text-xs text-muted-foreground">Für Restaurant-, Café- und Barbesitzer</div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>

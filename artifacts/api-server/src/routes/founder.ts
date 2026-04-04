@@ -113,8 +113,8 @@ router.get("/metrics", async (req, res) => {
     const premiumBusinesses = restaurants.filter(r => r.isPartner).length;
     const nonPremiumActive = restaurants.filter(r => r.isActive && !r.isPartner).length;
 
-    // MRR estimate: €49/month per premium business
-    const mrrEur = premiumBusinesses * 49;
+    // MRR estimate: €39.90/month per premium business (RestoSmart Business Premium)
+    const mrrEur = Math.round(premiumBusinesses * 39.90 * 100) / 100;
 
     // New premium in last 30 days (estimate: businesses created recently and is_partner)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

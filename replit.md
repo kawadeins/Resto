@@ -63,8 +63,8 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 6. **My Bookings** — Past reservations with inline "Leave a Review" form (star picker + comment, auto-awards 5 loyalty points)
 7. **Loyalty Points** — Tier tracking (Bronze/Silver/Gold)
 8. **Profile Hub** — Full account management with 4 tabs (Übersicht, Geschmack, Aktivität, Einstellungen), inline avatar upload, editable fields
-9. **Owner Premium Card** — Prominent card at top of profile; sales card for non-premium users (shows 9 features, pricing, 30-day free trial); becomes a direct dashboard gateway after activation. Activation state stored in localStorage (`restosmart_owner_premium`, `restosmart_owner_email`).
-10. **Premium Flow** — 3-step modal: (1) plan presentation with feature grid + pricing, (2) simulated payment form (card number/name/expiry/CVC), (3) success screen with dashboard redirect to `/` (owner admin app)
+9. **Owner Premium Card** — Prominent card at top of profile; business-type-aware sales card for non-premium users (shows 8 features, €39,90 price, unified RestoSmart Business Premium package); becomes a direct dashboard gateway after activation. Activation state stored in localStorage (`restosmart_owner_premium`, `restosmart_owner_email`).
+10. **Premium Flow** — 3-step modal: (1) plan presentation with feature grid + €39,90 price, (2) demo activation (pilot mode, no real payment), (3) success screen with dashboard redirect to `/restosmart/`
 11. **Privacy & Security Section** — In Settings tab: data transparency card, notification toggle switches, active sessions list, data export, account deletion with confirmation flow
 12. **Mahlzeitenplan (Meal Plan)** (`/meal-plan`) — Smart weekly meal planner with personal + group dining modes:
     - **Personal Plan**: 7-day tab selector (today highlighted), two slots per day (Mittagessen ☀️ / Abendessen 🌙), food type bubble grid (12 categories: Burger, Pizza, Fleisch, Fisch, Pasta, Sushi, Vegan, Desserts, Salat, Mexikanisch, Asiatisch, Orientalisch), weekly overview strip showing planned meals at a glance

@@ -14,6 +14,7 @@ import {
   BIZ_TABLE_MODULE_LABEL,
   BIZ_RESERVATION_LABEL,
 } from "@/lib/biz-copy";
+import { PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME, FEATURE_TIERS } from "@/lib/monetization-engine";
 
 export default function Billing() {
   const { toast } = useToast();
@@ -86,8 +87,8 @@ export default function Billing() {
               <Crown className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-bold text-base">{bizLabel} Premium</div>
-              <div className="text-sm text-muted-foreground">RestoSmart · Vollzugriff</div>
+              <div className="font-bold text-base">{PREMIUM_PLAN_NAME}</div>
+              <div className="text-sm text-muted-foreground">RestoSmart · {bizLabel} · Vollzugriff</div>
             </div>
           </div>
           <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-bold">
@@ -100,8 +101,8 @@ export default function Billing() {
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-xl bg-background/40 border border-white/5 p-4">
             <div className="text-xs text-muted-foreground mb-1">Monatlicher Betrag</div>
-            <div className="text-2xl font-bold">€29</div>
-            <div className="text-xs text-muted-foreground">/Monat · zzgl. MwSt.</div>
+            <div className="text-2xl font-bold">{PREMIUM_PRICE_DISPLAY}</div>
+            <div className="text-xs text-muted-foreground">/Monat · inkl. MwSt.</div>
           </div>
           <div className="rounded-xl bg-background/40 border border-white/5 p-4">
             <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
@@ -119,7 +120,7 @@ export default function Billing() {
 
         {/* Included modules */}
         <div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Module</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Features</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
               BIZ_RESERVATION_LABEL[biz],
@@ -128,9 +129,12 @@ export default function Billing() {
               BIZ_MENU_EDITOR_LABEL[biz],
               "Analytics & Berichte",
               "Marketing & Kampagnen",
-              "Bewertungsmanagement",
+              "Boost-Sichtbarkeit",
+              "Smart Offers & Deals",
               "Kassenterminal (POS)",
+              "Revenue Optimizer",
               "Treue-Programme",
+              "Premium-Badge",
             ].map((m) => (
               <div key={m} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />

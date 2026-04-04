@@ -42,7 +42,7 @@ export default function Analytics() {
               </div>
               <div>
                 <CardTitle className="text-2xl">Erweiterte Analysen</CardTitle>
-                <CardDescription className="mt-2 text-base">Detaillierte Einblicke sind nur in RestoSmart Pro verfügbar.</CardDescription>
+                <CardDescription className="mt-2 text-base">Detaillierte Einblicke sind nur in RestoSmart Business Premium verfügbar.</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">

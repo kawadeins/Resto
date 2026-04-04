@@ -1051,7 +1051,7 @@ function WienPipelineView({ founderKey }: { founderKey: string }) {
             </div>
             <div className="flex gap-4 mt-3 text-[10px] text-[#444]">
               <span>🎯 Fokus: Cafés zuerst → Restaurants → Bars</span>
-              <span>💶 Ziel-MRR: €490/Monat (10 × €49)</span>
+              <span>💶 Ziel-MRR: €399/Monat (10 × €39,90)</span>
             </div>
           </div>
         </section>
@@ -1151,7 +1151,7 @@ function WienPipelineView({ founderKey }: { founderKey: string }) {
                       </div>
                     ))}
                     <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
-                      🎯 Angebot: 7 Tage kostenlos → dann €49/Monat. "Wir richten alles ein."
+                      🎯 Angebot: 7 Tage Demo-Zugang → dann €39,90/Monat. "Wir richten alles ein."
                     </div>
                   </div>
                 </div>
@@ -1470,7 +1470,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
             <KpiCard
               label="Monthly Recurring Revenue"
               value={fmtEurDirect(kpis.mrrEur)}
-              sub={`${kpis.premiumBusinesses} Premium-Abonnements × €49`}
+              sub={`${kpis.premiumBusinesses} Business Premium-Abonnements \u00d7 \u20ac39,90`}
               icon={DollarSign}
               color="violet"
               size="large"

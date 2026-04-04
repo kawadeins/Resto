@@ -204,7 +204,7 @@ export default function SuperAdmin() {
 
   const activeSubCount = (stats?.subscriptions?.active as number) || 0;
   const trialSubCount = (stats?.subscriptions?.trial as number) || 0;
-  const monthlyRev = activeSubCount * 30; // Approximation based on €30 plan
+  const monthlyRev = activeSubCount * 39.90; // Based on €39.90 Business Premium plan
 
   return (
     <div className="space-y-8 pb-10">

@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, X, ExternalLink, CheckCircle2 } from "lucide-react";
-import { PREMIUM_VALUE_BY_TYPE } from "@/lib/monetization-engine";
+import { PREMIUM_VALUE_BY_TYPE, PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME } from "@/lib/monetization-engine";
 
 interface PremiumValuePanelProps {
   businessType: string;
@@ -74,9 +74,13 @@ export function PremiumValuePanel({ businessType, onDismiss, compact = false }: 
               <Crown className="w-7 h-7 text-white" />
             </div>
             <div>
-              <div className="text-xs font-bold text-primary uppercase tracking-widest mb-1">RestoSmart Premium</div>
+              <div className="text-xs font-bold text-primary uppercase tracking-widest mb-1">{PREMIUM_PLAN_NAME}</div>
               <h3 className="text-xl font-extrabold leading-tight">{cfg.headline}</h3>
               <p className="text-sm text-muted-foreground mt-1">{cfg.subline}</p>
+              <div className="mt-1.5 flex items-baseline gap-1">
+                <span className="text-lg font-bold text-foreground">{PREMIUM_PRICE_DISPLAY}</span>
+                <span className="text-xs text-muted-foreground">/Monat</span>
+              </div>
             </div>
           </div>
 

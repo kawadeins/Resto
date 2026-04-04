@@ -1,0 +1,298 @@
+MASTER RULES APPLY
+
+Perform a full "Unified Premium Business Package Consolidation Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the whole app completely.
+Do NOT break existing functionality.
+Do NOT create multiple confusing premium packages.
+Do NOT leave premium features scattered across the platform.
+
+This is a premium structure, pricing, and value-consolidation task.
+
+========================
+GOAL
+========================
+
+Create ONE clear, professional, unified Premium Business package for the entire platform.
+
+This premium package must work for:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+All major premium-related features that were added across the app must now be consolidated into one clean premium offer.
+
+The package must feel:
+- clear
+- premium
+- valuable
+- business-focused
+- easy to understand
+- professionally organized
+
+========================
+1. ONE UNIFIED PREMIUM PACKAGE (CRITICAL)
+========================
+
+Create one main premium package only.
+
+Do NOT split premium into confusing different plans unless strictly necessary later.
+
+The premium package must be clearly positioned as:
+
+- one business premium subscription
+- one professional growth package
+- one unified access layer for all supported business types
+
+This package must apply to:
+- restaurants
+- cafés
+- bars
+
+========================
+2. OFFICIAL PRICE LOCK
+========================
+
+Set and standardize the premium subscription price to:
+
+39.90€
+
+This must become the main and official premium price across the app.
+
+Ensure:
+- the same price appears everywhere
+- no conflicting premium prices remain
+- no old values remain in profile, dashboard, checkout, or premium pages
+- all premium messaging reflects 39.90€ consistently
+
+========================
+3. CONSOLIDATE ALL PREMIUM FEATURES
+========================
+
+Collect and organize all premium-related business features already built or added across the platform into ONE premium package.
+
+This includes relevant premium business capabilities such as:
+
+- business dashboard access
+- premium business verification / trust badge
+- premium profile upgrade
+- advanced visibility tools
+- stronger discovery presence
+- map / near-you exposure advantages
+- smart offer exposure
+- access to boost / sponsored visibility tools
+- analytics / business insights
+- advanced business control features
+- restaurant / café / bar business-type support
+- social / live visibility where relevant
+- growth-oriented business tools already built
+
+Do NOT leave these features scattered or ambiguously labeled.
+
+========================
+4. PREMIUM VALUE PAGE / SECTION
+========================
+
+Create or improve one clear premium presentation section that explains:
+
+- what Premium is
+- who it is for
+- what business value it unlocks
+- why it is worth 39.90€
+
+This premium explanation must be professional and persuasive.
+
+It should clearly communicate that this is for:
+- restaurants
+- cafés
+- bars
+
+========================
+5. BUSINESS-TYPE ADAPTATION
+========================
+
+Even though Premium is one unified package, the messaging should still adapt slightly by business type.
+
+Examples:
+
+Restaurants:
+- more bookings
+- lunch/dinner visibility
+- trust and profile strength
+
+Cafés:
+- coffee rush visibility
+- breakfast / work-friendly discovery
+- local morning exposure
+
+Bars:
+- nightlife visibility
+- evening discovery
+- happy hour / tonight exposure
+
+Make premium feel relevant to all business types without creating separate plans.
+
+========================
+6. REMOVE PREMIUM CONFUSION
+========================
+
+Audit the app and remove all premium confusion such as:
+
+- duplicated premium cards
+- old premium wording
+- restaurant-only premium wording
+- scattered premium benefits
+- inconsistent premium labels
+- repeated subscription blocks in the wrong places
+- mixed subscription logic
+
+Premium should feel centralized, unified, and clean.
+
+========================
+7. PREMIUM ENTRY POINT CONSISTENCY
+========================
+
+Use one clean main premium entry path.
+
+The user should clearly understand:
+- where to discover premium
+- where to subscribe
+- where to manage premium status
+- where to enter the business dashboard after subscribing
+
+Do NOT leave multiple conflicting premium access paths.
+
+========================
+8. PREMIUM CHECKOUT CONSISTENCY
+========================
+
+Ensure checkout and payment flow reflect the unified premium package clearly.
+
+Checkout must show:
+- the premium business package name
+- the 39.90€ price
+- the business value
+- who it is for (restaurants / cafés / bars)
+
+No confusing old labels.
+No hidden plan mismatch.
+
+========================
+9. PREMIUM STATUS DISPLAY
+========================
+
+Once subscribed, the business owner should clearly see:
+
+- premium is active
+- they are verified / premium where relevant
+- they have access to premium tools
+- they are inside the correct business dashboard
+
+The active premium state must feel strong and professional.
+
+========================
+10. PREMIUM COPY / WORDING CLEANUP
+========================
+
+Unify all wording across the app.
+
+Do NOT use inconsistent terms like:
+- restaurant owner premium only
+- business plus
+- growth mode
+- premium dashboard
+- owner plan
+unless clearly standardized
+
+Use one consistent naming system across:
+- profile
+- dashboard
+- checkout
+- premium info
+- upsell surfaces
+
+========================
+11. ROI-STYLE POSITIONING
+========================
+
+The premium package should feel like a business investment, not just a subscription.
+
+Position it around:
+- visibility
+- customer growth
+- stronger discovery
+- trust
+- control
+- business advantage
+
+The business should feel:
+“39.90€ helps me grow.”
+
+========================
+12. INTERNAL PREMIUM FEATURE MAPPING
+========================
+
+Create a clean internal mapping of:
+
+- which features are included in Premium
+- which features require additional paid budget (like boosts / ads)
+- which features are free
+- which features are premium-only
+
+This mapping must be clean and logical.
+
+Important:
+Premium subscription unlocks the professional business package.
+Optional paid boosts / ads can still remain separate if already intended.
+
+========================
+13. UI / UX EXPECTATION
+========================
+
+The premium section must feel:
+- elegant
+- high-value
+- trustworthy
+- organized
+- premium
+
+It must not feel:
+- cheap
+- cluttered
+- confusing
+- overloaded
+
+========================
+14. FINAL CONSOLIDATION CHECK
+========================
+
+At the end, verify that:
+
+- all premium features are properly grouped
+- all premium price surfaces show 39.90€
+- the package supports restaurants, cafés, and bars
+- no premium duplication remains
+- no restaurant-only premium wording remains unless intentionally required
+- business owners can clearly understand the value
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have ONE strong Premium Business package priced at 39.90€.
+
+This premium package must clearly and professionally include all major premium business value already built across the platform.
+
+It should feel like a complete business package for:
+- restaurants
+- cafés
+- bars
+
+The result should be:
+- clean
+- unified
+- valuable
+- premium
+- conversion-friendly
+- professionally organized

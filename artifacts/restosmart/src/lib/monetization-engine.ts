@@ -3,6 +3,45 @@
  * Mirrors the customer-side engine; server stays the single source of truth.
  */
 
+// ─── Unified Premium Package ───────────────────────────────────────────────────
+export const PREMIUM_PRICE = 39.90;
+export const PREMIUM_PLAN_NAME = "RestoSmart Business Premium";
+export const PREMIUM_PRICE_DISPLAY = "€39,90";
+export const PREMIUM_PRICE_LABEL = "€39,90 / Monat";
+
+/** Feature tiers: free | premium | boost */
+export const FEATURE_TIERS = {
+  free: [
+    "Basis-Listing auf der Plattform",
+    "Karten-Eintrag & Grundprofil",
+    "Buchungsannahme",
+    "Basis-Bewertungsanzeige",
+  ],
+  premium: [
+    "Prioritätsplatzierung im Entdecken-Feed",
+    "Premium-Vertrauens-Badge",
+    "Vollständiges Analytics-Dashboard",
+    "Revenue Optimizer mit KI-Empfehlungen",
+    "Boost-Sichtbarkeit (Zeitfenster-Werbung)",
+    "Gruppen-Empfehlungs-Priorität",
+    "Smart Offers & Flash Deals",
+    "Marketing-Kampagnen & E-Mail-Tools",
+    "Buchungs- & Tischmanagement",
+    "Personal- & Schichtplanung",
+    "Angebots- & Menü-Editor",
+    "Kassenterminal (POS)",
+    "Treue-Programme & Punkte",
+  ],
+  boostOnly: [
+    "Frühstücks-Boost (6–10 Uhr)",
+    "Mittags-Boost (11–14 Uhr)",
+    "Happy Hour Boost (15–19 Uhr)",
+    "Nachtleben-Boost (ab 19 Uhr)",
+    "Local Spotlight (ganztägig)",
+    "Heat-Map Boost",
+  ],
+} as const;
+
 export interface BoostConfig {
   type: string;
   label: string;
