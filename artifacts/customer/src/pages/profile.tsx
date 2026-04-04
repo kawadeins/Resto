@@ -6,7 +6,10 @@ import {
   User, Mail, Camera, Star, Award, TrendingUp, Calendar, MessageSquare,
   Heart, Settings, ChevronRight, Edit2, Check, X, Loader2, Upload,
   Utensils, Leaf, Beef, Moon, Fish, Minus, AlertTriangle, Sparkles,
-  Trophy, ArrowRight, ShoppingBag, Clock,
+  Trophy, ArrowRight, ShoppingBag, Clock, Crown, Store, BarChart2,
+  Users, FileText, Megaphone, Zap, Shield, Lock, Bell, Trash2,
+  CreditCard, CheckCircle2, ExternalLink, Building2, ChevronLeft,
+  Eye, EyeOff, Smartphone, Globe,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +17,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 
@@ -98,6 +110,20 @@ const TIER_CONFIG = {
   Silver: { color: "text-slate-600", bg: "bg-slate-100 dark:bg-slate-800/30", border: "border-slate-300 dark:border-slate-600", gradient: "from-slate-100 to-slate-50 dark:from-slate-800/40 dark:to-slate-700/10", icon: "🥈" },
   Gold: { color: "text-yellow-600", bg: "bg-yellow-50 dark:bg-yellow-950/30", border: "border-yellow-200 dark:border-yellow-700", gradient: "from-yellow-100 to-yellow-50 dark:from-yellow-950/40 dark:to-yellow-900/10", icon: "🥇" },
 };
+
+// ─── Premium plan features ────────────────────────────────────────────────────
+
+const PREMIUM_FEATURES = [
+  { icon: Calendar, label: "Reservierungsverwaltung", desc: "Tischbuchungen in Echtzeit verwalten" },
+  { icon: Store, label: "Tischplan & Verfügbarkeit", desc: "Visueller Grundriss, flexible Zeitslots" },
+  { icon: Users, label: "Mitarbeiter & Schichten", desc: "Dienstpläne, Zeiterfassung, Erinnerungen" },
+  { icon: FileText, label: "Speisekarten-Editor", desc: "Menü digital pflegen und veröffentlichen" },
+  { icon: BarChart2, label: "Analytics & Berichte", desc: "Umsatz, Auslastung, Gästeverhalten" },
+  { icon: Megaphone, label: "Marketing & Kampagnen", desc: "E-Mail-Kampagnen, Rückgewinnungs-Tools" },
+  { icon: Star, label: "Bewertungsmanagement", desc: "Bewertungen lesen und professionell antworten" },
+  { icon: Zap, label: "POS-System", desc: "Kassenbereich direkt im Dashboard" },
+  { icon: Crown, label: "Treue-Programme", desc: "Kundenbindung durch Punkte & Prämien" },
+];
 
 // ─── Smart Insight Generator ──────────────────────────────────────────────────
 
@@ -264,6 +290,506 @@ function EmailGate({ onEnter }: { onEnter: (email: string) => void }) {
   );
 }
 
+// ─── Owner Premium Modal ──────────────────────────────────────────────────────
+
+function PremiumModal({
+  open,
+  onClose,
+  onActivate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onActivate: () => void;
+}) {
+  const [step, setStep] = useState(0);
+  const [processing, setProcessing] = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+
+  const formatCardNumber = (v: string) =>
+    v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+  const formatExpiry = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 4);
+    return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
+  };
+
+  const handlePay = async () => {
+    setProcessing(true);
+    await new Promise((r) => setTimeout(r, 2000));
+    setProcessing(false);
+    setStep(2);
+  };
+
+  const handleGoToDashboard = () => {
+    onActivate();
+    onClose();
+    window.location.href = window.location.origin + "/";
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-3xl border-0 shadow-2xl">
+        {/* Step 0 — Plan presentation */}
+        {step === 0 && (
+          <div className="flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-primary via-violet-600 to-accent p-7 text-white">
+              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">Restaurant Premium</span>
+                </div>
+                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Alles was Ihr Restaurant braucht</h2>
+                <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Verwaltungssystem — Reservierungen, Personal, Küche, Marketing und mehr.</p>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="text-4xl font-serif font-bold">€29</span>
+                  <span className="text-white/70 text-sm">/Monat</span>
+                  <span className="ml-2 text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">30 Tage kostenlos</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Was Sie erhalten</p>
+              <div className="grid grid-cols-1 gap-2.5">
+                {PREMIUM_FEATURES.map((f) => (
+                  <div key={f.label} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted/60 transition-colors">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <f.icon className="w-4.5 h-4.5 text-primary" style={{ width: "18px", height: "18px" }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold leading-tight">{f.label}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{f.desc}</div>
+                    </div>
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="p-5 border-t bg-background/50 backdrop-blur-sm space-y-3">
+              <Button
+                className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25"
+                onClick={() => setStep(1)}
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Premium freischalten — 30 Tage kostenlos
+              </Button>
+              <button onClick={onClose} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Vielleicht später
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 1 — Payment */}
+        {step === 1 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-br from-primary to-accent p-6 text-white relative">
+              <button
+                onClick={() => setStep(0)}
+                className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-white" />
+              </button>
+              <div className="text-center pt-2">
+                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">Sicherer Checkout</div>
+                <div className="font-serif text-xl font-bold">Restaurant Premium</div>
+                <div className="text-white/80 text-sm mt-1">€29/Monat · Jederzeit kündbar</div>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Trust badges */}
+              <div className="flex items-center justify-center gap-4 py-2">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>256-bit SSL</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Lock className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>PCI DSS konform</span>
+                </div>
+              </div>
+
+              {/* Card form */}
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Karteninhaber</Label>
+                  <Input
+                    placeholder="Max Mustermann"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kartennummer</Label>
+                  <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="1234 5678 9012 3456"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                      className="h-11 pl-10 rounded-xl tracking-wider"
+                      inputMode="numeric"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ablaufdatum</Label>
+                    <Input
+                      placeholder="MM/JJ"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                      className="h-11 rounded-xl"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CVC</Label>
+                    <Input
+                      placeholder="123"
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      className="h-11 rounded-xl"
+                      inputMode="numeric"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                className="w-full h-12 rounded-2xl text-base font-semibold mt-2"
+                onClick={handlePay}
+                disabled={processing || !cardName || cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3}
+              >
+                {processing ? (
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Zahlung wird verarbeitet…</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Lock className="w-4 h-4" /> Jetzt sicher bezahlen</span>
+                )}
+              </Button>
+
+              <p className="text-[11px] text-center text-muted-foreground leading-relaxed">
+                Mit der Zahlung stimmen Sie unseren Nutzungsbedingungen zu. Sie können jederzeit im Dashboard kündigen.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2 — Success */}
+        {step === 2 && (
+          <div className="p-8 text-center flex flex-col items-center gap-5">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/30">
+                <Crown className="w-12 h-12 text-white" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center border-4 border-background">
+                <Check className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div>
+              <h3 className="font-serif text-2xl font-bold mb-2">Herzlichen Glückwunsch!</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
+                Ihr Restaurant Premium-Zugang ist jetzt aktiv. Ihr komplettes Verwaltungs-Dashboard wartet auf Sie.
+              </p>
+            </div>
+            <div className="w-full space-y-2.5 pt-2">
+              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="text-sm">30 Tage kostenlose Testphase gestartet</span>
+              </div>
+              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="text-sm">Alle 9 Premium-Module freigeschaltet</span>
+              </div>
+              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="text-sm">Jederzeit kündbar, keine Bindung</span>
+              </div>
+            </div>
+            <Button
+              className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25 mt-2"
+              onClick={handleGoToDashboard}
+            >
+              <Building2 className="w-4 h-4 mr-2" />
+              Dashboard öffnen
+              <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-70" />
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Owner Premium Card ───────────────────────────────────────────────────────
+
+function OwnerPremiumCard({
+  isPremium,
+  onOpenModal,
+}: {
+  isPremium: boolean;
+  onOpenModal: () => void;
+}) {
+  if (isPremium) {
+    return (
+      <button
+        onClick={() => { window.location.href = window.location.origin + "/"; }}
+        className="w-full text-left press-scale"
+      >
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-violet-600 to-accent p-5 shadow-xl shadow-primary/25">
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-white/70">Restaurant Premium</span>
+                <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Aktiv</span>
+              </div>
+              <div className="font-serif text-lg font-bold text-white leading-tight">Mein Restaurant-Dashboard</div>
+              <div className="text-white/70 text-xs mt-0.5">Tippen zum Öffnen</div>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+              <ChevronRight className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <button onClick={onOpenModal} className="w-full text-left press-scale">
+      <div className="relative overflow-hidden rounded-3xl border-2 border-primary/20 bg-gradient-to-br from-primary/8 via-violet-50/80 to-accent/8 dark:from-primary/15 dark:via-violet-950/30 dark:to-accent/15 p-5 hover:border-primary/40 transition-colors">
+        {/* Decorative dots */}
+        <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.07]" style={{ background: "radial-gradient(circle, hsl(var(--primary)) 1.5px, transparent 1.5px)", backgroundSize: "12px 12px" }} />
+
+        <div className="relative">
+          {/* Label row */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/25">
+              <Crown className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold tracking-widest uppercase text-primary">Für Restaurantbesitzer</span>
+            </div>
+            <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text border border-primary/30 px-2.5 py-0.5 rounded-full">Premium</span>
+          </div>
+
+          {/* Headline */}
+          <h3 className="font-serif text-xl font-bold leading-snug mb-1.5">
+            Führen Sie Ihr Restaurant professionell
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+            Reservierungen, Personal, Speisekarte, Kasse und Marketing — alles in einem Dashboard.
+          </p>
+
+          {/* Mini feature chips */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {["Reservierungen", "Personal", "Analytics", "Marketing", "POS", "+ 4 weitere"].map((f) => (
+              <span key={f} className="text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                {f}
+              </span>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-10 rounded-xl bg-gradient-to-r from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+              <span className="text-sm font-bold text-white">Premium freischalten</span>
+            </div>
+            <div className="h-10 w-10 rounded-xl border border-primary/20 flex items-center justify-center">
+              <ChevronRight className="w-4 h-4 text-primary" />
+            </div>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground mt-2 text-center">30 Tage kostenlos testen · Jederzeit kündbar</p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ─── Privacy & Security Section ───────────────────────────────────────────────
+
+function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
+  const { toast } = useToast();
+  const [notifBookings, setNotifBookings] = useState(true);
+  const [notifMarketing, setNotifMarketing] = useState(false);
+  const [notifReviews, setNotifReviews] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      {/* Privacy header */}
+      <div className="bg-card border rounded-2xl p-5 space-y-5">
+        <h3 className="font-bold text-base flex items-center gap-2">
+          <Shield className="w-4 h-4 text-primary" />
+          Datenschutz &amp; Sicherheit
+        </h3>
+
+        {/* Data info */}
+        <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+          <div className="flex items-start gap-3">
+            <Lock className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Ihre Daten sind geschützt</p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                Ihre persönlichen Daten werden verschlüsselt gespeichert und niemals an Dritte weitergegeben. Wir nutzen Ihre Daten ausschließlich zur Verbesserung Ihrer Restauranterlebnisse.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Data points */}
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gespeicherte Daten</p>
+          {[
+            { label: "Profilinformationen", detail: "Name, E-Mail, Foto", icon: User },
+            { label: "Buchungshistorie", detail: "Restaurantbesuche und Reservierungen", icon: Calendar },
+            { label: "Geschmackspräferenzen", detail: "Küchen, Ernährung, Allergien", icon: Utensils },
+            { label: "Treuepunkte", detail: "Punkte und Tier-Status", icon: Award },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div className="flex items-center gap-3">
+                <item.icon className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <div className="text-sm font-medium">{item.label}</div>
+                  <div className="text-xs text-muted-foreground">{item.detail}</div>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-[10px]">Gespeichert</Badge>
+            </div>
+          ))}
+        </div>
+
+        {/* Data export */}
+        <Button
+          variant="outline"
+          className="w-full rounded-xl h-10 text-sm"
+          onClick={() => toast({ title: "Export angefordert", description: "Ihre Daten werden per E-Mail zugesendet." })}
+        >
+          <ExternalLink className="w-4 h-4 mr-2" />
+          Meine Daten exportieren
+        </Button>
+      </div>
+
+      {/* Notifications */}
+      <div className="bg-card border rounded-2xl p-5 space-y-4">
+        <h3 className="font-bold text-base flex items-center gap-2">
+          <Bell className="w-4 h-4 text-primary" />
+          Benachrichtigungen
+        </h3>
+        <div className="space-y-3">
+          {[
+            { label: "Buchungsbestätigungen", detail: "E-Mail bei neuer Reservierung", value: notifBookings, onChange: setNotifBookings },
+            { label: "Bewertungserinnerungen", detail: "Nach dem Besuch eine Bewertung hinterlassen", value: notifReviews, onChange: setNotifReviews },
+            { label: "Angebote & Neuigkeiten", detail: "Blitzangebote und personalisierte Empfehlungen", value: notifMarketing, onChange: setNotifMarketing },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div className="flex-1 mr-4">
+                <div className="text-sm font-medium">{item.label}</div>
+                <div className="text-xs text-muted-foreground">{item.detail}</div>
+              </div>
+              <Switch
+                checked={item.value}
+                onCheckedChange={item.onChange}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sessions */}
+      <div className="bg-card border rounded-2xl p-5 space-y-4">
+        <h3 className="font-bold text-base flex items-center gap-2">
+          <Smartphone className="w-4 h-4 text-primary" />
+          Aktive Sitzungen
+        </h3>
+        <div className="space-y-2.5">
+          {[
+            { device: "Dieses Gerät", detail: "Zuletzt aktiv: Gerade eben", current: true },
+          ].map((s) => (
+            <div key={s.device} className="flex items-center justify-between p-3 rounded-xl bg-muted/40">
+              <div className="flex items-center gap-3">
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <div className="text-sm font-medium">{s.device}</div>
+                  <div className="text-xs text-muted-foreground">{s.detail}</div>
+                </div>
+              </div>
+              {s.current && <Badge variant="secondary" className="text-[10px] text-emerald-600 bg-emerald-50">Aktuell</Badge>}
+            </div>
+          ))}
+        </div>
+        <Button
+          variant="outline"
+          className="w-full rounded-xl h-10 text-sm"
+          onClick={onLogout}
+        >
+          Alle Sitzungen beenden
+        </Button>
+      </div>
+
+      {/* Danger zone */}
+      <div className="bg-card border border-red-200 dark:border-red-900/50 rounded-2xl p-5 space-y-3">
+        <h3 className="font-bold text-base flex items-center gap-2 text-red-600">
+          <AlertTriangle className="w-4 h-4" />
+          Gefahrenzone
+        </h3>
+        {showDeleteConfirm ? (
+          <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 space-y-3">
+            <p className="text-sm font-medium text-red-700 dark:text-red-400">Sind Sie sicher? Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl flex-1"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-xl flex-1 bg-red-600 hover:bg-red-700 text-white border-0"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  toast({ title: "Anfrage eingereicht", description: "Ihr Konto wird innerhalb von 30 Tagen gelöscht." });
+                }}
+              >
+                Endgültig löschen
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left text-sm text-red-600"
+          >
+            <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center shrink-0">
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </div>
+            Konto löschen
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Profile() {
@@ -271,11 +797,22 @@ export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string>("");
+  const [ownerPremium, setOwnerPremium] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("restosmart_email") || "";
     if (saved) setEmail(saved);
   }, []);
+
+  useEffect(() => {
+    if (!email) return;
+    const premiumEmail = localStorage.getItem("restosmart_owner_email");
+    const premiumStatus = localStorage.getItem("restosmart_owner_premium");
+    if (premiumEmail === email && premiumStatus === "active") {
+      setOwnerPremium(true);
+    }
+  }, [email]);
 
   const { data: profile, isLoading } = useQuery<CustomerProfile>({
     queryKey: ["customer-profile", email],
@@ -310,6 +847,18 @@ export default function Profile() {
   const handleEnterEmail = (e: string) => {
     setEmail(e);
     localStorage.setItem("restosmart_email", e);
+  };
+
+  const handleActivatePremium = () => {
+    localStorage.setItem("restosmart_owner_email", email);
+    localStorage.setItem("restosmart_owner_premium", "active");
+    setOwnerPremium(true);
+    toast({ title: "Premium aktiviert!", description: "Willkommen im Restaurant-Dashboard." });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("restosmart_email");
+    setEmail("");
   };
 
   if (!email) return <EmailGate onEnter={handleEnterEmail} />;
@@ -348,6 +897,11 @@ export default function Profile() {
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${tierCfg.color} ${tierCfg.bg} ${tierCfg.border}`}>
                   {tierCfg.icon} {profile.loyalty.tier}-Mitglied
                 </span>
+                {ownerPremium && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-primary to-accent text-white shadow-sm shadow-primary/25">
+                    <Crown className="w-3 h-3" /> Restaurant Premium
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground">{profile.loyalty.points} Punkte</span>
               </div>
             </div>
@@ -370,7 +924,13 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 max-w-4xl py-6 space-y-6">
+      <div className="container mx-auto px-4 max-w-4xl py-6 space-y-5">
+
+        {/* ── Owner Premium Card (always at top) ──────── */}
+        <OwnerPremiumCard
+          isPremium={ownerPremium}
+          onOpenModal={() => setShowPremiumModal(true)}
+        />
 
         {/* ── Smart Insight card ──────────────────────── */}
         <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -743,6 +1303,8 @@ export default function Profile() {
 
           {/* ═══ TAB: EINSTELLUNGEN ══════════════════════════════════════ */}
           <TabsContent value="settings" className="space-y-5">
+
+            {/* Personal data */}
             <div className="bg-card border rounded-2xl p-5 md:p-6 space-y-5">
               <h3 className="font-bold text-base flex items-center gap-2">
                 <Settings className="w-4 h-4" /> Persönliche Daten
@@ -784,13 +1346,47 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* Owner Premium entry from settings too */}
+            <div className="bg-card border rounded-2xl p-5">
+              <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+                <Crown className="w-4 h-4 text-primary" /> Restaurant-Bereich
+              </h3>
+              {ownerPremium ? (
+                <button
+                  onClick={() => { window.location.href = window.location.origin + "/"; }}
+                  className="flex items-center gap-3 w-full p-3 rounded-xl bg-primary/5 hover:bg-primary/10 border border-primary/20 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
+                    <Building2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold">Zum Restaurant-Dashboard</div>
+                    <div className="text-xs text-muted-foreground">Premium aktiv · Alle Module verfügbar</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowPremiumModal(true)}
+                  className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                    <Store className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">Restaurant Premium freischalten</div>
+                    <div className="text-xs text-muted-foreground">Für Restaurantbesitzer und Betreiber</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+
+            {/* Account */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-4">Konto</h3>
               <button
-                onClick={() => {
-                  localStorage.removeItem("restosmart_email");
-                  setEmail("");
-                }}
+                onClick={handleLogout}
                 className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-muted/50 transition-colors text-left text-sm text-muted-foreground hover:text-foreground"
               >
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -799,9 +1395,19 @@ export default function Profile() {
                 Abmelden / E-Mail wechseln
               </button>
             </div>
+
+            {/* Privacy & Security */}
+            <PrivacySecuritySection onLogout={handleLogout} />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Premium Modal */}
+      <PremiumModal
+        open={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onActivate={handleActivatePremium}
+      />
     </div>
   );
 }

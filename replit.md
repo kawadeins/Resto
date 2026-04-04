@@ -62,6 +62,10 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 5. **Map View** — Leaflet/OpenStreetMap with availability popup chips
 6. **My Bookings** — Past reservations with inline "Leave a Review" form (star picker + comment, auto-awards 5 loyalty points)
 7. **Loyalty Points** — Tier tracking (Bronze/Silver/Gold)
+8. **Profile Hub** — Full account management with 4 tabs (Übersicht, Geschmack, Aktivität, Einstellungen), inline avatar upload, editable fields
+9. **Owner Premium Card** — Prominent card at top of profile; sales card for non-premium users (shows 9 features, pricing, 30-day free trial); becomes a direct dashboard gateway after activation. Activation state stored in localStorage (`restosmart_owner_premium`, `restosmart_owner_email`).
+10. **Premium Flow** — 3-step modal: (1) plan presentation with feature grid + pricing, (2) simulated payment form (card number/name/expiry/CVC), (3) success screen with dashboard redirect to `/` (owner admin app)
+11. **Privacy & Security Section** — In Settings tab: data transparency card, notification toggle switches, active sessions list, data export, account deletion with confirmation flow
 
 ## Availability System
 
@@ -89,6 +93,7 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 
 - Super-admin: `X-Super-Admin-Key` header, env var `SUPER_ADMIN_KEY` (default: `restosmart-super-2025`)
 - Customer: email-based identity stored in localStorage (`restosmart_email`)
+- Owner Premium: localStorage (`restosmart_owner_premium` = `"active"`, `restosmart_owner_email` = the email that activated)
 - Geo: sessionStorage (`restosmart_geolocation`)
 
 ## Email
