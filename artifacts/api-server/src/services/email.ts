@@ -169,7 +169,7 @@ export async function sendBookingConfirmation(booking: {
     </table>
 
     <p style="font-size:15px;color:#444;line-height:1.6;">Hallo <strong>${booking.customerName}</strong>,<br>
-    Ihre Reservierung wurde bestätigt. Falls Sie stornieren oder Änderungen vornehmen möchten, wenden Sie sich bitte so bald wie möglich direkt an das Restaurant.</p>
+    Ihre Reservierung wurde bestätigt. Falls Sie stornieren oder Änderungen vornehmen möchten, wenden Sie sich bitte so bald wie möglich direkt an das Lokal.</p>
 
     <p style="margin:20px 0 0;font-size:13px;color:#888;">Reservierungs-ID: #${booking.id}</p>
   `;
@@ -187,7 +187,7 @@ export async function sendBookingConfirmation(booking: {
 // ─── Kampagnen-E-Mail ──────────────────────────────────────────────────────────
 const CAMPAIGN_TYPE_LABELS: Record<string, string> = {
   win_back: "Wir vermissen Sie",
-  thank_you: "Danke, dass Sie bei uns gegessen haben",
+  thank_you: "Danke für Ihren Besuch",
   flash_blast: "Exklusives Angebot — nur für kurze Zeit",
   loyalty_reward: "Ihre Treue wird belohnt",
 };
@@ -207,9 +207,9 @@ export async function sendCampaignEmail(opts: {
     <p style="font-size:16px;color:#444;line-height:1.7;">Hallo <strong>${opts.customerName}</strong>,</p>
     <p style="font-size:16px;color:#444;line-height:1.7;">${opts.messageTemplate}</p>
     <div style="margin:28px 0;">
-      <a href="#" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Tisch buchen</a>
+      <a href="#" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Jetzt entdecken</a>
     </div>
-    <p style="font-size:13px;color:#aaa;margin-top:24px;">Sie erhalten diese Nachricht, weil Sie bereits bei uns gespeist haben. Wir würden uns freuen, Sie wieder begrüßen zu dürfen.</p>
+    <p style="font-size:13px;color:#aaa;margin-top:24px;">Sie erhalten diese Nachricht, weil Sie bereits bei uns zu Gast waren. Wir würden uns freuen, Sie wieder begrüßen zu dürfen.</p>
   `;
 
   return send({

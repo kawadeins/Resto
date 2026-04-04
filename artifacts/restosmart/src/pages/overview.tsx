@@ -21,6 +21,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame, UserCheck, UserX, ClipboardList, Send, RefreshCw } from "lucide-react";
+import { getBizType, BIZ_POSSESSIVE } from "@/lib/biz-copy";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,6 +54,7 @@ const FEEDBACK_CATEGORIES = [
 export default function Overview() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const bizPossessive = BIZ_POSSESSIVE[getBizType()];
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackCategory, setFeedbackCategory] = useState<"bookings" | "revenue" | "marketing" | "general">("general");
@@ -235,7 +237,7 @@ export default function Overview() {
             <div className="flex-1">
               <p className="font-semibold text-amber-400 text-sm">Keine Buchungen in den ersten 24 Stunden</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Ihr Restaurant ist live, aber noch kein Gast hat gebucht. So reagieren Sie jetzt:
+                {bizPossessive} ist live, aber noch kein Gast hat gebucht. So reagieren Sie jetzt:
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Link href="/discounts">

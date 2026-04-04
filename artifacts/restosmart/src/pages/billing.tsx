@@ -6,10 +6,21 @@ import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle2, Crown, Calendar, ExternalLink, AlertTriangle, Shield,
 } from "lucide-react";
+import {
+  getBizType,
+  BIZ_LABEL,
+  BIZ_POSSESSIVE,
+  BIZ_MENU_EDITOR_LABEL,
+  BIZ_TABLE_MODULE_LABEL,
+  BIZ_RESERVATION_LABEL,
+} from "@/lib/biz-copy";
 
 export default function Billing() {
   const { toast } = useToast();
   const cancelSubscription = useCancelSubscription();
+  const biz = getBizType();
+  const bizLabel = BIZ_LABEL[biz];
+  const bizPossessive = BIZ_POSSESSIVE[biz];
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelled, setCancelled] = useState(false);
 
@@ -42,7 +53,7 @@ export default function Billing() {
         <div>
           <h2 className="text-xl font-bold mb-2">Abonnement gekündigt</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Ihr Restaurant Premium-Abonnement wurde beendet. Sie können es jederzeit über Ihr Kundenprofil reaktivieren.
+            {bizLabel} Premium-Abonnement wurde beendet. Sie können es jederzeit über Ihr Kundenprofil reaktivieren.
           </p>
         </div>
         <a
@@ -62,7 +73,7 @@ export default function Billing() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Abonnement</h2>
         <p className="text-muted-foreground mt-1 text-sm">
-          Ihr aktiver Restaurant Premium-Plan und Abrechnungsdetails.
+          {bizPossessive} aktiver Premium-Plan und Abrechnungsdetails.
         </p>
       </div>
 
@@ -75,7 +86,7 @@ export default function Billing() {
               <Crown className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-bold text-base">Restaurant Premium</div>
+              <div className="font-bold text-base">{bizLabel} Premium</div>
               <div className="text-sm text-muted-foreground">RestoSmart · Vollzugriff</div>
             </div>
           </div>
@@ -111,10 +122,10 @@ export default function Billing() {
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Module</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              "Reservierungsverwaltung",
-              "Tischplan & Verfügbarkeit",
+              BIZ_RESERVATION_LABEL[biz],
+              BIZ_TABLE_MODULE_LABEL[biz],
               "Personal & Schichten",
-              "Speisekarten-Editor",
+              BIZ_MENU_EDITOR_LABEL[biz],
               "Analytics & Berichte",
               "Marketing & Kampagnen",
               "Bewertungsmanagement",

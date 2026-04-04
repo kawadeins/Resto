@@ -233,6 +233,27 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 - **P-8 Fixed**: `restaurant.tsx` — Opening days now rendered in German with smart range compression ("Täglich" for all 7 days, "Mo–Fr" for weekday ranges, etc.) instead of raw English day names from the DB.
 - **P-9 Fixed (data)**: DB — Cleared stale `/uploads/1775263577451-cdhspu5d5xt.png` hero image path from restaurant 1 ("Resto"), which was rendering a broken chat screenshot. Now falls back to the clean 🥐 croissant emoji gradient placeholder.
 
+## Business-Type Enforcement Policy
+
+**All features must support all three business types: `restaurant`, `cafe`, `bar`.** No logic, UI text, monetization tool, analytics view, or email copy should be hardcoded for "restaurant" only.
+
+### Shared Helper
+`artifacts/restosmart/src/lib/biz-copy.ts` — Central BizType helper. All frontend components read `getBizType()` from localStorage key `restosmart_owner_business_type` and use the exported label maps (BIZ_LABEL, BIZ_POSSESSIVE, BIZ_MENU_LABEL, BIZ_SETUP_TITLE, etc.). Import from here, never hardcode "Restaurant".
+
+### Fixes Applied (Business-Type Enforcement Pass)
+- **`billing.tsx`**: Plan card title, subtitle, module list (Reservierungsverwaltung, Tischplan, Speisekarten-Editor, cancellation text) now all adapt via `BIZ_*` maps.
+- **`overview.tsx`**: "Ihr Restaurant ist live" → `{bizPossessive} ist live` for the 24h no-booking alert.
+- **`onboarding.tsx`**: All steps now type-adaptive — step indicator labels, Step1 (title, name label, cuisine label, description placeholder, email placeholder), Step2 (menu title, subtitle, empty state, add hint, page link), Step4 (marketplace activation description), page title + subtitle, all toast messages.
+- **`api-server/src/routes/overview.ts`**: `AVG_SPEND_PER_COVER` is now type-specific (restaurant=€35, café=€12, bar=€18). `tableTotal` is now type-specific (restaurant=20, café=14, bar=16). Both are fetched from the `restaurants` table `businessType` field on every request.
+- **`api-server/src/services/email.ts`**: "direkt an das Restaurant" → "direkt an das Lokal"; "bei uns gespeist haben" → "bei uns zu Gast waren"; "Tisch buchen" CTA → "Jetzt entdecken"; "Danke, dass Sie bei uns gegessen haben" → "Danke für Ihren Besuch".
+
+### Already Type-Aware (no changes needed)
+- `monetization-engine.ts` — `BOOST_CONFIGS.bizTypes` gates, `PREMIUM_VALUE_BY_TYPE`
+- `premium-value-panel.tsx` — Type-specific headlines and benefit lists  
+- `layout.tsx` — "Café-Betreiber" / "Bar-Betreiber" / "Restaurantbesitzer" nav identity
+- `founder.tsx` — BIZ_ICONS, BIZ_COLORS, BIZ_LABELS for pipeline view
+- `digital-twin.ts` / `life-loop-engine.ts` — businessType drives affinity and mode
+
 ## System Integration + Cross-System Behavior Pass
 
 Four targeted integration wires added — no new features, just existing systems actually talking to each other:

@@ -1,12 +1,22 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { employeesTable, inventoryTable, salesTable, reservationsTable, shiftsTable, discountsTable } from "@workspace/db";
+import { employeesTable, inventoryTable, salesTable, reservationsTable, shiftsTable, discountsTable, restaurantsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const AVG_SPEND_PER_COVER = 35;
+
+const AVG_SPEND_BY_TYPE: Record<string, number> = {
+  restaurant: 35,
+  cafe: 12,
+  bar: 18,
+};
+const TABLE_TOTAL_BY_TYPE: Record<string, number> = {
+  restaurant: 20,
+  cafe: 14,
+  bar: 16,
+};
 
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -20,6 +30,11 @@ router.get("/summary", async (req, res) => {
     const dayOfWeek = DAYS[now.getDay()];
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const twoHoursLater = currentMinutes + 120;
+
+    const [bizRow] = await db.select({ businessType: restaurantsTable.businessType }).from(restaurantsTable).limit(1);
+    const bizType = bizRow?.businessType ?? "restaurant";
+    const AVG_SPEND_PER_COVER = AVG_SPEND_BY_TYPE[bizType] ?? 35;
+    const tableTotal = TABLE_TOTAL_BY_TYPE[bizType] ?? 20;
 
     const [todaySale] = await db.select().from(salesTable).where(eq(salesTable.date, today)).limit(1);
     const activeStaffRows = await db.select().from(employeesTable).where(eq(employeesTable.status, "active"));
@@ -53,7 +68,6 @@ router.get("/summary", async (req, res) => {
       (r) => r.status === "pending" || r.status === "confirmed"
     );
 
-    const tableTotal = 20;
     const tableOccupancy = todayReservations.filter(
       (r) => r.status === "arrived" || r.status === "confirmed"
     ).length;

@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
 import {
+  getBizType, BizType,
+  BIZ_STEP1_LABEL, BIZ_STEP2_LABEL,
+  BIZ_ONBOARDING_TITLE, BIZ_NAME_LABEL, BIZ_CUISINE_LABEL,
+  BIZ_DESCRIPTION_PLACEHOLDER, BIZ_EMAIL_PLACEHOLDER,
+  BIZ_MENU_ONBOARDING_TITLE, BIZ_MENU_ONBOARDING_SUBTITLE,
+  BIZ_MENU_EMPTY_STATE, BIZ_MENU_ADD_HINT, BIZ_MENU_PAGE_LINK_LABEL,
+  BIZ_MARKETPLACE_ACTIVATE_DESC, BIZ_MARKETPLACE_ACTIVE_DESC,
+  BIZ_LIVE_TOAST, BIZ_SETUP_TITLE, BIZ_SETUP_SUBTITLE,
+  BIZ_POSSESSIVE,
+} from "@/lib/biz-copy";
+import {
   useGetOnboardingStatus,
   getGetOnboardingStatusQueryKey,
   useGetMyRestaurant,
@@ -34,18 +45,20 @@ import {
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
-const STEPS = [
-  { label: "Ihr Restaurant", icon: Store },
-  { label: "Speisekarte", icon: UtensilsCrossed },
-  { label: "Personal", icon: Users },
-  { label: "Buchungen", icon: BookOpen },
-  { label: "Rabatt", icon: Megaphone },
-];
+function getSteps(biz: BizType) {
+  return [
+    { label: BIZ_STEP1_LABEL[biz], icon: Store },
+    { label: BIZ_STEP2_LABEL[biz], icon: UtensilsCrossed },
+    { label: "Personal", icon: Users },
+    { label: "Buchungen", icon: BookOpen },
+    { label: "Rabatt", icon: Megaphone },
+  ];
+}
 
-function StepIndicator({ current }: { current: number }) {
+function StepIndicator({ current, steps }: { current: number; steps: ReturnType<typeof getSteps> }) {
   return (
     <div className="flex items-center gap-0 mb-8 justify-center overflow-x-auto pb-1">
-      {STEPS.map((step, i) => {
+      {steps.map((step, i) => {
         const stepNum = i + 1;
         const done = current > stepNum;
         const active = current === stepNum;
@@ -71,7 +84,7 @@ function StepIndicator({ current }: { current: number }) {
                 {step.label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div
                 className={`w-8 h-0.5 mx-1 mb-5 transition-colors ${
                   current > stepNum ? "bg-emerald-500" : "bg-border"
@@ -85,14 +98,16 @@ function StepIndicator({ current }: { current: number }) {
   );
 }
 
-// ─── Step 1: Restaurant info ──────────────────────────────────────────────────
+// ─── Step 1: Business info ───────────────────────────────────────────────────
 
 function Step1({
   onNext,
   isPending,
+  biz,
 }: {
   onNext: (data: Record<string, string>) => void;
   isPending: boolean;
+  biz: BizType;
 }) {
   const { data: restaurant, isLoading } = useGetMyRestaurant({
     query: { queryKey: getGetMyRestaurantQueryKey() },
@@ -129,7 +144,7 @@ function Step1({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Erzählen Sie uns von Ihrem Restaurant</h3>
+        <h3 className="text-xl font-bold">{BIZ_ONBOARDING_TITLE[biz]}</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Diese Informationen erscheinen im Kunden-Marktplatz.
         </p>
@@ -137,7 +152,7 @@ function Step1({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label>Restaurantname *</Label>
+          <Label>{BIZ_NAME_LABEL[biz]} *</Label>
           <Input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -145,7 +160,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Küchenstil *</Label>
+          <Label>{BIZ_CUISINE_LABEL[biz]} *</Label>
           <Input
             value={form.cuisine}
             onChange={(e) => setForm((f) => ({ ...f, cuisine: e.target.value }))}
@@ -181,7 +196,7 @@ function Step1({
           <Input
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            placeholder="info@ihrrestaurant.at"
+            placeholder={BIZ_EMAIL_PLACEHOLDER[biz]}
           />
         </div>
       </div>
@@ -191,7 +206,7 @@ function Step1({
         <Input
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-          placeholder="Was macht Ihr Restaurant besonders? (optional)"
+          placeholder={BIZ_DESCRIPTION_PLACEHOLDER[biz]}
         />
       </div>
 
@@ -215,18 +230,20 @@ function Step2({
   onNext,
   onBack,
   menuCount,
+  biz,
 }: {
   onNext: () => void;
   onBack: () => void;
   menuCount: number;
+  biz: BizType;
 }) {
   const [, navigate] = useLocation();
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Speisekarte hinzufügen</h3>
+        <h3 className="text-xl font-bold">{BIZ_MENU_ONBOARDING_TITLE[biz]}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Mindestens ein aktives Menüelement ist erforderlich, bevor Kunden Ihr Restaurant sehen können.
+          {BIZ_MENU_ONBOARDING_SUBTITLE[biz]}
         </p>
       </div>
 
@@ -237,13 +254,13 @@ function Step2({
         <div className="flex-1">
           <p className="font-semibold">
             {menuCount === 0
-              ? "Noch keine Speisekarte"
-              : `${menuCount} Gericht${menuCount !== 1 ? "e" : ""} hinzugefügt`}
+              ? BIZ_MENU_EMPTY_STATE[biz]
+              : `${menuCount} Eintrag${menuCount !== 1 ? " hinzugefügt" : " hinzugefügt"}`}
           </p>
           <p className="text-sm text-muted-foreground">
             {menuCount === 0
-              ? "Gerichte, Getränke oder Menüs hinzufügen, damit Kunden wissen, was sie erwartet."
-              : "Guter Start! Sie können jederzeit auf der Speisekartenseite weitere Einträge hinzufügen."}
+              ? "Einträge hinzufügen, damit Kunden wissen, was sie erwartet."
+              : "Guter Start! Sie können jederzeit weitere Einträge hinzufügen."}
           </p>
         </div>
         {menuCount > 0 && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -252,11 +269,11 @@ function Step2({
       {menuCount === 0 && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
           <p className="text-sm text-muted-foreground mb-3">
-            Gehen Sie zur Speisekartenseite und fügen Sie Ihr erstes Gericht hinzu.
+            {BIZ_MENU_ADD_HINT[biz]}
           </p>
           <Button variant="outline" size="sm" onClick={() => navigate("/menu")} className="gap-1.5">
             <UtensilsCrossed className="h-4 w-4" />
-            Zur Speisekarte
+            {BIZ_MENU_PAGE_LINK_LABEL[biz]}
           </Button>
         </div>
       )}
@@ -359,19 +376,21 @@ function Step4({
   bookingsEnabled,
   onEnable,
   isPending,
+  biz,
 }: {
   onNext: () => void;
   onBack: () => void;
   bookingsEnabled: boolean;
   onEnable: () => void;
   isPending: boolean;
+  biz: BizType;
 }) {
   return (
     <div className="space-y-5">
       <div>
         <h3 className="text-xl font-bold">Online-Buchungen aktivieren</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Nach der Aktivierung können Kunden Ihr Restaurant über den Marktplatz finden und buchen. Dies ist erforderlich, bevor Sie live gehen.
+          {BIZ_MARKETPLACE_ACTIVATE_DESC[biz]} Dies ist erforderlich, bevor Sie live gehen.
         </p>
       </div>
 
@@ -394,7 +413,7 @@ function Step4({
             </p>
             <p className="text-sm text-muted-foreground">
               {bookingsEnabled
-                ? "Kunden können Ihr Restaurant jetzt im Marktplatz entdecken und buchen."
+                ? BIZ_MARKETPLACE_ACTIVE_DESC[biz]
                 : "Aktivieren Sie dies, damit Kunden direkt über den Marktplatz buchen können — ohne Anruf."}
             </p>
           </div>
@@ -599,6 +618,8 @@ export default function Onboarding() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [step, setStep] = useState(1);
+  const biz = getBizType();
+  const bizSteps = getSteps(biz);
 
   const { data: status, isLoading } = useGetOnboardingStatus({
     query: { queryKey: getGetOnboardingStatusQueryKey() },
@@ -627,7 +648,7 @@ export default function Onboarding() {
         queryClient.invalidateQueries({ queryKey: getGetMyRestaurantQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
       },
-      onError: () => toast({ title: "Restaurantdaten konnten nicht gespeichert werden", variant: "destructive" }),
+      onError: () => toast({ title: "Betriebsdaten konnten nicht gespeichert werden", variant: "destructive" }),
     },
   });
 
@@ -635,7 +656,7 @@ export default function Onboarding() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
-        toast({ title: "Buchungssystem aktiviert", description: "Kunden können Ihr Restaurant jetzt online buchen." });
+        toast({ title: "Buchungssystem aktiviert", description: BIZ_MARKETPLACE_ACTIVE_DESC[getBizType()] });
       },
       onError: () => toast({ title: "Buchungssystem konnte nicht aktiviert werden", variant: "destructive" }),
     },
@@ -645,7 +666,7 @@ export default function Onboarding() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
-        toast({ title: "Sie sind live!", description: "Ihr Restaurant ist jetzt im Marktplatz sichtbar." });
+        toast({ title: "Sie sind live!", description: BIZ_LIVE_TOAST[getBizType()] });
         navigate("/");
       },
       onError: () => toast({ title: "Etwas ist schiefgelaufen", variant: "destructive" }),
@@ -690,9 +711,9 @@ export default function Onboarding() {
   return (
     <div className="max-w-2xl mx-auto pb-10">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold tracking-tight">Restaurant Setup</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{BIZ_SETUP_TITLE[biz]}</h2>
         <p className="text-muted-foreground mt-1">
-          Get your restaurant live in under 5 minutes.
+          {BIZ_SETUP_SUBTITLE[biz]}
         </p>
       </div>
 
@@ -714,7 +735,7 @@ export default function Onboarding() {
       )}
 
       <div className="mt-6 mb-2">
-        {step < 6 && <StepIndicator current={step} />}
+        {step < 6 && <StepIndicator current={step} steps={bizSteps} />}
         {step < 6 && checklist.length > 0 && (
           <QuickActions checklist={checklist} />
         )}
@@ -734,6 +755,7 @@ export default function Onboarding() {
                 <Step1
                   onNext={handleStep1}
                   isPending={updateRestaurant.isPending}
+                  biz={biz}
                 />
               )}
               {step === 2 && (
@@ -741,6 +763,7 @@ export default function Onboarding() {
                   onNext={handleStep2Next}
                   onBack={() => advance(1)}
                   menuCount={menuCount}
+                  biz={biz}
                 />
               )}
               {step === 3 && (
@@ -757,6 +780,7 @@ export default function Onboarding() {
                   bookingsEnabled={status?.bookingsEnabled ?? false}
                   onEnable={() => enableBookings.mutate({})}
                   isPending={enableBookings.isPending}
+                  biz={biz}
                 />
               )}
               {step === 5 && (

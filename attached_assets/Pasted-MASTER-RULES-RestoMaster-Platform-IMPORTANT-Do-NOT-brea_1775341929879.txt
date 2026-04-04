@@ -1,0 +1,173 @@
+MASTER RULES — RestoMaster Platform
+
+IMPORTANT:
+Do NOT break existing functionality.
+Do NOT redesign the entire app.
+Do NOT add random features without purpose.
+
+========================
+1. UNIFIED BUSINESS PLATFORM (CRITICAL)
+========================
+
+This platform is NOT restaurant-only.
+
+All features must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+Every system must adapt based on:
+business_type = restaurant / cafe / bar
+
+Examples:
+- restaurants → lunch/dinner
+- cafés → breakfast / coffee / work
+- bars → nightlife / evening / social
+
+No feature should be built for only one type unless absolutely required.
+
+========================
+2. NO FAKE LOGIC
+========================
+
+Do NOT simulate functionality.
+
+Avoid:
+- fake data
+- fake counters
+- fake recommendations
+- fake "smart" labels
+
+Everything shown to the user must reflect real logic or real data.
+
+If something is not ready:
+- hide it
+- or simplify it
+
+========================
+3. CONNECT SYSTEMS (NOT ISOLATED FEATURES)
+========================
+
+Every feature must integrate with existing systems:
+
+- user preferences
+- time of day
+- location
+- smart offers
+- plans (meal + group + instant + auto)
+- social activity
+- heat map
+- notifications
+- premium / monetization
+
+No system should work alone.
+
+========================
+4. RELEVANCE FIRST (VERY IMPORTANT)
+========================
+
+Always prioritize:
+
+1. user context (time, location, preferences)
+2. availability (open, nearby)
+3. behavior (history, interactions)
+4. THEN monetization
+
+Paid boost must NOT break relevance.
+
+========================
+5. PREMIUM = ACCESS, NOT EVERYTHING FREE
+========================
+
+Premium gives:
+- access to tools
+- advanced features
+- visibility potential
+
+But:
+- paid actions (like ads/boost) require additional budget
+
+Use 2-layer model:
+- subscription
+- + usage-based monetization
+
+========================
+6. SIMPLE, NOT OVERCOMPLEX
+========================
+
+Avoid:
+- heavy systems
+- enterprise complexity
+- over-engineering
+
+Focus on:
+- clarity
+- speed
+- usability
+
+========================
+7. CLEAR USER EXPERIENCE
+========================
+
+User must always understand:
+
+- what is this
+- why it is shown
+- what to do next
+
+No confusion.
+No clutter.
+
+========================
+8. CONSISTENCY
+========================
+
+Keep consistent:
+- UI style
+- naming
+- behavior
+- logic across app
+
+App must feel like ONE system.
+
+========================
+9. TRUST FIRST
+========================
+
+Do NOT:
+- mislead users
+- manipulate rankings unfairly
+- fake urgency
+- hide sponsored logic
+
+Always preserve:
+- transparency
+- clarity
+- honesty
+
+========================
+10. BUILD FOR REAL USE
+========================
+
+Every feature must answer:
+
+- Will a real user use this?
+- Will a real business pay for this?
+- Does this create real value?
+
+If not → do not build it.
+
+========================
+FINAL PRINCIPLE
+========================
+
+RestoMaster is:
+
+- a real marketplace
+- a real business platform
+- a real daily-use app
+
+NOT:
+- a demo
+- a fake smart app
+- a disconnected feature collection
