@@ -57,6 +57,8 @@ export default function MyBookings() {
     setEmailInput("");
     if (typeof window !== 'undefined') {
       localStorage.removeItem("restosmart_email");
+      // Dispatch storage event so AppShell and other tabs sync immediately
+      window.dispatchEvent(new StorageEvent("storage", { key: "restosmart_email", newValue: null }));
     }
   };
 

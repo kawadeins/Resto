@@ -61,6 +61,7 @@ export default function Explore() {
   const [priceRange, setPriceRange] = useState<number | undefined>(initialPrice);
   const [openNow, setOpenNow] = useState(initialOpenNow);
   const [rating, setRating] = useState<number | undefined>(initialRating);
+  const [businessType, setBusinessType] = useState<string>("");
   const [sortByNearest, setSortByNearest] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const geo = useGeolocation();
@@ -86,6 +87,7 @@ export default function Explore() {
     ...(priceRange && { priceRange }),
     ...(openNow && { openNow }),
     ...(rating && { rating }),
+    ...(businessType && { businessType }),
   };
 
   const { data: restaurants, isLoading } = useListMarketplaceRestaurants(queryParams, {
@@ -122,9 +124,10 @@ export default function Explore() {
     setPriceRange(undefined);
     setOpenNow(false);
     setRating(undefined);
+    setBusinessType("");
   };
 
-  const activeFiltersCount = [cuisine, priceRange, openNow, rating].filter(Boolean).length;
+  const activeFiltersCount = [cuisine, priceRange, openNow, rating, businessType].filter(Boolean).length;
 
   const displayList = restaurantsWithDistances ?? [];
 
@@ -206,6 +209,35 @@ export default function Explore() {
               </div>
               <span className="text-sm font-semibold group-hover:text-primary transition-colors">Jetzt geöffnet</span>
             </label>
+          </div>
+
+          {/* ── Business type chips ── */}
+          <div className="space-y-2.5">
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Typ</h4>
+            <div className="flex gap-1.5 flex-wrap">
+              {[
+                { value: "",           label: "Alle",       emoji: "🍽️" },
+                { value: "restaurant", label: "Restaurant", emoji: "🍴" },
+                { value: "cafe",       label: "Café",       emoji: "☕" },
+                { value: "bar",        label: "Bar",        emoji: "🍸" },
+              ].map((opt) => {
+                const active = businessType === opt.value;
+                return (
+                  <button
+                    key={opt.value || "all"}
+                    onClick={() => setBusinessType(opt.value)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all press-scale ${
+                      active
+                        ? "bg-primary text-white border-primary shadow-sm shadow-primary/25"
+                        : "bg-muted/50 border-border/50 text-foreground hover:border-primary/30 hover:bg-primary/5"
+                    }`}
+                  >
+                    <span>{opt.emoji}</span>
+                    <span>{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* ── Price bubbles ── */}

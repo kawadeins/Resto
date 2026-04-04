@@ -1,0 +1,390 @@
+Perform a full "Production Stabilization & Core System Integrity Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+This is NOT a feature expansion task.
+Do NOT add random new features.
+Do NOT redesign the app.
+Do NOT rewrite working systems unnecessarily.
+Do NOT create mock-only fixes.
+
+Your job is to stabilize, verify, connect, and harden the platform so the systems already built behave like a real product foundation.
+
+========================
+GOAL
+========================
+
+Turn the current RestoMaster platform into a solid, reliable, production-grade foundation by fixing weak points across:
+
+- auth
+- routing
+- role access
+- premium gating
+- data persistence
+- API consistency
+- map / geolocation integrity
+- booking flow integrity
+- business dashboard integrity
+- user profile integrity
+- notification integrity
+- system-wide data truthfulness
+
+The goal is NOT to expand.
+The goal is to make what already exists truly stable and trustworthy.
+
+========================
+1. AUTH + SESSION STABILIZATION (CRITICAL)
+========================
+
+Audit and fix the authentication/session system across all user types:
+
+- normal user
+- premium business owner
+- founder / super admin
+
+Ensure:
+- login state persists correctly
+- logout behaves correctly
+- route access is consistent
+- session transitions do not break navigation
+- no confusing double-login behavior exists
+- no user is redirected to the wrong auth page
+- exiting owner dashboard does NOT accidentally log out the whole app unless explicitly intended
+
+The app must have one clear session truth.
+
+========================
+2. ROLE + ACCESS CONTROL HARDENING
+========================
+
+Verify and harden all role-based access.
+
+Required roles/states:
+- user
+- premium business
+- founder / super admin
+
+Ensure:
+- normal users cannot access business dashboard
+- non-premium businesses cannot bypass premium locks
+- founder-only pages remain founder-only
+- premium verification badges appear only for real premium businesses
+- protected routes are enforced on both frontend and backend where relevant
+
+No loose access.
+No route leakage.
+
+========================
+3. ROUTING + NAVIGATION CLEANUP
+========================
+
+Audit all important routes and transitions.
+
+Check and fix:
+- homepage
+- login
+- profile
+- premium business entry
+- owner dashboard
+- founder dashboard
+- map pages
+- discovery pages
+- restaurant/café/bar profile pages
+- bookings flow
+- social/activity pages
+- plan flows
+
+Ensure:
+- no dead routes
+- no broken back navigation
+- no redirect loops
+- no route opens wrong page
+- no feature opens unrelated screen
+- navigation feels intentional and clean
+
+========================
+4. DATABASE + STATE TRUTH VERIFICATION
+========================
+
+Verify that all critical UI states reflect real stored data.
+
+Check:
+- profile updates actually save
+- preferences actually save
+- allergies/dietary selections persist
+- business profile edits persist
+- premium status persists correctly
+- bookings save correctly
+- offers save correctly
+- badges/verification show correct state
+- streaks / missions / habit states are not fake
+- plans and group plans are saved correctly
+- social connections and activity reflect actual stored state
+
+No fake counters.
+No UI-only illusion.
+No stale data.
+
+========================
+5. USER CORE FLOW VALIDATION
+========================
+
+Validate the complete user-side flow from start to finish.
+
+Required user flow:
+- user logs in
+- user sees homepage
+- user edits profile/preferences
+- user sees relevant discovery results
+- user opens a business profile
+- user sees map / details / offers
+- user creates booking or plan
+- user receives reminder/notification where relevant
+- user can return and see correct history or state
+
+Fix any step where:
+- data is missing
+- action is fake
+- button does nothing
+- state breaks after refresh
+- wrong screen opens
+
+========================
+6. BUSINESS CORE FLOW VALIDATION
+========================
+
+Validate the complete business-owner flow from start to finish.
+
+Required business flow:
+- user opens premium entry from profile
+- user subscribes / unlocks premium correctly
+- user enters the correct dashboard
+- business type is correctly recognized (restaurant / café / bar)
+- business profile can be edited and saved
+- media and business details persist
+- offers can be created and updated
+- business visibility state is correct
+- analytics surfaces show real connected data
+- logout/exit returns correctly to profile
+
+No partial premium flow.
+No dashboard confusion.
+No duplicated subscription logic.
+
+========================
+7. MAP + LOCATION STABILIZATION
+========================
+
+Audit all location-based systems.
+
+Ensure:
+- geolocation request works correctly
+- permission denial fallback works correctly
+- restaurant/café/bar coordinates are valid
+- live map inside profile pages renders correctly
+- nearby sorting works from real distance
+- map markers correspond to correct businesses
+- no crash if coordinates are missing
+- fallback city logic works safely
+
+This must be real location behavior, not visual illusion.
+
+========================
+8. BOOKING + PLAN FLOW HARDENING
+========================
+
+Verify all booking and planning systems.
+
+Check:
+- booking creation
+- booking saving
+- booking status updates
+- booking reminders
+- meal plans
+- group plans
+- instant plans
+- auto plans
+- invites
+- join/decline logic if applicable
+
+Ensure:
+- plans create correctly
+- invitations connect to correct users
+- no broken plan states exist
+- plan reminders are not duplicated
+- business availability logic does not conflict with booking flow
+
+========================
+9. NOTIFICATION + REMINDER INTEGRITY
+========================
+
+Audit the notification layer.
+
+Check:
+- shift reminders
+- meal plan reminders
+- group plan reminders
+- booking reminders
+- smart feedback prompts
+- social reminders
+- smart offer notifications
+- instant/auto plan notifications
+
+Ensure:
+- no spammy duplicate notifications
+- only valid reminders appear
+- wrong user never gets wrong reminder
+- timing logic is sensible
+- notification content matches the actual triggering event
+
+========================
+10. UI STATE + EMPTY STATE VERIFICATION
+========================
+
+Audit the platform for edge cases.
+
+Ensure every major screen has:
+- loading state
+- empty state
+- error state
+- success state
+
+Examples:
+- no bookings yet
+- no friends yet
+- no plans yet
+- no offers nearby
+- no premium access
+- no activity available
+- no businesses found
+- no map results
+
+The app should never feel broken just because data is empty.
+
+========================
+11. FEATURE INTEGRITY AUDIT
+========================
+
+Perform a deep audit of existing major systems and confirm whether they are:
+
+- fully functional
+- partially functional
+- UI-only / fake
+- inconsistent
+
+Audit these systems:
+- smart offers
+- social layer
+- live activity
+- heat map
+- instant plans
+- auto plans
+- habit loop
+- feedback/rating system
+- premium verification
+- founder dashboard
+- monetization engine
+- cafés/bars expansion
+- business dashboard adaptation
+
+If a system is incomplete, do NOT fake completion.
+Either connect it properly or clearly leave it safely disabled / non-prominent until real logic is ready.
+
+========================
+12. REMOVE FAKE OR MISLEADING STATES
+========================
+
+Find and fix any place where the app currently implies something is working when it is not actually backed by real logic or data.
+
+Examples:
+- fake counts
+- fake activity labels
+- fake premium state
+- fake recommendation explanations
+- fake analytics
+- fake booking success
+- fake live indicators
+- fake social signals
+
+The app must earn trust.
+
+========================
+13. CONSISTENCY OF BUSINESS TYPES
+========================
+
+Now that the platform supports restaurants, cafés, and bars, verify consistency everywhere.
+
+Ensure:
+- business_type is respected correctly
+- wrong labels do not appear
+- café/business/bar-specific tags do not leak into unrelated contexts
+- dashboard variations remain coherent
+- discovery filtering works correctly by type
+- maps and cards represent type properly
+- monetization and premium messaging fit all supported business types
+
+========================
+14. FOUNDER DASHBOARD INTEGRITY
+========================
+
+Verify founder dashboard functionality and trustworthiness.
+
+Ensure:
+- founder route protection is strict
+- founder access works only for founder/super admin
+- revenue metrics come from real connected logic where available
+- no broken cards or dead panels exist
+- rankings and insights are data-backed
+- any unavailable data is handled gracefully
+- the founder dashboard does not pretend to know more than the system actually knows
+
+========================
+15. FINAL STABILIZATION OUTPUT
+========================
+
+At the end of the pass, produce a structured internal report that clearly identifies:
+
+A. What was verified and is fully working
+B. What was fixed
+C. What was found broken
+D. What remains partially implemented
+E. What was intentionally disabled or softened because it was misleading or not fully real yet
+F. What is now safe for continued feature building
+
+Be honest.
+Do NOT claim 100% readiness unless it is truly earned.
+
+========================
+16. DO NOT OVERCOMPLICATE
+========================
+
+Do NOT turn this into:
+- a redesign project
+- a feature brainstorming task
+- a rewrite of the whole platform
+- a fake polish pass
+
+Focus on:
+- stability
+- truthfulness
+- clean flows
+- correct permissions
+- real persistence
+- reliable behavior
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should emerge from this pass as:
+
+- structurally stable
+- behaviorally reliable
+- permission-safe
+- data-backed
+- ready for further serious feature building
+
+This pass must create a real foundation.
+
+Not hype.
+Not illusion.
+Real product integrity first.

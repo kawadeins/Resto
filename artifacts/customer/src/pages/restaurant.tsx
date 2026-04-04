@@ -276,6 +276,24 @@ export default function Restaurant() {
           title: "Buchung bestätigt!",
           description: "Wir haben eine Bestätigung an Ihre E-Mail gesendet.",
         });
+        // Record social activity (fire-and-forget — non-blocking)
+        const userEmail = typeof window !== "undefined"
+          ? localStorage.getItem("restosmart_email") || ""
+          : "";
+        if (userEmail && restaurant) {
+          fetch(`${API_BASE}/api/social/activity`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userEmail,
+              activityType: "booking",
+              restaurantId,
+              restaurantName: restaurant.name,
+              restaurantEmoji: restaurant.emoji ?? "🍽️",
+              visibility: "friends",
+            }),
+          }).catch(() => {});
+        }
       },
       onError: () => {
         toast({

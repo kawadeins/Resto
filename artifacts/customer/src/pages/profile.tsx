@@ -9,7 +9,7 @@ import {
   Trophy, ArrowRight, ShoppingBag, Clock, Crown, Store, BarChart2,
   Users, FileText, Megaphone, Zap, Shield, Lock, Bell, Trash2,
   CreditCard, CheckCircle2, ExternalLink, Building2, ChevronLeft,
-  Eye, EyeOff, Smartphone, Globe,
+  Eye, EyeOff, Smartphone, Globe, Flame, Target, Activity,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 import { ProfileFeedbackWidget } from "@/components/app-rating-prompt";
+import { useHabitLoop } from "@/hooks/use-habit-loop";
+import { getActivityFeed, activityLabel, timeAgo, type SocialActivity } from "@/lib/social-api";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -138,6 +140,12 @@ function getBusinessLabel(biz?: string | null): string {
   if (biz === "cafe") return "Café";
   if (biz === "bar") return "Bar";
   return "Restaurant";
+}
+
+function getOwnerBadgeLabel(biz?: string | null): string {
+  if (biz === "cafe") return "Verifizierter Cafébesitzer";
+  if (biz === "bar") return "Verifizierter Barbesitzer";
+  return "Verifizierter Restaurantbesitzer";
 }
 
 function getBusinessEmoji(biz?: string | null): string {
@@ -300,12 +308,19 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
 
   const handleSocialLogin = async (provider: "apple" | "google") => {
     setSigningIn(provider);
-    // Demo: simulate OAuth handshake, then auto-enter a demo email
     await new Promise((r) => setTimeout(r, 1600));
+    // Generate a stable per-device demo identity so every user
+    // gets their own isolated profile, bookings and social data.
+    let deviceId = localStorage.getItem("restosmart_device_id");
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem("restosmart_device_id", deviceId);
+    }
+    const shortId = deviceId.split("-")[0];
     const demoEmail =
       provider === "apple"
-        ? "nutzer@icloud.com"
-        : "nutzer@gmail.com";
+        ? `demo-${shortId}@icloud.com`
+        : `demo-${shortId}@gmail.com`;
     setSigningIn(null);
     onEnter(demoEmail);
   };
@@ -1153,17 +1168,32 @@ export default function Profile() {
     localStorage.setItem("restosmart_email", e);
   };
 
-  const handleActivatePremium = () => {
+  const handleActivatePremium = (businessType: BusinessType) => {
     localStorage.setItem("restosmart_owner_email", email);
     localStorage.setItem("restosmart_owner_premium", "active");
+    localStorage.setItem("restosmart_owner_business_type", businessType);
     setOwnerPremium(true);
-    toast({ title: "Premium aktiviert!", description: "Willkommen im Restaurant-Dashboard." });
+    toast({
+      title: "Premium aktiviert!",
+      description: `Willkommen im ${getBusinessLabel(businessType)}-Dashboard.`,
+    });
   };
 
   const handleLogout = () => {
     localStorage.removeItem("restosmart_email");
     setEmail("");
   };
+
+  // ── Habit Loop (always called — hooks must not be conditional) ───────────
+  const habit = useHabitLoop();
+
+  // ── Social activity feed ─────────────────────────────────────────────────
+  const { data: activityFeed = [] } = useQuery<SocialActivity[]>({
+    queryKey: ["profile-activity-feed", email],
+    queryFn: () => getActivityFeed(email, 15),
+    enabled: !!email,
+    staleTime: 2 * 60 * 1000,
+  });
 
   if (!email) return <LoginScreen onEnter={handleEnterEmail} />;
 
@@ -1205,15 +1235,20 @@ export default function Profile() {
             />
             <div className="flex-1 text-center sm:text-left space-y-1">
               {/* Verified label — only for premium owners */}
-              {ownerPremium && (
-                <div className="inline-flex items-center gap-1.5 mb-2">
-                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/25 px-3 py-1 rounded-full">
-                    <Shield className="w-3 h-3 text-primary" />
-                    <span className="text-[11px] font-bold text-primary tracking-wide uppercase">Verifizierter Restaurantbesitzer</span>
-                    <CheckCircle2 className="w-3 h-3 text-primary" />
+              {ownerPremium && (() => {
+                const biz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
+                return (
+                  <div className="inline-flex items-center gap-1.5 mb-2">
+                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/25 px-3 py-1 rounded-full">
+                      <Shield className="w-3 h-3 text-primary" />
+                      <span className="text-[11px] font-bold text-primary tracking-wide uppercase">
+                        {getOwnerBadgeLabel(biz)}
+                      </span>
+                      <CheckCircle2 className="w-3 h-3 text-primary" />
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
               <h1 className="font-serif text-2xl md:text-3xl font-bold leading-tight">
                 {profile.name || "Kein Name gesetzt"}
               </h1>
@@ -1281,11 +1316,17 @@ export default function Profile() {
 
         {/* ── Main Tabs ───────────────────────────────── */}
         <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-4 w-full mb-6">
-            <TabsTrigger value="overview">Übersicht</TabsTrigger>
-            <TabsTrigger value="security">Konto</TabsTrigger>
-            <TabsTrigger id="tab-food" value="food">Geschmack</TabsTrigger>
-            <TabsTrigger value="activity">Verlauf</TabsTrigger>
+          <TabsList className="flex overflow-x-auto gap-1 w-full mb-6 h-auto p-1 scrollbar-hide">
+            <TabsTrigger value="overview" className="shrink-0 text-xs sm:text-sm">Übersicht</TabsTrigger>
+            <TabsTrigger value="security" className="shrink-0 text-xs sm:text-sm">Konto</TabsTrigger>
+            <TabsTrigger id="tab-food" value="food" className="shrink-0 text-xs sm:text-sm">Geschmack</TabsTrigger>
+            <TabsTrigger value="activity" className="shrink-0 text-xs sm:text-sm">Verlauf</TabsTrigger>
+            <TabsTrigger value="social" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
+              <Activity className="w-3 h-3" /> Sozial
+            </TabsTrigger>
+            <TabsTrigger value="habits" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
+              <Flame className="w-3 h-3" /> Habits
+            </TabsTrigger>
           </TabsList>
 
           {/* ═══ TAB: ÜBERSICHT ═══════════════════════════════════════════ */}
@@ -1738,6 +1779,205 @@ export default function Profile() {
                 </div>
                 Abmelden / Konto wechseln
               </button>
+            </div>
+          </TabsContent>
+
+          {/* ═══ TAB: SOZIAL ══════════════════════════════════════════════ */}
+          <TabsContent value="social" className="space-y-5">
+            {/* Activity feed */}
+            <div className="bg-card border rounded-2xl p-5">
+              <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" /> Meine Aktivitäten
+              </h3>
+              {activityFeed.length === 0 ? (
+                <div className="text-center py-10 space-y-3">
+                  <Users className="w-10 h-10 text-muted-foreground/40 mx-auto" />
+                  <p className="text-muted-foreground text-sm">Noch keine öffentlichen Aktivitäten</p>
+                  <p className="text-xs text-muted-foreground/60">
+                    Buche ein Restaurant oder schreibe eine Bewertung — deine Aktivitäten erscheinen dann hier
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {activityFeed.slice(0, 10).map((a) => {
+                    const label = activityLabel(a.activityType);
+                    return (
+                      <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-base">
+                          {label.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium leading-snug">
+                            Du {label.verb} bei <span className="text-primary">{a.restaurantName}</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(a.createdAt)}</p>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${
+                          a.visibility === "public"
+                            ? "bg-green-500/10 text-green-700 border-green-500/20"
+                            : a.visibility === "friends"
+                            ? "bg-primary/10 text-primary border-primary/20"
+                            : "bg-muted text-muted-foreground border-border"
+                        }`}>
+                          {a.visibility === "public" ? "Öffentlich" : a.visibility === "friends" ? "Freunde" : "Privat"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Social privacy notice */}
+            <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex items-start gap-3">
+              <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-1">Datenschutz-Tipp</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Du kannst in den Konto-Einstellungen festlegen, ob deine Aktivitäten öffentlich, nur für Freunde oder privat sichtbar sind.
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ═══ TAB: HABITS ══════════════════════════════════════════════ */}
+          <TabsContent value="habits" className="space-y-5">
+            {/* Streak card */}
+            <div className="bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-transparent border border-orange-500/20 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-bold text-base flex items-center gap-2">
+                    <Flame className="w-5 h-5 text-orange-500" /> Tages-Streak
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Täglich einloggen um deinen Streak zu halten</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-serif font-black text-orange-500">{habit.data.currentStreak}</div>
+                  <div className="text-xs text-muted-foreground">Tage</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="bg-background/60 rounded-xl p-3 text-center">
+                  <div className="text-xl font-bold">{habit.data.longestStreak}</div>
+                  <div className="text-xs text-muted-foreground">Bester Streak</div>
+                </div>
+                <div className="bg-background/60 rounded-xl p-3 text-center">
+                  <div className="text-xl font-bold">{habit.data.totalPoints}</div>
+                  <div className="text-xs text-muted-foreground">Habit-Punkte</div>
+                </div>
+              </div>
+              {habit.nextMilestone && (
+                <div className="mt-3 text-xs text-muted-foreground text-center">
+                  Nächster Meilenstein bei <strong>{habit.nextMilestone.target} Tagen</strong>: {habit.nextMilestone.reward}
+                </div>
+              )}
+            </div>
+
+            {/* Daily missions */}
+            {habit.dailyMissions.length > 0 && (
+              <div className="bg-card border rounded-2xl p-5">
+                <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" /> Tagesmissionen
+                </h3>
+                <div className="space-y-3">
+                  {habit.dailyMissions.map((m) => (
+                    <div key={m.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2">
+                          <span className="text-base">{m.icon}</span>
+                          <span className="font-medium">{m.label}</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.min(m.progress, m.target)}/{m.target}
+                          {m.completed && <span className="ml-1 text-green-600 font-bold">✓</span>}
+                        </span>
+                      </div>
+                      <Progress value={Math.min((m.progress / m.target) * 100, 100)} className="h-2" />
+                      {m.completed && (
+                        <p className="text-xs text-green-600 font-medium">+{m.reward} Punkte erzielt!</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Weekly missions */}
+            {habit.weeklyMissions.length > 0 && (
+              <div className="bg-card border rounded-2xl p-5">
+                <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-accent" /> Wochenmissionen
+                </h3>
+                <div className="space-y-3">
+                  {habit.weeklyMissions.map((m) => (
+                    <div key={m.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2">
+                          <span className="text-base">{m.icon}</span>
+                          <span className="font-medium">{m.label}</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.min(m.progress, m.target)}/{m.target}
+                          {m.completed && <span className="ml-1 text-green-600 font-bold">✓</span>}
+                        </span>
+                      </div>
+                      <Progress value={Math.min((m.progress / m.target) * 100, 100)} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Achievements */}
+            <div className="bg-card border rounded-2xl p-5">
+              <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-500" /> Errungenschaften
+              </h3>
+              {habit.unlockedAchievements.length === 0 ? (
+                <div className="text-center py-6 space-y-2">
+                  <Trophy className="w-8 h-8 text-muted-foreground/30 mx-auto" />
+                  <p className="text-sm text-muted-foreground">Noch keine Errungenschaften</p>
+                  <p className="text-xs text-muted-foreground/60">Buche Restaurants & pflege deinen Streak um Abzeichen zu verdienen</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {habit.unlockedAchievements.map((ach) => (
+                    <div key={ach.id} className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-2xl shrink-0">{ach.icon}</span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold leading-snug truncate">{ach.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{ach.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* All locked achievements preview */}
+              {habit.allAchievements && Object.values(habit.allAchievements).filter((a: any) => !a.unlockedAt).length > 0 && (
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs text-muted-foreground mb-3 font-medium">Noch zu freischalten</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.values(habit.allAchievements).filter((a: any) => !a.unlockedAt).slice(0, 4).map((ach: any) => (
+                      <div key={ach.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/50 opacity-50">
+                        <span className="text-2xl shrink-0 grayscale">{ach.icon}</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold leading-snug truncate">{ach.label}</p>
+                          <p className="text-[10px] text-muted-foreground">{ach.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Local-only notice */}
+            <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex items-start gap-3">
+              <Smartphone className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Deine Habit-Daten werden lokal auf diesem Gerät gespeichert. Sie werden nicht mit anderen Geräten synchronisiert.
+              </p>
             </div>
           </TabsContent>
         </Tabs>

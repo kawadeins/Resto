@@ -63,15 +63,36 @@ function PremiumGate({ children }: { children: React.ReactNode }) {
 }
 
 function PremiumRequired() {
+  const biz = typeof window !== "undefined"
+    ? localStorage.getItem("restosmart_owner_business_type") ?? "restaurant"
+    : "restaurant";
+
+  const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
+  const bizEmoji = biz === "cafe" ? "☕" : biz === "bar" ? "🍸" : "🍽️";
+
+  const featuresByCafe = [
+    "Vollständige Tisch- & Bestellverwaltung",
+    "Personal & Schichtplanung",
+    "Kassenterminal & Speisekarte",
+    "Marketing, Kampagnen & Analytics",
+    "Bewertungsmanagement & Kundenbindung",
+  ];
+  const featuresDefault = [
+    "Vollständige Reservierungsverwaltung",
+    "Personal, Schichten & Gehaltsabrechnung",
+    "Kassenterminal & Speisekarte",
+    "Marketing, Kampagnen & Analytics",
+    "Bewertungsmanagement & Kundenbindung",
+  ];
+  const features = biz === "cafe" ? featuresByCafe : featuresDefault;
+
   return (
     <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center space-y-8">
         {/* Icon */}
         <div className="relative mx-auto w-24 h-24">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-violet-500/30">
-            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-            </svg>
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-violet-500/30 text-5xl">
+            {bizEmoji}
           </div>
           <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-red-500 flex items-center justify-center border-2 border-[#0d0d0d]">
             <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -83,10 +104,10 @@ function PremiumRequired() {
         {/* Text */}
         <div className="space-y-3">
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Restaurant Premium erforderlich
+            {bizLabel} Premium erforderlich
           </h1>
           <p className="text-[#888] text-sm leading-relaxed">
-            Das Restaurant-Dashboard ist ausschließlich für aktive Premium-Abonnenten zugänglich.
+            Das {bizLabel}-Dashboard ist ausschließlich für aktive Premium-Abonnenten zugänglich.
             Aktivieren Sie Ihr Abonnement über Ihr Kundenprofil, um vollen Zugriff zu erhalten.
           </p>
         </div>
@@ -94,13 +115,7 @@ function PremiumRequired() {
         {/* What you get */}
         <div className="rounded-2xl border border-white/8 bg-white/4 p-5 text-left space-y-2.5">
           <p className="text-xs font-bold text-[#666] uppercase tracking-widest mb-3">Was Sie erhalten</p>
-          {[
-            "Vollständige Reservierungsverwaltung",
-            "Personal, Schichten & Gehaltsabrechnung",
-            "Kassenterminal & Speisekarte",
-            "Marketing, Kampagnen & Analytics",
-            "Bewertungsmanagement & Kundenbindung",
-          ].map((item) => (
+          {features.map((item) => (
             <div key={item} className="flex items-center gap-2.5">
               <div className="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
                 <svg className="w-2.5 h-2.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
