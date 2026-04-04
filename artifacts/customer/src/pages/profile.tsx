@@ -106,9 +106,9 @@ const ALLERGIES = [
 // ─── Tier config ──────────────────────────────────────────────────────────────
 
 const TIER_CONFIG = {
-  Bronze: { color: "text-amber-700", bg: "bg-amber-50 dark:bg-amber-950/30", border: "border-amber-200 dark:border-amber-800", gradient: "from-amber-100 to-amber-50 dark:from-amber-950/40 dark:to-amber-900/10", icon: "🥉" },
-  Silver: { color: "text-slate-600", bg: "bg-slate-100 dark:bg-slate-800/30", border: "border-slate-300 dark:border-slate-600", gradient: "from-slate-100 to-slate-50 dark:from-slate-800/40 dark:to-slate-700/10", icon: "🥈" },
-  Gold: { color: "text-yellow-600", bg: "bg-yellow-50 dark:bg-yellow-950/30", border: "border-yellow-200 dark:border-yellow-700", gradient: "from-yellow-100 to-yellow-50 dark:from-yellow-950/40 dark:to-yellow-900/10", icon: "🥇" },
+  Bronze: { color: "text-amber-700", bg: "bg-amber-100/70", border: "border-amber-300/60", gradient: "from-amber-200/60 via-amber-100/30 to-orange-50/20", icon: "🥉" },
+  Silver: { color: "text-slate-700", bg: "bg-slate-200/60", border: "border-slate-300/60", gradient: "from-slate-300/50 via-slate-100/30 to-blue-50/10", icon: "🥈" },
+  Gold:   { color: "text-yellow-700", bg: "bg-yellow-100/80", border: "border-yellow-400/50", gradient: "from-yellow-300/50 via-amber-200/30 to-orange-100/20", icon: "🥇" },
 };
 
 // ─── Premium plan features ────────────────────────────────────────────────────
@@ -1123,7 +1123,9 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* ── Hero banner ──────────────────────────────── */}
-      <div className={`bg-gradient-to-br ${tierCfg.gradient} border-b`}>
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-violet-500/5 to-accent/8 border-b border-primary/10">
+        {/* Subtle dot pattern */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--primary)) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         <div className="container mx-auto px-4 max-w-4xl py-8 md:py-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
             <AvatarUpload

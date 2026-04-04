@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Timer, ArrowRight, Compass, Gift, Star, Zap, RefreshCw, ChevronRight, Navigation, MapPin, X, Loader2, Search, Sparkles } from "lucide-react";
+import { Timer, ArrowRight, Compass, Gift, Star, Zap, RefreshCw, ChevronRight, Navigation, MapPin, X, Loader2, Search, Sparkles, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useListFlashDeals, useListMarketplaceRestaurants, useGetPersonalizedOffers } from "@workspace/api-client-react";
 import { getGetPersonalizedOffersQueryKey } from "@workspace/api-client-react";
@@ -169,6 +169,17 @@ export default function Home() {
 
             {/* Left: headline + CTA */}
             <div className="space-y-6 text-center md:text-left">
+
+              {/* Brand wordmark */}
+              <div className="flex items-center gap-3 justify-center md:justify-start">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
+                  <UtensilsCrossed className="w-5.5 h-5.5 text-white" style={{ width: "22px", height: "22px" }} />
+                </div>
+                <span className="text-[28px] font-extrabold tracking-tight leading-none">
+                  <span className="gradient-text">Resto</span><span className="text-foreground">Smart</span>
+                </span>
+              </div>
+
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-4 py-2 rounded-full border border-primary/20">
                 <Sparkles className="w-3.5 h-3.5" />
                 Londons beste Tische
