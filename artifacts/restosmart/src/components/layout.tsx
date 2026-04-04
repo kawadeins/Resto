@@ -1,7 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3, UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star, Lightbulb, TrendingUp, Armchair, Wallet, LogOut, UserCircle } from "lucide-react";
+import {
+  LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
+  UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
+  Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/use-auth";
 
 const navigation = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
@@ -31,13 +34,25 @@ const mobileNavigation = [
   { name: "Personal", href: "/staff", icon: Users },
 ];
 
+function getOwnerInfo() {
+  const email = localStorage.getItem("restosmart_owner_email") ?? "";
+  const name = email ? email.split("@")[0].replace(/[._]/g, " ") : "Restaurantbesitzer";
+  const initials = name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return { email, name, initials };
+}
+
+function exitToProfile() {
+  window.location.href = window.location.origin + "/customer/profile";
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { user, signOut } = useAuth();
-
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-    : "?";
+  const { email, name, initials } = getOwnerInfo();
 
   return (
     <div className="flex h-screen bg-background text-foreground dark overflow-hidden">
@@ -82,29 +97,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
 
-        {/* User section */}
-        {user && (
-          <div className="shrink-0 px-4 py-4 border-t border-sidebar-border">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
-                {initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-sidebar-foreground truncate">{user.name}</p>
-                {user.email && (
-                  <p className="text-[10px] text-sidebar-foreground/40 truncate">{user.email}</p>
-                )}
-              </div>
-              <button
-                onClick={signOut}
-                title="Abmelden"
-                className="shrink-0 p-1.5 rounded-md text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+        {/* Owner section — exit back to customer profile */}
+        <div className="shrink-0 px-4 py-4 border-t border-sidebar-border">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+              {initials}
             </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-sidebar-foreground truncate capitalize">{name}</p>
+              {email && (
+                <p className="text-[10px] text-sidebar-foreground/40 truncate">{email}</p>
+              )}
+            </div>
+            <button
+              onClick={exitToProfile}
+              title="Zurück zum Profil"
+              className="shrink-0 p-1.5 rounded-md text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
           </div>
-        )}
+          <button
+            onClick={exitToProfile}
+            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-sidebar-border/60 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-colors text-xs font-medium"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Zurück zum Benutzerprofil
+          </button>
+        </div>
       </div>
 
       {/* Hauptinhalt */}
@@ -132,6 +152,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
           );
         })}
+        {/* Mobile exit button */}
+        <button
+          onClick={exitToProfile}
+          className="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          <span className="text-[10px] font-medium">Profil</span>
+        </button>
       </div>
     </div>
   );

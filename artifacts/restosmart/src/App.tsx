@@ -4,8 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
-import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import Overview from "@/pages/overview";
 import Staff from "@/pages/staff";
@@ -36,6 +34,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const CUSTOMER_PROFILE_URL = window.location.origin + "/customer/profile";
+
 // ─── Premium gate ─────────────────────────────────────────────────────────────
 
 function PremiumGate({ children }: { children: React.ReactNode }) {
@@ -62,8 +62,6 @@ function PremiumGate({ children }: { children: React.ReactNode }) {
 }
 
 function PremiumRequired() {
-  const customerProfileUrl = window.location.origin + "/customer/profile";
-
   return (
     <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center space-y-8">
@@ -116,7 +114,7 @@ function PremiumRequired() {
         {/* CTA */}
         <div className="space-y-3">
           <a
-            href={customerProfileUrl}
+            href={CUSTOMER_PROFILE_URL}
             className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -133,62 +131,7 @@ function PremiumRequired() {
   );
 }
 
-// ─── Protected router ─────────────────────────────────────────────────────────
-
-function ProtectedRouter() {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#e07c3a]/30 border-t-[#e07c3a] animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Switch>
-        <Route path="/login" component={Login} />
-        <Route>
-          <Redirect to="/login" />
-        </Route>
-      </Switch>
-    );
-  }
-
-  return (
-    <PremiumGate>
-      <Layout>
-        <Switch>
-          <Route path="/login">
-            <Redirect to="/" />
-          </Route>
-          <Route path="/" component={Overview} />
-          <Route path="/staff" component={Staff} />
-          <Route path="/inventory" component={Inventory} />
-          <Route path="/finances" component={Finances} />
-          <Route path="/reservations" component={Reservations} />
-          <Route path="/analytics" component={Analytics} />
-          <Route path="/menu" component={Menu} />
-          <Route path="/pos" component={Pos} />
-          <Route path="/marketing" component={Marketing} />
-          <Route path="/bookings" component={Bookings} />
-          <Route path="/billing" component={Billing} />
-          <Route path="/reviews" component={Reviews} />
-          <Route path="/super-admin" component={SuperAdmin} />
-          <Route path="/insights" component={Insights} />
-          <Route path="/onboarding" component={Onboarding} />
-          <Route path="/campaigns" component={Campaigns} />
-          <Route path="/tables" component={Tables} />
-          <Route path="/payroll" component={Payroll} />
-          <Route path="/profile" component={Profile} />
-          <Route component={NotFound} />
-        </Switch>
-      </Layout>
-    </PremiumGate>
-  );
-}
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
   useEffect(() => {
@@ -198,12 +141,39 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <ProtectedRouter />
-          </WouterRouter>
-          <Toaster />
-        </AuthProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <PremiumGate>
+            <Layout>
+              <Switch>
+                {/* Redirect /login directly back to customer profile — no separate owner login */}
+                <Route path="/login">
+                  <Redirect to="/" />
+                </Route>
+                <Route path="/" component={Overview} />
+                <Route path="/staff" component={Staff} />
+                <Route path="/inventory" component={Inventory} />
+                <Route path="/finances" component={Finances} />
+                <Route path="/reservations" component={Reservations} />
+                <Route path="/analytics" component={Analytics} />
+                <Route path="/menu" component={Menu} />
+                <Route path="/pos" component={Pos} />
+                <Route path="/marketing" component={Marketing} />
+                <Route path="/bookings" component={Bookings} />
+                <Route path="/billing" component={Billing} />
+                <Route path="/reviews" component={Reviews} />
+                <Route path="/super-admin" component={SuperAdmin} />
+                <Route path="/insights" component={Insights} />
+                <Route path="/onboarding" component={Onboarding} />
+                <Route path="/campaigns" component={Campaigns} />
+                <Route path="/tables" component={Tables} />
+                <Route path="/payroll" component={Payroll} />
+                <Route path="/profile" component={Profile} />
+                <Route component={NotFound} />
+              </Switch>
+            </Layout>
+          </PremiumGate>
+        </WouterRouter>
+        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
   );
