@@ -1,0 +1,180 @@
+MASTER RULES APPLY
+
+Build an "Auto Revenue Optimization Engine" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT break existing functionality.
+Do NOT redesign the app.
+Do NOT create fake analytics.
+This is a smart monetization optimization layer.
+
+========================
+GOAL
+========================
+
+Automatically help businesses:
+- choose better budgets
+- improve visibility performance
+- increase conversions
+- spend money more effectively
+
+And increase platform revenue in a smart, non-annoying way.
+
+========================
+1. SMART PERFORMANCE ANALYSIS
+========================
+
+Continuously analyze for each business:
+
+- impressions
+- clicks
+- visits
+- bookings
+- boost usage
+- time-of-day performance
+- category performance (restaurant/cafe/bar)
+
+Detect patterns like:
+- strong morning performance
+- weak evening performance
+- high clicks but low bookings
+- high visibility but low engagement
+
+========================
+2. AUTO RECOMMENDATION ENGINE
+========================
+
+Generate smart suggestions inside dashboard:
+
+Examples:
+- “Your café performs best in the morning — boost 08:00–11:00”
+- “Your bar is missing evening traffic — increase night visibility”
+- “You are close to top results — increase budget by 5€”
+- “Your listing gets views but low clicks — improve visibility position”
+
+These should feel actionable.
+
+========================
+3. AUTO BUDGET SUGGESTIONS
+========================
+
+Suggest optimized budgets:
+
+- increase budget when ROI is strong
+- decrease or redirect when weak
+- suggest daily budgets
+- suggest campaign boosts
+
+Examples:
+- “+5€ can move you into top 3 results”
+- “Shift budget from afternoon to evening”
+
+========================
+4. SMART BOOST OPTIMIZATION
+========================
+
+Recommend:
+- best time slots
+- best placement zones
+- best days (weekday/weekend)
+
+Examples:
+- café → morning boost
+- restaurant → lunch boost
+- bar → night boost
+
+========================
+5. SOFT AUTO-ACTION (OPTIONAL)
+========================
+
+Allow optional auto-mode:
+
+- “Auto Optimize Campaign”
+
+If enabled:
+- system adjusts budget slightly
+- shifts timing
+- improves performance gradually
+
+Never:
+- spend without limits
+- override user control
+
+========================
+6. BUSINESS TYPE INTELLIGENCE
+========================
+
+Adapt by type:
+
+Restaurants:
+- lunch/dinner optimization
+- booking conversion focus
+
+Cafés:
+- morning traffic
+- work-hour visibility
+
+Bars:
+- nightlife boost
+- evening crowd optimization
+
+========================
+7. REVENUE MOMENT DETECTION
+========================
+
+Detect high-value moments:
+
+- high demand nearby
+- trending zones
+- live heat spikes
+- social activity peaks
+
+Then suggest:
+👉 “Boost now — high demand in your area”
+
+========================
+8. ROI FEEDBACK LOOP
+========================
+
+Show business:
+
+- what worked
+- what didn’t
+- what to change
+
+Examples:
+- “Night boost increased clicks by 35%”
+- “Morning campaign generated most visits”
+
+========================
+9. FOUNDER REVENUE IMPACT
+========================
+
+Track:
+- total boost revenue growth
+- optimized campaigns vs manual
+- best-performing strategies
+
+========================
+10. UI / UX
+========================
+
+Keep:
+- simple suggestions
+- clear language
+- easy action buttons
+
+Owner should feel:
+👉 “This system helps me earn more”
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should actively help businesses:
+
+- spend smarter
+- earn more
+- grow faster
+
+And increase platform revenue naturally.

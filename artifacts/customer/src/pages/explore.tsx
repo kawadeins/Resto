@@ -446,6 +446,11 @@ export default function Explore() {
                   restaurant={restaurant}
                   showFlashDeal
                   distance={distance}
+                  isSponsored={
+                    Boolean(restaurant.hasActiveBoost) &&
+                    ((restaurant as any).boostBudgetRemaining === null ||
+                      (restaurant as any).boostBudgetRemaining > 0)
+                  }
                 />
               ))
             ) : (

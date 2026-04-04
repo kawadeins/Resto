@@ -1,0 +1,248 @@
+MASTER RULES APPLY
+
+Build a "Behavior Priority Engine (Ranking Brain + Sponsored Boost System)" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT break existing functionality.
+Do NOT redesign the app.
+Do NOT create fake ranking.
+This is the central decision engine for visibility and ranking.
+
+========================
+GOAL
+========================
+
+Create a unified ranking system that decides:
+
+- which business appears first
+- which appears second
+- which appears later
+
+Based on:
+- user relevance
+- context
+- behavior
+- AND paid boost (budget)
+
+This is the core brain of discovery.
+
+========================
+1. CORE RANKING ENGINE (CRITICAL)
+========================
+
+Build a scoring system for each place.
+
+Each place gets a dynamic "priority score" based on:
+
++ location proximity
++ open now status
++ business type relevance (restaurant / café / bar)
++ time of day match
++ user preferences
++ meal plan match
++ rating
++ popularity / activity
++ friend/social signals
++ live activity / heat map
+
+AND:
+
++ sponsored boost score (if active)
+
+========================
+2. SPONSORED BOOST INTEGRATION
+========================
+
+Integrate paid boost into the ranking system.
+
+Each business can:
+- set daily budget (e.g. 5€, 10€, 20€)
+- run campaign (daily / weekly / monthly)
+
+Boost effect:
+- increases ranking score
+- increases visibility frequency
+- increases exposure in:
+  - search
+  - homepage
+  - near you
+  - map
+
+BUT:
+
+Boost must NOT override relevance completely.
+
+========================
+3. RANKING FORMULA LOGIC
+========================
+
+Use weighted scoring:
+
+Final Score =
+(relevance score * high weight)
++ (context score)
++ (behavior score)
++ (boost score * controlled weight)
+
+Ensure:
+- boost enhances, not dominates
+- bad matches cannot rank #1 just by paying
+
+========================
+4. FAIRNESS RULES (VERY IMPORTANT)
+========================
+
+Never allow:
+
+- closed places ranking high
+- very far places ranking high
+- irrelevant business types dominating
+- low-quality places dominating
+
+Even if boosted.
+
+Relevance always comes first.
+
+========================
+5. BOOST BEHAVIOR SYSTEM
+========================
+
+Boost should:
+
+- push business higher when relevant
+- increase chance of appearing in top positions
+- increase frequency of appearance
+
+But not:
+- guarantee position #1 always
+- break user trust
+
+========================
+6. TIME-AWARE BOOSTING
+========================
+
+Boost must respect time:
+
+- morning → cafés boosted
+- lunch → restaurants boosted
+- night → bars boosted
+
+Even if business pays, it must align with time context.
+
+========================
+7. PLACEMENT ZONES
+========================
+
+Apply ranking engine across:
+
+- homepage
+- search results
+- near you
+- map ranking
+- smart offers
+- instant plans
+- auto plans
+
+Everything uses the SAME brain.
+
+========================
+8. DASHBOARD CONTROL (BUSINESS SIDE)
+========================
+
+Inside business dashboard:
+
+Allow owners to:
+
+- set daily budget
+- choose placement areas
+- choose time targeting
+- start/stop campaigns
+
+Examples:
+- 5€ / day
+- 10€ / day
+- 100€ campaign
+
+========================
+9. VISIBILITY FEEDBACK (VERY IMPORTANT)
+========================
+
+Show business owner:
+
+- impressions gained
+- ranking boost impact
+- clicks gained
+- visits
+- bookings
+
+They must see:
+👉 "I paid → I got results"
+
+========================
+10. USER TRANSPARENCY
+========================
+
+Mark boosted places with:
+
+- "Sponsored"
+- "Promoted"
+
+Do NOT hide it.
+
+========================
+11. SYSTEM INTEGRATION
+========================
+
+This engine must influence:
+
+- smart offers
+- homepage
+- map
+- discovery
+- plans
+- notifications
+
+Everything uses this ranking logic.
+
+========================
+12. DO NOT OVERCOMPLICATE
+========================
+
+- no auction system
+- no ad marketplace yet
+- no complex bidding
+
+Keep:
+- simple budget
+- clear boost
+- strong ranking logic
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have a single brain that decides:
+
+- what users see first
+- what gets attention
+- what gets traffic
+
+Combining:
+
+- relevance
+- context
+- behavior
+- monetization
+
+The result should feel:
+
+- fair
+- smart
+- profitable
+- trustworthy
+
+Businesses feel:
+"I can grow by paying smartly"
+
+Users feel:
+"I still see the best places for me"

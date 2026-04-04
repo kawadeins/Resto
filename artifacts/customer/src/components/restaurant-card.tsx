@@ -11,6 +11,7 @@ interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
   showFlashDeal?: boolean;
   distance?: number;
+  isSponsored?: boolean;
 }
 
 function formatDistance(km: number): string {
@@ -99,7 +100,7 @@ function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant })
   );
 }
 
-export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: RestaurantCardProps) {
+export function RestaurantCard({ restaurant, showFlashDeal = false, distance, isSponsored = false }: RestaurantCardProps) {
   const priceString = "€".repeat(restaurant.priceRange || 2);
   const isAvailable = restaurant.isOpenNow && (restaurant as any).availabilityStatus === "available";
   const hasFlash = showFlashDeal && restaurant.hasActiveFlash;
@@ -194,7 +195,7 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             <span className="shrink-0 text-sm font-semibold text-muted-foreground">{priceString}</span>
           </div>
 
-          {/* Type + cuisine + availability + live badge */}
+          {/* Type + cuisine + availability + sponsored */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${typeCfg.badgeCls}`}>
               <TypeIcon className="w-3 h-3" />
@@ -205,6 +206,11 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
               {CUISINE_DE[restaurant.cuisine] ?? restaurant.cuisine}
             </span>
             <AvailabilityChip restaurant={restaurant} />
+            {isSponsored && (
+              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                Gesponsert
+              </span>
+            )}
           </div>
 
           {/* Live badge + social cue — only render row when there's a meaningful signal */}

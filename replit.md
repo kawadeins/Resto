@@ -263,6 +263,62 @@ Four targeted integration wires added — no new features, just existing systems
 - **I-3 (Friend cues → Hyper-local ranking)**: `hyper-local.ts` `computeHyperLocalScore()` now accepts a `friendCueCount` parameter. Friend activity at a venue adds up to +1.5 pts to the hyper-local score (capped). `rankHyperLocal()` now accepts the full `cues` record and maps cue counts to restaurant IDs before scoring. `NearYouNow` accepts a `cues` prop and passes it through; home.tsx passes the live `cues` from `useSocialCues()`. Cards now show a blue "N Freunde hier" badge when `friendCueCount > 0`.
 - **I-4 (Meal plan → Auto plans)**: `auto-plans-engine.ts` `evaluateAutoPlans()` accepts `hasTodayMealPlan?: boolean`. If the user has a meal plan for today AND the auto-plan mode is `lunch_plan`/`group_dinner` during the relevant time window (11–14 / 17–21), the auto-plan card is suppressed (`triggerReason: "meal_plan_active"`) — preventing the app from contradicting the user's own stated intent. Home.tsx fetches today's meal plan and passes the flag.
 
+## Behavior Priority Engine (Ranking Brain + Sponsored Boost System)
+
+The platform's unified discovery ranking system. All discovery surfaces use the same brain.
+
+### Architecture
+
+**Client-side (`artifacts/customer/src/lib/ranking-engine.ts`)** — The single source of truth for ranking:
+- `rankVenues(restaurants, ctx)` → `RankedVenue[]` — Full personalized ranking for Smart Offers / Near You Now / Search. Wraps `scoreRestaurant()` from smart-offers.ts, adds fairness gates, budget-aware boost scoring, and `isSponsored` flag.
+- `rankByContext(restaurants, mode, limit)` → `RankedVenue[]` — Context-free ranking for "Top in Wien" section. Uses time-matched business type + rating + budgeted boost. No user prefs needed.
+
+**Ranking formula:**
+```
+finalScore = relevanceScore * (closedMultiplier * distanceMultiplier) + boostScore
+```
+- `relevanceScore` = smart-offers score (prefs, location, lifestyle mode, allergens, rating, availability)
+- `closedMultiplier` = 0.4 if closed (strong penalty; venue stays visible in "allow closed" mode)
+- `distanceMultiplier` = 0.25 if >10km, 0.65 if >6km, 1.0 otherwise
+- `boostScore` = 0-12 pts, ONLY applied when: budget remaining > 0 AND time-window matches business type
+
+**Time-aware boost (Rule 6):** A bar's Nightlife Boost scores 1.0x at night, 0.2x in the morning.
+
+### Transparency (Rule 9)
+- `RankedVenue.isSponsored` = true only when boost is active AND budget not exhausted
+- Customer cards show "Gesponsert" chip when `isSponsored: true` — in `restaurant-card.tsx` and `smart-offers-section.tsx`
+- No hidden paid placement; every boosted result is labeled
+
+### Budget System
+- New columns on `promotions` table: `daily_budget NUMERIC(8,2)`, `spent_today NUMERIC(8,2)`, `budget_reset_date DATE`
+- `POST /api/promotions/restaurant/:id/impression` now deducts €0.01/impression, resets daily on new day, returns `budgetRemaining`
+- `GET /api/promotions/budget?restaurantId=:id` — returns budget state for all active promotions
+- `PUT /api/promotions/:id/budget` — set daily budget (0 = unlimited, no cap)
+- Budget-exhausted boosts: `isSponsored = false`, no boost score added, no "Gesponsert" label shown
+
+### Marketplace API Sort (Rule 4: Relevance First)
+- Old: naively sorted by `hasActiveBoost ? 1 : 0` then rating — boosted venues always ranked #1
+- New: `rating * 0.7 + (budgetedBoost ? 1.5 : 0)` — boost is a controlled uplift, not a rank override
+- API now returns `boostBudgetRemaining`, `boostDailyBudget`, `boostSpentToday` per restaurant
+
+### Compliance Fixes
+- **Fake labels (Rule 2)**: `live-activity.ts` — "Trending jetzt" → "Sehr beliebt", "Hot jetzt" → "Beliebt", "Gerade beliebt" → "Gefragt". `stableNoise()` function removed entirely.
+- **Trending section (Rule 2+3)**: "Trending in Wien" (pure rating sort) → "Top in Wien" (uses `rankByContext()` with time + type matching)
+- **Sponsored disclosure (Rule 9)**: "Gesponsert" chip added to all discovery card variants
+
+### Discovery Surfaces Wired
+- `home.tsx` — Top in Wien section uses `rankByContext()`; SmartOffersSection and NearYouNow receive `boostBudgetRemaining` from API; sponsored chips shown
+- `explore.tsx` — List cards show `isSponsored` from boost + budget data; server sort is now fair
+- `smart-offers-section.tsx` — SmartOfferCard shows "Gesponsert" chip inline with reason chip
+- `restaurant-card.tsx` — Accepts `isSponsored?: boolean` prop
+
+### Owner Dashboard Budget UI (`promotion-tools.tsx`)
+- "Tagesbudget" section appears when promotions are active
+- Per-boost budget card: progress bar (green/amber/red), daily budget vs spent, remaining
+- Budget picker: preset buttons (€5, €10, €20, €50/day) + custom input
+- Budget-exhausted indicator: red chip "Budget aufgebraucht"
+- Info note: explains "Gesponsert" label transparency to owners
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

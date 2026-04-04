@@ -36,7 +36,7 @@ function mapRestaurant(
   r: typeof restaurantsTable.$inferSelect,
   flashDeal: typeof discountsTable.$inferSelect | null,
   avail?: AvailInfo,
-  activeBoostTypes?: string[]
+  boostInfo?: BoostInfo
 ) {
   const now = new Date();
   const open = isOpen(r);
@@ -97,8 +97,11 @@ function mapRestaurant(
     maxPartySize: r.maxPartySize ?? 8,
     walkInsEnabled: r.walkInsEnabled ?? true,
     businessType: r.businessType ?? "restaurant",
-    hasActiveBoost: (activeBoostTypes?.length ?? 0) > 0,
-    activeBoostType: activeBoostTypes?.[0] ?? null,
+    hasActiveBoost: (boostInfo?.types?.length ?? 0) > 0,
+    activeBoostType: boostInfo?.types?.[0] ?? null,
+    boostDailyBudget: boostInfo?.dailyBudget ?? 0,
+    boostBudgetRemaining: boostInfo?.budgetRemaining ?? null,
+    boostSpentToday: boostInfo?.spentToday ?? 0,
   };
 }
 
@@ -128,18 +131,52 @@ function isBoostTimeActive(type: string, hour: number): boolean {
   return hour >= s && hour <= e;
 }
 
-async function getActiveBoostMap(): Promise<Map<number, string[]>> {
+interface BoostInfo {
+  types: string[];
+  budgetRemaining: number | null; // null = unlimited (no budget set)
+  dailyBudget: number;
+  spentToday: number;
+}
+
+async function getActiveBoostMap(): Promise<Map<number, BoostInfo>> {
   try {
     const rows = await db.execute(sql`
-      SELECT restaurant_id, type FROM promotions
+      SELECT restaurant_id, type, daily_budget, spent_today, budget_reset_date
+      FROM promotions
       WHERE status = 'active' AND (ends_at IS NULL OR ends_at > NOW())
     `);
-    const map = new Map<number, string[]>();
+    const map = new Map<number, BoostInfo>();
     const hour = new Date().getHours();
-    for (const row of rows.rows as { restaurant_id: number; type: string }[]) {
-      if (isBoostTimeActive(row.type, hour)) {
-        const existing = map.get(row.restaurant_id) ?? [];
-        map.set(row.restaurant_id, [...existing, row.type]);
+    const today = new Date().toISOString().split("T")[0];
+    for (const row of rows.rows as {
+      restaurant_id: number;
+      type: string;
+      daily_budget: string;
+      spent_today: string;
+      budget_reset_date: string;
+    }[]) {
+      if (!isBoostTimeActive(row.type, hour)) continue;
+
+      // Auto-reset daily spend if it's a new day
+      const lastReset = (row.budget_reset_date ?? "").toString().slice(0, 10);
+      const spentToday = lastReset < today ? 0 : parseFloat(row.spent_today ?? "0");
+      const dailyBudget = parseFloat(row.daily_budget ?? "0");
+
+      // Budget check: 0 means no budget cap (unlimited)
+      const budgetRemaining = dailyBudget > 0
+        ? Math.max(0, dailyBudget - spentToday)
+        : null;
+
+      const existing = map.get(row.restaurant_id);
+      if (existing) {
+        existing.types.push(row.type);
+      } else {
+        map.set(row.restaurant_id, {
+          types: [row.type],
+          budgetRemaining,
+          dailyBudget,
+          spentToday,
+        });
       }
     }
     return map;
@@ -207,11 +244,16 @@ router.get("/restaurants", async (req, res) => {
       return mapRestaurant(r, flash, avail, boostMap.get(r.id));
     });
 
+    // Fair weighted sort: relevance (rating) first, boost as secondary uplift only.
+    // Budget-exhausted boosts have no effect on ordering. Rule 4.
     mapped.sort((a, b) => {
-      const aBoost = a.hasActiveBoost ? 1 : 0;
-      const bBoost = b.hasActiveBoost ? 1 : 0;
-      if (bBoost !== aBoost) return bBoost - aBoost;
-      return parseFloat(String(b.rating)) - parseFloat(String(a.rating));
+      const aHasBudgetedBoost = a.hasActiveBoost &&
+        ((a as any).boostBudgetRemaining === null || (a as any).boostBudgetRemaining > 0);
+      const bHasBudgetedBoost = b.hasActiveBoost &&
+        ((b as any).boostBudgetRemaining === null || (b as any).boostBudgetRemaining > 0);
+      const aScore = parseFloat(String(a.rating)) * 0.7 + (aHasBudgetedBoost ? 1.5 : 0);
+      const bScore = parseFloat(String(b.rating)) * 0.7 + (bHasBudgetedBoost ? 1.5 : 0);
+      return bScore - aScore;
     });
 
     res.json(mapped);

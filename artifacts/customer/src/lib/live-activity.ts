@@ -56,9 +56,9 @@ const AVAIL_SCORE: Record<string, number> = {
 // ─── Badge definitions ────────────────────────────────────────────────────────
 
 const BADGES: Record<string, LiveBadge> = {
-  trending:    { icon: "🌟", text: "Trending jetzt",     cls: "bg-purple-100 text-purple-700 border-purple-200", pulse: true },
-  hot:         { icon: "🔥", text: "Hot jetzt",          cls: "bg-rose-100 text-rose-700 border-rose-200",       pulse: true },
-  busy:        { icon: "⚡", text: "Gerade beliebt",     cls: "bg-amber-100 text-amber-700 border-amber-200" },
+  trending:    { icon: "🌟", text: "Sehr beliebt",       cls: "bg-purple-100 text-purple-700 border-purple-200" },
+  hot:         { icon: "🔥", text: "Beliebt",            cls: "bg-rose-100 text-rose-700 border-rose-200" },
+  busy:        { icon: "⚡", text: "Gefragt",            cls: "bg-amber-100 text-amber-700 border-amber-200" },
   friends_hot: { icon: "👥", text: "Freunde zuletzt aktiv",  cls: "bg-primary/10 text-primary border-primary/25" },
   lunch_rush:  { icon: "🍽️", text: "Lunch-Rush",         cls: "bg-orange-100 text-orange-700 border-orange-200", pulse: true },
   happy_hour:  { icon: "🍸", text: "Happy Hour",         cls: "bg-rose-100 text-rose-700 border-rose-200",       pulse: true },
@@ -90,14 +90,6 @@ function modeBadge(mode: LifestyleMode, bizType: string, intensity: ActivityInte
   if (intensity === "hot")      return BADGES.hot;
   if (intensity === "busy")     return BADGES.busy;
   return BADGES.active;
-}
-
-// ─── Consistent pseudo-random noise (same restaurant, same session) ──────────
-
-function stableNoise(id: number): number {
-  // Deterministic ±5 jitter based on restaurant ID so results feel natural
-  const h = ((id * 2654435761) >>> 0) % 11;
-  return h - 5;
 }
 
 // ─── Main scoring function ────────────────────────────────────────────────────
@@ -145,9 +137,6 @@ export function scoreLiveActivity(
   if (restaurant.isPartner)  score += 8;
   if (restaurant.isFeatured) score += 4;
 
-  // 8. Stable noise for natural feel
-  score += stableNoise(restaurant.id);
-
   score = Math.min(100, Math.max(0, score));
 
   // ── Intensity tier ─────────────────────────────────────────────────────────
@@ -169,9 +158,9 @@ export function scoreLiveActivity(
   }
 
   // ── Map badge ──────────────────────────────────────────────────────────────
-  const mapBadge = intensity === "trending" ? "🌟 Trending"
-    : intensity === "hot" ? "🔥 Hot"
-    : intensity === "busy" ? "⚡ Beliebt"
+  const mapBadge = intensity === "trending" ? "🌟 Sehr beliebt"
+    : intensity === "hot" ? "🔥 Beliebt"
+    : intensity === "busy" ? "⚡ Gefragt"
     : null;
 
   // ── Heat map config ────────────────────────────────────────────────────────

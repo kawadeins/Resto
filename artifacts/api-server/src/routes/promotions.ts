@@ -194,32 +194,122 @@ router.put("/:id/stop", async (req, res) => {
   }
 });
 
+// ─── GET /api/promotions/budget?restaurantId=:id — get budget state ───────────
+router.get("/budget", async (req, res) => {
+  try {
+    const restaurantId = Number(req.query.restaurantId);
+    if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+
+    const today = new Date().toISOString().split("T")[0];
+    const rows = await db.execute(sql`
+      SELECT id, type, status, daily_budget, spent_today, budget_reset_date
+      FROM promotions
+      WHERE restaurant_id = ${restaurantId}
+        AND status IN ('active', 'paused')
+      ORDER BY created_at DESC
+    `);
+
+    const budgets = rows.rows.map((r: any) => {
+      const lastReset = (r.budget_reset_date ?? "").toString().slice(0, 10);
+      const spentToday = lastReset < today ? 0 : parseFloat(r.spent_today ?? "0");
+      const dailyBudget = parseFloat(r.daily_budget ?? "0");
+      const budgetRemaining = dailyBudget > 0 ? Math.max(0, dailyBudget - spentToday) : null;
+      return {
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        dailyBudget,
+        spentToday,
+        budgetRemaining,
+        budgetExhausted: dailyBudget > 0 && spentToday >= dailyBudget,
+      };
+    });
+
+    return res.json({ restaurantId, budgets });
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch budget");
+    return res.status(500).json({ error: "Failed to fetch budget" });
+  }
+});
+
+// ─── PUT /api/promotions/:id/budget — set daily budget for a promotion ─────────
+router.put("/:id/budget", async (req, res) => {
+  try {
+    const promoId = Number(req.params.id);
+    const schema = z.object({ dailyBudget: z.number().min(0).max(500) });
+    const { dailyBudget } = schema.parse(req.body);
+
+    await db.execute(sql`
+      UPDATE promotions
+      SET daily_budget = ${dailyBudget}, updated_at = NOW()
+      WHERE id = ${promoId}
+    `);
+    return res.json({ ok: true, dailyBudget });
+  } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ error: err.errors });
+    req.log.error({ err }, "Failed to update budget");
+    return res.status(500).json({ error: "Failed to update budget" });
+  }
+});
+
 // ─── POST /api/promotions/restaurant/:restaurantId/impression — convenience endpoint ──
-// Finds the active promotion for a restaurant and records an impression.
-// Called from the customer explore page when a boosted restaurant appears in the list.
+// Finds the active promotion for a restaurant, records an impression, and deducts from budget.
 router.post("/restaurant/:restaurantId/impression", async (req, res) => {
   try {
     const restaurantId = Number(req.params.restaurantId);
+    const today = new Date().toISOString().split("T")[0];
+
     const rows = await db.execute(sql`
-      SELECT id FROM promotions
+      SELECT id, daily_budget, spent_today, budget_reset_date FROM promotions
       WHERE restaurant_id = ${restaurantId}
         AND status = 'active'
         AND (ends_at IS NULL OR ends_at > NOW())
       ORDER BY created_at DESC
       LIMIT 1
     `);
-    const promo = rows.rows[0] as { id: number } | undefined;
+    const promo = rows.rows[0] as {
+      id: number;
+      daily_budget: string;
+      spent_today: string;
+      budget_reset_date: string;
+    } | undefined;
     if (!promo) return res.json({ ok: false, reason: "no_active_promotion" });
+
+    // Check budget
+    const lastReset = (promo.budget_reset_date ?? "").toString().slice(0, 10);
+    const spentToday = lastReset < today ? 0 : parseFloat(promo.spent_today ?? "0");
+    const dailyBudget = parseFloat(promo.daily_budget ?? "0");
+    if (dailyBudget > 0 && spentToday >= dailyBudget) {
+      return res.json({ ok: false, reason: "budget_exhausted", promotionId: promo.id });
+    }
 
     await db.execute(sql`
       INSERT INTO promotion_events (promotion_id, event_type, context)
       VALUES (${promo.id}, 'impression', 'explore_list')
     `);
-    await db.execute(sql`
-      UPDATE promotions SET impressions = impressions + 1, updated_at = NOW()
-      WHERE id = ${promo.id}
-    `);
-    return res.json({ ok: true, promotionId: promo.id });
+
+    // Deduct €0.01 per impression from daily budget and reset if new day
+    if (lastReset < today) {
+      await db.execute(sql`
+        UPDATE promotions
+        SET impressions = impressions + 1,
+            spent_today = 0.01,
+            budget_reset_date = ${today},
+            updated_at = NOW()
+        WHERE id = ${promo.id}
+      `);
+    } else {
+      await db.execute(sql`
+        UPDATE promotions
+        SET impressions = impressions + 1,
+            spent_today = spent_today + 0.01,
+            updated_at = NOW()
+        WHERE id = ${promo.id}
+      `);
+    }
+
+    const remaining = dailyBudget > 0 ? Math.max(0, dailyBudget - spentToday - 0.01) : null;
+    return res.json({ ok: true, promotionId: promo.id, budgetRemaining: remaining });
   } catch (err) {
     req.log.error({ err }, "Failed to record restaurant impression");
     return res.status(500).json({ error: "Failed to record impression" });

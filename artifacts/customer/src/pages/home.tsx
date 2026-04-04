@@ -28,6 +28,7 @@ import { AutoPlanCard } from "@/components/auto-plan-card";
 import { ActivePlansBanner } from "@/components/active-plans-banner";
 import { InstantPlanButton } from "@/components/instant-plan-button";
 import { useSocialCues } from "@/contexts/social-context";
+import { rankByContext } from "@/lib/ranking-engine";
 import { getFriends, getFriendRadar, type FriendProfile, type RadarZone } from "@/lib/social-api";
 import { evaluateAutoPlans } from "@/lib/auto-plans-engine";
 import { evaluateLifeLoop } from "@/lib/life-loop-engine";
@@ -700,32 +701,29 @@ export default function Home() {
         />
       )}
 
-      {/* ── TRENDING IN WIEN (always visible) ── */}
+      {/* ── TOP IN WIEN — context-ranked by time + rating + budgeted boost ── */}
       {allRestaurants && allRestaurants.length > 0 && (
         <section className="py-8 px-4">
           <div className="container mx-auto max-w-6xl">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">🔥</span>
+                <span className="text-2xl">⭐</span>
                 <div>
-                  <h2 className="text-xl font-extrabold tracking-tight">Trending in Wien</h2>
-                  <p className="text-xs text-muted-foreground">Die beliebtesten Lokale gerade</p>
+                  <h2 className="text-xl font-extrabold tracking-tight">Top in Wien</h2>
+                  <p className="text-xs text-muted-foreground">Hochbewertete Lokale passend zur Uhrzeit</p>
                 </div>
               </div>
               <Link href="/explore?rating=4" className="text-xs font-bold text-primary hover:underline press-scale">Alle →</Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...allRestaurants]
-                .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-                .slice(0, 3)
-                .map((r) => (
-                  <RestaurantCard
-                    key={r.id}
-                    restaurant={r}
-                    flashDeals={flashDeals}
-                    onClick={() => track(r.name)}
-                  />
-                ))}
+              {rankByContext(allRestaurants, mode, 3).map((ranked) => (
+                <RestaurantCard
+                  key={ranked.restaurant.id}
+                  restaurant={ranked.restaurant}
+                  showFlashDeal
+                  isSponsored={ranked.isSponsored}
+                />
+              ))}
             </div>
           </div>
         </section>

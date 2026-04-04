@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck, Flame } from "lucide-react";
+import { Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck, Flame, Wallet, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BOOST_CONFIGS, type BoostConfig, isBoostCurrentlyActive } from "@/lib/monetization-engine";
 
@@ -36,6 +36,16 @@ interface MyPromotionsData {
   promotions: Promotion[];
 }
 
+interface BudgetState {
+  id: number;
+  type: string;
+  status: string;
+  dailyBudget: number;
+  spentToday: number;
+  budgetRemaining: number | null;
+  budgetExhausted: boolean;
+}
+
 function BoostStatusBadge({ status }: { status: string }) {
   if (status === "active")  return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[11px]">Aktiv</Badge>;
   if (status === "paused")  return <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[11px]">Pausiert</Badge>;
@@ -58,6 +68,8 @@ export function PromotionTools() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [launching, setLaunching] = useState<string | null>(null);
+  const [editingBudget, setEditingBudget] = useState<number | null>(null);
+  const [budgetInput, setBudgetInput] = useState<Record<number, string>>({});
 
   const { data, isLoading } = useQuery<MyPromotionsData>({
     queryKey: ["promotions-my"],
@@ -72,6 +84,38 @@ export function PromotionTools() {
   const restaurantId = data?.restaurantId ?? null;
   const businessType = data?.businessType ?? "restaurant";
   const promotions = data?.promotions ?? [];
+
+  const { data: budgetData } = useQuery<{ restaurantId: number; budgets: BudgetState[] }>({
+    queryKey: ["promotions-budget", restaurantId],
+    queryFn: async () => {
+      if (!restaurantId) return { restaurantId: 0, budgets: [] };
+      const res = await fetch(`${API_BASE}/api/promotions/budget?restaurantId=${restaurantId}`);
+      if (!res.ok) return { restaurantId: restaurantId ?? 0, budgets: [] };
+      return res.json();
+    },
+    enabled: !!restaurantId,
+    staleTime: 30000,
+  });
+  const budgets = budgetData?.budgets ?? [];
+
+  const budgetMutation = useMutation({
+    mutationFn: async ({ promoId, dailyBudget }: { promoId: number; dailyBudget: number }) => {
+      const res = await fetch(`${API_BASE}/api/promotions/${promoId}/budget`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dailyBudget }),
+      });
+      if (!res.ok) throw new Error("Fehler");
+      return res.json();
+    },
+    onSuccess: (_, { dailyBudget }) => {
+      const label = dailyBudget === 0 ? "unbegrenzt" : `€${dailyBudget}/Tag`;
+      toast({ title: `Tagesbudget gesetzt: ${label}` });
+      setEditingBudget(null);
+      queryClient.invalidateQueries({ queryKey: ["promotions-budget"] });
+    },
+    onError: () => toast({ title: "Budget konnte nicht gespeichert werden", variant: "destructive" }),
+  });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["promotions-my"] });
 
@@ -250,6 +294,124 @@ export function PromotionTools() {
             );
           })}
         </div>
+
+        {/* ── Budget Management ─────────────────────────────────────────────── */}
+        {budgets.length > 0 && (
+          <div className="border border-border/50 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-primary" />
+              <span className="font-semibold text-sm">Tagesbudget</span>
+              <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1">
+                <Info className="w-3 h-3" />
+                Boost stoppt automatisch wenn Budget erreicht
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {budgets.map((b) => {
+                const cfg = BOOST_CONFIGS.find(c => c.type === b.type);
+                const spentPct = b.dailyBudget > 0 ? Math.min(100, (b.spentToday / b.dailyBudget) * 100) : 0;
+                const isEditing = editingBudget === b.id;
+
+                return (
+                  <div key={b.id} className="rounded-lg border border-border/40 bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium flex items-center gap-1.5">
+                        <span>{cfg?.emoji}</span> {cfg?.label ?? b.type}
+                        {b.budgetExhausted && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-200">
+                            Budget aufgebraucht
+                          </span>
+                        )}
+                      </span>
+                      <button
+                        className="text-[11px] text-primary font-semibold hover:underline"
+                        onClick={() => {
+                          setEditingBudget(isEditing ? null : b.id);
+                          setBudgetInput(prev => ({ ...prev, [b.id]: String(b.dailyBudget) }));
+                        }}
+                      >
+                        {isEditing ? "Abbrechen" : "Bearbeiten"}
+                      </button>
+                    </div>
+
+                    {/* Budget bar */}
+                    {b.dailyBudget > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px] text-muted-foreground">
+                          <span>Heute: €{b.spentToday.toFixed(2)} ausgegeben</span>
+                          <span>Budget: €{b.dailyBudget.toFixed(2)}/Tag</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              spentPct >= 100 ? "bg-red-500" : spentPct > 70 ? "bg-amber-500" : "bg-emerald-500"
+                            }`}
+                            style={{ width: `${spentPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {b.dailyBudget === 0 && (
+                      <p className="text-[11px] text-muted-foreground">Kein Tagesbudget — Boost läuft unbegrenzt</p>
+                    )}
+
+                    {/* Budget editor */}
+                    {isEditing && (
+                      <div className="pt-2 border-t border-border/40 space-y-2">
+                        <p className="text-[11px] text-muted-foreground">Tagesbudget festlegen (0 = unbegrenzt)</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {[0, 5, 10, 20, 50].map(amount => (
+                            <button
+                              key={amount}
+                              onClick={() => setBudgetInput(prev => ({ ...prev, [b.id]: String(amount) }))}
+                              className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+                                budgetInput[b.id] === String(amount)
+                                  ? "bg-primary text-white border-primary"
+                                  : "border-border bg-card hover:border-primary/40"
+                              }`}
+                            >
+                              {amount === 0 ? "Unbegrenzt" : `€${amount}/Tag`}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            min={0}
+                            max={500}
+                            value={budgetInput[b.id] ?? ""}
+                            onChange={e => setBudgetInput(prev => ({ ...prev, [b.id]: e.target.value }))}
+                            className="flex-1 text-sm border border-border rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
+                            placeholder="Eigener Betrag"
+                          />
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90"
+                            onClick={() => {
+                              const val = parseFloat(budgetInput[b.id] ?? "0") || 0;
+                              budgetMutation.mutate({ promoId: b.id, dailyBudget: val });
+                            }}
+                            disabled={budgetMutation.isPending}
+                          >
+                            Speichern
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
+              <span className="text-base">ℹ️</span>
+              <span>
+                Boosted Lokale erhalten das Label <strong className="text-foreground">„Gesponsert"</strong> in der Kunden-App — transparent und vertrauenswürdig.
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Total row */}
         {promotions.length > 0 && (
