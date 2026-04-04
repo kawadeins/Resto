@@ -69,38 +69,38 @@ interface CustomerProfile {
 // ─── Food Identity Data ───────────────────────────────────────────────────────
 
 const FOOD_TYPES = [
-  { id: "Italian", emoji: "🍝", label: "Italienisch" },
-  { id: "Japanese", emoji: "🍣", label: "Japanisch" },
-  { id: "French", emoji: "🥐", label: "Französisch" },
-  { id: "Indian", emoji: "🍛", label: "Indisch" },
-  { id: "Mexican", emoji: "🌮", label: "Mexikanisch" },
-  { id: "Thai", emoji: "🍜", label: "Thailändisch" },
-  { id: "American", emoji: "🍔", label: "Amerikanisch" },
-  { id: "Middle Eastern", emoji: "🧆", label: "Orientalisch" },
-  { id: "Chinese", emoji: "🥟", label: "Chinesisch" },
-  { id: "Mediterranean", emoji: "🫒", label: "Mediterran" },
-  { id: "Seafood", emoji: "🦞", label: "Meeresfrüchte" },
-  { id: "Steakhouse", emoji: "🥩", label: "Steakhaus" },
+  { id: "Italian",        emoji: "🍝", label: "Italienisch",   from: "from-rose-400",    to: "to-red-500" },
+  { id: "Japanese",       emoji: "🍣", label: "Japanisch",     from: "from-sky-400",     to: "to-blue-600" },
+  { id: "French",         emoji: "🥐", label: "Französisch",   from: "from-violet-400",  to: "to-purple-600" },
+  { id: "Indian",         emoji: "🍛", label: "Indisch",       from: "from-yellow-400",  to: "to-orange-400" },
+  { id: "Mexican",        emoji: "🌮", label: "Mexikanisch",   from: "from-amber-400",   to: "to-orange-500" },
+  { id: "Thai",           emoji: "🍜", label: "Thailändisch",  from: "from-emerald-400", to: "to-teal-600" },
+  { id: "American",       emoji: "🍔", label: "Amerikanisch",  from: "from-orange-400",  to: "to-red-400" },
+  { id: "Middle Eastern", emoji: "🧆", label: "Orientalisch",  from: "from-amber-500",   to: "to-yellow-600" },
+  { id: "Chinese",        emoji: "🥟", label: "Chinesisch",    from: "from-red-400",     to: "to-rose-600" },
+  { id: "Mediterranean",  emoji: "🫒", label: "Mediterran",    from: "from-green-400",   to: "to-emerald-600" },
+  { id: "Seafood",        emoji: "🦞", label: "Meeresfrüchte", from: "from-cyan-400",    to: "to-blue-500" },
+  { id: "Steakhouse",     emoji: "🥩", label: "Steakhaus",     from: "from-red-600",     to: "to-rose-800" },
 ];
 
 const DIETARY_STYLES = [
-  { id: "no_preference", icon: Utensils, label: "Keine Präferenz", color: "text-muted-foreground", bg: "bg-muted/50", border: "border-border" },
-  { id: "vegetarian", icon: Leaf, label: "Vegetarisch", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30", border: "border-emerald-300 dark:border-emerald-700" },
-  { id: "vegan", icon: Sparkles, label: "Vegan", color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-300 dark:border-green-700" },
-  { id: "meat_lover", icon: Beef, label: "Fleischliebhaber", color: "text-red-600", bg: "bg-red-50 dark:bg-red-950/30", border: "border-red-300 dark:border-red-700" },
-  { id: "halal", icon: Moon, label: "Halal", color: "text-violet-600", bg: "bg-violet-50 dark:bg-violet-950/30", border: "border-violet-300 dark:border-violet-700" },
-  { id: "seafood", icon: Fish, label: "Meeresfrüchte", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30", border: "border-blue-300 dark:border-blue-700" },
+  { id: "no_preference", icon: Utensils, emoji: "🍽️", label: "Keine Präferenz",   from: "from-slate-400",   to: "to-gray-500",    color: "text-muted-foreground" },
+  { id: "vegetarian",    icon: Leaf,     emoji: "🥗",  label: "Vegetarisch",       from: "from-emerald-400", to: "to-green-600",   color: "text-emerald-600" },
+  { id: "vegan",         icon: Sparkles, emoji: "🌿",  label: "Vegan",             from: "from-green-400",   to: "to-teal-500",    color: "text-green-600" },
+  { id: "meat_lover",    icon: Beef,     emoji: "🥩",  label: "Fleischliebhaber",  from: "from-red-400",     to: "to-rose-600",    color: "text-red-600" },
+  { id: "halal",         icon: Moon,     emoji: "🌙",  label: "Halal",             from: "from-violet-400",  to: "to-purple-600",  color: "text-violet-600" },
+  { id: "seafood",       icon: Fish,     emoji: "🐟",  label: "Meeresfrüchte",     from: "from-sky-400",     to: "to-blue-600",    color: "text-blue-600" },
 ];
 
 const ALLERGIES = [
-  { id: "gluten", label: "Gluten", emoji: "🌾" },
-  { id: "lactose", label: "Laktose", emoji: "🥛" },
-  { id: "nuts", label: "Nüsse", emoji: "🥜" },
-  { id: "shellfish", label: "Schalentiere", emoji: "🦐" },
-  { id: "eggs", label: "Eier", emoji: "🥚" },
-  { id: "soy", label: "Soja", emoji: "🫘" },
-  { id: "fish", label: "Fisch", emoji: "🐟" },
-  { id: "no_allergies", label: "Keine Allergien", emoji: "✅" },
+  { id: "gluten",      label: "Gluten",         emoji: "🌾", from: "from-amber-300",   to: "to-yellow-500" },
+  { id: "lactose",     label: "Laktose",         emoji: "🥛", from: "from-blue-200",    to: "to-sky-400" },
+  { id: "nuts",        label: "Nüsse",           emoji: "🥜", from: "from-amber-500",   to: "to-orange-600" },
+  { id: "shellfish",   label: "Schalentiere",    emoji: "🦐", from: "from-rose-300",    to: "to-pink-500" },
+  { id: "eggs",        label: "Eier",            emoji: "🥚", from: "from-yellow-300",  to: "to-amber-400" },
+  { id: "soy",         label: "Soja",            emoji: "🫘", from: "from-green-300",   to: "to-emerald-500" },
+  { id: "fish",        label: "Fisch",           emoji: "🐟", from: "from-cyan-400",    to: "to-blue-500" },
+  { id: "no_allergies",label: "Keine Allergien", emoji: "✅", from: "from-emerald-400", to: "to-green-600" },
 ];
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
@@ -292,6 +292,14 @@ function EmailGate({ onEnter }: { onEnter: (email: string) => void }) {
 
 // ─── Owner Premium Modal ──────────────────────────────────────────────────────
 
+type WalletType = "detecting" | "apple" | "google" | "none";
+
+declare global {
+  interface Window {
+    ApplePaySession?: { canMakePayments: () => boolean };
+  }
+}
+
 function PremiumModal({
   open,
   onClose,
@@ -303,16 +311,64 @@ function PremiumModal({
 }) {
   const [step, setStep] = useState(0);
   const [processing, setProcessing] = useState(false);
+  const [walletType, setWalletType] = useState<WalletType>("detecting");
+  const [showCardForm, setShowCardForm] = useState(false);
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvc, setCardCvc] = useState("");
+
+  // Detect available wallet when entering payment step
+  useEffect(() => {
+    if (step !== 1) return;
+    setWalletType("detecting");
+    setShowCardForm(false);
+
+    (async () => {
+      // Apple Pay — Safari/WebKit only
+      try {
+        if (
+          typeof window !== "undefined" &&
+          window.ApplePaySession &&
+          window.ApplePaySession.canMakePayments()
+        ) {
+          setWalletType("apple");
+          return;
+        }
+      } catch { /* not available */ }
+
+      // Google Pay via Payment Request API
+      try {
+        if (typeof window !== "undefined" && "PaymentRequest" in window) {
+          const req = new PaymentRequest(
+            [{ supportedMethods: "https://google.com/pay", data: { apiVersion: 2, apiVersionMinor: 0, allowedPaymentMethods: [] } }],
+            { total: { label: "Restaurant Premium", amount: { currency: "EUR", value: "29.00" } } }
+          );
+          const canPay = await req.canMakePayment();
+          if (canPay) {
+            setWalletType("google");
+            return;
+          }
+        }
+      } catch { /* not available */ }
+
+      setWalletType("none");
+      setShowCardForm(true);
+    })();
+  }, [step]);
 
   const formatCardNumber = (v: string) =>
     v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
   const formatExpiry = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 4);
     return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
+  };
+
+  const handleWalletPay = async () => {
+    setProcessing(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setProcessing(false);
+    setStep(2);
   };
 
   const handlePay = async () => {
@@ -389,7 +445,7 @@ function PremiumModal({
           </div>
         )}
 
-        {/* Step 1 — Payment */}
+        {/* Step 1 — Payment (wallet-first) */}
         {step === 1 && (
           <div className="flex flex-col">
             {/* Header */}
@@ -403,13 +459,13 @@ function PremiumModal({
               <div className="text-center pt-2">
                 <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">Sicherer Checkout</div>
                 <div className="font-serif text-xl font-bold">Restaurant Premium</div>
-                <div className="text-white/80 text-sm mt-1">€29/Monat · Jederzeit kündbar</div>
+                <div className="text-white/80 text-sm mt-1">€29/Monat · 30 Tage kostenlos · Jederzeit kündbar</div>
               </div>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-5">
               {/* Trust badges */}
-              <div className="flex items-center justify-center gap-4 py-2">
+              <div className="flex items-center justify-center gap-4">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Shield className="w-3.5 h-3.5 text-emerald-500" />
                   <span>256-bit SSL</span>
@@ -420,65 +476,153 @@ function PremiumModal({
                 </div>
               </div>
 
-              {/* Card form */}
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Karteninhaber</Label>
-                  <Input
-                    placeholder="Max Mustermann"
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    className="h-11 rounded-xl"
-                  />
+              {/* Wallet detection state */}
+              {walletType === "detecting" && (
+                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Zahlungsmethoden werden erkannt…
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kartennummer</Label>
-                  <div className="relative">
-                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                      className="h-11 pl-10 rounded-xl tracking-wider"
-                      inputMode="numeric"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ablaufdatum</Label>
-                    <Input
-                      placeholder="MM/JJ"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                      className="h-11 rounded-xl"
-                      inputMode="numeric"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CVC</Label>
-                    <Input
-                      placeholder="123"
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      className="h-11 rounded-xl"
-                      inputMode="numeric"
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
 
-              <Button
-                className="w-full h-12 rounded-2xl text-base font-semibold mt-2"
-                onClick={handlePay}
-                disabled={processing || !cardName || cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3}
-              >
-                {processing ? (
-                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Zahlung wird verarbeitet…</span>
-                ) : (
-                  <span className="flex items-center gap-2"><Lock className="w-4 h-4" /> Jetzt sicher bezahlen</span>
-                )}
-              </Button>
+              {/* Apple Pay */}
+              {walletType === "apple" && (
+                <div className="space-y-3">
+                  <p className="text-[11px] text-center text-muted-foreground uppercase tracking-widest font-bold">Bevorzugte Zahlungsmethode</p>
+                  <button
+                    onClick={handleWalletPay}
+                    disabled={processing}
+                    className="w-full h-14 rounded-2xl bg-black flex items-center justify-center gap-2.5 text-white font-semibold text-base hover:bg-black/90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg"
+                  >
+                    {processing ? (
+                      <><Loader2 className="w-5 h-5 animate-spin" /> Wird verarbeitet…</>
+                    ) : (
+                      <>
+                        {/* Apple logo */}
+                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                        </svg>
+                        Pay
+                      </>
+                    )}
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground">oder mit Karte bezahlen</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  <button
+                    onClick={() => setShowCardForm((v) => !v)}
+                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors text-center font-medium flex items-center justify-center gap-1"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    {showCardForm ? "Kartenformular ausblenden" : "Mit Karte bezahlen"}
+                  </button>
+                </div>
+              )}
+
+              {/* Google Pay */}
+              {walletType === "google" && (
+                <div className="space-y-3">
+                  <p className="text-[11px] text-center text-muted-foreground uppercase tracking-widest font-bold">Bevorzugte Zahlungsmethode</p>
+                  <button
+                    onClick={handleWalletPay}
+                    disabled={processing}
+                    className="w-full h-14 rounded-2xl bg-white border border-gray-200 flex items-center justify-center gap-2.5 font-semibold text-base text-gray-800 hover:bg-gray-50 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
+                  >
+                    {processing ? (
+                      <><Loader2 className="w-5 h-5 animate-spin" /> Wird verarbeitet…</>
+                    ) : (
+                      <>
+                        {/* Google Pay logo */}
+                        <svg viewBox="0 0 41 17" xmlns="http://www.w3.org/2000/svg" className="h-5">
+                          <path d="M19.526 2.635v4.083h2.518c.6 0 1.096-.202 1.488-.605.403-.402.605-.882.605-1.437 0-.544-.202-1.018-.605-1.422-.392-.413-.888-.62-1.488-.62h-2.518zm0 5.52v4.736h-1.504V1.198h3.99c1.013 0 1.873.337 2.582 1.012.72.675 1.08 1.497 1.08 2.466 0 .991-.36 1.819-1.08 2.482-.697.665-1.559.996-2.583.996h-2.485zM27.194 10.667c0 .574.276 1.053.829 1.437.552.384 1.2.576 1.944.576.99 0 1.887-.376 2.687-1.128l.734.783c-.93 1.01-2.15 1.514-3.661 1.514-.96 0-1.82-.247-2.58-.741-.76-.494-1.14-1.166-1.14-2.017 0-.787.328-1.431.987-1.932.659-.5 1.506-.751 2.542-.751.98 0 1.762.212 2.346.637.584.425.875 1.007.875 1.742-.001.404-.044.76-.13 1.07l-5.433-.19zm5.434-1.07c-.28-.658-.887-.987-1.821-.987-.623 0-1.147.168-1.573.505-.426.337-.639.73-.639 1.182l4.033-.7zM35.917 13.778l-2.742-7.258h1.596l1.965 5.461 1.939-5.461h1.58l-4.41 11.478h-1.55l1.622-4.22z" fill="#5F6368"/>
+                          <path d="M14.137 6.963c0-.476-.044-.933-.124-1.37H7.3v2.594h3.834a3.274 3.274 0 01-1.42 2.148v1.786h2.298c1.345-1.239 2.126-3.065 2.126-5.158z" fill="#4285F4"/>
+                          <path d="M7.3 14.028c1.925 0 3.54-.638 4.72-1.727l-2.298-1.786c-.638.427-1.454.68-2.422.68-1.863 0-3.44-1.258-4.003-2.95H.928v1.843C2.1 12.473 4.53 14.028 7.3 14.028z" fill="#34A853"/>
+                          <path d="M3.297 8.245a4.256 4.256 0 010-2.717V3.685H.928A7.006 7.006 0 000 6.887c0 1.13.27 2.2.928 3.2l2.369-1.842z" fill="#FBBC04"/>
+                          <path d="M7.3 2.577c1.05 0 1.994.361 2.737 1.07l2.051-2.05C10.83.638 9.217 0 7.3 0 4.53 0 2.1 1.556.928 3.685L3.297 5.528C3.861 3.835 5.437 2.577 7.3 2.577z" fill="#EA4335"/>
+                        </svg>
+                        Pay
+                      </>
+                    )}
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground">oder mit Karte bezahlen</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  <button
+                    onClick={() => setShowCardForm((v) => !v)}
+                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors text-center font-medium flex items-center justify-center gap-1"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    {showCardForm ? "Kartenformular ausblenden" : "Mit Karte bezahlen"}
+                  </button>
+                </div>
+              )}
+
+              {/* Card form — shown when: no wallet detected OR user toggled */}
+              {(walletType === "none" || showCardForm) && walletType !== "detecting" && (
+                <div className="space-y-3">
+                  {walletType === "none" && (
+                    <p className="text-[11px] text-center text-muted-foreground uppercase tracking-widest font-bold">Zahlung per Karte</p>
+                  )}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Karteninhaber</Label>
+                    <Input
+                      placeholder="Max Mustermann"
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      className="h-11 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kartennummer</Label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="1234 5678 9012 3456"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                        className="h-11 pl-10 rounded-xl tracking-wider"
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ablaufdatum</Label>
+                      <Input
+                        placeholder="MM/JJ"
+                        value={cardExpiry}
+                        onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                        className="h-11 rounded-xl"
+                        inputMode="numeric"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CVC</Label>
+                      <Input
+                        placeholder="123"
+                        value={cardCvc}
+                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                        className="h-11 rounded-xl"
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full h-12 rounded-2xl text-base font-semibold mt-1"
+                    onClick={handlePay}
+                    disabled={processing || !cardName || cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3}
+                  >
+                    {processing ? (
+                      <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Zahlung wird verarbeitet…</span>
+                    ) : (
+                      <span className="flex items-center gap-2"><Lock className="w-4 h-4" /> Jetzt sicher bezahlen</span>
+                    )}
+                  </Button>
+                </div>
+              )}
 
               <p className="text-[11px] text-center text-muted-foreground leading-relaxed">
                 Mit der Zahlung stimmen Sie unseren Nutzungsbedingungen zu. Sie können jederzeit im Dashboard kündigen.
@@ -1112,6 +1256,7 @@ export default function Profile() {
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 {FOOD_TYPES.map((ft) => {
                   const selected = profile.favoriteCuisines.includes(ft.id);
+                  const atLimit = !selected && profile.favoriteCuisines.length >= 6;
                   return (
                     <button
                       key={ft.id}
@@ -1123,19 +1268,18 @@ export default function Profile() {
                             : profile.favoriteCuisines;
                         save({ favoriteCuisines: next } as any);
                       }}
-                      className={`relative flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all cursor-pointer hover:scale-105 active:scale-95 ${
-                        selected
-                          ? "border-primary bg-primary/10 shadow-md shadow-primary/10"
-                          : "border-border bg-muted/30 hover:border-primary/30"
-                      }`}
+                      disabled={atLimit}
+                      className={`relative flex flex-col items-center gap-2 press-scale group transition-opacity ${atLimit ? "opacity-40" : ""}`}
                     >
+                      <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${selected ? `bg-gradient-to-br ${ft.from} ${ft.to} shadow-md shadow-black/10` : "bg-muted/50 border border-border/50 group-hover:border-primary/30 group-hover:scale-105"}`}>
+                        {ft.emoji}
+                      </div>
                       {selected && (
-                        <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <Check className="w-2.5 h-2.5 text-primary" />
                         </div>
                       )}
-                      <span className="text-2xl">{ft.emoji}</span>
-                      <span className="text-xs font-medium text-center leading-tight">{ft.label}</span>
+                      <span className={`text-[11px] font-bold text-center leading-tight ${selected ? "text-primary" : "text-muted-foreground"}`}>{ft.label}</span>
                     </button>
                   );
                 })}
@@ -1148,24 +1292,24 @@ export default function Profile() {
                 <h3 className="font-bold text-base">Ernährungsweise</h3>
                 <p className="text-xs text-muted-foreground mt-1">Deine bevorzugte Ernährungsform – für passende Empfehlungen.</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 {DIETARY_STYLES.map((ds) => {
                   const selected = profile.dietaryStyle === ds.id;
                   return (
                     <button
                       key={ds.id}
                       onClick={() => save({ dietaryStyle: ds.id } as any)}
-                      className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left hover:scale-[1.02] active:scale-[0.98] ${
-                        selected
-                          ? `border-current ${ds.bg} ${ds.color} shadow-sm`
-                          : "border-border hover:border-primary/20"
-                      }`}
+                      className="relative flex flex-col items-center gap-2 press-scale group"
                     >
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${selected ? ds.bg : "bg-muted"}`}>
-                        <ds.icon className={`w-4 h-4 ${selected ? ds.color : "text-muted-foreground"}`} />
+                      <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${selected ? `bg-gradient-to-br ${ds.from} ${ds.to} shadow-md shadow-black/10` : "bg-muted/50 border border-border/50 group-hover:border-primary/30 group-hover:scale-105"}`}>
+                        {ds.emoji}
                       </div>
-                      <span className={`text-sm font-medium ${selected ? ds.color : "text-foreground"}`}>{ds.label}</span>
-                      {selected && <Check className={`w-4 h-4 ml-auto ${ds.color}`} />}
+                      {selected && (
+                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <Check className={`w-2.5 h-2.5 ${ds.color}`} />
+                        </div>
+                      )}
+                      <span className={`text-[11px] font-bold text-center leading-tight ${selected ? ds.color : "text-muted-foreground"}`}>{ds.label}</span>
                     </button>
                   );
                 })}
@@ -1181,7 +1325,7 @@ export default function Profile() {
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Diese Informationen helfen uns, dir sichere Empfehlungen zu geben.</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {ALLERGIES.map((al) => {
                   const selected = profile.allergies.includes(al.id);
                   const isNone = al.id === "no_allergies";
@@ -1199,17 +1343,17 @@ export default function Profile() {
                         }
                         save({ allergies: next } as any);
                       }}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all cursor-pointer hover:scale-105 ${
-                        selected
-                          ? isNone
-                            ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30"
-                            : "border-orange-400 bg-orange-50 dark:bg-orange-950/30"
-                          : "border-border bg-muted/30 hover:border-primary/20"
-                      }`}
+                      className="relative flex flex-col items-center gap-2 press-scale group"
                     >
-                      <span className="text-xl">{al.emoji}</span>
-                      <span className="text-xs font-medium text-center">{al.label}</span>
-                      {selected && <Check className={`w-3 h-3 ${isNone ? "text-emerald-600" : "text-orange-600"}`} />}
+                      <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-xl transition-all shadow-sm ${selected ? `bg-gradient-to-br ${al.from} ${al.to} shadow-md shadow-black/10` : "bg-muted/50 border border-border/50 group-hover:border-primary/30 group-hover:scale-105"}`}>
+                        {al.emoji}
+                      </div>
+                      {selected && (
+                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <Check className={`w-2.5 h-2.5 ${isNone ? "text-emerald-600" : "text-orange-600"}`} />
+                        </div>
+                      )}
+                      <span className={`text-[10px] font-bold text-center leading-tight ${selected ? (isNone ? "text-emerald-600" : "text-orange-600") : "text-muted-foreground"}`}>{al.label}</span>
                     </button>
                   );
                 })}

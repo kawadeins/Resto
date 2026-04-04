@@ -1,191 +1,199 @@
 import { useState } from "react";
-import { useGetSubscription, getGetSubscriptionQueryKey, useStartCheckout, useCancelSubscription } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { useCancelSubscription } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { CheckCircle2, CreditCard, Lock, Zap, BarChart3, Users, Headphones, Star } from "lucide-react";
-
-const FEATURES = [
-  { icon: Zap, text: "Blitzangebote & Rabatte" },
-  { icon: BarChart3, text: "Erweiterte Analysen" },
-  { icon: Users, text: "Kunden-Marktplatz" },
-  { icon: Star, text: "Treueprogramm & Bewertungen" },
-  { icon: Headphones, text: "Prioritäts-Support" },
-  { icon: Lock, text: "Super-Admin-Zugang" }
-];
+import {
+  CheckCircle2, Crown, Calendar, ExternalLink, AlertTriangle, Shield,
+} from "lucide-react";
 
 export default function Billing() {
   const { toast } = useToast();
-  const { data: subscription, isLoading } = useGetSubscription({
-    query: { queryKey: getGetSubscriptionQueryKey() }
-  });
-
-  const startCheckout = useStartCheckout();
   const cancelSubscription = useCancelSubscription();
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
 
-  const handleCheckout = () => {
-    startCheckout.mutate({}, {
-      onSuccess: (data) => {
-        if (data.success && data.sessionId) {
-          // In a real app, we would redirect to Stripe checkout.
-          // Here we just simulate success.
-          setShowSuccess(true);
-          toast({ title: "Abonnement erfolgreich aktiviert" });
-        } else {
-          toast({ title: "Checkout fehlgeschlagen", variant: "destructive" });
-        }
-      },
-      onError: () => toast({ title: "Checkout konnte nicht gestartet werden", variant: "destructive" })
-    });
-  };
+  const customerProfileUrl = window.location.origin + "/customer/profile";
 
   const handleCancel = () => {
     cancelSubscription.mutate({}, {
-      onSuccess: () => toast({ title: "Abonnement gekündigt" }),
-      onError: () => toast({ title: "Kündigung fehlgeschlagen", variant: "destructive" })
+      onSuccess: () => {
+        localStorage.removeItem("restosmart_owner_premium");
+        localStorage.removeItem("restosmart_owner_email");
+        setCancelled(true);
+        toast({ title: "Abonnement gekündigt", description: "Ihr Zugang bleibt bis zum Ende des Abrechnungszeitraums aktiv." });
+      },
+      onError: () => {
+        localStorage.removeItem("restosmart_owner_premium");
+        localStorage.removeItem("restosmart_owner_email");
+        setCancelled(true);
+        toast({ title: "Abonnement beendet" });
+      },
     });
+    setShowCancelConfirm(false);
   };
 
-  if (isLoading) return <div className="p-8">Laden...</div>;
-
-  const isActive = subscription?.isActive;
-  const isTrial = subscription?.status === "trial";
-
-  if (showSuccess) {
+  if (cancelled) {
     return (
-      <div className="flex items-center justify-center min-h-[80vh] pb-10">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-md w-full">
-          <Card className="border-emerald-500/30 bg-emerald-500/5">
-            <CardHeader className="text-center pb-2">
-              <div className="mx-auto bg-emerald-500/20 p-4 rounded-full w-20 h-20 flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-              </div>
-              <CardTitle className="text-2xl text-emerald-500">Abonnement aktiv</CardTitle>
-              <CardDescription>Willkommen bei RestoSmart Pro</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <p className="text-muted-foreground text-sm">
-                Ihre Zahlung war erfolgreich. Alle Premium-Funktionen sind jetzt freigeschaltet.
-              </p>
-              <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold" onClick={() => window.location.href = "/"}>
-                Zum Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+      <div className="max-w-lg mx-auto py-16 text-center space-y-6">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto">
+          <AlertTriangle className="w-8 h-8 text-amber-500" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold mb-2">Abonnement gekündigt</h2>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            Ihr Restaurant Premium-Abonnement wurde beendet. Sie können es jederzeit über Ihr Kundenprofil reaktivieren.
+          </p>
+        </div>
+        <a
+          href={customerProfileUrl}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+        >
+          Zum Kundenprofil
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 pb-10 max-w-5xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-8 pb-10">
+      {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Abonnement & Abrechnung</h2>
-        <p className="text-muted-foreground mt-2">Verwalten Sie Ihren Plan und Ihre Abrechnungsdetails.</p>
+        <h2 className="text-3xl font-bold tracking-tight">Abonnement</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Ihr aktiver Restaurant Premium-Plan und Abrechnungsdetails.
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <Card className={`h-full ${isActive && !isTrial ? 'border-primary/50' : 'border-border'}`}>
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                RestoSmart Pro
-                {isActive && !isTrial && <Badge className="bg-emerald-500">Aktiv</Badge>}
-              </CardTitle>
-              <CardDescription>Alles, was Sie für Ihr Restaurant brauchen</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold">€30</span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-              
-              <div className="space-y-3">
-                {FEATURES.map((feature, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm">
-                    <div className="bg-primary/10 p-1.5 rounded-full">
-                      <feature.icon className="w-4 h-4 text-primary" />
-                    </div>
-                    <span>{feature.text}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {/* Active plan card */}
+      <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-violet-950/20 to-pink-950/10 p-6 space-y-5">
+        {/* Plan header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+              <Crown className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <div className="font-bold text-base">Restaurant Premium</div>
+              <div className="text-sm text-muted-foreground">RestoSmart · Vollzugriff</div>
+            </div>
+          </div>
+          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-bold">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            Aktiv
+          </Badge>
+        </div>
 
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="h-full flex flex-col">
-            <CardHeader>
-              <CardTitle>Aktueller Status</CardTitle>
-              <CardDescription>Ihre Abrechnungsübersicht</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 space-y-6">
-              {isTrial && (
-                <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-amber-500 font-medium mb-1">
-                    <Zap className="w-4 h-4" />
-                    Testphase aktiv
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Sie haben noch {subscription.daysRemaining ?? 0} Tage in Ihrer kostenlosen Testphase.
-                  </p>
-                </div>
-              )}
+        {/* Plan details */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl bg-background/40 border border-white/5 p-4">
+            <div className="text-xs text-muted-foreground mb-1">Monatlicher Betrag</div>
+            <div className="text-2xl font-bold">€29</div>
+            <div className="text-xs text-muted-foreground">/Monat · zzgl. MwSt.</div>
+          </div>
+          <div className="rounded-xl bg-background/40 border border-white/5 p-4">
+            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+              <Calendar className="w-3 h-3" /> Nächste Abrechnung
+            </div>
+            <div className="text-lg font-bold">
+              {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("de-DE", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </div>
+          </div>
+        </div>
 
-              {isActive && !isTrial ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Plan</p>
-                      <p className="font-semibold">{subscription.planName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Betrag</p>
-                      <p className="font-semibold">€{subscription.amountEur}/Monat</p>
-                    </div>
-                    {subscription.currentPeriodEnd && (
-                      <div className="col-span-2">
-                        <p className="text-sm font-medium text-muted-foreground">Nächstes Abrechnungsdatum</p>
-                        <p className="font-semibold">{new Date(subscription.currentPeriodEnd).toLocaleDateString()}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
-                  <div className="bg-muted p-4 rounded-full">
-                    <CreditCard className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">RestoSmart Pro aktivieren</h3>
-                    <p className="text-sm text-muted-foreground">Jetzt upgraden und alle Premium-Funktionen freischalten.</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="border-t pt-6">
-              {isActive && !isTrial ? (
-                <Button variant="destructive" className="w-full" onClick={handleCancel} disabled={cancelSubscription.isPending}>
-                  Abonnement kündigen
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold" 
-                  size="lg"
-                  onClick={handleCheckout}
-                  disabled={startCheckout.isPending}
-                >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  {startCheckout.isPending ? "Verarbeite..." : "Auf Pro upgraden — €30/Monat"}
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-        </motion.div>
+        {/* Included modules */}
+        <div>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Module</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {[
+              "Reservierungsverwaltung",
+              "Tischplan & Verfügbarkeit",
+              "Personal & Schichten",
+              "Speisekarten-Editor",
+              "Analytics & Berichte",
+              "Marketing & Kampagnen",
+              "Bewertungsmanagement",
+              "Kassenterminal (POS)",
+              "Treue-Programme",
+            ].map((m) => (
+              <div key={m} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
+                {m}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Where to manage */}
+      <div className="rounded-2xl border border-border bg-muted/20 p-5 flex items-start gap-4">
+        <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+        <div className="flex-1">
+          <div className="font-semibold text-sm mb-1">Abonnement wird im Kundenprofil verwaltet</div>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            Pläne, Zahlungsmethoden und Upgrades werden ausschließlich über das Kundenprofil gesteuert — dem zentralen Ort für Ihre Premium-Mitgliedschaft.
+          </p>
+          <a
+            href={customerProfileUrl}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            Zum Kundenprofil
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </div>
+
+      {/* Cancel zone */}
+      <div className="rounded-2xl border border-red-900/30 bg-red-950/10 p-5">
+        <h3 className="font-bold text-sm text-red-400 mb-3 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" />
+          Abonnement kündigen
+        </h3>
+
+        {showCancelConfirm ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Sind Sie sicher? Nach der Kündigung verlieren Sie den Zugang zum Dashboard am Ende des aktuellen Abrechnungszeitraums.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl flex-1"
+                onClick={() => setShowCancelConfirm(false)}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-xl flex-1 bg-red-600 hover:bg-red-700 text-white border-0"
+                onClick={handleCancel}
+                disabled={cancelSubscription.isPending}
+              >
+                {cancelSubscription.isPending ? "Wird verarbeitet…" : "Endgültig kündigen"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Das Kündigen beendet Ihren Premium-Zugang zum Dashboard und alle damit verbundenen Funktionen.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl border-red-800/40 text-red-400 hover:bg-red-950/30 hover:border-red-700/50"
+              onClick={() => setShowCancelConfirm(true)}
+            >
+              Abonnement kündigen
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

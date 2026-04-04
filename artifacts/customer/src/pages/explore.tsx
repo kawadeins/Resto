@@ -16,7 +16,28 @@ import { useListFlashDeals } from "@workspace/api-client-react";
 
 type ViewMode = "list" | "map";
 
-const CUISINES = ["Italienisch", "Japanisch", "Mexikanisch", "Indisch", "Französisch", "Thailändisch", "Amerikanisch", "Britisch"];
+const CUISINES = [
+  { name: "Italienisch",  emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
+  { name: "Japanisch",    emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
+  { name: "Mexikanisch",  emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
+  { name: "Indisch",      emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
+  { name: "Französisch",  emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
+  { name: "Thailändisch", emoji: "🍜", from: "from-emerald-400", to: "to-teal-600" },
+  { name: "Amerikanisch", emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
+  { name: "Britisch",     emoji: "🫖", from: "from-blue-400",    to: "to-indigo-600" },
+];
+
+const PRICE_BUBBLES = [
+  { price: 1, emoji: "💚", label: "€",   from: "from-emerald-400", to: "to-green-600" },
+  { price: 2, emoji: "🟡", label: "€€",  from: "from-amber-400",   to: "to-orange-500" },
+  { price: 3, emoji: "💜", label: "€€€", from: "from-violet-500",  to: "to-purple-700" },
+];
+
+const RATING_BUBBLES = [
+  { value: 3,   emoji: "⭐", label: "3+", from: "from-sky-400",    to: "to-blue-600" },
+  { value: 4,   emoji: "🌟", label: "4+", from: "from-amber-400",  to: "to-orange-500" },
+  { value: 4.5, emoji: "✨", label: "4.5+", from: "from-yellow-400", to: "to-amber-500" },
+];
 
 export default function Explore() {
   useSeo({
@@ -187,54 +208,79 @@ export default function Explore() {
             </label>
           </div>
 
-          <div className="space-y-2">
+          {/* ── Price bubbles ── */}
+          <div className="space-y-2.5">
             <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Preis</h4>
             <div className="flex gap-2">
-              {[1, 2, 3].map(price => (
-                <button
-                  key={price}
-                  onClick={() => togglePrice(price)}
-                  className={`flex-1 py-2 rounded-2xl text-sm font-bold transition-all press-scale ${priceRange === price ? "bg-gradient-to-br from-primary to-accent text-white shadow-md shadow-primary/30" : "bg-muted/60 text-muted-foreground hover:bg-muted border border-border/50"}`}
-                >
-                  {"€".repeat(price)}
-                </button>
-              ))}
+              {PRICE_BUBBLES.map(pb => {
+                const sel = priceRange === pb.price;
+                return (
+                  <button
+                    key={pb.price}
+                    onClick={() => togglePrice(pb.price)}
+                    className="flex-1 flex flex-col items-center gap-1.5 press-scale group"
+                  >
+                    <div className={`w-full h-12 rounded-2xl flex items-center justify-center text-base font-black transition-all shadow-sm ${sel ? `bg-gradient-to-br ${pb.from} ${pb.to} text-white shadow-md` : "bg-muted/50 border border-border/50 text-muted-foreground hover:border-primary/30 group-hover:scale-105"}`}>
+                      {pb.label}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="space-y-2">
+          {/* ── Cuisine bubble grid ── */}
+          <div className="space-y-2.5">
             <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Küche</h4>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
+              {/* "Alle" bubble */}
               <button
                 onClick={() => setCuisine("")}
-                className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all press-scale ${cuisine === "" ? "bg-gradient-to-r from-primary to-accent text-white shadow-sm" : "bg-muted/60 text-muted-foreground hover:bg-muted border border-border/50"}`}
+                className="flex flex-col items-center gap-1.5 press-scale group"
               >
-                Alle
+                <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${cuisine === "" ? "bg-gradient-to-br from-primary to-accent shadow-md shadow-primary/25 scale-105" : "bg-muted/50 border border-border/50 hover:border-primary/30 group-hover:scale-105"}`}>
+                  🍽️
+                </div>
+                <span className={`text-[10px] font-bold text-center leading-tight ${cuisine === "" ? "text-primary" : "text-muted-foreground"}`}>Alle</span>
               </button>
-              {CUISINES.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setCuisine(c === cuisine ? "" : c)}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all press-scale ${cuisine === c ? "bg-gradient-to-r from-primary to-accent text-white shadow-sm" : "bg-muted/60 text-muted-foreground hover:bg-muted border border-border/50"}`}
-                >
-                  {c}
-                </button>
-              ))}
+
+              {CUISINES.map(c => {
+                const sel = cuisine === c.name;
+                return (
+                  <button
+                    key={c.name}
+                    onClick={() => setCuisine(c.name === cuisine ? "" : c.name)}
+                    className="flex flex-col items-center gap-1.5 press-scale group"
+                  >
+                    <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${sel ? `bg-gradient-to-br ${c.from} ${c.to} shadow-md scale-105` : "bg-muted/50 border border-border/50 hover:border-primary/30 group-hover:scale-105"}`}>
+                      {c.emoji}
+                    </div>
+                    <span className={`text-[10px] font-bold text-center leading-tight ${sel ? "text-primary" : "text-muted-foreground"}`}>{c.name}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="space-y-2">
+          {/* ── Rating bubbles ── */}
+          <div className="space-y-2.5">
             <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Mindestbewertung</h4>
             <div className="flex gap-2">
-              {[3, 4, 4.5].map(r => (
-                <button
-                  key={r}
-                  onClick={() => setRating(r === rating ? undefined : r)}
-                  className={`flex-1 py-2 rounded-2xl text-xs font-bold flex items-center justify-center gap-1 transition-all press-scale ${rating === r ? "bg-gradient-to-br from-primary to-accent text-white shadow-md" : "bg-muted/60 text-muted-foreground hover:bg-muted border border-border/50"}`}
-                >
-                  {r}+ <Star className="w-3 h-3 fill-current" />
-                </button>
-              ))}
+              {RATING_BUBBLES.map(rb => {
+                const sel = rating === rb.value;
+                return (
+                  <button
+                    key={rb.value}
+                    onClick={() => setRating(rb.value === rating ? undefined : rb.value)}
+                    className="flex-1 flex flex-col items-center gap-1.5 press-scale group"
+                  >
+                    <div className={`w-full h-12 rounded-2xl flex items-center justify-center text-base font-black transition-all shadow-sm gap-1 ${sel ? `bg-gradient-to-br ${rb.from} ${rb.to} text-white shadow-md` : "bg-muted/50 border border-border/50 text-muted-foreground hover:border-primary/30 group-hover:scale-105"}`}>
+                      <Star className={`w-3.5 h-3.5 fill-current ${sel ? "text-white" : "text-amber-400"}`} />
+                      <span className="text-xs font-extrabold">{rb.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

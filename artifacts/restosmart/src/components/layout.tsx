@@ -20,7 +20,7 @@ const navigation = [
   { name: "Tote Stunden", href: "/insights", icon: Lightbulb },
   { name: "Wachstum", href: "/campaigns", icon: TrendingUp },
   { name: "Bewertungen", href: "/reviews", icon: Star },
-  { name: "Abrechnung", href: "/billing", icon: CreditCard },
+  { name: "Abonnement", href: "/billing", icon: CreditCard },
 ];
 
 const mobileNavigation = [
@@ -28,7 +28,7 @@ const mobileNavigation = [
   { name: "Buchungen", href: "/bookings", icon: BookOpen },
   { name: "Marketing", href: "/marketing", icon: Megaphone },
   { name: "Bewertungen", href: "/reviews", icon: Star },
-  { name: "Abrechnung", href: "/billing", icon: CreditCard },
+  { name: "Personal", href: "/staff", icon: Users },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
