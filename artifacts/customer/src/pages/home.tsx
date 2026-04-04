@@ -30,6 +30,8 @@ import { InstantPlanButton } from "@/components/instant-plan-button";
 import { useSocialCues } from "@/contexts/social-context";
 import { getFriends, getFriendRadar, type FriendProfile, type RadarZone } from "@/lib/social-api";
 import { evaluateAutoPlans } from "@/lib/auto-plans-engine";
+import { evaluateLifeLoop } from "@/lib/life-loop-engine";
+import { getTwin } from "@/lib/digital-twin";
 import type { UserContext } from "@/lib/smart-offers";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
 import { VibeOnboarding } from "@/components/vibe-onboarding";
@@ -342,6 +344,24 @@ export default function Home() {
     lng:  geo.lng,
   }), [customerProfile, geo.lat, geo.lng]);
 
+  // ── Today's meal plan (used to prevent auto-plan contradiction) ──────────
+  const { data: mealPlanData } = useQuery<{ plans?: Array<{ date: string }>; } | Array<{ date: string }>>({
+    queryKey: ["meal-plan-home", customerEmail],
+    queryFn: () =>
+      fetch(`${API_BASE}/api/meal-plan?email=${encodeURIComponent(customerEmail)}`)
+        .then((r) => r.json()),
+    enabled: !!customerEmail,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  const hasTodayMealPlan = useMemo(() => {
+    const today = new Date();
+    const toDateStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const todayStr = toDateStr(today);
+    const plans = (Array.isArray(mealPlanData) ? mealPlanData : (mealPlanData as any)?.plans ?? []) as Array<{ date: string }>;
+    return plans.some((p) => p.date?.startsWith(todayStr));
+  }, [mealPlanData]);
+
   // ── Auto Plans engine ─────────────────────────────────────────────────────
   const autoPlan = useMemo(() => {
     if (!customerEmail || !allRestaurants || allRestaurants.length === 0) return null;
@@ -353,8 +373,30 @@ export default function Home() {
       radarZones,
       cues,
       mode,
+      hasTodayMealPlan,
     });
-  }, [customerEmail, allRestaurants, flashDeals, friends, radarZones, cues, mode]);
+  }, [customerEmail, allRestaurants, flashDeals, friends, radarZones, cues, mode, hasTodayMealPlan]);
+
+  // ── Life Loop Decision (section ordering + context hint) ─────────────────
+  const lifeLoop = useMemo(() => {
+    const twin = getTwin();
+    return evaluateLifeLoop({
+      twin,
+      mode,
+      radarZones,
+      cues,
+      hasFlashDeals: (flashDeals?.length ?? 0) > 0,
+      friendCount: friends.length,
+      restaurants: allRestaurants ?? [],
+    });
+  }, [mode, radarZones, cues, flashDeals, friends, allRestaurants]);
+
+  // Determine render order: should social activity show above live sections?
+  const socialBeforeLive = useMemo(() => {
+    const liveIdx = lifeLoop.sectionOrder.indexOf("live_sections");
+    const feedIdx = lifeLoop.sectionOrder.indexOf("activity_feed");
+    return feedIdx < liveIdx;
+  }, [lifeLoop.sectionOrder]);
 
   const searchUrl = manualCity ? `/explore?search=${encodeURIComponent(manualCity)}` : "/explore";
 
@@ -417,6 +459,14 @@ export default function Home() {
               <p className="text-muted-foreground text-lg max-w-md mx-auto md:mx-0 leading-relaxed transition-all duration-500">
                 {config.subline}
               </p>
+
+              {/* Life Loop context hint — shown when the engine has enough signal */}
+              {lifeLoop.confidence >= 0.65 && (
+                <div className="flex items-start gap-2 bg-primary/8 border border-primary/15 rounded-2xl px-4 py-2.5 max-w-sm mx-auto md:mx-0">
+                  <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-sm text-primary/90 font-medium leading-snug">{lifeLoop.contextHint}</p>
+                </div>
+              )}
 
               <div className="relative max-w-sm mx-auto md:mx-0">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -598,25 +648,43 @@ export default function Home() {
         isLoading={loadingAll}
       />
 
-      {/* ── LIVE SECTIONS (Hot jetzt, Lunch-Rush, Nightlife-Heatmap…) ── */}
-      <LiveSections
-        restaurants={allRestaurants ?? []}
-        flashDeals={flashDeals}
-        mode={mode}
-        cues={cues}
-        isLoading={loadingAll}
-        userLat={geo.lat}
-        userLng={geo.lng}
-      />
-
-      {/* ── SOCIAL FEED (What friends are doing) ── */}
-      {customerEmail && (
-        <ActivityFeedSection email={customerEmail} friendCount={friendCount} />
-      )}
-
-      {/* ── GROUP SUGGESTIONS (Join friends, Plan together) ── */}
-      {customerEmail && (
-        <GroupSuggestionsSection email={customerEmail} friendCount={friendCount} />
+      {/* ── SOCIAL + LIVE SECTIONS — order is determined by the Life Loop engine ── */}
+      {socialBeforeLive ? (
+        <>
+          {customerEmail && (
+            <ActivityFeedSection email={customerEmail} friendCount={friendCount} />
+          )}
+          {customerEmail && (
+            <GroupSuggestionsSection email={customerEmail} friendCount={friendCount} />
+          )}
+          <LiveSections
+            restaurants={allRestaurants ?? []}
+            flashDeals={flashDeals}
+            mode={mode}
+            cues={cues}
+            isLoading={loadingAll}
+            userLat={geo.lat}
+            userLng={geo.lng}
+          />
+        </>
+      ) : (
+        <>
+          <LiveSections
+            restaurants={allRestaurants ?? []}
+            flashDeals={flashDeals}
+            mode={mode}
+            cues={cues}
+            isLoading={loadingAll}
+            userLat={geo.lat}
+            userLng={geo.lng}
+          />
+          {customerEmail && (
+            <ActivityFeedSection email={customerEmail} friendCount={friendCount} />
+          )}
+          {customerEmail && (
+            <GroupSuggestionsSection email={customerEmail} friendCount={friendCount} />
+          )}
+        </>
       )}
 
       {/* ── NEAR YOU NOW ── */}
@@ -628,6 +696,7 @@ export default function Home() {
           userLng={geo.lng}
           maxCount={4}
           radiusKm={10}
+          cues={cues}
         />
       )}
 

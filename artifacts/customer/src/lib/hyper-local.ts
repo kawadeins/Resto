@@ -1,5 +1,6 @@
 import { haversineKm } from "@/hooks/use-geolocation";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
+import type { SocialCue } from "@/lib/social-api";
 
 export interface ScoredRestaurant {
   restaurant: MarketplaceRestaurant;
@@ -9,6 +10,7 @@ export interface ScoredRestaurant {
   minutesUntilClose: number | null;
   flashMinutesLeft: number | null;
   flashDeal: MarketplaceFlashDeal | null;
+  friendCueCount: number;
 }
 
 function parseTimeMins(t: string): number {
@@ -35,7 +37,8 @@ export function computeHyperLocalScore(
   restaurant: MarketplaceRestaurant,
   userLat: number,
   userLng: number,
-  flashDeal: MarketplaceFlashDeal | null = null
+  flashDeal: MarketplaceFlashDeal | null = null,
+  friendCueCount = 0
 ): ScoredRestaurant {
   const distance = haversineKm(
     userLat,
@@ -62,7 +65,10 @@ export function computeHyperLocalScore(
     availStatus === "limited" ? 1 :
     0;
 
-  const score = distScore + openScore + dealScore + ratingScore + weakHourScore + availScore;
+  // Social boost: friends being active here is a real signal of quality and relevance
+  const socialScore = friendCueCount > 0 ? Math.min(friendCueCount * 0.5, 1.5) : 0;
+
+  const score = distScore + openScore + dealScore + ratingScore + weakHourScore + availScore + socialScore;
 
   const flashMinutesLeft =
     flashDeal?.flashExpiresAt
@@ -83,6 +89,7 @@ export function computeHyperLocalScore(
     minutesUntilClose,
     flashMinutesLeft,
     flashDeal,
+    friendCueCount,
   };
 }
 
@@ -91,7 +98,8 @@ export function rankHyperLocal(
   userLat: number,
   userLng: number,
   flashDeals: MarketplaceFlashDeal[] = [],
-  radiusKm = 10
+  radiusKm = 10,
+  cues: Record<string, SocialCue> = {}
 ): ScoredRestaurant[] {
   const flashByRestaurantId = new Map<number, MarketplaceFlashDeal>();
   for (const deal of flashDeals) {
@@ -101,9 +109,11 @@ export function rankHyperLocal(
   }
 
   return restaurants
-    .map((r) =>
-      computeHyperLocalScore(r, userLat, userLng, flashByRestaurantId.get(r.id) ?? null)
-    )
+    .map((r) => {
+      const cue = cues[String(r.id)];
+      const friendCueCount = cue?.count ?? 0;
+      return computeHyperLocalScore(r, userLat, userLng, flashByRestaurantId.get(r.id) ?? null, friendCueCount);
+    })
     .filter((sr) => sr.distance <= radiusKm)
     .sort((a, b) => b.score - a.score);
 }

@@ -171,13 +171,23 @@ export function evaluateAutoPlans(params: {
   radarZones: RadarZone[];
   cues: Record<string, SocialCue>;
   mode: LifestyleMode;
+  hasTodayMealPlan?: boolean;
 }): AutoPlanResult {
-  const { email, restaurants, flashDeals, friends, radarZones, cues, mode } = params;
+  const { email, restaurants, flashDeals, friends, radarZones, cues, mode, hasTodayMealPlan } = params;
 
   if (!email) return { isReady: false, suggestion: null, readinessScore: 0, suppressedUntil: 0, triggerReason: "no_email" };
 
   const hour = new Date().getHours();
   const planMode = getAutoMode(hour);
+
+  // If the user already has a meal plan for today's relevant window, don't override with a competing suggestion
+  if (hasTodayMealPlan) {
+    const isMealHour = (planMode === "lunch_plan" && hour >= 11 && hour <= 14)
+      || (planMode === "group_dinner" && hour >= 17 && hour <= 21);
+    if (isMealHour) {
+      return { isReady: false, suggestion: null, readinessScore: 0, suppressedUntil: 0, triggerReason: "meal_plan_active" };
+    }
+  }
 
   const readiness = computeReadiness({
     hour, friendCount: friends.length, radarZones, cues, restaurants, flashDeals, mode, planMode,

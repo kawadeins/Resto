@@ -1,0 +1,414 @@
+Perform a full "System Integration + Cross-System Behavior Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+This is NOT a new feature-building task.
+Do NOT add random new systems.
+Do NOT redesign the app.
+Do NOT rewrite stable working systems unnecessarily.
+
+This is a deep integration, orchestration, and behavior-alignment task.
+
+========================
+GOAL
+========================
+
+Turn the existing RestoMaster platform from a collection of strong individual systems into one coordinated, intelligent product where systems influence each other correctly.
+
+The goal is to make all major systems:
+- connected
+- behaviorally aligned
+- context-aware
+- non-contradictory
+- useful together
+
+The app should stop feeling like:
+- separate features living side by side
+
+And start feeling like:
+- one product brain guiding user behavior and business outcomes
+
+========================
+1. SYSTEM INTEGRATION AUDIT (CRITICAL)
+========================
+
+Inspect all major built systems and verify how they currently connect to each other.
+
+Audit these systems specifically:
+
+USER SIDE:
+- auth / profile
+- preferences
+- dietary style / allergies
+- discovery
+- maps / nearby
+- place cards / place pages
+- smart offers
+- meal plans
+- group plans
+- social activity
+- friends layer
+- live activity / heat map
+- instant plans
+- auto plans
+- habit loop / streaks / missions
+- notifications / reminders
+- loyalty / rewards
+- feedback / rating
+
+BUSINESS SIDE:
+- premium business flow
+- business profile
+- restaurant / café / bar support
+- offers / boosts
+- business analytics
+- verification / trust badge
+- business dashboard
+
+FOUNDER / INTELLIGENCE SIDE:
+- founder dashboard
+- monetization engine
+- AI personal twin
+- life loop engine
+- smart revenue signals
+
+For each system:
+- identify what it currently sends to other systems
+- identify what it currently receives from other systems
+- identify where it is isolated
+- identify where it conflicts with another system
+- identify where it looks integrated but is actually disconnected
+
+========================
+2. DEFINE SYSTEM-TO-SYSTEM RELATIONSHIPS
+========================
+
+Create proper behavioral relationships between systems.
+
+Examples of correct relationships:
+
+- user preferences should influence smart offers
+- meal plan should influence homepage suggestions
+- time of day should influence discovery + map + offers
+- social activity should influence discovery and notifications
+- live activity should influence map ranking and homepage sections
+- premium verification should influence trust + ranking
+- business type should influence tags, map markers, and dashboard variation
+- instant plans should use live + social + location signals
+- auto plans should use behavior + time + social + offers
+- monetization should influence visibility ethically, not blindly
+- founder dashboard should reflect what the product actually knows
+
+Make these relationships real and consistent.
+
+========================
+3. REMOVE SYSTEM ISOLATION
+========================
+
+Fix places where a system exists but behaves like an isolated feature.
+
+Examples:
+- smart offers exists but does not react to meal plans
+- social system exists but does not influence discovery
+- heat map exists but does not affect ranking
+- profile preferences exist but do not change homepage
+- premium trust exists but does not affect place-level presentation
+- plans exist but do not influence notifications
+- business type exists but does not influence dashboard experience
+
+No important system should remain isolated if it is meant to shape behavior.
+
+========================
+4. REMOVE SYSTEM CONTRADICTIONS
+========================
+
+Find and fix contradictions between systems.
+
+Examples:
+- one system suggests café while another pushes nightlife at the wrong time
+- user preferences say vegetarian but offers show meat-heavy places prominently
+- social signals say one thing while discovery ranking says another
+- meal plan says pizza tonight but homepage ignores it
+- premium boost overrides relevance too aggressively
+- notifications push irrelevant actions
+- business dashboard shows one reality while founder dashboard implies another
+
+All systems must point in the same direction.
+
+========================
+5. CONTEXT HIERARCHY (VERY IMPORTANT)
+========================
+
+Establish a clear decision hierarchy for what should influence user experience most.
+
+Suggested priority logic:
+
+1. hard constraints
+- location
+- open/closed
+- availability
+- allergy conflict
+- permissions / role access
+
+2. strong personal context
+- meal plan
+- time of day
+- business type preference
+- dietary style
+- saved preferences
+
+3. live relevance
+- nearby
+- active offers
+- live activity
+- trending / busy now
+- friend activity
+
+4. adaptive learning
+- previous clicks
+- accepted plans
+- ignored suggestions
+- repeat habits
+
+5. monetization boost
+- premium priority
+- visibility boost
+- sponsored placement
+
+Monetization must NEVER overpower hard relevance.
+
+Use this hierarchy across:
+- homepage
+- discovery
+- map
+- offers
+- plans
+- notifications
+
+========================
+6. HOMEPAGE ORCHESTRATION
+========================
+
+Make homepage the clearest expression of system integration.
+
+When the user opens the app, homepage should intelligently reflect combined signals such as:
+
+- time of day
+- preferences
+- meal plan
+- live activity
+- nearby places
+- business type relevance
+- friend/social activity
+- smart offers
+- streak / mission / reward progress
+
+The homepage should feel:
+- dynamic
+- personal
+- timely
+- coherent
+
+It should not feel like random sections stacked together.
+
+========================
+7. MAP + DISCOVERY ORCHESTRATION
+========================
+
+Ensure map and discovery work as one combined intelligence layer.
+
+Map should be influenced by:
+- location
+- live heat
+- nearby ranking
+- smart offers
+- friend radar
+- business type
+- time mode
+- premium trust markers
+- trending signals
+
+Discovery list should remain aligned with the map.
+
+No mismatch between:
+- what the map says is hot
+- what the list says is relevant
+
+========================
+8. PLAN SYSTEM ORCHESTRATION
+========================
+
+Unify:
+- meal plans
+- group plans
+- instant plans
+- auto plans
+
+These systems must not compete.
+
+Instead:
+
+- meal plans = personal intent layer
+- group plans = social planning layer
+- instant plans = fast action layer
+- auto plans = predictive suggestion layer
+
+Ensure each uses the others correctly.
+
+Examples:
+- meal plan should make instant plan smarter
+- friend activity should improve group plan suggestions
+- auto plans should not ignore group history
+- instant plans should respect available places and offers
+- all plans should feed reminders correctly
+
+========================
+9. SOCIAL + LIVE ORCHESTRATION
+========================
+
+Unify:
+- friends
+- social activity
+- live activity
+- heat map
+- friend radar
+- group suggestions
+
+These systems should produce one social-live layer.
+
+This layer should influence:
+- discovery
+- map emphasis
+- place trust
+- plan suggestions
+- notifications
+- urgency
+
+But always safely:
+- no exact location leakage
+- no creepy tracking
+- no fake social proof
+
+========================
+10. BUSINESS + USER SIDE COORDINATION
+========================
+
+Ensure user-side intelligence and business-side systems are connected properly.
+
+Examples:
+- business offers should appear correctly in user-side discovery
+- premium verification should affect user trust signals
+- boosted visibility should influence ranking ethically
+- café/bar/restaurant type should shape both business tools and user presentation
+- business dashboards should reflect real user-side actions where possible
+- monetization features must connect to actual exposure and interaction
+
+The platform must behave like one marketplace, not two separate apps.
+
+========================
+11. MONETIZATION ALIGNMENT
+========================
+
+Ensure monetization systems are integrated ethically into the product behavior.
+
+Premium / boost / paid visibility should:
+- enhance discovery when relevance is already strong
+- appear in smart offers when appropriate
+- influence live visibility responsibly
+- support business goals without harming user trust
+
+If monetization currently feels disconnected or too aggressive:
+fix it.
+
+========================
+12. NOTIFICATION ORCHESTRATION
+========================
+
+All reminders and notifications must be driven by the integrated system brain.
+
+Notification logic should combine:
+- plans
+- time
+- location
+- offers
+- social activity
+- streak / missions
+- return triggers
+- behavior patterns
+
+Ensure:
+- notifications support real context
+- notifications do not contradict homepage/discovery
+- notifications do not duplicate each other
+- notifications help the user act on something meaningful
+
+========================
+13. FOUNDER BRAIN ALIGNMENT
+========================
+
+Ensure the founder dashboard reflects the same integrated platform logic.
+
+Founder panels should be grounded in what the systems actually do:
+- smart offers performance
+- plan adoption
+- social usage
+- monetization effects
+- business type traction
+- city traction
+- return behavior
+- premium performance
+
+Do NOT let founder insights drift away from real product behavior.
+
+========================
+14. REMOVE MISLEADING INTEGRATION ILLUSIONS
+========================
+
+If a system currently appears to influence another system but really does not:
+fix it or tone it down.
+
+Examples:
+- “For You” labels without true personal relevance
+- “Trending” without real signal
+- “Matches your plan” without real plan linkage
+- “Friends nearby” without safe real support
+- “Smart” explanations without real context usage
+
+The integrated product must earn trust.
+
+========================
+15. FINAL INTEGRATION REPORT (MANDATORY)
+========================
+
+At the end of this pass, produce a structured internal report that states:
+
+A. Systems now fully integrated
+B. Systems partially integrated
+C. Systems still isolated
+D. Systems that were conflicting and were corrected
+E. Systems intentionally softened because integration was fake or weak
+F. Which system now acts as the strongest product brain
+G. What remains to fully unify the platform
+
+Be direct and honest.
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should emerge from this pass as one connected product organism.
+
+Not:
+- many impressive disconnected features
+
+But:
+- one coordinated system where
+  - user context
+  - live context
+  - social context
+  - business logic
+  - monetization
+  - planning
+  - recommendations
+all work together properly.
+
+The app should begin to feel like one intelligent marketplace brain.

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Calendar, Clock, ChefHat, Users, Bell, MapPin } from "lucide-react";
+import { X, Calendar, ChefHat, Users, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
@@ -200,6 +200,51 @@ export function SmartReminders({ email }: { email: string }) {
             };
             setReminders((prev) =>
               prev.find((x) => x.id === mealRid) ? prev : [...prev, r]
+            );
+          }
+        })
+        .catch(() => {});
+    }
+
+    // ── 4. Social cue nudge — friends active at a nearby place ────────────────
+    const socialRid = "social-friends-active";
+    if (!seen.has(socialRid)) {
+      fetch(`${API_BASE}/api/social/group-suggestions/${encodeURIComponent(email)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          const suggestions: Array<{
+            type: string;
+            restaurantId?: number;
+            restaurantName?: string;
+            restaurantEmoji?: string;
+            friendNames?: string[];
+            title: string;
+            cta: string;
+          }> = Array.isArray(data) ? data : [];
+
+          const friendSugg = suggestions.find(
+            (s) => s.type === "friends_active" && s.restaurantName && (s.friendNames?.length ?? 0) > 0
+          );
+          if (friendSugg) {
+            const names = (friendSugg.friendNames ?? []).slice(0, 2).join(" & ");
+            const extra = (friendSugg.friendNames?.length ?? 0) > 2
+              ? ` +${(friendSugg.friendNames?.length ?? 0) - 2}`
+              : "";
+            const isSingular = (friendSugg.friendNames?.length ?? 0) === 1;
+            const rem: Reminder = {
+              id: socialRid,
+              type: "invitation",
+              title: `${names}${extra} ${isSingular ? "ist" : "sind"} gerade aktiv 👥`,
+              body: `${friendSugg.restaurantEmoji ?? "🍽️"} ${friendSugg.restaurantName} — perfekter Moment zum Treffen.`,
+              cta: "Ansehen",
+              href: friendSugg.restaurantId
+                ? `/restaurant/${friendSugg.restaurantId}`
+                : "/explore",
+              icon: Users,
+              gradient: "from-blue-400 to-cyan-500",
+            };
+            setReminders((prev) =>
+              prev.find((x) => x.id === socialRid) ? prev : [...prev, rem]
             );
           }
         })

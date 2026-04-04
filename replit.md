@@ -233,6 +233,15 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 - **P-8 Fixed**: `restaurant.tsx` — Opening days now rendered in German with smart range compression ("Täglich" for all 7 days, "Mo–Fr" for weekday ranges, etc.) instead of raw English day names from the DB.
 - **P-9 Fixed (data)**: DB — Cleared stale `/uploads/1775263577451-cdhspu5d5xt.png` hero image path from restaurant 1 ("Resto"), which was rendering a broken chat screenshot. Now falls back to the clean 🥐 croissant emoji gradient placeholder.
 
+## System Integration + Cross-System Behavior Pass
+
+Four targeted integration wires added — no new features, just existing systems actually talking to each other:
+
+- **I-1 (Life Loop → Homepage)**: `home.tsx` now imports `evaluateLifeLoop()` + `getTwin()` and computes a `lifeLoop` decision on every render. The `sectionOrder` array from the engine now drives whether social sections (ActivityFeed, GroupSuggestions) render **before** or **after** LiveSections. In the evening/night or when friends are active, social surfaces bubble up; at lunchtime, live activity leads. The `contextHint` string is now displayed in the hero as a subtle `<Sparkles />` insight strip when `confidence >= 0.65` (user has ≥ 10 interactions).
+- **I-2 (Social cues → SmartReminders)**: `smart-reminders.tsx` now fetches `/api/social/group-suggestions/:email` as a 4th trigger source. If friends are active at a venue right now, a "X & Y sind gerade aktiv — {RestaurantName}" card appears in the notification overlay, linking directly to that restaurant.
+- **I-3 (Friend cues → Hyper-local ranking)**: `hyper-local.ts` `computeHyperLocalScore()` now accepts a `friendCueCount` parameter. Friend activity at a venue adds up to +1.5 pts to the hyper-local score (capped). `rankHyperLocal()` now accepts the full `cues` record and maps cue counts to restaurant IDs before scoring. `NearYouNow` accepts a `cues` prop and passes it through; home.tsx passes the live `cues` from `useSocialCues()`. Cards now show a blue "N Freunde hier" badge when `friendCueCount > 0`.
+- **I-4 (Meal plan → Auto plans)**: `auto-plans-engine.ts` `evaluateAutoPlans()` accepts `hasTodayMealPlan?: boolean`. If the user has a meal plan for today AND the auto-plan mode is `lunch_plan`/`group_dinner` during the relevant time window (11–14 / 17–21), the auto-plan card is suppressed (`triggerReason: "meal_plan_active"`) — preventing the app from contradicting the user's own stated intent. Home.tsx fetches today's meal plan and passes the flag.
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

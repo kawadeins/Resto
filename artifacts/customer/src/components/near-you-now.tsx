@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { Link } from "wouter";
-import { Navigation, Star, ArrowRight, Timer, Flame, MapPin, Armchair, Zap } from "lucide-react";
+import { Navigation, Star, ArrowRight, Timer, Flame, MapPin, Armchair, Zap, Users } from "lucide-react";
 import { rankHyperLocal, urgencyLabel, type ScoredRestaurant } from "@/lib/hyper-local";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
+import type { SocialCue } from "@/lib/social-api";
 
 interface NearYouNowProps {
   restaurants: MarketplaceRestaurant[];
@@ -11,6 +12,7 @@ interface NearYouNowProps {
   userLng: number;
   maxCount?: number;
   radiusKm?: number;
+  cues?: Record<string, SocialCue>;
 }
 
 function UrgencyBadge({ sr }: { sr: ScoredRestaurant }) {
@@ -39,7 +41,7 @@ function UrgencyBadge({ sr }: { sr: ScoredRestaurant }) {
 }
 
 function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
-  const { restaurant: r, distance, isWeakHour, flashDeal } = sr;
+  const { restaurant: r, distance, isWeakHour, flashDeal, friendCueCount } = sr;
   const urgency = urgencyLabel(sr.flashMinutesLeft, sr.isWeakHour, sr.minutesUntilClose);
   const distanceText = distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)} km`;
 
@@ -67,6 +69,12 @@ function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
               {rank <= 0 && (
                 <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
                   <Flame className="w-2.5 h-2.5" /> Top Pick
+                </span>
+              )}
+              {friendCueCount > 0 && (
+                <span className="bg-blue-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+                  <Users className="w-2.5 h-2.5" />
+                  {friendCueCount === 1 ? "1 Freund war hier" : `${friendCueCount} Freunde hier`}
                 </span>
               )}
               {r.hasActiveFlash && r.flashPercentage && (
@@ -172,10 +180,11 @@ export function NearYouNow({
   userLng,
   maxCount = 4,
   radiusKm = 10,
+  cues = {},
 }: NearYouNowProps) {
   const ranked = useMemo(
-    () => rankHyperLocal(restaurants, userLat, userLng, flashDeals, radiusKm).slice(0, maxCount),
-    [restaurants, flashDeals, userLat, userLng, maxCount, radiusKm]
+    () => rankHyperLocal(restaurants, userLat, userLng, flashDeals, radiusKm, cues).slice(0, maxCount),
+    [restaurants, flashDeals, userLat, userLng, maxCount, radiusKm, cues]
   );
 
   if (ranked.length === 0) return null;
