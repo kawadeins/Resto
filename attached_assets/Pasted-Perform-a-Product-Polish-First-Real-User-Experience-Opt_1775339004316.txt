@@ -1,0 +1,280 @@
+Perform a "Product Polish + First Real User Experience Optimization Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT add new features.
+Do NOT redesign the app completely.
+Do NOT touch stable core logic unnecessarily.
+
+This is a UX, clarity, and feel upgrade.
+
+========================
+GOAL
+========================
+
+Transform the app from:
+👉 “working product”
+
+into:
+👉 “pleasant, clear, and enjoyable experience”
+
+Focus on:
+- clarity
+- flow smoothness
+- visual harmony
+- user confidence
+- first impression
+
+========================
+1. FIRST SCREEN IMPACT (VERY IMPORTANT)
+========================
+
+Optimize homepage so that within 3 seconds:
+
+User understands:
+- what the app does
+- what they can do now
+- where to tap
+
+Ensure:
+- strong top section
+- visible categories (restaurant / café / bar)
+- clear “Near You” content
+- no confusion
+
+========================
+2. REMOVE CONFUSION
+========================
+
+Find and fix:
+
+- unclear buttons
+- unclear labels
+- misleading icons
+- duplicate actions
+- screens with no clear purpose
+
+User should NEVER ask:
+👉 “شو بعمل هلق؟”
+
+========================
+3. CTA CLARITY (CALL TO ACTION)
+========================
+
+Every important screen must have clear action:
+
+Examples:
+- “View Place”
+- “See Offers”
+- “Plan Now”
+- “Open Map”
+- “Save”
+
+Remove weak or vague CTAs.
+
+========================
+4. MICRO INTERACTIONS (FEEL)
+========================
+
+Improve small feedback moments:
+
+- tap feedback
+- button press animation
+- success confirmation
+- save feedback
+- loading indicators
+
+User must feel:
+👉 “التطبيق عم يتفاعل معي”
+
+========================
+5. LOADING + EMPTY STATES
+========================
+
+Fix:
+
+- blank screens
+- confusing empty states
+
+Replace with:
+
+- helpful message
+- suggestion
+- fallback content
+
+Example:
+👉 “No places found — try nearby areas”
+
+========================
+6. VISUAL CONSISTENCY
+========================
+
+Unify:
+
+- colors
+- spacing
+- typography
+- icon sizes
+- bubble UI style
+
+Remove:
+- random colors
+- inconsistent padding
+- mixed styles
+
+Everything must feel:
+👉 one system
+
+========================
+7. TRUST SIGNALS
+========================
+
+Increase user trust:
+
+- show ratings clearly
+- show verified badge clearly
+- show business type clearly
+- show location clearly
+- show real data (not fake)
+
+User must feel:
+👉 “هاد شي موثوق”
+
+========================
+8. REDUCE FRICTION
+========================
+
+Simplify:
+
+- navigation steps
+- unnecessary clicks
+- repeated actions
+- long flows
+
+Goal:
+👉 أقل عدد نقرات للوصول للفعل
+
+========================
+9. SCROLL EXPERIENCE
+========================
+
+Optimize scrolling:
+
+- smooth sections
+- good spacing
+- clear separation
+- no overcrowding
+
+User should enjoy browsing.
+
+========================
+10. PROFILE EXPERIENCE
+========================
+
+Ensure profile feels:
+
+- organized
+- premium
+- clear
+
+Top:
+- identity
+- premium status
+- important controls
+
+Lower:
+- preferences
+- history
+- secondary info
+
+========================
+11. BUSINESS VISIBILITY CLARITY
+========================
+
+On cards:
+
+Make clear:
+
+- what type (restaurant / café / bar)
+- why it’s shown
+- what makes it good
+- what action user can take
+
+No mystery.
+
+========================
+12. REMOVE VISUAL NOISE
+========================
+
+Remove:
+
+- unnecessary text
+- duplicate labels
+- weak sections
+- cluttered UI
+
+Keep:
+👉 المهم فقط
+
+========================
+13. FEEL OF SPEED
+========================
+
+Even if backend is fine:
+
+Improve perceived speed via:
+
+- skeleton loading
+- progressive rendering
+- immediate feedback
+
+App must feel fast.
+
+========================
+14. CONSISTENT ACTION FEEDBACK
+========================
+
+For every action:
+
+- click → feedback
+- save → confirmation
+- error → clear message
+- success → visible result
+
+No silent actions.
+
+========================
+15. FINAL UX WALKTHROUGH
+========================
+
+Simulate new user:
+
+- open app
+- explore
+- click
+- scroll
+- act
+
+Check:
+- clarity
+- comfort
+- speed
+- enjoyment
+
+========================
+FINAL GOAL
+========================
+
+User opens RestoMaster and feels:
+
+- “This is easy”
+- “This looks good”
+- “I understand everything”
+- “I want to keep using it”
+
+The app should feel:
+
+🔥 smooth  
+🔥 premium  
+🔥 clear  
+🔥 enjoyable  
+🔥 trustworthy

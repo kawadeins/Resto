@@ -213,6 +213,14 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 - **B-6 Fixed**: Campaigns page shows orange warning banner when email is not configured.
 - **B-7 Fixed**: Added `POST /api/promotions/restaurant/:restaurantId/impression` convenience endpoint; explore page fires impression events (once per session per restaurant) for boosted restaurants that appear in the list.
 
+## Critical Honesty Fixes (Phase 3 — Security / Ethics Audit)
+
+- **A-3 Fixed (CRITICAL)**: `customer/profile.tsx` — Removed the entire fake payment form from `PremiumModal`. The old step 1 collected real card numbers, showed fake "256-bit SSL" + "PCI DSS konform" trust badges, detected Apple Pay / Google Pay via browser APIs, then silently discarded all card data after a 2-second fake animation. Replaced with an honest "Demo-Modus" activation screen that clearly states no payment is required.
+- **A-2 Fixed**: `customer/profile.tsx` — Social login buttons ("Mit Apple fortfahren" / "Mit Google fortfahren") relabeled to "Als Apple-Gerät fortfahren (Demo)" / "Als Google-Konto fortfahren (Demo)" to make the demo-identity nature explicit.
+- **A-2a Fixed**: `customer/profile.tsx` — Login screen trust strip removed false "Ende-zu-Ende" (E2E encryption) and "DSGVO" (GDPR) claims. Replaced with honest "Gerätebezogene Demo-ID" label.
+- **A-3a Fixed**: `customer/profile.tsx` — `handleGoToDashboard()` redirect fixed from `window.location.origin + "/"` (customer homepage) to `window.location.origin + "/restosmart/"` (actual restosmart dashboard). Same fix applied to `OwnerPremiumCard` and the settings panel dashboard link (both previously redirected to `"/"`).
+- **B-8 Fixed**: `digital-twin.ts` — `getTwinInsightLabel` no longer uses `Math.random()` for label selection; uses deterministic index based on `bizAff` value (stable per-user, no UI flickering).
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

@@ -8,7 +8,7 @@ import {
   Utensils, Leaf, Beef, Moon, Fish, Minus, AlertTriangle, Sparkles,
   Trophy, ArrowRight, ShoppingBag, Clock, Crown, Store, BarChart2,
   Users, FileText, Megaphone, Zap, Shield, Lock, Bell, Trash2,
-  CreditCard, CheckCircle2, ExternalLink, Building2, ChevronLeft,
+  CheckCircle2, ExternalLink, Building2, ChevronLeft,
   Eye, EyeOff, Smartphone, Globe, Flame, Target, Activity,
 } from "lucide-react";
 
@@ -366,7 +366,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
             )}
-            <span>{signingIn === "apple" ? "Wird angemeldet…" : "Mit Apple fortfahren"}</span>
+            <span>{signingIn === "apple" ? "Wird vorbereitet…" : "Als Apple-Gerät fortfahren (Demo)"}</span>
           </button>
 
           {/* Google */}
@@ -385,15 +385,13 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
             )}
-            <span>{signingIn === "google" ? "Wird angemeldet…" : "Mit Google fortfahren"}</span>
+            <span>{signingIn === "google" ? "Wird vorbereitet…" : "Als Google-Konto fortfahren (Demo)"}</span>
           </button>
         </div>
 
-        {/* Trust strip */}
+        {/* Demo notice */}
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/70">
-          <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Ende-zu-Ende</span>
-          <span className="w-px h-3 bg-border" />
-          <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> DSGVO</span>
+          <span className="flex items-center gap-1"><Smartphone className="w-3 h-3" /> Gerätebezogene Demo-ID</span>
           <span className="w-px h-3 bg-border" />
           <span>Keine Werbung</span>
         </div>
@@ -440,14 +438,6 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
 
 // ─── Owner Premium Modal ──────────────────────────────────────────────────────
 
-type WalletType = "detecting" | "apple" | "google" | "none";
-
-declare global {
-  interface Window {
-    ApplePaySession?: { canMakePayments: () => boolean };
-  }
-}
-
 function PremiumModal({
   open,
   onClose,
@@ -460,69 +450,10 @@ function PremiumModal({
   const [step, setStep] = useState(0);
   const [selectedBusinessType, setSelectedBusinessType] = useState<BusinessType>("restaurant");
   const [processing, setProcessing] = useState(false);
-  const [walletType, setWalletType] = useState<WalletType>("detecting");
-  const [showCardForm, setShowCardForm] = useState(false);
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
 
-  // Detect available wallet when entering payment step
-  useEffect(() => {
-    if (step !== 1) return;
-    setWalletType("detecting");
-    setShowCardForm(false);
-
-    (async () => {
-      // Apple Pay — Safari/WebKit only
-      try {
-        if (
-          typeof window !== "undefined" &&
-          window.ApplePaySession &&
-          window.ApplePaySession.canMakePayments()
-        ) {
-          setWalletType("apple");
-          return;
-        }
-      } catch { /* not available */ }
-
-      // Google Pay via Payment Request API
-      try {
-        if (typeof window !== "undefined" && "PaymentRequest" in window) {
-          const req = new PaymentRequest(
-            [{ supportedMethods: "https://google.com/pay", data: { apiVersion: 2, apiVersionMinor: 0, allowedPaymentMethods: [] } }],
-            { total: { label: "Restaurant Premium", amount: { currency: "EUR", value: "29.00" } } }
-          );
-          const canPay = await req.canMakePayment();
-          if (canPay) {
-            setWalletType("google");
-            return;
-          }
-        }
-      } catch { /* not available */ }
-
-      setWalletType("none");
-      setShowCardForm(true);
-    })();
-  }, [step]);
-
-  const formatCardNumber = (v: string) =>
-    v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-  const formatExpiry = (v: string) => {
-    const d = v.replace(/\D/g, "").slice(0, 4);
-    return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
-  };
-
-  const handleWalletPay = async () => {
+  const handleActivate = async () => {
     setProcessing(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setProcessing(false);
-    setStep(2);
-  };
-
-  const handlePay = async () => {
-    setProcessing(true);
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 800));
     setProcessing(false);
     setStep(2);
   };
@@ -530,7 +461,7 @@ function PremiumModal({
   const handleGoToDashboard = () => {
     onActivate(selectedBusinessType);
     onClose();
-    window.location.href = window.location.origin + "/";
+    window.location.href = window.location.origin + "/restosmart/";
   };
 
   return (
@@ -616,10 +547,9 @@ function PremiumModal({
           </div>
         )}
 
-        {/* Step 1 — Payment (wallet-first) */}
+        {/* Step 1 — Pilot-Aktivierung (demo, no payment) */}
         {step === 1 && (
           <div className="flex flex-col">
-            {/* Header */}
             <div className="bg-gradient-to-br from-primary to-accent p-6 text-white relative">
               <button
                 onClick={() => setStep(0)}
@@ -628,181 +558,55 @@ function PremiumModal({
                 <ChevronLeft className="w-4 h-4 text-white" />
               </button>
               <div className="text-center pt-2">
-                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">Sicherer Checkout</div>
-                <div className="font-serif text-xl font-bold">{getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Premium</div>
-                <div className="text-white/80 text-sm mt-1">€29/Monat · 30 Tage kostenlos · Jederzeit kündbar</div>
+                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">Pilot-Zugang</div>
+                <div className="font-serif text-xl font-bold">{getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Dashboard</div>
+                <div className="text-white/80 text-sm mt-1">Demo-Version · Keine Zahlung erforderlich</div>
               </div>
             </div>
 
             <div className="p-6 space-y-5">
-              {/* Trust badges */}
-              <div className="flex items-center justify-center gap-4">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>256-bit SSL</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Lock className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>PCI DSS konform</span>
-                </div>
+              <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-1">
+                <p className="text-sm font-semibold text-amber-900">Demo-Modus</p>
+                <p className="text-sm text-amber-800 leading-relaxed">
+                  Dies ist eine Pilot-Demo. Es wird <strong>keine Zahlung erhoben</strong> und keine Zahlungsmethode benötigt. Der Zugang ist kostenlos.
+                </p>
               </div>
 
-              {/* Wallet detection state */}
-              {walletType === "detecting" && (
-                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground text-sm">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Zahlungsmethoden werden erkannt…
-                </div>
-              )}
+              <div className="space-y-2.5">
+                {[
+                  "Buchungs- & Tischmanagement",
+                  "Marketing-Kampagnen & Angebote",
+                  "Analytik & Umsatzberichte",
+                  "Personal- & Schichtplanung",
+                  "Alle 9 Dashboard-Module",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span className="text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
 
-              {/* Apple Pay */}
-              {walletType === "apple" && (
-                <div className="space-y-3">
-                  <p className="text-[11px] text-center text-muted-foreground uppercase tracking-widest font-bold">Bevorzugte Zahlungsmethode</p>
-                  <button
-                    onClick={handleWalletPay}
-                    disabled={processing}
-                    className="w-full h-14 rounded-2xl bg-black flex items-center justify-center gap-2.5 text-white font-semibold text-base hover:bg-black/90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg"
-                  >
-                    {processing ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Wird verarbeitet…</>
-                    ) : (
-                      <>
-                        {/* Apple logo */}
-                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                        </svg>
-                        Pay
-                      </>
-                    )}
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs text-muted-foreground">oder mit Karte bezahlen</span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
-                  <button
-                    onClick={() => setShowCardForm((v) => !v)}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors text-center font-medium flex items-center justify-center gap-1"
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    {showCardForm ? "Kartenformular ausblenden" : "Mit Karte bezahlen"}
-                  </button>
-                </div>
-              )}
-
-              {/* Google Pay */}
-              {walletType === "google" && (
-                <div className="space-y-3">
-                  <p className="text-[11px] text-center text-muted-foreground uppercase tracking-widest font-bold">Bevorzugte Zahlungsmethode</p>
-                  <button
-                    onClick={handleWalletPay}
-                    disabled={processing}
-                    className="w-full h-14 rounded-2xl bg-white border border-gray-200 flex items-center justify-center gap-2.5 font-semibold text-base text-gray-800 hover:bg-gray-50 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
-                  >
-                    {processing ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Wird verarbeitet…</>
-                    ) : (
-                      <>
-                        {/* Google Pay logo */}
-                        <svg viewBox="0 0 41 17" xmlns="http://www.w3.org/2000/svg" className="h-5">
-                          <path d="M19.526 2.635v4.083h2.518c.6 0 1.096-.202 1.488-.605.403-.402.605-.882.605-1.437 0-.544-.202-1.018-.605-1.422-.392-.413-.888-.62-1.488-.62h-2.518zm0 5.52v4.736h-1.504V1.198h3.99c1.013 0 1.873.337 2.582 1.012.72.675 1.08 1.497 1.08 2.466 0 .991-.36 1.819-1.08 2.482-.697.665-1.559.996-2.583.996h-2.485zM27.194 10.667c0 .574.276 1.053.829 1.437.552.384 1.2.576 1.944.576.99 0 1.887-.376 2.687-1.128l.734.783c-.93 1.01-2.15 1.514-3.661 1.514-.96 0-1.82-.247-2.58-.741-.76-.494-1.14-1.166-1.14-2.017 0-.787.328-1.431.987-1.932.659-.5 1.506-.751 2.542-.751.98 0 1.762.212 2.346.637.584.425.875 1.007.875 1.742-.001.404-.044.76-.13 1.07l-5.433-.19zm5.434-1.07c-.28-.658-.887-.987-1.821-.987-.623 0-1.147.168-1.573.505-.426.337-.639.73-.639 1.182l4.033-.7zM35.917 13.778l-2.742-7.258h1.596l1.965 5.461 1.939-5.461h1.58l-4.41 11.478h-1.55l1.622-4.22z" fill="#5F6368"/>
-                          <path d="M14.137 6.963c0-.476-.044-.933-.124-1.37H7.3v2.594h3.834a3.274 3.274 0 01-1.42 2.148v1.786h2.298c1.345-1.239 2.126-3.065 2.126-5.158z" fill="#4285F4"/>
-                          <path d="M7.3 14.028c1.925 0 3.54-.638 4.72-1.727l-2.298-1.786c-.638.427-1.454.68-2.422.68-1.863 0-3.44-1.258-4.003-2.95H.928v1.843C2.1 12.473 4.53 14.028 7.3 14.028z" fill="#34A853"/>
-                          <path d="M3.297 8.245a4.256 4.256 0 010-2.717V3.685H.928A7.006 7.006 0 000 6.887c0 1.13.27 2.2.928 3.2l2.369-1.842z" fill="#FBBC04"/>
-                          <path d="M7.3 2.577c1.05 0 1.994.361 2.737 1.07l2.051-2.05C10.83.638 9.217 0 7.3 0 4.53 0 2.1 1.556.928 3.685L3.297 5.528C3.861 3.835 5.437 2.577 7.3 2.577z" fill="#EA4335"/>
-                        </svg>
-                        Pay
-                      </>
-                    )}
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs text-muted-foreground">oder mit Karte bezahlen</span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
-                  <button
-                    onClick={() => setShowCardForm((v) => !v)}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors text-center font-medium flex items-center justify-center gap-1"
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    {showCardForm ? "Kartenformular ausblenden" : "Mit Karte bezahlen"}
-                  </button>
-                </div>
-              )}
-
-              {/* Card form — shown when: no wallet detected OR user toggled */}
-              {(walletType === "none" || showCardForm) && walletType !== "detecting" && (
-                <div className="space-y-3">
-                  {walletType === "none" && (
-                    <p className="text-[11px] text-center text-muted-foreground uppercase tracking-widest font-bold">Zahlung per Karte</p>
-                  )}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Karteninhaber</Label>
-                    <Input
-                      placeholder="Max Mustermann"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      className="h-11 rounded-xl"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kartennummer</Label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="1234 5678 9012 3456"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                        className="h-11 pl-10 rounded-xl tracking-wider"
-                        inputMode="numeric"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ablaufdatum</Label>
-                      <Input
-                        placeholder="MM/JJ"
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                        className="h-11 rounded-xl"
-                        inputMode="numeric"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CVC</Label>
-                      <Input
-                        placeholder="123"
-                        value={cardCvc}
-                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                        className="h-11 rounded-xl"
-                        inputMode="numeric"
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full h-12 rounded-2xl text-base font-semibold mt-1"
-                    onClick={handlePay}
-                    disabled={processing || !cardName || cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3}
-                  >
-                    {processing ? (
-                      <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Zahlung wird verarbeitet…</span>
-                    ) : (
-                      <span className="flex items-center gap-2"><Lock className="w-4 h-4" /> Jetzt sicher bezahlen</span>
-                    )}
-                  </Button>
-                </div>
-              )}
+              <Button
+                className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25"
+                onClick={handleActivate}
+                disabled={processing}
+              >
+                {processing ? (
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Wird aktiviert…</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Crown className="w-4 h-4" /> Demo-Zugang freischalten</span>
+                )}
+              </Button>
 
               <p className="text-[11px] text-center text-muted-foreground leading-relaxed">
-                Mit der Zahlung stimmen Sie unseren Nutzungsbedingungen zu. Sie können jederzeit im Dashboard kündigen.
+                Pilot-Version ohne Zahlungspflicht. Für kommerzielle Lizenzierung kontaktieren Sie uns.
               </p>
             </div>
           </div>
         )}
 
-        {/* Step 2 — Success */}
+        {/* Step 2 — Aktivierung erfolgreich */}
         {step === 2 && (
           <div className="p-8 text-center flex flex-col items-center gap-5">
             <div className="relative">
@@ -814,23 +618,23 @@ function PremiumModal({
               </div>
             </div>
             <div>
-              <h3 className="font-serif text-2xl font-bold mb-2">Herzlichen Glückwunsch!</h3>
+              <h3 className="font-serif text-2xl font-bold mb-2">Dashboard freigeschaltet!</h3>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-                Ihr {getBusinessLabel(selectedBusinessType)} Premium-Zugang ist jetzt aktiv. Ihr komplettes Verwaltungs-Dashboard wartet auf Sie.
+                Ihr {getBusinessLabel(selectedBusinessType)}-Dashboard ist jetzt aktiv. Erkunden Sie alle Funktionen der Pilot-Version.
               </p>
             </div>
             <div className="w-full space-y-2.5 pt-2">
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">30 Tage kostenlose Testphase gestartet</span>
+                <span className="text-sm">Demo-Zugang aktiviert</span>
               </div>
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">Alle 9 Premium-Module freigeschaltet</span>
+                <span className="text-sm">Alle 9 Dashboard-Module freigeschaltet</span>
               </div>
-              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">Jederzeit kündbar, keine Bindung</span>
+              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-amber-50 border border-amber-100">
+                <Shield className="w-4 h-4 text-amber-500 shrink-0" />
+                <span className="text-sm text-amber-800">Pilot-Version · keine Zahlung</span>
               </div>
             </div>
             <Button
@@ -864,7 +668,7 @@ function OwnerPremiumCard({
   if (isPremium) {
     return (
       <button
-        onClick={() => { window.location.href = window.location.origin + "/"; }}
+        onClick={() => { window.location.href = window.location.origin + "/restosmart/"; }}
         className="w-full text-left press-scale"
       >
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-violet-600 to-accent p-5 shadow-xl shadow-primary/25">
@@ -1724,7 +1528,7 @@ export default function Profile() {
               </h3>
               {ownerPremium ? (
                 <button
-                  onClick={() => { window.location.href = window.location.origin + "/"; }}
+                  onClick={() => { window.location.href = window.location.origin + "/restosmart/"; }}
                   className="flex items-center gap-3 w-full p-3 rounded-xl bg-primary/5 hover:bg-primary/10 border border-primary/20 transition-colors text-left"
                 >
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">

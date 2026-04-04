@@ -405,7 +405,8 @@ export function getTwinInsightLabel(
 
   if (biz === twin.routines.preferredBizType && bizAff > 0.7) {
     const labels = ["Dein Typ", "Passt zu dir", "Dein Stil"];
-    return labels[Math.floor(Math.random() * labels.length)];
+    const idx = Math.floor(bizAff * labels.length) % labels.length;
+    return labels[idx];
   }
   if (cuisine && cuisineAff > 0.65) {
     return `Du liebst ${cuisine}`;

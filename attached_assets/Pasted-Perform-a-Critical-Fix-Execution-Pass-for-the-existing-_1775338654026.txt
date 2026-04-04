@@ -1,0 +1,233 @@
+Perform a "Critical Fix Execution Pass" for the existing RestoMaster platform based on the identified bug list and priority map.
+
+IMPORTANT:
+Do NOT add new features.
+Do NOT redesign the app.
+Do NOT ignore priorities.
+Do NOT fix randomly.
+
+This is a structured, priority-based fixing phase.
+
+========================
+GOAL
+========================
+
+Fix all CRITICAL and HIGH issues in a clean, systematic way to make the platform:
+
+- stable
+- reliable
+- truthful
+- safe to use
+- ready for real users
+
+This is execution, not analysis.
+
+========================
+1. INPUT REQUIREMENT
+========================
+
+Use the previously generated:
+
+👉 Internal Bug List + Priority Map
+
+This pass must strictly follow that priority.
+
+========================
+2. FIX ORDER (MANDATORY)
+========================
+
+Fix issues ONLY in this order:
+
+PHASE 1 — CRITICAL
+- auth issues
+- session issues
+- routing breaks
+- data not saving
+- booking failures
+- premium access issues
+- wrong permissions
+- crashes
+
+PHASE 2 — HIGH
+- broken flows
+- wrong data shown
+- map issues
+- notification issues
+- business dashboard inconsistencies
+- business_type mismatches
+- partial feature failures
+
+DO NOT jump to medium/low before finishing these.
+
+========================
+3. AUTH + SESSION HARDENING
+========================
+
+Ensure:
+
+- login works reliably
+- session persists after refresh
+- logout works correctly
+- owner dashboard exit does NOT log out entire app
+- no double-auth states
+- correct user identity everywhere
+
+========================
+4. DATA PERSISTENCE FIX
+========================
+
+Fix all saving/loading issues:
+
+- profile edits
+- preferences
+- business profile updates
+- offers
+- bookings
+- plans (meal + group)
+- feedback
+- social connections
+
+Ensure:
+- saved data persists
+- refresh does not reset state
+- UI reflects real stored data
+
+========================
+5. ROUTING + NAVIGATION FIX
+========================
+
+Fix:
+
+- broken routes
+- redirect loops
+- wrong screen openings
+- back navigation issues
+- dashboard/profile transitions
+- dead navigation paths
+
+Navigation must be clean and predictable.
+
+========================
+6. PREMIUM + DASHBOARD FIX
+========================
+
+Ensure:
+
+- premium gating works
+- only premium users access dashboard
+- no duplicate subscription flows
+- dashboard loads correctly
+- exit returns to profile (NOT login)
+- business_type reflected correctly
+
+========================
+7. BOOKING + PLAN FIX
+========================
+
+Ensure:
+
+- booking works end-to-end
+- booking persists
+- plan creation works
+- group plan works
+- no duplicate plans
+- reminders linked correctly
+
+========================
+8. MAP + LOCATION FIX
+========================
+
+Ensure:
+
+- geolocation works
+- fallback works
+- markers correct
+- distance accurate
+- no crashes
+- restaurant/café/bar positions correct
+
+========================
+9. NOTIFICATION FIX
+========================
+
+Ensure:
+
+- correct timing
+- correct user targeting
+- no duplicates
+- linked to real events
+- no spam behavior
+
+========================
+10. REMOVE MISLEADING STATES
+========================
+
+Fix or remove:
+
+- fake counters
+- fake activity labels
+- fake recommendations
+- fake analytics
+- fake success messages
+
+If not real → remove or downgrade.
+
+========================
+11. SYSTEM INTEGRITY CHECK AFTER EACH FIX
+========================
+
+After each major fix:
+
+- re-test affected flow
+- ensure nothing else broke
+- ensure consistency across app
+
+No chain-breaks.
+
+========================
+12. STABILITY VALIDATION PASS
+========================
+
+After all fixes:
+
+Re-test full flows:
+
+USER:
+- login → explore → map → place → action → profile
+
+BUSINESS:
+- profile → premium → dashboard → edit → exit
+
+Ensure:
+- no breakpoints
+- no resets
+- no fake behavior
+
+========================
+13. FINAL OUTPUT REPORT
+========================
+
+Produce:
+
+A. Fixed critical issues
+B. Fixed high issues
+C. Remaining issues (if any)
+D. Systems now stable
+E. Systems still fragile
+F. Systems safe for next development phase
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should now be:
+
+- stable
+- connected
+- truthful
+- usable
+- ready for real users
+
+No illusions.
+No broken flows.
+No critical issues left.
