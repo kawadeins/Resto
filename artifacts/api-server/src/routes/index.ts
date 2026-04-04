@@ -34,6 +34,7 @@ import socialRouter from "./social";
 import instantPlansRouter from "./instant-plans";
 import promotionsRouter from "./promotions";
 import founderRouter from "./founder";
+import pricingRouter from "./pricing";
 
 const router: IRouter = Router();
 
@@ -72,5 +73,6 @@ router.use("/social", socialRouter);
 router.use("/instant-plans", instantPlansRouter);
 router.use("/promotions", promotionsRouter);
 router.use("/founder", founderRouter);
+router.use("/pricing", pricingRouter);
 
 export default router;

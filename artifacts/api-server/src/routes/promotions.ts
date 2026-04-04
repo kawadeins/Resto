@@ -15,6 +15,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+import { computeDynamicPrice } from "../lib/pricing-engine";
 
 const router = Router();
 
@@ -489,14 +490,22 @@ router.post("/restaurant/:restaurantId/impression", async (req, res) => {
     const restaurantId = Number(req.params.restaurantId);
     const today = new Date().toISOString().split("T")[0];
 
-    const rows = await db.execute(sql`
-      SELECT id, daily_budget, spent_today, budget_reset_date FROM promotions
-      WHERE restaurant_id = ${restaurantId}
-        AND status = 'active'
-        AND (ends_at IS NULL OR ends_at > NOW())
-      ORDER BY created_at DESC
-      LIMIT 1
-    `);
+    // Fetch active promotion and restaurant business type in parallel
+    const [rows, bizRows] = await Promise.all([
+      db.execute(sql`
+        SELECT id, daily_budget, spent_today, budget_reset_date FROM promotions
+        WHERE restaurant_id = ${restaurantId}
+          AND status = 'active'
+          AND (ends_at IS NULL OR ends_at > NOW())
+        ORDER BY created_at DESC
+        LIMIT 1
+      `),
+      db.execute(sql`
+        SELECT COALESCE(business_type, 'restaurant') AS business_type
+        FROM restaurants WHERE id = ${restaurantId} LIMIT 1
+      `),
+    ]);
+
     const promo = rows.rows[0] as {
       id: number;
       daily_budget: string;
@@ -504,6 +513,8 @@ router.post("/restaurant/:restaurantId/impression", async (req, res) => {
       budget_reset_date: string;
     } | undefined;
     if (!promo) return res.json({ ok: false, reason: "no_active_promotion" });
+
+    const bizType = ((bizRows.rows[0] as any)?.business_type as string | undefined) ?? "restaurant";
 
     // Check budget
     const lastReset = (promo.budget_reset_date ?? "").toString().slice(0, 10);
@@ -513,17 +524,21 @@ router.post("/restaurant/:restaurantId/impression", async (req, res) => {
       return res.json({ ok: false, reason: "budget_exhausted", promotionId: promo.id });
     }
 
+    // Compute real-time impression price
+    const pricing = await computeDynamicPrice(bizType);
+    const impressionCost = pricing.pricePerImpression;
+
     await db.execute(sql`
       INSERT INTO promotion_events (promotion_id, event_type, context)
       VALUES (${promo.id}, 'impression', 'explore_list')
     `);
 
-    // Deduct €0.01 per impression from daily budget and reset if new day
+    // Deduct dynamic price per impression; reset daily spend if new day
     if (lastReset < today) {
       await db.execute(sql`
         UPDATE promotions
         SET impressions = impressions + 1,
-            spent_today = 0.01,
+            spent_today = ${impressionCost},
             budget_reset_date = ${today},
             updated_at = NOW()
         WHERE id = ${promo.id}
@@ -532,14 +547,20 @@ router.post("/restaurant/:restaurantId/impression", async (req, res) => {
       await db.execute(sql`
         UPDATE promotions
         SET impressions = impressions + 1,
-            spent_today = spent_today + 0.01,
+            spent_today = spent_today + ${impressionCost},
             updated_at = NOW()
         WHERE id = ${promo.id}
       `);
     }
 
-    const remaining = dailyBudget > 0 ? Math.max(0, dailyBudget - spentToday - 0.01) : null;
-    return res.json({ ok: true, promotionId: promo.id, budgetRemaining: remaining });
+    const remaining = dailyBudget > 0 ? Math.max(0, dailyBudget - spentToday - impressionCost) : null;
+    return res.json({
+      ok: true,
+      promotionId: promo.id,
+      budgetRemaining: remaining,
+      impressionCost,
+      demandLevel: pricing.demandLevel,
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to record restaurant impression");
     return res.status(500).json({ error: "Failed to record impression" });

@@ -1,0 +1,239 @@
+MASTER RULES APPLY
+
+Build a "Business Growth Engine" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random unrelated features.
+Do NOT turn this into a CRM or marketing automation monster.
+
+This is a business acquisition and conversion system for:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Make RestoMaster naturally attract, convert, and grow business owners inside the platform.
+
+The system should help businesses understand:
+
+- why they should join
+- what value they get
+- how much visibility they are missing
+- why premium is worth paying for
+
+The goal is to reduce dependence on manual sales and create internal business growth.
+
+========================
+1. BUSINESS ENTRY PATH (CRITICAL)
+========================
+
+Create a clear business-owner entry path inside the app.
+
+The app must communicate that it is not only for customers, but also for business owners:
+- restaurants
+- cafés
+- bars
+
+There should be a clear way for a business owner to understand:
+- this platform supports my business type
+- I can join
+- I can be discovered
+- I can grow here
+
+========================
+2. VALUE EXPLANATION LAYER
+========================
+
+Add a strong value explanation for business owners.
+
+Explain clearly that businesses can get:
+- more nearby visibility
+- discovery in search and homepage
+- map exposure
+- smart offers exposure
+- social/live visibility
+- premium trust badge
+- boost and promoted placement options
+- analytics and growth insight
+
+This value explanation should adapt by business type:
+
+Restaurants:
+- bookings / lunch / dinner traffic
+
+Cafés:
+- coffee rush / breakfast / work traffic
+
+Bars:
+- nightlife / evening / happy hour traffic
+
+========================
+3. MISSED OPPORTUNITY SYSTEM
+========================
+
+Show business owners what they are missing if they are not premium or not active.
+
+Examples:
+- “Your business could appear higher nearby”
+- “You are missing local visibility”
+- “Nearby users are searching right now”
+- “Unlock stronger map visibility”
+- “Your business could benefit from morning/lunch/night boosts”
+
+This should create real motivation, not fake pressure.
+
+========================
+4. BUSINESS CLAIM / ACTIVATE FLOW
+========================
+
+Allow a business owner to:
+- claim their business
+or
+- activate their business profile
+or
+- join as a new business
+
+This should be simple and direct.
+
+Flow:
+- identify business
+- select business type
+- enter basic details
+- understand platform value
+- move into setup / premium path
+
+========================
+5. BUSINESS-TYPE ADAPTATION
+========================
+
+The system must support all business types equally:
+
+- restaurant
+- café
+- bar
+
+And adapt messaging/examples accordingly.
+
+Do NOT make the system restaurant-only.
+
+========================
+6. GROWTH SIGNALS FOR BUSINESSES
+========================
+
+Where possible, show growth signals such as:
+- people nearby
+- searches in this area
+- relevant time-based traffic
+- visibility opportunity
+- nearby demand by time of day
+
+Examples:
+- “Strong coffee demand in your area this morning”
+- “Nightlife activity is high nearby”
+- “Lunch visibility is valuable in this zone”
+
+These signals should feel data-backed, not fake.
+
+========================
+7. PREMIUM CONVERSION PATH
+========================
+
+Guide business owners toward premium in a clean and smart way.
+
+Premium should feel like:
+- growth tool
+- visibility engine
+- business advantage
+
+Not just:
+- subscription
+- locked dashboard
+
+Show premium as:
+- more exposure
+- more discovery
+- better trust
+- more business opportunities
+
+========================
+8. BOOST / ADS ENTRY
+========================
+
+Inside the business growth path, make it clear that premium businesses can also use:
+- boost visibility
+- sponsored placement
+- promoted local visibility
+
+This should reinforce monetization:
+- subscription + boost budget
+
+========================
+9. TRUST + PROFESSIONALISM
+========================
+
+The business growth engine must feel:
+- serious
+- premium
+- useful
+- trustworthy
+
+Avoid:
+- spammy upsell feel
+- cheap ad language
+- fake urgency
+
+Business owners must feel:
+“This platform can really help me grow.”
+
+========================
+10. FOUNDER INSIGHT CONNECTION
+========================
+
+Connect this system to founder insights where relevant.
+
+Track:
+- business profile claims
+- business activations
+- premium conversions
+- business-type conversion rates
+- city-level business adoption
+
+This should help the founder understand:
+- which business types convert best
+- which cities show strongest adoption
+- what growth messages work best
+
+========================
+11. DO NOT OVERCOMPLICATE
+========================
+
+- no full sales CRM
+- no heavy outbound automation
+- no enterprise onboarding suite
+
+Focus on:
+- clear entry
+- clear value
+- clear growth path
+- premium conversion
+- business self-onboarding
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should include a real Business Growth Engine that helps:
+- restaurants
+- cafés
+- bars
+
+discover that the platform is valuable for them,
+join it,
+activate their profile,
+and convert into premium customers.
+
+The platform should begin to attract business owners naturally, not only through manual outreach.

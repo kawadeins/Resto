@@ -414,6 +414,278 @@ const OBJECTIONS = [
   { q: '"Keine Zeit"', a: '"Wir richten alles für Sie ein. Null Aufwand."' },
 ];
 
+// ─── Founder Pricing Controls ─────────────────────────────────────────────────
+
+interface PricingConfig {
+  basePrice: number;
+  maxMultiplier: number;
+  minPrice: number;
+  demandSensitivity: number;
+  demandThresholds: { low: number; normal: number; high: number; very_high: number };
+}
+
+interface LivePricing {
+  pricePerImpression: number;
+  pricePer1000: number;
+  demandLevel: string;
+  totalActivePlatformBoosts: number;
+  competingBoosts: number;
+  pricingContext: string;
+  breakdown: { basePrice: number; demandMultiplier: number; timeMultiplier: number; slotMultiplier: number; weekendBonus: number; totalMultiplier: number; finalPrice: number };
+  config: { basePrice: number; maxMultiplier: number };
+}
+
+function FounderPricingControls({ founderKey }: { founderKey: string }) {
+  const headers = { "x-founder-key": founderKey, "Content-Type": "application/json" };
+  const qc = useQueryClient();
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const configQuery = useQuery<PricingConfig>({
+    queryKey: ["founder-pricing-config"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/pricing/config`, { headers });
+      if (!r.ok) throw new Error("Unauthorized");
+      return r.json();
+    },
+  });
+
+  const liveQuery = useQuery<LivePricing>({
+    queryKey: ["founder-pricing-live"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/pricing/current`);
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    refetchInterval: 60_000,
+  });
+
+  const [draft, setDraft] = useState<Partial<PricingConfig>>({});
+  useEffect(() => {
+    if (configQuery.data && Object.keys(draft).length === 0) {
+      setDraft(configQuery.data);
+    }
+  }, [configQuery.data]);
+
+  const cfg = { ...(configQuery.data ?? {}), ...draft } as PricingConfig;
+
+  async function saveConfig() {
+    setSaving(true);
+    try {
+      const r = await fetch(`${API}/pricing/config`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(draft),
+      });
+      if (!r.ok) throw new Error("Failed");
+      qc.invalidateQueries({ queryKey: ["founder-pricing-config"] });
+      qc.invalidateQueries({ queryKey: ["founder-pricing-live"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const live = liveQuery.data;
+
+  const DEMAND_COLORS: Record<string, string> = {
+    low: "text-emerald-400",
+    normal: "text-blue-400",
+    high: "text-amber-400",
+    very_high: "text-red-400",
+  };
+
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-5">
+        <Activity className="w-4 h-4 text-violet-400" />
+        <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Dynamic Pricing Engine</span>
+        <span className="ml-2 text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full font-bold">FOUNDER ONLY</span>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
+        {/* Live status card */}
+        <div className="rounded-2xl border border-white/6 bg-white/2 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#888]">Live-Preisübersicht</span>
+            <span className={cn("text-xs font-bold", DEMAND_COLORS[live?.demandLevel ?? "normal"])}>
+              {live?.demandLevel === "low" ? "Niedrige" : live?.demandLevel === "high" ? "Hohe" : live?.demandLevel === "very_high" ? "Sehr hohe" : "Normale"} Nachfrage
+            </span>
+          </div>
+
+          {live ? (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl bg-[#0d0d18] border border-white/6 p-3 text-center">
+                  <p className="text-[10px] text-[#555] mb-1">Preis / Einbl.</p>
+                  <p className="text-base font-bold text-white font-mono">€{live.pricePerImpression.toFixed(4)}</p>
+                </div>
+                <div className="rounded-xl bg-[#0d0d18] border border-white/6 p-3 text-center">
+                  <p className="text-[10px] text-[#555] mb-1">Preis / 1.000</p>
+                  <p className="text-base font-bold text-white font-mono">€{live.pricePer1000.toFixed(2)}</p>
+                </div>
+                <div className="rounded-xl bg-[#0d0d18] border border-white/6 p-3 text-center">
+                  <p className="text-[10px] text-[#555] mb-1">Aktive Boosts</p>
+                  <p className="text-base font-bold text-white font-mono">{live.totalActivePlatformBoosts}</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-[#0d0d18] border border-white/6 p-3 space-y-1.5">
+                <p className="text-[10px] font-semibold text-[#888]">Preisfaktoren</p>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  {[
+                    ["Basispreis",      `€${live.breakdown.basePrice.toFixed(4)}`],
+                    ["Nachfrage ×",     `${live.breakdown.demandMultiplier.toFixed(2)}×`],
+                    ["Tageszeit ×",     `${live.breakdown.timeMultiplier.toFixed(2)}×`],
+                    ["Wettbewerb ×",    `${live.breakdown.slotMultiplier.toFixed(2)}×`],
+                    ["Wochenend-Bonus", `${live.breakdown.weekendBonus.toFixed(2)}×`],
+                    ["Gesamtfaktor",    `${live.breakdown.totalMultiplier.toFixed(2)}×`],
+                  ].map(([label, val]) => (
+                    <div key={label} className="flex justify-between bg-white/3 rounded px-2 py-1">
+                      <span className="text-[#555]">{label}</span>
+                      <span className="font-mono text-white/80">{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-[11px] text-[#555]">{live.pricingContext}</p>
+            </>
+          ) : (
+            <div className="animate-pulse space-y-3">
+              <div className="h-16 bg-white/4 rounded-xl" />
+              <div className="h-28 bg-white/4 rounded-xl" />
+            </div>
+          )}
+        </div>
+
+        {/* Config editor */}
+        <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#888]">Preisparameter bearbeiten</span>
+            {saved && <span className="text-[11px] text-emerald-400 font-semibold">✓ Gespeichert</span>}
+          </div>
+
+          {configQuery.isLoading ? (
+            <div className="animate-pulse space-y-3">
+              {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-white/4 rounded-xl" />)}
+            </div>
+          ) : (
+            <div className="space-y-3">
+
+              <ConfigRow
+                label="Basispreis (€ / Einbl.)"
+                value={cfg.basePrice ?? 0.01}
+                min={0.001} max={0.05} step={0.001}
+                format={v => `€${v.toFixed(4)}`}
+                onChange={v => setDraft(d => ({ ...d, basePrice: v }))}
+              />
+
+              <ConfigRow
+                label="Max. Multiplikator"
+                value={cfg.maxMultiplier ?? 2.5}
+                min={1.0} max={5.0} step={0.1}
+                format={v => `${v.toFixed(1)}×`}
+                onChange={v => setDraft(d => ({ ...d, maxMultiplier: v }))}
+              />
+
+              <ConfigRow
+                label="Min. Preis (Boden)"
+                value={cfg.minPrice ?? 0.004}
+                min={0.001} max={0.01} step={0.001}
+                format={v => `€${v.toFixed(4)}`}
+                onChange={v => setDraft(d => ({ ...d, minPrice: v }))}
+              />
+
+              <ConfigRow
+                label="Nachfrage-Sensitivität"
+                value={cfg.demandSensitivity ?? 1.0}
+                min={0.1} max={3.0} step={0.1}
+                format={v => `${v.toFixed(1)}×`}
+                onChange={v => setDraft(d => ({ ...d, demandSensitivity: v }))}
+              />
+
+              <div className="space-y-2">
+                <p className="text-[11px] text-[#555] font-semibold">Nachfrage-Schwellenwerte (Anzahl aktiver Boosts)</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["low", "normal", "high", "very_high"] as const).map(level => {
+                    const LABELS: Record<string, string> = { low: "Niedrig bis", normal: "Normal bis", high: "Hoch bis", very_high: "Sehr hoch ab" };
+                    return (
+                      <div key={level} className="flex items-center justify-between gap-2 bg-[#0d0d18] rounded-xl px-3 py-2">
+                        <span className={cn("text-[11px] font-medium", DEMAND_COLORS[level])}>{LABELS[level]}</span>
+                        <input
+                          type="number"
+                          min={1} max={200}
+                          value={cfg.demandThresholds?.[level] ?? 0}
+                          onChange={e => setDraft(d => ({
+                            ...d,
+                            demandThresholds: {
+                              ...(d.demandThresholds ?? cfg.demandThresholds ?? { low: 3, normal: 8, high: 15, very_high: 25 }),
+                              [level]: Number(e.target.value),
+                            },
+                          }))}
+                          className="w-14 text-right text-xs font-mono bg-white/5 border border-white/8 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-violet-500/50"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                onClick={saveConfig}
+                disabled={saving}
+                className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 text-white text-xs font-bold py-2.5 rounded-xl transition-opacity disabled:opacity-50"
+              >
+                {saving ? (
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                ) : (
+                  <Zap className="w-3.5 h-3.5" />
+                )}
+                {saving ? "Speichert…" : "Preisparameter speichern"}
+              </button>
+
+              <p className="text-[10px] text-[#444] text-center">
+                Änderungen wirken sofort für alle neuen Impressionen auf der Plattform.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ConfigRow({
+  label, value, min, max, step, format, onChange,
+}: {
+  label: string; value: number; min: number; max: number; step: number;
+  format: (v: number) => string;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-center">
+        <span className="text-[11px] text-[#888]">{label}</span>
+        <span className="text-[11px] font-mono font-bold text-white">{format(value)}</span>
+      </div>
+      <input
+        type="range"
+        min={min} max={max} step={step}
+        value={value}
+        onChange={e => onChange(parseFloat(e.target.value))}
+        className="w-full h-1.5 appearance-none rounded-full bg-white/10 accent-violet-500 cursor-pointer"
+      />
+      <div className="flex justify-between text-[10px] text-[#333]">
+        <span>{format(min)}</span>
+        <span>{format(max)}</span>
+      </div>
+    </div>
+  );
+}
+
 function WienPipelineView({ founderKey }: { founderKey: string }) {
   const headers = { "x-founder-key": founderKey };
   const qc = useQueryClient();
@@ -1229,6 +1501,9 @@ function Dashboard({ founderKey }: { founderKey: string }) {
             })}
           </div>
         </section>
+
+        {/* ── Section: Dynamic Pricing Engine Controls ── */}
+        <FounderPricingControls founderKey={founderKey} />
 
         {/* ── Section: Rankings ── */}
         <section>

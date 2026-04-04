@@ -351,6 +351,51 @@ Dashboard page at route `/optimizer`, visible in sidebar as "Optimizer" (Zap ico
 
 Auto-Optimize mode is advisory-only: it never calls the API autonomously. It highlights the best action with one-click "Auto-Aktivieren" that still requires the user to click.
 
+## Dynamic Pricing Engine
+
+Real-time impression cost computation for all boost types. Every impression deducts the live computed price (not a fixed €0.01). Fully transparent — all multipliers are returned to clients.
+
+### Backend
+
+- **`artifacts/api-server/src/lib/pricing-engine.ts`** — Core computation library
+  - `computeDynamicPrice(bizType)` — async function returning full `PricingResult` with price + all multipliers + human-readable signals
+  - `getPricingConfig()` / `savePricingConfig()` — reads/writes `platform_config` table (`pricing_config` key as JSONB)
+  - `getTimeMultiplier(bizType, hour)` — business-type-aware time windows (café=breakfast peak, bar=nightlife peak, restaurant=lunch+dinner peak)
+  - `getDemandMultiplier(activeBoosts, config)` — platform-wide boost count → 0.80–1.60× multiplier
+  - `getSlotMultiplier(sameTypeBoosts)` — same-category competition → 0.90–1.20× multiplier
+  - Weekend bonus: bars on Fri/Sat get 1.10×
+
+- **`artifacts/api-server/src/routes/pricing.ts`** — Pricing route (`/api/pricing`)
+  - `GET /api/pricing/current` — returns live price for the requesting restaurant's business type
+  - `GET /api/pricing/schedule` — returns 24-hour price forecast as hourly breakdown
+  - `GET /api/pricing/config` — returns current pricing config (founder-auth required)
+  - `PUT /api/pricing/config` — update pricing config (founder-auth required, `x-founder-key` header)
+
+- **Impression endpoint updated** — `POST /api/promotions/restaurant/:id/impression` now calls `computeDynamicPrice(bizType)` instead of hardcoded €0.01. Returns `impressionCost` + `demandLevel` in response.
+
+### Default Config
+- basePrice: €0.01 / impression
+- maxMultiplier: 2.5×
+- minPrice: €0.004 (floor)
+- demandSensitivity: 1.0×
+- demandThresholds: low≤3, normal≤8, high≤15, very_high≤25 active platform boosts
+
+### Frontend
+
+- **`promotion-tools.tsx`** — `DynamicPricingPanel` component added between boost grid and budget section. Shows:
+  - Current price per 1,000 impressions + demand chip
+  - Competitor count + best boost time window
+  - Pricing context + actionable suggestion
+  - Expandable multiplier breakdown (demand × time × slot × weekend)
+  - Auto-refreshes every 2 minutes
+
+- **`founder.tsx`** — `FounderPricingControls` section added to Dashboard (between Boost Performance and Rankings). Shows:
+  - Live pricing panel with real-time multiplier breakdown
+  - Config editor with sliders for base price, max multiplier, min price, demand sensitivity
+  - Demand threshold inputs for all 4 demand levels
+  - Save button → `PUT /api/pricing/config` with founder key
+  - Changes apply immediately to all new impressions
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

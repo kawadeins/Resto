@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck, Flame, Wallet, Info } from "lucide-react";
+import { Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck, Flame, Wallet, Info, Activity, Clock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BOOST_CONFIGS, type BoostConfig, isBoostCurrentlyActive } from "@/lib/monetization-engine";
 
@@ -295,6 +295,9 @@ export function PromotionTools() {
           })}
         </div>
 
+        {/* ── Dynamic Pricing Panel ─────────────────────────────────────────── */}
+        <DynamicPricingPanel businessType={businessType} />
+
         {/* ── Budget Management ─────────────────────────────────────────────── */}
         {budgets.length > 0 && (
           <div className="border border-border/50 rounded-xl p-4 space-y-3">
@@ -413,7 +416,7 @@ export function PromotionTools() {
           </div>
         )}
 
-        {/* Total row */}
+        {/* ── Performance Total ──────────────────────────────────────────────── */}
         {promotions.length > 0 && (
           <div className="pt-4 border-t border-border/50">
             <div className="flex items-center justify-between mb-3">
@@ -440,5 +443,145 @@ export function PromotionTools() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+// ─── Dynamic Pricing Panel ────────────────────────────────────────────────────
+
+interface PricingData {
+  pricePerImpression: number;
+  pricePer1000: number;
+  demandLevel: "low" | "normal" | "high" | "very_high";
+  totalActivePlatformBoosts: number;
+  competingBoosts: number;
+  slotPosition: number;
+  demandSignal: string;
+  timeSignal: string;
+  competitionSignal: string;
+  pricingContext: string;
+  suggestion: string;
+  bestBoostWindow: string;
+  breakdown: {
+    basePrice: number;
+    demandMultiplier: number;
+    timeMultiplier: number;
+    slotMultiplier: number;
+    weekendBonus: number;
+    finalPrice: number;
+    totalMultiplier: number;
+  };
+}
+
+function DemandChip({ level }: { level: PricingData["demandLevel"] }) {
+  const map: Record<PricingData["demandLevel"], { label: string; cls: string }> = {
+    low:       { label: "Niedrige Nachfrage",      cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+    normal:    { label: "Normale Nachfrage",        cls: "bg-blue-100 text-blue-700 border-blue-200" },
+    high:      { label: "Hohe Nachfrage",           cls: "bg-amber-100 text-amber-700 border-amber-200" },
+    very_high: { label: "Sehr hohe Nachfrage",      cls: "bg-red-100 text-red-700 border-red-200" },
+  };
+  const { label, cls } = map[level] ?? map.normal;
+  return <Badge className={`text-[10px] font-semibold ${cls}`}>{label}</Badge>;
+}
+
+function DynamicPricingPanel({ businessType }: { businessType: string }) {
+  const { data, isLoading } = useQuery<PricingData>({
+    queryKey: ["pricing-current", businessType],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/pricing/current`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    refetchInterval: 120_000,
+    staleTime: 60_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="border border-border/50 rounded-xl p-4 animate-pulse">
+        <div className="h-4 w-48 bg-muted rounded mb-3" />
+        <div className="grid grid-cols-3 gap-3">
+          <div className="h-16 bg-muted rounded-lg" />
+          <div className="h-16 bg-muted rounded-lg" />
+          <div className="h-16 bg-muted rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const bd = data.breakdown;
+
+  return (
+    <div className="border border-border/50 rounded-xl p-4 space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-violet-500" />
+          <span className="font-semibold text-sm">Preise & Nachfrage</span>
+          <DemandChip level={data.demandLevel} />
+        </div>
+        <span className="text-xs text-muted-foreground">Echtzeit · aktualisiert alle 2 Min.</span>
+      </div>
+
+      {/* Price + signals row */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+          <p className="text-[10px] text-muted-foreground mb-1">Preis / 1.000 Einbl.</p>
+          <p className="text-lg font-bold text-foreground">€{data.pricePer1000.toFixed(2)}</p>
+          <p className="text-[10px] text-muted-foreground">({bd.totalMultiplier.toFixed(2)}× Basis)</p>
+        </div>
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+          <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
+            <Users className="w-2.5 h-2.5" /> Wettbewerb
+          </p>
+          <p className="text-base font-bold text-foreground">{data.competingBoosts}</p>
+          <p className="text-[10px] text-muted-foreground">Konkurrenten aktiv</p>
+        </div>
+        <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+          <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
+            <Clock className="w-2.5 h-2.5" /> Günstigste Zeit
+          </p>
+          <p className="text-sm font-bold text-foreground leading-tight">{data.bestBoostWindow}</p>
+        </div>
+      </div>
+
+      {/* Pricing context */}
+      <div className="rounded-lg bg-muted/20 border border-border/30 px-3 py-2 space-y-1.5">
+        <p className="text-xs text-foreground font-medium">{data.pricingContext}</p>
+        <p className="text-[11px] text-muted-foreground">{data.timeSignal}</p>
+      </div>
+
+      {/* Suggestion */}
+      <div className="flex items-start gap-2 rounded-lg bg-violet-500/8 border border-violet-500/20 px-3 py-2">
+        <Zap className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+        <p className="text-xs text-violet-300">{data.suggestion}</p>
+      </div>
+
+      {/* Multiplier breakdown */}
+      <details className="group">
+        <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
+          Preisberechnung anzeigen ▸
+        </summary>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+          {[
+            { label: "Basispreis",       value: `€${bd.basePrice.toFixed(3)}` },
+            { label: "Nachfrage ×",      value: `${bd.demandMultiplier.toFixed(2)}×` },
+            { label: "Tageszeit ×",      value: `${bd.timeMultiplier.toFixed(2)}×` },
+            { label: "Wettbewerb ×",     value: `${bd.slotMultiplier.toFixed(2)}×` },
+            { label: "Wochenend-Bonus",  value: `${bd.weekendBonus.toFixed(2)}×` },
+            { label: "Gesamtfaktor",     value: `${bd.totalMultiplier.toFixed(2)}×` },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex justify-between rounded bg-muted/30 px-2 py-1">
+              <span className="text-muted-foreground">{label}</span>
+              <span className="font-mono font-semibold text-foreground">{value}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] text-muted-foreground">
+          Maximaler Faktor: {data.breakdown ? `${(data as any).config?.maxMultiplier ?? 2.5}×` : "2.50×"} — Preis wird nie darüber steigen.
+        </p>
+      </details>
+    </div>
   );
 }
