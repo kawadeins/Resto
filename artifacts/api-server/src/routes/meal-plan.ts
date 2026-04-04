@@ -59,7 +59,9 @@ async function getRestaurantSuggestions(foodType: string, dietaryStyle?: string,
   return restaurants
     .map((r) => {
       const open = isOpen(r);
-      const hasFlash = activeDeal && r.id === 1;
+      const hasFlash = activeDeal &&
+        activeDeal.flashExpiresAt != null &&
+        new Date(activeDeal.flashExpiresAt) > new Date();
       const score = scoreRestaurantForFoodType(
         { ...r, isOpenNow: open, hasActiveFlash: hasFlash, rating: parseFloat(r.rating) },
         foodType,
@@ -87,6 +89,10 @@ async function getRestaurantSuggestions(foodType: string, dietaryStyle?: string,
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 }
+
+router.get("/", (_req, res) => {
+  res.status(400).json({ error: "E-Mail-Parameter erforderlich: /api/meal-plan/{email}" });
+});
 
 router.get("/:email", async (req, res) => {
   try {

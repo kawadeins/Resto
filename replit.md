@@ -195,6 +195,24 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 - API server serves uploads at both `/uploads/:file` (direct) and `/api/uploads/:file` (proxy-accessible)
 - `artifacts/api-server/src/routes/marketplace.ts` normalises all `heroImage`/`photos` paths from `/uploads/` → `/api/uploads/` so images load through the Replit proxy
 
+## Known Architectural Limitations (by design for now)
+
+- **Single-tenant**: restosmart dashboard always serves restaurant ID 1; billing, pilot, reviews, platform all hardcoded to restaurantId=1. Multi-tenancy requires a full auth/session overhaul.
+- **No real auth**: customer identity = localStorage email; business auth = localStorage premium flag; payment = mock Stripe session (no real checkout).
+- **Email disabled by default**: All emails silently skipped if `RESEND_API_KEY` env var not set. Set it in Replit Secrets to enable real delivery. The `/api/campaigns/status` endpoint exposes `{ emailEnabled: bool }` and the Campaigns page shows a warning banner when disabled.
+- **Flash deals are platform-wide**: `discounts` table has no `restaurant_id` column; one flash deal at a time applies globally across all restaurants.
+
+## Bug Fixes Applied (Phase 1 + Phase 2 Audit)
+
+- **B-1 Fixed**: `overview.ts` — removed random `|| Math.floor(Math.random() * 8) + 5` fallback from `tableOccupancy`; now returns real count (0 when no reservations).
+- **A-4 Fixed**: `restosmart/login.tsx` — replaced dead `window.location.replace("/customer/profile")` with proper in-app `useLocation` redirect to `/`.
+- **B-4 Fixed**: `meal-plan.ts` — `hasFlash = activeDeal && r.id === 1` replaced with proper expiry check.
+- **B-3 Fixed**: `meal-plan.ts` — added bare `GET /api/meal-plan` 400 guard (was 404).
+- **B-2 Fixed**: `marketplace.ts` — restaurants with active boosts now sort first in the `/restaurants` list (boosted → then by rating).
+- **B-5 Fixed**: Added `GET /api/campaigns/status` endpoint exposing `{ emailEnabled: bool }`.
+- **B-6 Fixed**: Campaigns page shows orange warning banner when email is not configured.
+- **B-7 Fixed**: Added `POST /api/promotions/restaurant/:restaurantId/impression` convenience endpoint; explore page fires impression events (once per session per restaurant) for boosted restaurants that appear in the list.
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages

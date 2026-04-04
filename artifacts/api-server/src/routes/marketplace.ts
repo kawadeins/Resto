@@ -190,7 +190,7 @@ router.get("/restaurants", async (req, res) => {
       );
     }
 
-    res.json(rows.map((r) => {
+    const mapped = rows.map((r) => {
       const open = isOpen(r);
       const avail = computeLiveAvailability(
         {
@@ -205,7 +205,16 @@ router.get("/restaurants", async (req, res) => {
         todayRes
       );
       return mapRestaurant(r, flash, avail, boostMap.get(r.id));
-    }));
+    });
+
+    mapped.sort((a, b) => {
+      const aBoost = a.hasActiveBoost ? 1 : 0;
+      const bBoost = b.hasActiveBoost ? 1 : 0;
+      if (bBoost !== aBoost) return bBoost - aBoost;
+      return parseFloat(String(b.rating)) - parseFloat(String(a.rating));
+    });
+
+    res.json(mapped);
   } catch (err) {
     req.log.error({ err }, "Failed to list restaurants");
     res.status(500).json({ error: "Failed to list restaurants" });

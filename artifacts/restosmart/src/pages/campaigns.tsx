@@ -11,7 +11,7 @@ import {
   useGetCampaignSends,
   getGetCampaignSendsQueryKey,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -408,10 +408,18 @@ function CreateCampaignModal({
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
 export default function Campaigns() {
   const [selectedTemplate, setSelectedTemplate] = useState<CampaignTemplate | null>(null);
   const [viewingSendsId, setViewingSendsId] = useState<number | null>(null);
   const { toast } = useToast();
+
+  const { data: emailStatus } = useQuery<{ emailEnabled: boolean }>({
+    queryKey: ["campaigns-email-status"],
+    queryFn: () => fetch(`${API_BASE}/api/campaigns/status`).then((r) => r.json()),
+    staleTime: 60_000,
+  });
 
   const { data: retention, isLoading: loadingRetention } = useGetRetentionMetrics({
     query: { queryKey: getGetRetentionMetricsQueryKey() },
@@ -441,6 +449,18 @@ export default function Campaigns() {
           Kunden zurückgewinnen und Wiederholungsbesuche mit gezielten Kampagnen steigern.
         </p>
       </div>
+
+      {/* Email not configured warning */}
+      {emailStatus && !emailStatus.emailEnabled && (
+        <div className="flex items-start gap-3 rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-sm text-orange-300">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+          <div>
+            <span className="font-semibold text-orange-300">E-Mail nicht konfiguriert — </span>
+            Kampagnen werden gespeichert, aber keine E-Mails versendet. Bitte{" "}
+            <span className="font-mono font-semibold">RESEND_API_KEY</span> als Umgebungsvariable setzen, um den echten Versand zu aktivieren.
+          </div>
+        </div>
+      )}
 
       {/* Retention Metrics */}
       <section>

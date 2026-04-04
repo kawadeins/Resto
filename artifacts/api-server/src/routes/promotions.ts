@@ -194,6 +194,38 @@ router.put("/:id/stop", async (req, res) => {
   }
 });
 
+// ─── POST /api/promotions/restaurant/:restaurantId/impression — convenience endpoint ──
+// Finds the active promotion for a restaurant and records an impression.
+// Called from the customer explore page when a boosted restaurant appears in the list.
+router.post("/restaurant/:restaurantId/impression", async (req, res) => {
+  try {
+    const restaurantId = Number(req.params.restaurantId);
+    const rows = await db.execute(sql`
+      SELECT id FROM promotions
+      WHERE restaurant_id = ${restaurantId}
+        AND status = 'active'
+        AND (ends_at IS NULL OR ends_at > NOW())
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
+    const promo = rows.rows[0] as { id: number } | undefined;
+    if (!promo) return res.json({ ok: false, reason: "no_active_promotion" });
+
+    await db.execute(sql`
+      INSERT INTO promotion_events (promotion_id, event_type, context)
+      VALUES (${promo.id}, 'impression', 'explore_list')
+    `);
+    await db.execute(sql`
+      UPDATE promotions SET impressions = impressions + 1, updated_at = NOW()
+      WHERE id = ${promo.id}
+    `);
+    return res.json({ ok: true, promotionId: promo.id });
+  } catch (err) {
+    req.log.error({ err }, "Failed to record restaurant impression");
+    return res.status(500).json({ error: "Failed to record impression" });
+  }
+});
+
 // ─── POST /api/promotions/:id/event — record a performance event ──────────────
 const EventSchema = z.object({
   eventType: z.enum(["impression", "click", "booking", "heat_exposure", "group_exposure"]),

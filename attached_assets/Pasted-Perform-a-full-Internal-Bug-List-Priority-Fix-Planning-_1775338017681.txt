@@ -1,0 +1,285 @@
+Perform a full "Internal Bug List + Priority Fix Planning Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT add new features.
+Do NOT redesign the app.
+Do NOT hide problems.
+Do NOT pretend incomplete systems are finished.
+
+This is a deep internal audit and prioritization task.
+
+========================
+GOAL
+========================
+
+Produce a clear, honest, structured internal bug and issue map for the current RestoMaster platform.
+
+The output must identify:
+
+- what is broken
+- what is partially broken
+- what is misleading
+- what is unstable
+- what is safe
+- what must be fixed first
+
+This pass is about clarity, not hype.
+
+========================
+1. DEEP SYSTEM SCAN
+========================
+
+Scan the full product and audit all major systems, including:
+
+USER SIDE:
+- login / auth
+- homepage
+- profile
+- preferences
+- discovery
+- filters
+- map
+- nearby
+- place cards
+- place detail pages
+- offers / smart offers
+- meal plans
+- group plans
+- social activity
+- friend layer
+- notifications
+- streaks / missions
+- feedback / rating
+
+BUSINESS SIDE:
+- premium flow
+- premium payment flow
+- dashboard entry
+- dashboard exit
+- business profile editing
+- media management
+- offers / boosts
+- analytics
+- verification / trust badge
+- business type adaptation (restaurant / café / bar)
+
+FOUNDER SIDE:
+- founder route
+- founder protection
+- revenue metrics
+- monetization panels
+- city/business breakdowns
+- rankings
+- internal control tools
+
+INTELLIGENCE / LIVE SYSTEMS:
+- smart offers
+- life loop logic
+- AI personal twin behavior layer
+- live heat map
+- live activity
+- instant plans
+- auto plans
+- friend radar
+- group activity suggestions
+
+========================
+2. ISSUE CLASSIFICATION
+========================
+
+For each issue found, classify it into one of these categories:
+
+A. CRITICAL
+- blocks usage
+- breaks auth
+- breaks payments
+- breaks bookings
+- breaks saves
+- wrong access / security
+- app crash
+- route unusable
+
+B. HIGH
+- key feature partially broken
+- misleading UI
+- wrong data shown
+- wrong business type behavior
+- notification logic wrong
+- map/location incorrect
+- dashboard logic inconsistent
+
+C. MEDIUM
+- weak UX
+- poor empty state
+- confusing copy
+- incorrect status messaging
+- inconsistent visual state
+
+D. LOW
+- polish issues
+- spacing / copy minor issues
+- non-blocking improvements
+
+========================
+3. REALITY CHECK FOR EACH SYSTEM
+========================
+
+For every major system, mark it clearly as one of the following:
+
+- Fully Working
+- Working but Fragile
+- Partially Implemented
+- UI-Only / Not Truly Connected
+- Misleading / Should Be Softened
+- Broken
+
+Do NOT leave anything vague.
+
+========================
+4. ISSUE FORMAT (MANDATORY)
+========================
+
+For each issue, document:
+
+- Issue title
+- Area / system
+- Severity
+- What is happening
+- Why it matters
+- User impact
+- Suggested fix direction
+
+Example format:
+
+1. Booking confirmation not persisted after refresh
+- Area: User booking flow
+- Severity: Critical
+- Problem: Booking appears successful but disappears after refresh
+- Impact: destroys trust and breaks core flow
+- Fix direction: verify booking write + fetch path + success state logic
+
+========================
+5. IDENTIFY FAKE OR MISLEADING EXPERIENCES
+========================
+
+Find all cases where the app currently LOOKS more complete than it really is.
+
+Examples:
+- fake counters
+- fake activity labels
+- fake recommendations
+- fake analytics
+- fake premium effects
+- fake booking confirmations
+- fake live signals
+- fake social proof
+
+These must be explicitly listed.
+
+If something should be toned down, hidden, or disabled until real:
+say so clearly.
+
+========================
+6. IDENTIFY STABLE FOUNDATIONS
+========================
+
+Also identify what is already strong and safe.
+
+List systems that are:
+
+- stable
+- trustworthy
+- safe to build on
+- worth locking and preserving
+
+This is important because not everything should keep changing.
+
+========================
+7. PRIORITY FIX ORDER
+========================
+
+After identifying all issues, produce a strict fix order in phases:
+
+PHASE 1 — Must Fix Immediately
+- all critical issues
+
+PHASE 2 — Must Fix Before Any New Feature Work
+- high severity flow issues
+- misleading logic
+- fragile core systems
+
+PHASE 3 — Fix for Product Quality
+- medium issues
+- UX clarity
+- empty states
+- consistency issues
+
+PHASE 4 — Polish Later
+- low priority cleanup
+
+========================
+8. CORE SYSTEM SAFETY CHECK
+========================
+
+Explicitly state whether these systems are safe enough to continue building on:
+
+- auth/session
+- routing
+- premium flow
+- dashboard access
+- bookings
+- profile save/load
+- map/location
+- notifications
+- business profile management
+- founder dashboard
+
+Mark each as:
+- Safe
+- Needs Fix First
+- Unsafe
+
+========================
+9. FOUNDATIONAL RISK SUMMARY
+========================
+
+At the end, provide a summary answering:
+
+- What are the biggest current product risks?
+- What could break trust fastest?
+- What would block launch completely?
+- What would make future development dangerous if left unfixed?
+
+========================
+10. HONEST FINAL OUTPUT
+========================
+
+The final output must include:
+
+A. Fully working systems
+B. Fragile systems
+C. Broken systems
+D. Misleading systems
+E. Immediate fixes
+F. Safe build-on systems
+G. Unsafe build-on systems
+H. Recommended next engineering pass
+
+Be direct.
+Be honest.
+Do NOT soften serious issues.
+
+========================
+FINAL GOAL
+========================
+
+At the end of this pass, the team should know exactly:
+
+- what works
+- what does not
+- what is fake
+- what is risky
+- what to fix first
+- what is safe to continue building on
+
+This creates the true internal roadmap for serious product development.

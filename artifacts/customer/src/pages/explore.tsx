@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { Search, SlidersHorizontal, Star, Navigation, Loader2, X, List, Map } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -132,6 +132,21 @@ export default function Explore() {
   const activeFiltersCount = [cuisine, priceRange, openNow, rating, businessType].filter(Boolean).length;
 
   const displayList = restaurantsWithDistances ?? [];
+
+  // Fire impression events for boosted restaurants when they first appear in the list.
+  const firedImpressions = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    const boosted = displayList.filter(({ restaurant }) => restaurant.hasActiveBoost);
+    boosted.forEach(({ restaurant }) => {
+      if (firedImpressions.current.has(restaurant.id)) return;
+      firedImpressions.current.add(restaurant.id);
+      const API = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+      fetch(`${API}/api/promotions/restaurant/${restaurant.id}/impression`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }).catch(() => {});
+    });
+  }, [displayList]);
 
   return (
     <div className="container mx-auto px-4 max-w-7xl py-8 flex flex-col md:flex-row gap-8">

@@ -9,6 +9,7 @@ import {
 } from "@workspace/db";
 import { eq, gte, sql, and } from "drizzle-orm";
 import { z } from "zod";
+import { EMAIL_ENABLED } from "../services/email";
 
 const router = Router();
 
@@ -94,6 +95,11 @@ async function buildCustomerProfiles(): Promise<CustomerProfile[]> {
 
   return profiles;
 }
+
+// ─── GET /api/campaigns/status ───────────────────────────────────────────────
+router.get("/status", (_req, res) => {
+  res.json({ emailEnabled: EMAIL_ENABLED });
+});
 
 // ─── GET /api/campaigns/segments ─────────────────────────────────────────────
 router.get("/segments", async (req, res) => {

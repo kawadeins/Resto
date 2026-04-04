@@ -56,7 +56,7 @@ router.get("/summary", async (req, res) => {
     const tableTotal = 20;
     const tableOccupancy = todayReservations.filter(
       (r) => r.status === "arrived" || r.status === "confirmed"
-    ).length || Math.floor(Math.random() * 8) + 5;
+    ).length;
 
     const liveTraffic = allReservations.filter((r) => {
       if (r.date !== today) return false;
