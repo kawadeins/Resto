@@ -343,4 +343,98 @@ router.get("/businesses", async (req, res) => {
   }
 });
 
+// ─── /api/founder/pipeline ────────────────────────────────────────────────────
+
+router.get("/pipeline", async (req, res) => {
+  try {
+    const rows = await db.execute(sql`
+      SELECT
+        r.id, r.name, r.business_type, r.address, r.city,
+        r.rating, r.review_count, r.is_partner, r.is_featured, r.is_active,
+        r.email, r.phone, r.cuisine, r.cuisine_emoji,
+        p.status, p.priority, p.notes, p.contact_name, p.contact_phone,
+        p.contacted_at, p.demo_at, p.trial_started_at, p.converted_at, p.updated_at
+      FROM restaurants r
+      LEFT JOIN sales_pipeline p ON p.restaurant_id = r.id
+      ORDER BY
+        CASE p.priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+        r.rating DESC
+    `);
+    res.json(rows.rows);
+  } catch (err: any) {
+    res.status(500).json({ error: String(err?.message ?? err) });
+  }
+});
+
+router.put("/pipeline/:restaurantId", async (req, res) => {
+  try {
+    const id = parseInt(req.params.restaurantId, 10);
+    const { status, notes, contact_name, contact_phone, priority } = req.body;
+
+    // Build timestamp columns from status transitions
+    const now = new Date().toISOString();
+    const tsColumns: Record<string, string | null> = {};
+    if (status === "contacted") tsColumns["contacted_at"] = now;
+    if (status === "demo")      tsColumns["demo_at"] = now;
+    if (status === "trial")     tsColumns["trial_started_at"] = now;
+    if (status === "paying")    tsColumns["converted_at"] = now;
+
+    const tsSetClauses = Object.entries(tsColumns)
+      .map(([col, val]) => sql`${sql.raw(col)} = COALESCE(${sql.raw(col)}, ${val})`)
+      .join(sql`, `)
+
+    await db.execute(sql`
+      UPDATE sales_pipeline SET
+        status = ${status ?? sql`status`},
+        priority = ${priority ?? sql`priority`},
+        notes = ${notes ?? sql`notes`},
+        contact_name = ${contact_name ?? sql`contact_name`},
+        contact_phone = ${contact_phone ?? sql`contact_phone`},
+        updated_at = NOW()
+      WHERE restaurant_id = ${id}
+    `);
+
+    // Set timestamp columns if transitioning to new status
+    for (const [col, val] of Object.entries(tsColumns)) {
+      await db.execute(sql`
+        UPDATE sales_pipeline
+        SET ${sql.raw(col)} = COALESCE(${sql.raw(col)}, ${val})
+        WHERE restaurant_id = ${id}
+      `);
+    }
+
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: String(err?.message ?? err) });
+  }
+});
+
+// ─── /api/founder/leads (business interest from customer app) ─────────────────
+
+router.post("/leads", async (req, res) => {
+  try {
+    const { restaurant_id, contact_name, contact_phone, message } = req.body;
+    if (!restaurant_id) return res.status(400).json({ error: "restaurant_id required" });
+
+    await db.execute(sql`
+      UPDATE sales_pipeline SET
+        status = CASE WHEN status = 'discovered' THEN 'contacted' ELSE status END,
+        contact_name = COALESCE(contact_name, ${contact_name ?? null}),
+        contact_phone = COALESCE(contact_phone, ${contact_phone ?? null}),
+        notes = CASE
+          WHEN ${message ?? null} IS NOT NULL
+          THEN COALESCE(notes || E'\n', '') || '[Inbound Lead] ' || ${message ?? ''}
+          ELSE notes
+        END,
+        contacted_at = COALESCE(contacted_at, NOW()),
+        updated_at = NOW()
+      WHERE restaurant_id = ${restaurant_id}
+    `);
+
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: String(err?.message ?? err) });
+  }
+});
+
 export default router;

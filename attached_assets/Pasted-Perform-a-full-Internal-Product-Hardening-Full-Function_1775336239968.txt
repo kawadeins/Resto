@@ -1,0 +1,333 @@
+Perform a full "Internal Product Hardening + Full Functional Activation Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+This is NOT a marketing task.
+This is NOT a launch task.
+This is NOT a feature brainstorming task.
+Do NOT add random new features.
+Do NOT redesign the app.
+Do NOT create mock-only improvements.
+
+Your job is to go deep into the product internals and make the platform truly operational from the inside.
+
+========================
+GOAL
+========================
+
+Fully develop, activate, verify, and stabilize the internal product so that:
+
+- all important buttons work
+- all major flows are connected
+- all critical systems behave like a real product
+- all fake or half-connected states are removed
+- the platform becomes reliable internally before any real launch or marketing
+
+This is an internal development + activation phase.
+
+========================
+1. FULL BUTTON / ACTION ACTIVATION
+========================
+
+Audit the entire app and find every important button, action, CTA, and interactive control.
+
+Check for:
+- dead buttons
+- placeholder actions
+- broken links
+- buttons that open wrong pages
+- buttons that appear active but do nothing
+- edit/save actions that don’t persist
+- actions that only update UI temporarily without real logic
+
+Activate and properly connect all important buttons.
+
+This includes user side, business side, and founder side where relevant.
+
+========================
+2. FULL INTERNAL FUNCTIONALITY CHECK
+========================
+
+Deeply inspect the platform and verify all core systems are actually working.
+
+Check and connect:
+
+- login / auth
+- profile editing
+- preferences
+- place discovery
+- map/location
+- place detail pages
+- offers / smart offers
+- bookings
+- meal plans
+- group plans
+- premium business flow
+- business dashboard
+- verification / trust badge
+- social activity
+- founder dashboard
+- notifications
+- feedback/rating
+- habit/streak systems
+- instant plans / auto plans
+- cafés / bars / restaurants support
+
+For each:
+- verify real logic
+- verify persistence
+- verify connected data
+- verify navigation
+- verify visible state is truthful
+
+========================
+3. REMOVE PARTIAL / FAKE LOGIC
+========================
+
+Identify any place where the system currently looks functional but is not fully real.
+
+Examples:
+- fake counters
+- fake activity
+- fake recommendation labels
+- fake premium indicators
+- fake success states
+- fake analytics
+- incomplete social actions
+- incomplete plan actions
+- incomplete monetization signals
+
+Do NOT leave misleading UX.
+
+If something is not fully ready:
+- either connect it properly
+- or tone it down / hide it / disable it safely
+
+Truth over hype.
+
+========================
+4. REAL DATA FLOW VERIFICATION
+========================
+
+Verify that the app uses real connected data flows throughout.
+
+Ensure:
+- data saves correctly
+- data reloads correctly
+- refresh does not break state
+- profile changes persist
+- business changes persist
+- bookings and plans are stored
+- offers are stored
+- badges reflect real conditions
+- dashboard data is not invented
+- founder insights use real signals where available
+
+No UI-only illusion.
+
+========================
+5. USER FLOW ACTIVATION
+========================
+
+Make sure the complete user flow is operational:
+
+- login
+- homepage
+- filters
+- place discovery
+- map
+- place page
+- offer interaction
+- booking or planning
+- profile
+- reminders / notifications
+- return usage
+
+Every step must be connected and usable.
+
+========================
+6. BUSINESS FLOW ACTIVATION
+========================
+
+Make sure the complete business flow is operational:
+
+- enter premium flow from profile
+- activate premium correctly
+- enter dashboard
+- manage business profile
+- manage photos/media
+- manage offers
+- see analytics
+- see correct business_type behavior
+- exit dashboard safely back to profile
+
+No duplicated subscription flow.
+No broken owner logic.
+
+========================
+7. FOUNDER / ADMIN FLOW ACTIVATION
+========================
+
+Make sure founder/internal flows are operational:
+
+- founder route access
+- founder protection
+- founder metrics
+- founder panels
+- founder rankings
+- founder business detail inspection
+
+Ensure founder tools feel real and internally useful.
+
+========================
+8. ROUTING + NAVIGATION HARDENING
+========================
+
+Test all major navigation transitions.
+
+Fix:
+- dead routes
+- redirect loops
+- wrong pages opening
+- broken back navigation
+- pages that trap the user
+- dashboard exit issues
+- wrong profile/dashboard transitions
+
+Navigation must feel clean and deliberate.
+
+========================
+9. MAP + GEO HARDENING
+========================
+
+Audit all location logic.
+
+Ensure:
+- geolocation works
+- denial fallback works
+- map renders correctly
+- markers match correct places
+- distance sorting is correct
+- no crash when location missing
+- restaurant/café/bar location data behaves consistently
+
+This must be real and stable.
+
+========================
+10. NOTIFICATION / REMINDER ACTIVATION
+========================
+
+Check all reminder and notification systems and make them operational.
+
+Examples:
+- booking reminders
+- meal plan reminders
+- group plan reminders
+- social notifications
+- smart feedback prompts
+- smart offer notifications
+- instant/auto plan prompts
+
+Ensure:
+- no spam duplication
+- correct user targeting
+- correct timing
+- correct event linkage
+
+========================
+11. EMPTY STATE + FAILURE STATE HARDENING
+========================
+
+Make sure the app behaves correctly even when data is missing.
+
+Examples:
+- no places nearby
+- no plans
+- no friends
+- no activity
+- no bookings
+- no offers
+- no premium access
+- no founder data yet
+
+App must never feel broken because data is empty.
+
+========================
+12. BUSINESS TYPE CONSISTENCY
+========================
+
+Now that the system supports:
+- restaurants
+- cafés
+- bars
+
+Verify that all systems respect business_type correctly.
+
+Check:
+- labels
+- filters
+- map markers
+- dashboard behavior
+- premium messaging
+- discovery logic
+- live mode relevance
+- offers and business-specific tags
+
+No type confusion.
+
+========================
+13. INTERNAL PRIORITY BUG FIXING
+========================
+
+Fix issues in this order:
+
+A. CRITICAL
+- crashes
+- auth failures
+- broken saves
+- wrong access
+- broken routes
+- broken premium flow
+
+B. HIGH
+- broken plans
+- wrong map behavior
+- wrong business type logic
+- notifications not matching events
+- analytics showing wrong state
+
+C. MEDIUM
+- inconsistent empty states
+- weak copy
+- UI state mismatches
+- polish issues
+
+========================
+14. FULL INTERNAL AUDIT REPORT
+========================
+
+At the end of this pass, produce an internal structured report with:
+
+A. Fully activated systems
+B. Systems fixed
+C. Remaining broken systems
+D. Systems still partial
+E. Systems intentionally hidden/softened because they were misleading
+F. What is now safe for continued serious development
+
+Be honest.
+Do NOT claim full readiness unless truly earned.
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should emerge from this pass as a truly connected internal product:
+
+- all major buttons working
+- all critical systems activated
+- no fake behavior
+- no misleading UI
+- reliable flows
+- stable foundation for future development
+
+This phase is about internal truth, internal quality, and real operational readiness.

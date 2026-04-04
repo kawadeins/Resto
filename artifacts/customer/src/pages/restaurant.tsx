@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
@@ -1029,6 +1029,40 @@ export default function Restaurant() {
         </div>
 
       </div>
+
+      {/* ── Claim Listing Banner (non-partner restaurants only) ── */}
+      {restaurant && !restaurant.isPartner && (
+        <div className="border-t border-border/50 bg-gradient-to-br from-primary/4 to-transparent">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                <Store className="w-4 h-4 text-primary" />
+                <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Betreiber?</span>
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-1">Gehört Ihnen <span className="text-primary">{restaurant.name}</span>?</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                Verwalten Sie Ihre Seite, antworten Sie auf Buchungen, und erreichen Sie tausende Wiener Lokalgänger direkt über RestoSmart.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <a
+                href={`mailto:hello@restosmart.at?subject=Anmeldung für ${restaurant.name}&body=Hallo%20RestoSmart-Team%2C%0A%0AIch%20bin%20der%20Betreiber%20von%20${encodeURIComponent(restaurant.name)}%20und%20möchte%20mein%20Lokal%20auf%20RestoSmart%20beanspruchen.%0A%0AMit%20freundlichen%20Grüßen`}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors shadow-md"
+              >
+                <Store className="w-4 h-4" />
+                Listing beanspruchen
+              </a>
+              <a
+                href="tel:+4317201234"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-border hover:bg-accent/50 font-semibold text-sm transition-colors text-foreground"
+              >
+                <Phone className="w-4 h-4" />
+                +43 1 720 1234
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

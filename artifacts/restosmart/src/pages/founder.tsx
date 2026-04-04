@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Info,
@@ -7,6 +7,8 @@ import {
   Zap, Users, Star, MapPin, BarChart3, DollarSign, Target, Rocket,
   Store, Coffee, Wine, UtensilsCrossed, Tag, Flag, Search, ChevronUp,
   ChevronDown, Activity, Flame, Crown, Award, AlertCircle, X,
+  Phone, MessageSquare, Mail, ChevronRight, Filter, LayoutList,
+  PhoneCall, CheckSquare, ClipboardList, Euro, Ban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -379,7 +381,449 @@ function SortHeader({ label, field, sort, onSort }: {
   );
 }
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
+// ─── Wien Sales Pipeline ──────────────────────────────────────────────────────
+
+const PIPELINE_STATUSES = [
+  { id: "discovered", label: "Entdeckt",   color: "text-[#666] bg-white/5 border-white/10",              icon: Search,        step: 0 },
+  { id: "contacted",  label: "Kontaktiert",color: "text-blue-400 bg-blue-500/10 border-blue-500/25",     icon: PhoneCall,     step: 1 },
+  { id: "demo",       label: "Demo",       color: "text-amber-400 bg-amber-500/10 border-amber-500/25",  icon: LayoutList,    step: 2 },
+  { id: "trial",      label: "Trial",      color: "text-violet-400 bg-violet-500/10 border-violet-500/25",icon: ClipboardList, step: 3 },
+  { id: "paying",     label: "Zahlt",      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/25",icon: Euro,       step: 4 },
+  { id: "declined",   label: "Abgelehnt",  color: "text-red-400/70 bg-red-500/5 border-red-500/20",      icon: Ban,           step: -1 },
+] as const;
+
+type PipelineStatus = typeof PIPELINE_STATUSES[number]["id"];
+
+const PRIORITY_COLORS: Record<string, string> = {
+  high:   "text-amber-400 bg-amber-500/10 border-amber-500/25",
+  medium: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  low:    "text-[#444] bg-white/4 border-white/8",
+};
+
+const SALES_SCRIPT = [
+  { step: "1", text: '"Hallo, wir haben eine App die Wienern Lokale in ihrer Nähe zeigt."' },
+  { step: "2", text: '"Gerade sehen User bereits Cafés und Restaurants — wir können Ihr Lokal zeigen."' },
+  { step: "3", text: '"Wir nehmen gerade ein paar lokale Betriebe für frühe Sichtbarkeit auf."' },
+  { step: "4", text: '"Wir können Sie listen und in der Nähe promoten."' },
+  { step: "5", text: '"Sie können es zuerst kostenlos ausprobieren." → Stille.' },
+];
+
+const OBJECTIONS = [
+  { q: '"Wir haben schon Kunden"', a: '"Das hier sind NEUE Kunden in Ihrer Nähe — die Sie noch nicht erreichen."' },
+  { q: '"Wir brauchen das nicht"', a: '"Kein Problem — wir nehmen nur wenige lokale Betriebe auf."' },
+  { q: '"Keine Zeit"', a: '"Wir richten alles für Sie ein. Null Aufwand."' },
+];
+
+function WienPipelineView({ founderKey }: { founderKey: string }) {
+  const headers = { "x-founder-key": founderKey };
+  const qc = useQueryClient();
+
+  const { data: pipeline = [], isLoading, refetch } = useQuery({
+    queryKey: ["founder-pipeline"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/founder/pipeline`, { headers });
+      if (!r.ok) throw new Error("Unauthorized");
+      return r.json() as Promise<any[]>;
+    },
+    refetchInterval: 30_000,
+  });
+
+  const [filterBiz, setFilterBiz] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<PipelineStatus | "all">("all");
+  const [search, setSearch] = useState("");
+  const [scriptOpen, setScriptOpen] = useState(false);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [localNotes, setLocalNotes] = useState<Record<number, string>>({});
+
+  // Funnel counts
+  const counts = PIPELINE_STATUSES.reduce((acc, s) => {
+    acc[s.id] = pipeline.filter((v: any) => v.status === s.id).length;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalPaying = counts["paying"] ?? 0;
+  const totalTrial = counts["trial"] ?? 0;
+  const totalInProgress = (counts["contacted"] ?? 0) + (counts["demo"] ?? 0);
+
+  async function updateStatus(restaurantId: number, status: string) {
+    setUpdatingId(restaurantId);
+    try {
+      await fetch(`${API}/founder/pipeline/${restaurantId}`, {
+        method: "PUT",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      await refetch();
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function saveNotes(restaurantId: number, notes: string) {
+    await fetch(`${API}/founder/pipeline/${restaurantId}`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+  }
+
+  const filtered = pipeline.filter((v: any) => {
+    if (filterBiz !== "all" && v.business_type !== filterBiz) return false;
+    if (filterStatus !== "all" && v.status !== filterStatus) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      if (!v.name?.toLowerCase().includes(s) && !v.address?.toLowerCase().includes(s)) return false;
+    }
+    return true;
+  });
+
+  // Priority targets: café, discovered, high priority
+  const priorityTargets = pipeline.filter((v: any) =>
+    v.status === "discovered" && v.business_type === "cafe" && v.priority === "high"
+  ).slice(0, 4);
+
+  return (
+    <div className="min-h-screen bg-[#080810] text-white">
+      {/* Header */}
+      <div className="sticky top-0 z-40 border-b border-white/6 bg-[#080810]/95 backdrop-blur-xl">
+        <div className="max-w-screen-xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                <ClipboardList className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white leading-tight">Wien Sales Pipeline</div>
+                <div className="text-[10px] text-[#444] leading-tight">Erstes Ziel: 10 zahlende Betriebe</div>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+              <Euro className="w-3 h-3" />
+              {totalPaying} zahlend · {totalTrial} Trial · {totalInProgress} in Kontakt
+            </div>
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-1.5 text-xs text-[#555] hover:text-white transition-colors px-3 py-1.5 rounded-xl border border-white/6 hover:border-white/15"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Aktualisieren
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-8">
+
+        {/* ── Conversion Funnel ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Conversion Funnel · Wien</span>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            {PIPELINE_STATUSES.map((s) => {
+              const StatusIcon = s.icon;
+              const count = counts[s.id] ?? 0;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setFilterStatus(filterStatus === s.id ? "all" : s.id)}
+                  className={cn(
+                    "rounded-2xl border p-4 text-center transition-all hover:scale-105 cursor-pointer",
+                    s.color,
+                    filterStatus === s.id && "ring-2 ring-white/20 scale-105"
+                  )}
+                >
+                  <StatusIcon className="w-4 h-4 mx-auto mb-2 opacity-70" />
+                  <div className="text-2xl font-bold text-white">{count}</div>
+                  <div className="text-[10px] mt-1 opacity-70">{s.label}</div>
+                </button>
+              );
+            })}
+          </div>
+          {/* Target Progress */}
+          <div className="mt-4 rounded-2xl border border-white/6 bg-white/2 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[#555] font-semibold">Ziel: 10 zahlende Betriebe in Wien</span>
+              <span className="text-xs font-bold text-emerald-400">{totalPaying}/10</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/6 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 transition-all duration-700"
+                style={{ width: `${Math.min(100, (totalPaying / 10) * 100)}%` }}
+              />
+            </div>
+            <div className="flex gap-4 mt-3 text-[10px] text-[#444]">
+              <span>🎯 Fokus: Cafés zuerst → Restaurants → Bars</span>
+              <span>💶 Ziel-MRR: €490/Monat (10 × €49)</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Priority Targets (Cafés to call NOW) ── */}
+        {priorityTargets.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Flame className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Jetzt kontaktieren — Café Prioritäten</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+              {priorityTargets.map((v: any) => (
+                <div key={v.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-bold text-white text-sm leading-tight">{v.name}</div>
+                      <div className="text-[10px] text-[#555] mt-0.5">{v.address?.split(",")[0]}</div>
+                    </div>
+                    <div className="flex items-center gap-1 text-amber-400 shrink-0">
+                      <Star className="w-3 h-3 fill-amber-400/40" />
+                      <span className="text-xs font-bold">{v.rating}</span>
+                    </div>
+                  </div>
+                  {v.phone && (
+                    <a
+                      href={`tel:${v.phone}`}
+                      className="flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition-colors font-semibold"
+                    >
+                      <Phone className="w-3 h-3" />
+                      {v.phone}
+                    </a>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateStatus(v.id, "contacted")}
+                      disabled={updatingId === v.id}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black transition-colors disabled:opacity-50"
+                    >
+                      <PhoneCall className="w-3 h-3" />
+                      Kontaktiert
+                    </button>
+                    {v.email && (
+                      <a
+                        href={`mailto:${v.email}?subject=RestoSmart Wien — Kostenlose Listung für ${v.name}&body=Hallo%2C%0A%0Awir%20haben%20eine%20App%20die%20Wienern%20Lokale%20in%20ihrer%20Nähe%20zeigt.%20Wir%20möchten%20Sie%20kostenlos%20listen.%0A%0AMit%20freundlichen%20Grüßen`}
+                        className="p-2 rounded-xl border border-white/10 hover:border-amber-500/30 text-[#555] hover:text-amber-400 transition-colors"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Sales Script (Collapsible) ── */}
+        <section>
+          <button
+            onClick={() => setScriptOpen(v => !v)}
+            className="w-full flex items-center justify-between rounded-2xl border border-white/6 bg-white/2 hover:bg-white/4 px-5 py-4 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <MessageSquare className="w-4 h-4 text-violet-400" />
+              <span className="text-sm font-bold text-white">Sales Script + Einwandbehandlung</span>
+            </div>
+            <ChevronDown className={cn("w-4 h-4 text-[#555] transition-transform", scriptOpen && "rotate-180")} />
+          </button>
+          <AnimatePresence>
+            {scriptOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                  <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5 space-y-3">
+                    <div className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-3">Script — Schritt für Schritt</div>
+                    {SALES_SCRIPT.map((s) => (
+                      <div key={s.step} className="flex gap-3 items-start">
+                        <div className="w-6 h-6 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-400 shrink-0 mt-0.5">{s.step}</div>
+                        <p className="text-sm text-[#aaa] leading-relaxed italic">{s.text}</p>
+                      </div>
+                    ))}
+                    <div className="mt-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-semibold">
+                      💡 Nach Schritt 5: Stille lassen. Wer redet verliert.
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-white/6 bg-white/2 p-5 space-y-3">
+                    <div className="text-xs font-bold uppercase tracking-widest text-[#555] mb-3">Einwandbehandlung</div>
+                    {OBJECTIONS.map((o, i) => (
+                      <div key={i} className="space-y-1">
+                        <div className="text-xs text-red-400/80 font-semibold">{o.q}</div>
+                        <div className="text-xs text-[#888] pl-3 border-l border-white/10 leading-relaxed">{o.a}</div>
+                      </div>
+                    ))}
+                    <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                      🎯 Angebot: 7 Tage kostenlos → dann €49/Monat. "Wir richten alles ein."
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        {/* ── Filters + Search ── */}
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="relative flex-1 min-w-[200px] max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#444]" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Lokal suchen…"
+              className="w-full bg-white/4 border border-white/8 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder:text-[#333] outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+          <div className="flex gap-1.5">
+            {[
+              { id: "all", label: "Alle", emoji: "📋" },
+              { id: "cafe", label: "Cafés", emoji: "☕" },
+              { id: "restaurant", label: "Restaurants", emoji: "🍽️" },
+              { id: "bar", label: "Bars", emoji: "🍸" },
+            ].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setFilterBiz(f.id)}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all",
+                  filterBiz === f.id
+                    ? "bg-white/10 border-white/20 text-white"
+                    : "bg-white/3 border-white/6 text-[#555] hover:text-white hover:border-white/12"
+                )}
+              >
+                {f.emoji} {f.label}
+              </button>
+            ))}
+          </div>
+          {filterStatus !== "all" && (
+            <button
+              onClick={() => setFilterStatus("all")}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-[#555] border border-white/6 hover:text-white transition-colors"
+            >
+              <X className="w-3 h-3" /> Filter: {PIPELINE_STATUSES.find(s => s.id === filterStatus)?.label}
+            </button>
+          )}
+          <div className="ml-auto text-xs text-[#333]">{filtered.length} Betriebe</div>
+        </div>
+
+        {/* ── Venue List ── */}
+        <section className="space-y-2">
+          {isLoading && (
+            <div className="text-center text-sm text-[#333] py-12">Lade Pipeline…</div>
+          )}
+          {filtered.map((v: any) => {
+            const statusDef = PIPELINE_STATUSES.find(s => s.id === v.status) ?? PIPELINE_STATUSES[0];
+            const StatusIcon = statusDef.icon;
+            const BizIcon = BIZ_ICONS[v.business_type as string] ?? Store;
+            const noteVal = localNotes[v.id] !== undefined ? localNotes[v.id] : (v.notes ?? "");
+            return (
+              <div
+                key={v.id}
+                className={cn(
+                  "rounded-2xl border bg-white/2 hover:bg-white/3 transition-all",
+                  v.status === "paying" ? "border-emerald-500/20" :
+                  v.status === "trial"  ? "border-violet-500/20" :
+                  v.status === "demo"   ? "border-amber-500/20" :
+                  "border-white/6"
+                )}
+              >
+                <div className="p-4 flex flex-col sm:flex-row gap-4">
+                  {/* Left: info */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-start gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("p-1.5 rounded-lg border text-xs", BIZ_COLORS[v.business_type] ?? BIZ_COLORS.restaurant)}>
+                          <BizIcon className="w-3 h-3" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-white text-sm leading-tight">{v.cuisine_emoji} {v.name}</div>
+                          <div className="text-[10px] text-[#444] mt-0.5">{v.address}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 ml-auto">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400/30" />
+                        <span className="text-xs text-white font-semibold">{v.rating}</span>
+                        {v.is_partner && (
+                          <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-violet-500/15 text-violet-400 border border-violet-500/25">Premium</span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Contact */}
+                    <div className="flex gap-3 flex-wrap">
+                      {v.phone && (
+                        <a href={`tel:${v.phone}`} className="flex items-center gap-1 text-[11px] text-[#555] hover:text-white transition-colors">
+                          <Phone className="w-3 h-3" />
+                          {v.phone}
+                        </a>
+                      )}
+                      {v.email && (
+                        <a
+                          href={`mailto:${v.email}?subject=RestoSmart Wien — Kostenlose Listung für ${v.name}&body=Hallo%2C%0A%0Awir%20haben%20eine%20App%20die%20Wienern%20Lokale%20in%20ihrer%20Nähe%20zeigt.%20Wir%20möchten%20Ihr%20Lokal%20kostenlos%20listen.%0A%0AMit%20freundlichen%20Grüßen`}
+                          className="flex items-center gap-1 text-[11px] text-[#555] hover:text-blue-400 transition-colors"
+                        >
+                          <Mail className="w-3 h-3" />
+                          {v.email}
+                        </a>
+                      )}
+                    </div>
+                    {/* Notes */}
+                    <textarea
+                      value={noteVal}
+                      onChange={e => setLocalNotes(n => ({ ...n, [v.id]: e.target.value }))}
+                      onBlur={() => saveNotes(v.id, noteVal)}
+                      placeholder="Notizen: Wer angerufen, wie reagiert, nächster Schritt…"
+                      rows={2}
+                      className="w-full bg-white/4 border border-white/8 rounded-xl px-3 py-2 text-xs text-[#888] placeholder:text-[#333] outline-none focus:border-white/20 resize-none transition-colors"
+                    />
+                  </div>
+
+                  {/* Right: status selector */}
+                  <div className="flex flex-col gap-2 sm:w-40 shrink-0">
+                    <div className="text-[9px] font-bold uppercase tracking-widest text-[#333] mb-0.5">Status</div>
+                    <div className="flex flex-col gap-1">
+                      {PIPELINE_STATUSES.map((s) => {
+                        const SIcon = s.icon;
+                        const active = v.status === s.id;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => updateStatus(v.id, s.id)}
+                            disabled={updatingId === v.id}
+                            className={cn(
+                              "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold border transition-all text-left",
+                              active ? s.color + " scale-100" : "text-[#333] bg-white/2 border-white/5 hover:border-white/15 hover:text-[#888]"
+                            )}
+                          >
+                            <SIcon className="w-3 h-3 shrink-0" />
+                            {s.label}
+                            {active && <CheckCircle className="w-2.5 h-2.5 ml-auto opacity-60" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {filtered.length === 0 && !isLoading && (
+            <div className="text-center text-xs text-[#333] py-12">Keine Betriebe gefunden.</div>
+          )}
+        </section>
+
+        {/* ── Footer ── */}
+        <div className="text-center text-xs text-[#222] py-4 border-t border-white/4">
+          Wien Sales Pipeline · RestoSmart Intern · Streng vertraulich
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard ─────────────────────────────────────────────────────────────────
 
 function Dashboard({ founderKey }: { founderKey: string }) {
   const headers = { "x-founder-key": founderKey };
@@ -992,10 +1436,47 @@ export default function Founder() {
   const [authed, setAuthed] = useState<boolean>(() => {
     return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
   });
+  const [view, setView] = useState<"dashboard" | "pipeline">("dashboard");
 
   if (!authed) {
     return <AuthGate onAuth={() => setAuthed(true)} />;
   }
 
-  return <Dashboard founderKey={CORRECT_KEY} />;
+  return (
+    <div>
+      {/* ── Tab Navigation ── */}
+      <div className="sticky top-0 z-50 bg-[#080810]/98 backdrop-blur-xl border-b border-white/6">
+        <div className="max-w-screen-2xl mx-auto px-6 flex items-center gap-1 h-12">
+          <button
+            onClick={() => setView("dashboard")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+              view === "dashboard"
+                ? "bg-white/10 text-white border border-white/15"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            Command Center
+          </button>
+          <button
+            onClick={() => setView("pipeline")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+              view === "pipeline"
+                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            Wien Sales Pipeline
+            <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">NEU</span>
+          </button>
+          <div className="ml-auto text-[10px] text-[#222]">Founder · Streng vertraulich</div>
+        </div>
+      </div>
+      {view === "dashboard" && <Dashboard founderKey={CORRECT_KEY} />}
+      {view === "pipeline" && <WienPipelineView founderKey={CORRECT_KEY} />}
+    </div>
+  );
 }
