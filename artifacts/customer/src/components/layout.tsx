@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays, Users } from "lucide-react";
+import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays, Users, Building2 } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -84,16 +84,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Desktop footer */}
-      <footer className="hidden md:block py-10 border-t mt-auto">
-        <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <UtensilsCrossed className="w-3.5 h-3.5 text-white" />
+      <footer className="hidden md:block border-t mt-auto">
+        {/* For Business banner */}
+        <div className="bg-gradient-to-r from-primary/8 via-background to-accent/8 border-b border-border/40 py-5 px-6">
+          <div className="container mx-auto flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
+                <Building2 className="w-4.5 h-4.5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-foreground leading-tight">Restaurant, Café oder Bar?</p>
+                <p className="text-xs text-muted-foreground">Mehr Gäste mit RestoSmart — kostenlos starten</p>
+              </div>
             </div>
-            <span className="font-bold text-base text-foreground">RestoSmart</span>
+            <Link href="/for-business" className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+              Für Betriebe <Building2 className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <p className="italic text-muted-foreground/70 mb-1">Gutes Essen, gute Menschen.</p>
-          <p>&copy; {new Date().getFullYear()} RestoSmart. Alle Rechte vorbehalten.</p>
+        </div>
+        <div className="py-8 px-6">
+          <div className="container mx-auto text-center text-muted-foreground text-sm">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <UtensilsCrossed className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="font-bold text-base text-foreground">RestoSmart</span>
+            </div>
+            <div className="flex items-center justify-center gap-4 mb-2 flex-wrap text-xs">
+              <Link href="/for-business" className="text-primary font-semibold hover:underline flex items-center gap-1">
+                <Building2 className="w-3 h-3" /> Für Betriebe
+              </Link>
+              <span className="text-border">·</span>
+              <Link href="/explore" className="hover:underline">Entdecken</Link>
+              <span className="text-border">·</span>
+              <Link href="/profile" className="hover:underline">Profil</Link>
+            </div>
+            <p className="italic text-muted-foreground/70 mb-1">Gutes Essen, gute Menschen.</p>
+            <p>&copy; {new Date().getFullYear()} RestoSmart. Alle Rechte vorbehalten.</p>
+          </div>
         </div>
       </footer>
     </div>

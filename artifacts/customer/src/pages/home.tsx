@@ -829,6 +829,37 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── FOR BUSINESS BANNER ── */}
+      <section className="py-6 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <Link href="/for-business" className="block group">
+            <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/6 via-background to-accent/6 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/8 p-5 md:p-6">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/8 to-transparent rounded-full blur-2xl pointer-events-none" />
+              <div className="relative flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-4">
+                  <div className="text-3xl">🏪</div>
+                  <div>
+                    <div className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full mb-1">
+                      FÜR BETRIEBE
+                    </div>
+                    <p className="font-extrabold text-foreground text-base md:text-lg leading-tight">
+                      Restaurant, Café oder Bar? Wachse mit uns.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Mehr Gäste · Boost-Sichtbarkeit · Kostenlos starten
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl group-hover:opacity-90 transition-opacity">
+                  Mehr erfahren
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* ── BOTTOM DISCOVERY CTA ── */}
       <section className="py-10 px-4 mb-4">
         <div className="container mx-auto max-w-6xl">

@@ -28,6 +28,7 @@ router.get("/metrics", async (req, res) => {
       promoByType,
       byCity,
       byBizType,
+      claimsStats,
     ] = await Promise.all([
       db.select().from(restaurantsTable),
       db.select().from(reservationsTable),
@@ -86,6 +87,20 @@ router.get("/metrics", async (req, res) => {
         GROUP BY r.business_type
         ORDER BY premium DESC
       `),
+      db.execute(sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days')::int  AS last_7d,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days')::int AS last_30d,
+          COUNT(*) FILTER (WHERE status = 'new')::int        AS status_new,
+          COUNT(*) FILTER (WHERE status = 'contacted')::int  AS status_contacted,
+          COUNT(*) FILTER (WHERE status = 'onboarded')::int  AS status_onboarded,
+          COUNT(*) FILTER (WHERE status = 'rejected')::int   AS status_rejected,
+          COUNT(*) FILTER (WHERE business_type = 'restaurant')::int AS type_restaurant,
+          COUNT(*) FILTER (WHERE business_type = 'cafe')::int       AS type_cafe,
+          COUNT(*) FILTER (WHERE business_type = 'bar')::int        AS type_bar
+        FROM business_claims
+      `).catch(() => ({ rows: [{}] })),
     ]);
 
     const promos = promotionRows.rows as any[];
@@ -280,6 +295,7 @@ router.get("/metrics", async (req, res) => {
       byBizType: byBizType.rows,
       byCity: byCity.rows,
       promoByType: promoByType.rows,
+      businessClaims: claimsStats.rows[0] ?? {},
       rankings: {
         topBoosted,
         topSpenders,
@@ -406,6 +422,38 @@ router.put("/pipeline/:restaurantId", async (req, res) => {
     res.json({ ok: true });
   } catch (err: any) {
     res.status(500).json({ error: String(err?.message ?? err) });
+  }
+});
+
+// ─── /api/founder/claims ─────────────────────────────────────────────────────
+
+router.get("/claims", async (req, res) => {
+  try {
+    const result = await db.execute(sql`
+      SELECT id, business_name, business_type, owner_name, email, phone, city,
+             message, status, source, created_at
+      FROM business_claims
+      ORDER BY created_at DESC
+      LIMIT 100
+    `);
+    return res.json({ claims: result.rows, total: result.rows.length });
+  } catch (err: any) {
+    return res.status(500).json({ error: String(err?.message ?? err) });
+  }
+});
+
+router.put("/claims/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const { status } = req.body;
+  const valid = ["new", "contacted", "onboarded", "rejected"];
+  if (!valid.includes(status)) return res.status(400).json({ error: "Ungültiger Status" });
+  try {
+    await db.execute(sql`
+      UPDATE business_claims SET status = ${status}, updated_at = NOW() WHERE id = ${id}
+    `);
+    return res.json({ ok: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: String(err?.message ?? err) });
   }
 });
 

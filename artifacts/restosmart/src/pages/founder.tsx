@@ -414,6 +414,228 @@ const OBJECTIONS = [
   { q: '"Keine Zeit"', a: '"Wir richten alles für Sie ein. Null Aufwand."' },
 ];
 
+// ─── Founder Business Growth Section ─────────────────────────────────────────
+
+interface BusinessClaim {
+  id: number;
+  business_name: string;
+  business_type: "restaurant" | "cafe" | "bar";
+  owner_name: string;
+  email: string;
+  phone?: string;
+  city: string;
+  message?: string;
+  status: "new" | "contacted" | "onboarded" | "rejected";
+  created_at: string;
+}
+
+interface ClaimsKpi {
+  total?: number;
+  last_7d?: number;
+  last_30d?: number;
+  status_new?: number;
+  status_contacted?: number;
+  status_onboarded?: number;
+  status_rejected?: number;
+  type_restaurant?: number;
+  type_cafe?: number;
+  type_bar?: number;
+}
+
+const CLAIM_STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
+  new:       { label: "Neu",        cls: "bg-blue-500/15 text-blue-400 border-blue-500/25" },
+  contacted: { label: "Kontaktiert", cls: "bg-amber-500/15 text-amber-400 border-amber-500/25" },
+  onboarded: { label: "Onboarded",  cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25" },
+  rejected:  { label: "Abgelehnt", cls: "bg-red-500/15 text-red-400 border-red-500/25" },
+};
+
+const BIZ_TYPE_ICONS: Record<string, typeof Store> = {
+  restaurant: UtensilsCrossed,
+  cafe:       Coffee,
+  bar:        Wine,
+};
+
+const BIZ_TYPE_LABELS: Record<string, string> = {
+  restaurant: "Restaurant",
+  cafe:       "Café",
+  bar:        "Bar",
+};
+
+function FounderBusinessGrowthSection({ founderKey, businessClaims }: {
+  founderKey: string;
+  businessClaims: ClaimsKpi;
+}) {
+  const headers = { "x-founder-key": founderKey, "Content-Type": "application/json" };
+  const qc = useQueryClient();
+
+  const claimsQuery = useQuery<{ claims: BusinessClaim[]; total: number }>({
+    queryKey: ["founder-claims"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/founder/claims`, { headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    staleTime: 60_000,
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const r = await fetch(`${API}/founder/claims/${id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ status }),
+      });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["founder-claims"] }),
+  });
+
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const claims = claimsQuery.data?.claims ?? [];
+
+  const kpi = businessClaims;
+
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-5">
+        <Activity className="w-4 h-4 text-emerald-400" />
+        <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Business Growth Engine</span>
+        <span className="ml-2 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold">
+          {kpi.total ?? 0} Anfragen
+        </span>
+      </div>
+
+      {/* KPI row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
+        {[
+          { label: "Gesamt",       value: kpi.total ?? 0,           color: "violet" },
+          { label: "Letzte 7 Tage", value: kpi.last_7d ?? 0,        color: "blue" },
+          { label: "Neu",          value: kpi.status_new ?? 0,       color: "sky" },
+          { label: "Kontaktiert",  value: kpi.status_contacted ?? 0, color: "amber" },
+          { label: "Onboarded",    value: kpi.status_onboarded ?? 0, color: "emerald" },
+          { label: "Restaurant",   value: kpi.type_restaurant ?? 0,  color: "violet" },
+          { label: "Café / Bar",   value: (kpi.type_cafe ?? 0) + (kpi.type_bar ?? 0), color: "rose" },
+        ].map(({ label, value, color }) => {
+          const colorMap: Record<string, string> = {
+            violet: "text-violet-400", blue: "text-blue-400", sky: "text-sky-400",
+            amber: "text-amber-400", emerald: "text-emerald-400", rose: "text-rose-400",
+          };
+          return (
+            <div key={label} className="rounded-2xl border border-white/6 bg-white/2 px-4 py-3 text-center">
+              <p className={`text-xl font-bold ${colorMap[color]}`}>{value}</p>
+              <p className="text-[10px] text-[#555] mt-0.5">{label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Claims list */}
+      <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/6">
+          <span className="text-xs font-semibold text-[#888]">Eingehende Betriebsanfragen</span>
+          <button
+            onClick={() => qc.invalidateQueries({ queryKey: ["founder-claims"] })}
+            className="text-[11px] text-[#444] hover:text-[#888] flex items-center gap-1"
+          >
+            <RefreshCw className="w-3 h-3" /> Aktualisieren
+          </button>
+        </div>
+
+        {claimsQuery.isLoading ? (
+          <div className="p-6 text-center text-sm text-[#444]">Lade Anfragen…</div>
+        ) : claims.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-[#444] text-sm">Noch keine Anfragen eingegangen</p>
+            <p className="text-[11px] text-[#333] mt-1">Besucher der /for-business Seite tauchen hier auf</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-white/4">
+            {claims.slice(0, 20).map((claim) => {
+              const BizIcon = BIZ_TYPE_ICONS[claim.business_type] ?? Store;
+              const statusCfg = CLAIM_STATUS_CONFIG[claim.status] ?? CLAIM_STATUS_CONFIG.new;
+              const isExpanded = expandedId === claim.id;
+
+              return (
+                <div key={claim.id} className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                        <BizIcon className="w-3.5 h-3.5 text-[#888]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white leading-tight truncate">{claim.business_name}</p>
+                        <p className="text-[11px] text-[#555] leading-tight">
+                          {claim.owner_name} · {claim.city} · {BIZ_TYPE_LABELS[claim.business_type]}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCfg.cls}`}>
+                        {statusCfg.label}
+                      </span>
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : claim.id)}
+                        className="text-[11px] text-[#444] hover:text-[#888]"
+                      >
+                        {isExpanded ? "Schließen" : "Details"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="mt-3 pl-11 space-y-2">
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div className="flex items-center gap-1.5 text-[#555]">
+                          <Mail className="w-3 h-3 shrink-0" />
+                          <a href={`mailto:${claim.email}`} className="hover:text-[#888] truncate">{claim.email}</a>
+                        </div>
+                        {claim.phone && (
+                          <div className="flex items-center gap-1.5 text-[#555]">
+                            <PhoneCall className="w-3 h-3 shrink-0" />
+                            <a href={`tel:${claim.phone}`} className="hover:text-[#888]">{claim.phone}</a>
+                          </div>
+                        )}
+                      </div>
+                      {claim.message && (
+                        <p className="text-[11px] text-[#555] bg-white/3 rounded-lg px-3 py-2 italic">
+                          „{claim.message}"
+                        </p>
+                      )}
+                      <p className="text-[10px] text-[#333]">
+                        Eingegangen: {new Date(claim.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                      <div className="flex gap-2 flex-wrap">
+                        {(["new", "contacted", "onboarded", "rejected"] as const).map(s => {
+                          const sc = CLAIM_STATUS_CONFIG[s];
+                          const isCurrentStatus = claim.status === s;
+                          return (
+                            <button
+                              key={s}
+                              onClick={() => statusMutation.mutate({ id: claim.id, status: s })}
+                              disabled={isCurrentStatus || statusMutation.isPending}
+                              className={`text-[10px] font-bold px-2.5 py-1 rounded-full border transition-opacity ${
+                                isCurrentStatus ? `${sc.cls} opacity-100` : "border-white/8 text-[#555] hover:text-[#888] hover:border-white/15"
+                              } disabled:opacity-50`}
+                            >
+                              {sc.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 // ─── Founder Pricing Controls ─────────────────────────────────────────────────
 
 interface PricingConfig {
@@ -1501,6 +1723,9 @@ function Dashboard({ founderKey }: { founderKey: string }) {
             })}
           </div>
         </section>
+
+        {/* ── Section: Business Growth Engine ── */}
+        <FounderBusinessGrowthSection founderKey={founderKey} businessClaims={m.businessClaims ?? {}} />
 
         {/* ── Section: Dynamic Pricing Engine Controls ── */}
         <FounderPricingControls founderKey={founderKey} />

@@ -13,6 +13,7 @@ import MyBookings from "@/pages/my-bookings";
 import Profile from "@/pages/profile";
 import MealPlan from "@/pages/meal-plan";
 import Friends from "@/pages/friends";
+import ForBusiness from "@/pages/for-business";
 import { AppRatingPrompt } from "@/components/app-rating-prompt";
 import { SmartReminders } from "@/components/smart-reminders";
 import { SocialProvider } from "@/contexts/social-context";
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/meal-plan" component={MealPlan} />
       <Route path="/friends" component={Friends} />
       <Route path="/profile" component={Profile} />
+      <Route path="/for-business" component={ForBusiness} />
       <Route component={NotFound} />
     </Switch>
   );
