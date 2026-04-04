@@ -875,7 +875,7 @@ export default function Restaurant() {
                     </div>
                     <div className="flex gap-2">
                       <Button asChild size="sm" className="flex-1 rounded-full bg-gradient-to-r from-primary to-accent text-white border-0">
-                        <Link href="/bookings">Meine Buchungen</Link>
+                        <Link href="/my-bookings">Meine Buchungen</Link>
                       </Button>
                       <Button onClick={() => setBookingSuccess(false)} variant="outline" size="sm" className="flex-1 rounded-full">
                         Nochmal buchen

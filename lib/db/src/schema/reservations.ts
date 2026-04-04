@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const reservationsTable = pgTable("reservations", {
   id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").default(1),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerPhone: text("customer_phone").notNull(),

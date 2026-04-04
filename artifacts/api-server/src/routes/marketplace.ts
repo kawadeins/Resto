@@ -77,16 +77,16 @@ function mapRestaurant(
     closeTime: r.closeTime,
     openDays: r.openDays,
     tags: r.tags,
-    lat: r.lat ? parseFloat(r.lat) : 51.5074,
-    lng: r.lng ? parseFloat(r.lng) : -0.1278,
+    lat: r.lat ? parseFloat(r.lat) : 48.2093,
+    lng: r.lng ? parseFloat(r.lng) : 16.3726,
     isActive: r.isActive,
     isFeatured: r.isFeatured,
     isPartner: r.isPartner,
     isOpenNow: open,
-    hasActiveFlash: hasFlash && r.id === 1,
-    flashPercentage: hasFlash && r.id === 1 ? parseFloat(flashDeal!.percentage) : null,
-    flashLabel: hasFlash && r.id === 1 ? flashDeal!.label : null,
-    flashMinutesRemaining: hasFlash && r.id === 1 ? minutesRemaining : null,
+    hasActiveFlash: hasFlash,
+    flashPercentage: hasFlash ? parseFloat(flashDeal!.percentage) : null,
+    flashLabel: hasFlash ? flashDeal!.label : null,
+    flashMinutesRemaining: hasFlash ? minutesRemaining : null,
     // Availability engine
     availabilityStatus: avail?.status ?? (open ? "available" : "closed"),
     availableSeats: avail?.availableSeats ?? null,
@@ -311,21 +311,36 @@ router.get("/flash-deals", async (req, res) => {
     );
 
     const restaurants = await db.select().from(restaurantsTable).where(eq(restaurantsTable.isActive, true));
-    const mainRestaurant = restaurants.find((r) => r.id === 1) ?? restaurants[0];
+    const restaurantMap = new Map(restaurants.map(r => [r.id, r]));
+    // Prefer featured/partner restaurants for global flash deals
+    const defaultRestaurant = restaurants.find(r => r.isFeatured) ?? restaurants.find(r => r.isPartner) ?? restaurants[0];
 
     res.json(
-      active.map((d) => ({
-        id: d.id,
-        label: d.label,
-        percentage: parseFloat(d.percentage),
-        flashExpiresAt: d.flashExpiresAt?.toISOString() ?? null,
-        minutesRemaining: d.flashExpiresAt
-          ? Math.max(0, Math.round((new Date(d.flashExpiresAt).getTime() - now.getTime()) / 60000))
-          : null,
-        restaurant: mainRestaurant
-          ? { id: mainRestaurant.id, name: mainRestaurant.name, cuisine: mainRestaurant.cuisine, cuisineEmoji: mainRestaurant.cuisineEmoji, heroImage: mainRestaurant.heroImage }
-          : null,
-      }))
+      active.map((d) => {
+        const dealRestaurant = defaultRestaurant;
+        return {
+          id: d.id,
+          label: d.label,
+          percentage: parseFloat(d.percentage),
+          flashExpiresAt: d.flashExpiresAt?.toISOString() ?? null,
+          minutesRemaining: d.flashExpiresAt
+            ? Math.max(0, Math.round((new Date(d.flashExpiresAt).getTime() - now.getTime()) / 60000))
+            : null,
+          restaurant: dealRestaurant
+            ? {
+                id: dealRestaurant.id,
+                name: dealRestaurant.name,
+                cuisine: dealRestaurant.cuisine,
+                cuisineEmoji: dealRestaurant.cuisineEmoji,
+                heroImage: dealRestaurant.heroImage
+                  ? dealRestaurant.heroImage.startsWith("/uploads/")
+                    ? `/api/uploads/${dealRestaurant.heroImage.slice("/uploads/".length)}`
+                    : dealRestaurant.heroImage
+                  : null,
+              }
+            : null,
+        };
+      })
     );
   } catch (err) {
     req.log.error({ err }, "Failed to get flash deals");
@@ -370,6 +385,7 @@ router.post("/bookings", async (req, res) => {
     }
 
     const [created] = await db.insert(reservationsTable).values({
+      restaurantId,
       customerName: body.customerName,
       customerEmail: body.customerEmail,
       customerPhone: body.customerPhone,
@@ -411,28 +427,72 @@ router.get("/my-bookings", async (req, res) => {
       .where(eq(reservationsTable.customerEmail, email))
       .orderBy(sql`${reservationsTable.date} desc, ${reservationsTable.time} desc`);
 
-    const restaurants = await db.select().from(restaurantsTable).where(eq(restaurantsTable.isActive, true));
-    const mainRestaurant = restaurants[0];
+    // Fetch all restaurants to map against booking restaurantIds
+    const restaurantRows = await db.select().from(restaurantsTable).where(eq(restaurantsTable.isActive, true));
+    const restaurantMap = new Map(restaurantRows.map(r => [r.id, r]));
 
     res.json(
-      bookings.map((b) => ({
-        id: b.id,
-        customerName: b.customerName,
-        customerEmail: b.customerEmail,
-        customerPhone: b.customerPhone,
-        date: b.date,
-        time: b.time,
-        partySize: b.partySize,
-        status: b.status,
-        notes: b.notes,
-        source: b.source,
-        createdAt: b.createdAt.toISOString(),
-        restaurant: mainRestaurant ? { id: mainRestaurant.id, name: mainRestaurant.name, cuisine: mainRestaurant.cuisine, heroImage: mainRestaurant.heroImage } : null,
-      }))
+      bookings.map((b) => {
+        const rid = b.restaurantId ?? 1;
+        const r = restaurantMap.get(rid) ?? restaurantRows[0];
+        return {
+          id: b.id,
+          restaurantId: rid,
+          customerName: b.customerName,
+          customerEmail: b.customerEmail,
+          customerPhone: b.customerPhone,
+          date: b.date,
+          time: b.time,
+          partySize: b.partySize,
+          status: b.status,
+          notes: b.notes,
+          source: b.source,
+          createdAt: b.createdAt.toISOString(),
+          restaurant: r ? {
+            id: r.id,
+            name: r.name,
+            cuisine: r.cuisine,
+            cuisineEmoji: r.cuisineEmoji,
+            heroImage: r.heroImage
+              ? r.heroImage.startsWith("/uploads/")
+                ? `/api/uploads/${r.heroImage.slice("/uploads/".length)}`
+                : r.heroImage
+              : null,
+            address: r.address,
+          } : null,
+        };
+      })
     );
   } catch (err) {
     req.log.error({ err }, "Failed to get customer bookings");
     res.status(500).json({ error: "Failed to get bookings" });
+  }
+});
+
+// PATCH /api/marketplace/bookings/:id/cancel — customer self-cancel
+router.patch("/bookings/:id/cancel", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { email } = req.body as { email: string };
+    if (!email) return void res.status(400).json({ error: "email required" });
+
+    const [booking] = await db.select().from(reservationsTable).where(eq(reservationsTable.id, id));
+    if (!booking) return void res.status(404).json({ error: "Booking not found" });
+    if (booking.customerEmail !== email) return void res.status(403).json({ error: "Not your booking" });
+    if (["cancelled", "rejected", "completed"].includes(booking.status)) {
+      return void res.status(409).json({ error: "Booking cannot be cancelled in its current state" });
+    }
+
+    const [updated] = await db
+      .update(reservationsTable)
+      .set({ status: "cancelled" })
+      .where(eq(reservationsTable.id, id))
+      .returning();
+
+    res.json(updated);
+  } catch (err) {
+    req.log.error({ err }, "Failed to cancel booking");
+    res.status(500).json({ error: "Failed to cancel booking" });
   }
 });
 

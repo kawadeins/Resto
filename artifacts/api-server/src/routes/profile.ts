@@ -64,8 +64,8 @@ router.get("/", async (req, res) => {
       openTime: r.openTime,
       closeTime: r.closeTime,
       openDays: r.openDays,
-      lat: r.lat ? parseFloat(r.lat) : 51.5074,
-      lng: r.lng ? parseFloat(r.lng) : -0.1278,
+      lat: r.lat ? parseFloat(r.lat) : 48.2093,
+      lng: r.lng ? parseFloat(r.lng) : 16.3726,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get profile");

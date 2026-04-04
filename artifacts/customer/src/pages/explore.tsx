@@ -42,7 +42,7 @@ const RATING_BUBBLES = [
 export default function Explore() {
   useSeo({
     title: "Restaurants entdecken",
-    description: "Londoner Restaurants nach Küche, Preis, Bewertung und Verfügbarkeit filtern.",
+    description: "Wiener Lokale entdecken — nach Küche, Preis, Bewertung und Verfügbarkeit filtern.",
   });
 
   const [location, setLocation] = useLocation();
@@ -55,13 +55,14 @@ export default function Explore() {
   const initialOpenNow = searchParams.get("openNow") === "true";
   const initialRating = searchParams.get("rating") ? parseFloat(searchParams.get("rating")!) : undefined;
   const initialSearch = searchParams.get("search") || "";
+  const initialBusinessType = searchParams.get("businessType") || "";
 
   const [search, setSearch] = useState(initialSearch);
   const [cuisine, setCuisine] = useState(initialCuisine);
   const [priceRange, setPriceRange] = useState<number | undefined>(initialPrice);
   const [openNow, setOpenNow] = useState(initialOpenNow);
   const [rating, setRating] = useState<number | undefined>(initialRating);
-  const [businessType, setBusinessType] = useState<string>("");
+  const [businessType, setBusinessType] = useState<string>(initialBusinessType);
   const [sortByNearest, setSortByNearest] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const geo = useGeolocation();
@@ -74,12 +75,13 @@ export default function Explore() {
     if (priceRange) params.set("priceRange", priceRange.toString());
     if (openNow) params.set("openNow", "true");
     if (rating) params.set("rating", rating.toString());
+    if (businessType) params.set("businessType", businessType);
     
     const newSearchString = params.toString();
     if (newSearchString !== searchString) {
       setLocation(`/explore${newSearchString ? `?${newSearchString}` : ""}`, { replace: true });
     }
-  }, [search, cuisine, priceRange, openNow, rating, setLocation, searchString]);
+  }, [search, cuisine, priceRange, openNow, rating, businessType, setLocation, searchString]);
 
   const queryParams = {
     ...(search && { search }),

@@ -5,7 +5,7 @@ import { de } from "date-fns/locale";
 import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star, MessageSquare } from "lucide-react";
 import { useListMyBookings, useGetLoyaltyBalance } from "@workspace/api-client-react";
 import { getListMyBookingsQueryKey, getGetLoyaltyBalanceQueryKey } from "@workspace/api-client-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,12 +25,14 @@ export default function MyBookings() {
   });
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [emailInput, setEmailInput] = useState("");
   const [activeEmail, setActiveEmail] = useState<string>("");
   const [reviewingBookingId, setReviewingBookingId] = useState<number | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [submittedReviewIds, setSubmittedReviewIds] = useState<Set<number>>(new Set());
+  const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
     // Check local storage for existing email on mount
@@ -94,6 +96,30 @@ export default function MyBookings() {
       setReviewRating(5);
     },
     onError: () => toast({ title: "Bewertung konnte nicht eingereicht werden", variant: "destructive" }),
+  });
+
+  const cancelBookingMutation = useMutation({
+    mutationFn: (bookingId: number) =>
+      fetch(`${API_BASE}/api/marketplace/bookings/${bookingId}/cancel`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: activeEmail }),
+      }).then(async r => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error ?? "Fehler beim Stornieren");
+        }
+        return r.json();
+      }),
+    onSuccess: () => {
+      toast({ title: "Reservierung erfolgreich storniert." });
+      setCancelConfirmId(null);
+      queryClient.invalidateQueries({ queryKey: getListMyBookingsQueryKey({ email: activeEmail }) });
+    },
+    onError: (err: Error) => {
+      toast({ title: err.message, variant: "destructive" });
+      setCancelConfirmId(null);
+    },
   });
 
   const { data: loyaltyBalance, isLoading: isLoadingLoyalty } = useGetLoyaltyBalance(
@@ -319,12 +345,41 @@ export default function MyBookings() {
                       </div>
                     </div>
                     
-                    <div className="shrink-0 flex items-center justify-center md:border-l md:pl-6">
+                    <div className="shrink-0 flex flex-col items-center gap-2 md:border-l md:pl-6">
                       <Button asChild variant="ghost" className="w-full md:w-auto rounded-full hover:bg-primary hover:text-white transition-colors">
                         <Link href={`/restaurant/${booking.restaurant?.id}`}>
                           Restaurant ansehen
                         </Link>
                       </Button>
+                      {cancelConfirmId === booking.id ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted-foreground">Wirklich stornieren?</span>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="rounded-full h-7 px-3 text-xs"
+                            disabled={cancelBookingMutation.isPending}
+                            onClick={() => cancelBookingMutation.mutate(booking.id)}
+                          >
+                            {cancelBookingMutation.isPending ? "..." : "Ja"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full h-7 px-3 text-xs"
+                            onClick={() => setCancelConfirmId(null)}
+                          >
+                            Nein
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                          onClick={() => setCancelConfirmId(booking.id)}
+                        >
+                          Stornieren
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
