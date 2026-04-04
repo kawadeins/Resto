@@ -25,6 +25,7 @@ import Tables from "@/pages/tables";
 import Payroll from "@/pages/payroll";
 import Profile from "@/pages/profile";
 import Founder from "@/pages/founder";
+import Optimizer from "@/pages/optimizer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -189,6 +190,7 @@ function App() {
                     <Route path="/tables" component={Tables} />
                     <Route path="/payroll" component={Payroll} />
                     <Route path="/profile" component={Profile} />
+                    <Route path="/optimizer" component={Optimizer} />
                     <Route component={NotFound} />
                   </Switch>
                 </Layout>

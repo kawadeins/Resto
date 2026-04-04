@@ -1,0 +1,208 @@
+MASTER RULES APPLY
+
+Build a "Dynamic Pricing Engine (Professional & Controlled)" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT break existing functionality.
+Do NOT redesign the app.
+Do NOT manipulate users unfairly.
+Do NOT create fake urgency or fake pricing.
+
+This is a smart pricing optimization system for:
+- boost visibility (ads)
+- promotional placements
+- premium upgrade timing (optional insight)
+
+========================
+GOAL
+========================
+
+Adjust prices dynamically based on real demand, competition, and timing to:
+
+- maximize platform revenue
+- help businesses compete effectively
+- keep pricing fair and transparent
+- create natural urgency (not fake)
+
+========================
+1. DEMAND-BASED PRICING (CORE)
+========================
+
+Adjust boost pricing based on demand signals:
+
+- number of businesses boosting in same area
+- time of day demand
+- live activity / heat map
+- search activity
+- user traffic
+- competition density
+
+Examples:
+- high demand → higher cost
+- low demand → lower cost
+
+========================
+2. TIME-BASED PRICING
+========================
+
+Prices vary depending on time:
+
+Morning:
+- cafés cheaper → encourage boost
+
+Lunch:
+- restaurants medium/high
+
+Night:
+- bars higher (high demand)
+
+This aligns with real behavior.
+
+========================
+3. LOCATION-BASED PRICING
+========================
+
+Adjust pricing by area:
+
+- city center → higher demand → higher price
+- low-traffic areas → cheaper boosts
+
+Example:
+- Vienna center → higher cost
+- outer districts → lower cost
+
+========================
+4. SLOT-BASED PRICING (IMPORTANT 🔥)
+========================
+
+Combine with limited slots:
+
+- Top 3 slots → highest price
+- Next positions → lower price
+- standard boost → lowest
+
+Example:
+- Top #1 → premium price
+- Top #2–3 → medium
+- general boost → base
+
+========================
+5. REAL-TIME PRICE FEEDBACK
+========================
+
+Show business owners:
+
+- current price
+- demand level
+- competition level
+
+Examples:
+- “High demand right now”
+- “Prices increased due to activity”
+- “Low competition — good time to boost”
+
+========================
+6. PRICE SUGGESTION ENGINE
+========================
+
+Suggest pricing actions:
+
+- “Increase budget now — strong traffic”
+- “Wait — demand is low”
+- “Best time to boost is 18:00–21:00”
+
+========================
+7. FAIRNESS + TRUST RULES
+========================
+
+- no hidden price manipulation
+- no fake urgency
+- no random price jumps
+- always explain pricing context
+
+Users and businesses must trust the system.
+
+========================
+8. OPTIONAL AUTO-PRICING MODE
+========================
+
+Allow:
+
+👉 “Auto Optimize Pricing”
+
+If enabled:
+- system adjusts budget within limits
+- shifts spend to best times
+- improves ROI
+
+User must always have control.
+
+========================
+9. BUSINESS TYPE ADAPTATION
+========================
+
+Restaurants:
+- lunch/dinner pricing focus
+
+Cafés:
+- morning pricing advantage
+
+Bars:
+- night premium pricing
+
+========================
+10. FOUNDER CONTROL
+========================
+
+Allow internal control over:
+
+- base price levels
+- max/min limits
+- pricing sensitivity
+- demand thresholds
+
+========================
+11. UI / UX
+========================
+
+Keep pricing UI:
+
+- clear
+- transparent
+- easy to understand
+
+Show:
+- € cost
+- demand level
+- expected impact
+
+========================
+12. DO NOT OVERCOMPLICATE
+========================
+
+- no auction system yet
+- no bidding wars UI
+- no complex ad manager
+
+Keep:
+- simple pricing logic
+- smart adjustments
+- clear feedback
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster dynamically adjusts boost pricing based on:
+
+- demand
+- time
+- location
+- competition
+
+Result:
+
+- more revenue
+- better business ROI
+- fair user experience
+- professional monetization system

@@ -194,6 +194,236 @@ router.put("/:id/stop", async (req, res) => {
   }
 });
 
+// ─── GET /api/promotions/analysis — revenue optimization engine ───────────────
+// Single-tenant: always analyzes the first active restaurant.
+router.get("/analysis", async (req, res) => {
+  try {
+    const restResult = await db.execute(sql`
+      SELECT id, name, business_type FROM restaurants WHERE is_active = true ORDER BY id ASC LIMIT 1
+    `);
+    const restaurant = restResult.rows[0] as { id: number; name: string; business_type: string } | undefined;
+    if (!restaurant) return res.status(404).json({ error: "No restaurant found" });
+
+    const bizType = restaurant.business_type ?? "restaurant";
+    const restaurantId = restaurant.id;
+
+    const promosResult = await db.execute(sql`
+      SELECT id, type, status, daily_budget, spent_today, budget_reset_date,
+             impressions, clicks, bookings_attributed, heat_exposure, group_exposure,
+             created_at, ends_at
+      FROM promotions
+      WHERE restaurant_id = ${restaurantId}
+      ORDER BY created_at DESC
+      LIMIT 30
+    `);
+    const promos = promosResult.rows as any[];
+
+    const hourlyResult = await db.execute(sql`
+      SELECT EXTRACT(HOUR FROM pe.created_at)::int AS hour,
+             pe.event_type,
+             COUNT(*) AS count
+      FROM promotion_events pe
+      INNER JOIN promotions p ON p.id = pe.promotion_id
+      WHERE p.restaurant_id = ${restaurantId}
+        AND pe.created_at > NOW() - INTERVAL '7 days'
+      GROUP BY hour, pe.event_type
+      ORDER BY hour ASC
+    `);
+    const hourlyEvents = hourlyResult.rows as { hour: number; event_type: string; count: string }[];
+
+    const demandResult = await db.execute(sql`
+      SELECT COUNT(*) AS active_count FROM promotions
+      WHERE status = 'active' AND (ends_at IS NULL OR ends_at > NOW())
+    `);
+    const activePlatformBoosts = parseInt((demandResult.rows[0] as any)?.active_count ?? "0");
+
+    const activePromos = promos.filter((p: any) => p.status === "active");
+    const totalImpressions = promos.reduce((s: number, p: any) => s + parseInt(p.impressions ?? 0), 0);
+    const totalClicks     = promos.reduce((s: number, p: any) => s + parseInt(p.clicks ?? 0), 0);
+    const totalBookings   = promos.reduce((s: number, p: any) => s + parseInt(p.bookings_attributed ?? 0), 0);
+    const avgCTR         = totalImpressions > 0 ? totalClicks / totalImpressions : 0;
+    const avgBookingRate = totalClicks > 0 ? totalBookings / totalClicks : 0;
+
+    const today = new Date().toISOString().split("T")[0];
+    let totalBudget = 0, totalSpent = 0;
+    for (const p of activePromos) {
+      const lastReset = (p.budget_reset_date ?? "").toString().slice(0, 10);
+      const spent  = lastReset < today ? 0 : parseFloat(p.spent_today ?? 0);
+      const budget = parseFloat(p.daily_budget ?? 0);
+      if (budget > 0) { totalBudget += budget; totalSpent += spent; }
+    }
+    const budgetUtilization = totalBudget > 0 ? totalSpent / totalBudget : 0;
+
+    const impressionsByHour: Record<number, number> = {};
+    for (const ev of hourlyEvents) {
+      if (ev.event_type === "impression") {
+        impressionsByHour[ev.hour] = (impressionsByHour[ev.hour] ?? 0) + parseInt(ev.count);
+      }
+    }
+    const peakHours = Object.entries(impressionsByHour)
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
+      .slice(0, 3)
+      .map(([hour, count]) => ({ hour: parseInt(hour), count: parseInt(String(count)) }));
+
+    const LABELS: Record<string, string> = {
+      breakfast_boost: "Frühstücks-Boost", lunch_boost: "Mittags-Boost",
+      happy_hour_boost: "Happy Hour Boost",  nightlife_boost: "Nachtleben-Boost",
+      local_spotlight: "Local Spotlight",    local_heat_boost: "Heat-Map Boost",
+    };
+
+    const bestBoost = promos.length > 0
+      ? promos.reduce((best: any, p: any) => {
+          const ctr = parseInt(p.impressions ?? 0) > 0 ? parseInt(p.clicks ?? 0) / parseInt(p.impressions ?? 0) : 0;
+          const bCtr = parseInt(best.impressions ?? 0) > 0 ? parseInt(best.clicks ?? 0) / parseInt(best.impressions ?? 0) : 0;
+          return ctr > bCtr ? p : best;
+        })
+      : null;
+
+    const roiFeedback = {
+      bestBoostType: bestBoost?.type ?? null,
+      bestBoostLabel: bestBoost ? (LABELS[bestBoost.type] ?? bestBoost.type) : null,
+      bestImpressions: bestBoost ? parseInt(bestBoost.impressions ?? 0) : 0,
+      bestCTR: bestBoost && parseInt(bestBoost.impressions ?? 0) > 0
+        ? parseInt(bestBoost.clicks ?? 0) / parseInt(bestBoost.impressions ?? 0)
+        : 0,
+      insight: bestBoost && parseInt(bestBoost.clicks ?? 0) > 5
+        ? `Ihr ${LABELS[bestBoost.type] ?? bestBoost.type} erzielt die höchste Klickrate — weiter aktiv lassen.`
+        : promos.length === 0
+        ? "Noch kein Boost aktiv — starten Sie den ersten Boost für sofortige Sichtbarkeit."
+        : "Aktivieren Sie mehr Boosts, um Daten zu sammeln und präzise Empfehlungen zu erhalten.",
+    };
+
+    const currentHour = new Date().getHours();
+    const currentDay  = new Date().getDay();
+    const isWeekend   = currentDay === 0 || currentDay === 6;
+
+    const PEAK_BY_TYPE: Record<string, { boost: string; hours: [number, number]; label: string }> = {
+      cafe:       { boost: "breakfast_boost", hours: [6, 11],  label: "Frühstücks-Boost" },
+      restaurant: { boost: "lunch_boost",     hours: [11, 14], label: "Mittags-Boost" },
+      bar:        { boost: "nightlife_boost", hours: [19, 24], label: "Nachtleben-Boost" },
+    };
+
+    const recommendations: any[] = [];
+    const recommended = PEAK_BY_TYPE[bizType];
+    if (recommended) {
+      const [pStart, pEnd] = recommended.hours;
+      const isPeak = currentHour >= pStart && currentHour < pEnd;
+      const hasActive = activePromos.some((p: any) => p.type === recommended.boost);
+      if (isPeak && !hasActive) {
+        recommendations.push({
+          type: "missing_boost", priority: "high",
+          title: `Jetzt ist Ihre Peak-Zeit — ${recommended.label} ist inaktiv`,
+          description: `Es ist ${currentHour}:00 Uhr — genau der richtige Zeitraum für Ihren ${recommended.label}. Starten Sie ihn jetzt für sofortige Sichtbarkeit.`,
+          action: "boost_activate", actionValue: recommended.boost, metric: "+40% Reichweite",
+        });
+      } else if (!hasActive) {
+        const hint = bizType === "cafe"
+          ? "Aktivieren Sie ihn vor 8 Uhr für maximale Morgensichtbarkeit."
+          : bizType === "bar"
+          ? "Aktivieren Sie ihn vor dem Abend für mehr Nachtgäste."
+          : "Aktivieren Sie ihn vor 11 Uhr für mehr Mittagsgäste.";
+        recommendations.push({
+          type: "boost_time_window", priority: "medium",
+          title: `${recommended.label} vorbereiten`,
+          description: hint,
+          action: "boost_activate", actionValue: recommended.boost, metric: null,
+        });
+      }
+    }
+
+    if (totalImpressions > 20 && avgCTR < 0.03) {
+      recommendations.push({
+        type: "low_ctr", priority: "high",
+        title: "Hohe Sichtbarkeit, wenig Klicks — Profil optimieren",
+        description: `Klickrate: ${(avgCTR * 100).toFixed(1)}% — unter dem Durchschnitt (3–5%). Bessere Fotos oder ein stärkerer Kurztext können die Klicks verdoppeln.`,
+        action: "go_to_marketing", metric: `CTR ${(avgCTR * 100).toFixed(1)}%`,
+      });
+    }
+
+    if (totalClicks > 10 && avgBookingRate < 0.05) {
+      recommendations.push({
+        type: "low_conversion", priority: "medium",
+        title: "Klicks ohne Buchungen — Flash Deal hinzufügen",
+        description: `Nur ${(avgBookingRate * 100).toFixed(1)}% Ihrer Besucher buchen. Ein Flash Deal oder Smart Offer kann die Konversion sofort erhöhen.`,
+        action: "go_to_insights", metric: `Buchungsrate ${(avgBookingRate * 100).toFixed(1)}%`,
+      });
+    }
+
+    const exhausted = activePromos.filter((p: any) => {
+      const lastReset = (p.budget_reset_date ?? "").toString().slice(0, 10);
+      const spent  = lastReset < today ? 0 : parseFloat(p.spent_today ?? 0);
+      const budget = parseFloat(p.daily_budget ?? 0);
+      return budget > 0 && spent >= budget;
+    });
+    if (exhausted.length > 0) {
+      recommendations.push({
+        type: "budget_exhausted", priority: "high",
+        title: `${exhausted.length} Boost${exhausted.length > 1 ? "s" : ""} aufgebraucht — Budget erhöhen`,
+        description: "Ihr Tagesbudget ist erschöpft. Ihr Boost ist pausiert — erhöhen Sie das Budget um wieder sichtbar zu sein.",
+        action: "go_to_marketing", metric: `${exhausted.length} aufgebraucht`,
+      });
+    }
+
+    if (totalBudget > 0 && budgetUtilization < 0.3 && totalImpressions < 50) {
+      recommendations.push({
+        type: "budget_shift", priority: "low",
+        title: "Budget auf Peak-Stunden konzentrieren",
+        description: "Ihr Budget wird kaum genutzt. Aktivieren Sie Boosts gezielt in Ihren Peak-Stunden für bessere Effizienz.",
+        action: "go_to_marketing", metric: `Nutzung ${(budgetUtilization * 100).toFixed(0)}%`,
+      });
+    }
+
+    if (bizType === "bar" && isWeekend && !activePromos.some((p: any) => ["nightlife_boost","happy_hour_boost"].includes(p.type))) {
+      recommendations.push({
+        type: "demand_spike", priority: "high",
+        title: "Wochenende — Hohe Bar-Nachfrage in Wien",
+        description: "Wochenends suchen 3× mehr Nutzer nach Bars. Starten Sie jetzt den Nachtleben-Boost für maximale Sichtbarkeit.",
+        action: "boost_activate", actionValue: "nightlife_boost", metric: "Wochenend-Peak",
+      });
+    }
+
+    if (promos.length === 0) {
+      const first = bizType === "cafe" ? "breakfast_boost" : bizType === "bar" ? "nightlife_boost" : "lunch_boost";
+      recommendations.push({
+        type: "missing_boost", priority: "high",
+        title: `Ersten Boost starten — ${LABELS[first]}`,
+        description: `Ihr ${bizType === "cafe" ? "Café" : bizType === "bar" ? "Bar" : "Restaurant"} ist noch nicht geboostet. Starten Sie mit dem ${LABELS[first]} für sofortige Sichtbarkeitserhöhung.`,
+        action: "boost_activate", actionValue: first, metric: null,
+      });
+    }
+
+    if (bestBoost && parseInt(bestBoost.impressions ?? 0) > 30 && avgCTR >= 0.04) {
+      recommendations.push({
+        type: "winner_confirmation", priority: "low",
+        title: `${LABELS[bestBoost.type] ?? bestBoost.type} läuft hervorragend`,
+        description: `Dieser Boost erzielt ${(avgCTR * 100).toFixed(1)}% Klickrate — über dem Durchschnitt. Halten Sie ihn aktiv und erwägen Sie mehr Budget.`,
+        action: null, metric: `CTR ${(avgCTR * 100).toFixed(1)}%`,
+      });
+    }
+
+    const order = { high: 0, medium: 1, low: 2 } as const;
+    recommendations.sort((a, b) => order[a.priority as keyof typeof order] - order[b.priority as keyof typeof order]);
+
+    const demandLevel = activePlatformBoosts > 20 ? "high" : activePlatformBoosts > 8 ? "medium" : "low";
+    const demandSignal = demandLevel === "high"
+      ? "Hohe Plattformnachfrage — jetzt ist ein guter Zeitpunkt für einen Boost"
+      : demandLevel === "medium"
+      ? "Moderate Aktivität auf der Plattform — ein Boost hebt Sie heraus"
+      : "Ruhige Plattformlage — guter Zeitpunkt zum Vorbereiten";
+
+    return res.json({
+      restaurantId, restaurantName: restaurant.name, businessType: bizType,
+      metrics: { totalImpressions, totalClicks, totalBookings, avgCTR, avgBookingRate, activeBoostCount: activePromos.length, budgetUtilization },
+      peakHours, recommendations,
+      platformDemand: { level: demandLevel, activePlatformBoosts, signal: demandSignal },
+      roiFeedback,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to compute revenue analysis");
+    return res.status(500).json({ error: "Failed to compute analysis" });
+  }
+});
+
 // ─── GET /api/promotions/budget?restaurantId=:id — get budget state ───────────
 router.get("/budget", async (req, res) => {
   try {

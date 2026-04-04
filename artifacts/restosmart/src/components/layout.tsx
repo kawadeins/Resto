@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
   UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
-  Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle,
+  Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ const navigation = [
   { name: "Marketing", href: "/marketing", icon: Megaphone },
   { name: "Tote Stunden", href: "/insights", icon: Lightbulb },
   { name: "Wachstum", href: "/campaigns", icon: TrendingUp },
+  { name: "Optimizer", href: "/optimizer", icon: Zap },
   { name: "Bewertungen", href: "/reviews", icon: Star },
   { name: "Abonnement", href: "/billing", icon: CreditCard },
 ];

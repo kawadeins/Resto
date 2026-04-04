@@ -319,6 +319,38 @@ finalScore = relevanceScore * (closedMultiplier * distanceMultiplier) + boostSco
 - Budget-exhausted indicator: red chip "Budget aufgebraucht"
 - Info note: explains "Gesponsert" label transparency to owners
 
+## Auto Revenue Optimization Engine (`/optimizer`)
+
+A smart monetization optimization layer built inside the RestoSmart dashboard. Analyzes real promotion data and generates actionable business-type-aware recommendations.
+
+### Backend (`GET /api/promotions/analysis`)
+Single-tenant endpoint (no query param needed — always reads the first active restaurant). Returns:
+- `metrics` — totalImpressions, totalClicks, totalBookings, avgCTR, avgBookingRate, activeBoostCount, budgetUtilization
+- `peakHours` — top 3 hours by impression count from `promotion_events` (last 7 days)
+- `recommendations[]` — typed, priority-sorted suggestions generated from real data patterns
+- `platformDemand` — activePlatformBoosts count across all restaurants → low/medium/high demand signal
+- `roiFeedback` — bestBoostType with CTR and insight text
+
+**Recommendation types:** `missing_boost`, `boost_time_window`, `low_ctr`, `low_conversion`, `budget_exhausted`, `budget_shift`, `demand_spike`, `winner_confirmation`
+
+**Business type intelligence:**
+- `cafe` → breakfast_boost (6–11 Uhr) as primary recommendation
+- `restaurant` → lunch_boost (11–14 Uhr) as primary recommendation
+- `bar` → nightlife_boost (19–24 Uhr) + weekend demand spike detection
+
+### Frontend (`artifacts/restosmart/src/pages/optimizer.tsx`)
+Dashboard page at route `/optimizer`, visible in sidebar as "Optimizer" (Zap icon). Sections:
+1. **Header + Auto-Optimize toggle** — localStorage key `restosmart_auto_optimize`; when ON, highlights high-priority recommendations with violet border and shows "Auto-Aktivieren" CTA
+2. **Platform Demand Banner** — shown when demand level is medium or high; displays active boost count
+3. **KPI Row** — 4 cards: Impressionen, CTR, Buchungsrate, Aktive Boosts
+4. **Smart Empfehlungen** — priority-sorted list; `boost_activate` action calls `POST /api/promotions` inline; `go_to_marketing` / `go_to_insights` navigate via Link
+5. **ROI Feedback** — best-performing boost by CTR, above-average indicator
+6. **Peak-Stunden** — bar chart of top 3 impression hours from real event data
+7. **Betriebstyp-Strategie** — 4 business-type-specific tips (restaurant / café / bar)
+8. **Quick Links** — shortcuts to Marketing, Tote Stunden, Analyse
+
+Auto-Optimize mode is advisory-only: it never calls the API autonomously. It highlights the best action with one-click "Auto-Aktivieren" that still requires the user to click.
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
