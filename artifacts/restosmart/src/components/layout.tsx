@@ -36,7 +36,9 @@ const mobileNavigation = [
 
 function getOwnerInfo() {
   const email = localStorage.getItem("restosmart_owner_email") ?? "";
-  const name = email ? email.split("@")[0].replace(/[._]/g, " ") : "Restaurantbesitzer";
+  const biz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
+  const bizLabel = biz === "cafe" ? "Café-Betreiber" : biz === "bar" ? "Bar-Betreiber" : "Restaurantbesitzer";
+  const name = email ? email.split("@")[0].replace(/[._]/g, " ") : bizLabel;
   const initials = name
     .split(" ")
     .map((w) => w[0])

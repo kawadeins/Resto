@@ -1021,6 +1021,7 @@ export type ListMarketplaceRestaurantsParams = {
   openNow?: boolean;
   featured?: boolean;
   search?: string;
+  businessType?: string;
 };
 
 export type ListMyBookingsParams = {

@@ -89,6 +89,7 @@ function mapRestaurant(
     slotDurationMinutes: r.slotDurationMinutes ?? 90,
     maxPartySize: r.maxPartySize ?? 8,
     walkInsEnabled: r.walkInsEnabled ?? true,
+    businessType: r.businessType ?? "restaurant",
   };
 }
 
@@ -103,7 +104,7 @@ async function getTodayReservations() {
 
 router.get("/restaurants", async (req, res) => {
   try {
-    const { cuisine, priceRange, rating, openNow, search, featured } = req.query as Record<string, string>;
+    const { cuisine, priceRange, rating, openNow, search, featured, businessType } = req.query as Record<string, string>;
     const flash = await getActiveFlash();
     const todayRes = await getTodayReservations();
 
@@ -125,6 +126,9 @@ router.get("/restaurants", async (req, res) => {
     }
     if (featured === "true") {
       rows = rows.filter((r) => r.isFeatured);
+    }
+    if (businessType && businessType !== "all") {
+      rows = rows.filter((r) => (r.businessType ?? "restaurant") === businessType);
     }
     if (search) {
       const s = search.toLowerCase();

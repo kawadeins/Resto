@@ -12,8 +12,10 @@ import Restaurant from "@/pages/restaurant";
 import MyBookings from "@/pages/my-bookings";
 import Profile from "@/pages/profile";
 import MealPlan from "@/pages/meal-plan";
+import Friends from "@/pages/friends";
 import { AppRatingPrompt } from "@/components/app-rating-prompt";
 import { SmartReminders } from "@/components/smart-reminders";
+import { SocialProvider } from "@/contexts/social-context";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,7 @@ function Router() {
       <Route path="/restaurant/:id" component={Restaurant} />
       <Route path="/my-bookings" component={MyBookings} />
       <Route path="/meal-plan" component={MealPlan} />
+      <Route path="/friends" component={Friends} />
       <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
@@ -47,15 +50,31 @@ function GlobalLayers() {
   );
 }
 
+function AppShell() {
+  const [email, setEmail] = useState("");
+  useEffect(() => {
+    const sync = () => setEmail(localStorage.getItem("restosmart_email") ?? "");
+    sync();
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+
+  return (
+    <SocialProvider email={email}>
+      <Layout>
+        <Router />
+      </Layout>
+      <GlobalLayers />
+    </SocialProvider>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Layout>
-            <Router />
-          </Layout>
-          <GlobalLayers />
+          <AppShell />
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

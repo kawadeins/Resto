@@ -1,6 +1,11 @@
 import { Link } from "wouter";
-import { Star, Clock, MapPin, TrendingDown, Navigation, Armchair, Zap, ShieldCheck } from "lucide-react";
+import { Star, Clock, MapPin, Navigation, Zap, Coffee, Wine, UtensilsCrossed } from "lucide-react";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
+import { useMemo } from "react";
+import { scoreLiveActivity } from "@/lib/live-activity";
+import { LiveBadge } from "@/components/live-badge";
+import { SocialCueChip } from "@/components/social-cue-chip";
+import { useLifestyleMode } from "@/hooks/use-lifestyle-mode";
 
 interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
@@ -13,8 +18,44 @@ function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`;
 }
 
+type BizType = "restaurant" | "cafe" | "bar" | string;
+
+const TYPE_CONFIG: Record<string, {
+  label: string;
+  icon: typeof Coffee;
+  badgeCls: string;
+  borderAvail: string;
+  borderDefault: string;
+}> = {
+  restaurant: {
+    label: "Restaurant",
+    icon: UtensilsCrossed,
+    badgeCls: "text-primary/80 bg-primary/8 border-primary/20",
+    borderAvail: "border-emerald-200 shadow-lg shadow-emerald-100",
+    borderDefault: "border-border shadow-md shadow-black/5",
+  },
+  cafe: {
+    label: "Café",
+    icon: Coffee,
+    badgeCls: "text-amber-700 bg-amber-50 border-amber-200",
+    borderAvail: "border-amber-200 shadow-lg shadow-amber-100",
+    borderDefault: "border-amber-100/60 shadow-md shadow-black/5",
+  },
+  bar: {
+    label: "Bar",
+    icon: Wine,
+    badgeCls: "text-rose-700 bg-rose-50 border-rose-200",
+    borderAvail: "border-rose-200 shadow-lg shadow-rose-100",
+    borderDefault: "border-rose-100/60 shadow-md shadow-black/5",
+  },
+};
+
+function getTypeConfig(businessType?: BizType) {
+  return TYPE_CONFIG[businessType ?? "restaurant"] ?? TYPE_CONFIG.restaurant;
+}
+
 function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant }) {
-  const status = restaurant.availabilityStatus;
+  const status = (restaurant as any).availabilityStatus;
   if (!restaurant.isOpenNow || !status || status === "closed") return null;
 
   const config: Record<string, { label: string; dot: string; cls: string }> = {
@@ -38,13 +79,21 @@ function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant })
 
 export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: RestaurantCardProps) {
   const priceString = "€".repeat(restaurant.priceRange || 2);
-  const isAvailable = restaurant.isOpenNow && restaurant.availabilityStatus === "available";
+  const isAvailable = restaurant.isOpenNow && (restaurant as any).availabilityStatus === "available";
   const hasFlash = showFlashDeal && restaurant.hasActiveFlash;
+  const biz: BizType = (restaurant as any).businessType ?? "restaurant";
+  const typeCfg = getTypeConfig(biz);
+  const TypeIcon = typeCfg.icon;
+
+  // Live activity score
+  const { mode } = useLifestyleMode();
+  const live = useMemo(() => scoreLiveActivity(restaurant, mode), [restaurant, mode]);
+  const showLiveBadge = live.primaryBadge && live.intensity !== "quiet";
 
   return (
     <Link href={`/restaurant/${restaurant.id}`} className="block group press-scale">
       <div className={`relative overflow-hidden rounded-3xl bg-card border transition-all duration-300
-        ${isAvailable ? "border-emerald-200 shadow-lg shadow-emerald-100" : "border-border shadow-md shadow-black/5"}
+        ${isAvailable ? typeCfg.borderAvail : typeCfg.borderDefault}
         group-hover:shadow-xl group-hover:-translate-y-1`}
       >
         {/* Image */}
@@ -57,8 +106,14 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 text-5xl">
-              {restaurant.cuisineEmoji || "🍽️"}
+            <div className={`w-full h-full flex items-center justify-center text-5xl ${
+              biz === "cafe"
+                ? "bg-gradient-to-br from-amber-100 to-orange-100"
+                : biz === "bar"
+                ? "bg-gradient-to-br from-rose-100 to-purple-100"
+                : "bg-gradient-to-br from-primary/20 to-accent/20"
+            }`}>
+              {restaurant.cuisineEmoji || (biz === "cafe" ? "☕" : biz === "bar" ? "🍸" : "🍽️")}
             </div>
           )}
 
@@ -85,7 +140,7 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             )}
           </div>
 
-          {/* Rating bubble — bottom right */}
+          {/* Rating — bottom right */}
           <div className="absolute bottom-3 right-3">
             <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-lg">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -93,7 +148,7 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             </div>
           </div>
 
-          {/* Distance bubble — bottom left */}
+          {/* Distance — bottom left */}
           {distance !== undefined && (
             <div className="absolute bottom-3 left-3">
               <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-md text-xs font-semibold text-primary">
@@ -114,18 +169,28 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             <span className="shrink-0 text-sm font-semibold text-muted-foreground">{priceString}</span>
           </div>
 
-          {/* Cuisine chip + verified badge */}
+          {/* Type + cuisine + availability + live badge */}
           <div className="flex items-center gap-2 flex-wrap">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${typeCfg.badgeCls}`}>
+              <TypeIcon className="w-3 h-3" />
+              {typeCfg.label}
+            </span>
             <span className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">
               <span className="text-sm leading-none">{restaurant.cuisineEmoji}</span>
               {restaurant.cuisine}
             </span>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary/80 bg-primary/8 border border-primary/20 px-2 py-0.5 rounded-full">
-              <ShieldCheck className="w-3 h-3" />
-              Verifiziert
-            </span>
             <AvailabilityChip restaurant={restaurant} />
           </div>
+
+          {/* Live badge + social cue */}
+          {(showLiveBadge || true) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {showLiveBadge && live.primaryBadge && (
+                <LiveBadge badge={live.primaryBadge} />
+              )}
+              <SocialCueChip restaurantId={restaurant.id} variant="card" />
+            </div>
+          )}
 
           {/* Meta info */}
           <div className="space-y-1.5 text-xs text-muted-foreground">

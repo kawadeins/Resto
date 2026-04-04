@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { format, isPast, parseISO } from "date-fns";
+import { de } from "date-fns/locale";
 import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star, MessageSquare } from "lucide-react";
 import { useListMyBookings, useGetLoyaltyBalance } from "@workspace/api-client-react";
 import { getListMyBookingsQueryKey, getGetLoyaltyBalanceQueryKey } from "@workspace/api-client-react";
@@ -275,13 +276,13 @@ export default function MyBookings() {
                     {/* Date Block */}
                     <div className="md:w-32 shrink-0 flex flex-col items-center justify-center bg-muted/50 rounded-xl p-4 text-center">
                       <div className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                        {format(parseISO(booking.date), "MMM")}
+                        {format(parseISO(booking.date), "MMM", { locale: de })}
                       </div>
                       <div className="font-serif text-4xl font-bold text-primary my-1">
                         {format(parseISO(booking.date), "d")}
                       </div>
                       <div className="text-sm font-medium">
-                        {format(parseISO(booking.date), "EEEE")}
+                        {format(parseISO(booking.date), "EEEE", { locale: de })}
                       </div>
                     </div>
 

@@ -6,6 +6,7 @@ import * as z from "zod";
 import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
+import { de } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { 
@@ -683,7 +684,7 @@ export default function Restaurant() {
                       </Avatar>
                       <div>
                         <div className="font-bold">{review.customerName}</div>
-                        <div className="text-xs text-muted-foreground">{format(parseISO(review.createdAt), "MMM d, yyyy")}</div>
+                        <div className="text-xs text-muted-foreground">{format(parseISO(review.createdAt), "d. MMM yyyy", { locale: de })}</div>
                       </div>
                     </div>
                     <div className="flex text-amber-400">

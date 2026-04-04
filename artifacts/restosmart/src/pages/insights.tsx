@@ -133,7 +133,7 @@ function SeverityBadge({ severity }: { severity: string }) {
   };
   return (
     <Badge variant="outline" className={`text-xs ${map[severity] ?? map.low}`}>
-      {severity === "high" ? "High priority" : severity === "medium" ? "Medium" : "Low"}
+      {severity === "high" ? "Hohe Priorität" : severity === "medium" ? "Mittel" : "Niedrig"}
     </Badge>
   );
 }

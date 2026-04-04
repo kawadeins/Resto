@@ -45,6 +45,7 @@ export const restaurantsTable = pgTable("restaurants", {
   walkInsEnabled: boolean("walk_ins_enabled").notNull().default(true),
   availabilityPaused: boolean("availability_paused").notNull().default(false),
   availabilityPausedUntil: timestamp("availability_paused_until", { withTimezone: true }),
+  businessType: text("business_type").notNull().default("restaurant"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -1,30 +1,57 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
-import { Timer, ArrowRight, Compass, Gift, Star, Zap, RefreshCw, ChevronRight, Navigation, MapPin, X, Loader2, Search, Sparkles, UtensilsCrossed } from "lucide-react";
+import {
+  Timer, ArrowRight, Compass, Gift, Star, Zap, RefreshCw,
+  ChevronRight, Navigation, MapPin, X, Loader2, Search, Sparkles,
+  UtensilsCrossed, Coffee, Wine, Moon, Sun, Sunset,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListFlashDeals, useListMarketplaceRestaurants, useGetPersonalizedOffers } from "@workspace/api-client-react";
-import { getGetPersonalizedOffersQueryKey } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  useListFlashDeals,
+  useListMarketplaceRestaurants,
+  useGetPersonalizedOffers,
+  getGetPersonalizedOffersQueryKey,
+} from "@workspace/api-client-react";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSeo } from "@/hooks/use-seo";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Input } from "@/components/ui/input";
 import { NearYouNow } from "@/components/near-you-now";
+import { useLifestyleMode, ModeSection } from "@/hooks/use-lifestyle-mode";
+import { SmartOffersSection } from "@/components/smart-offers-section";
+import { LiveSections } from "@/components/live-sections";
+import { ActivityFeedSection } from "@/components/activity-feed-section";
+import { GroupSuggestionsSection } from "@/components/group-suggestions-section";
+import { AutoPlanCard } from "@/components/auto-plan-card";
+import { ActivePlansBanner } from "@/components/active-plans-banner";
+import { InstantPlanButton } from "@/components/instant-plan-button";
+import { useSocialCues } from "@/contexts/social-context";
+import { getFriends, getFriendRadar, type FriendProfile, type RadarZone } from "@/lib/social-api";
+import { evaluateAutoPlans } from "@/lib/auto-plans-engine";
+import type { UserContext } from "@/lib/smart-offers";
+import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
+
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
+// ─── Cuisine bubbles ──────────────────────────────────────────────────────────
 
 const CUISINES = [
-  { name: "Italienisch", emoji: "🍝", from: "from-rose-400", to: "to-red-500" },
-  { name: "Japanisch",   emoji: "🍣", from: "from-sky-400",  to: "to-blue-600" },
-  { name: "Mexikanisch", emoji: "🌮", from: "from-amber-400", to: "to-orange-500" },
-  { name: "Indisch",     emoji: "🍛", from: "from-yellow-400", to: "to-orange-400" },
-  { name: "Französisch", emoji: "🥐", from: "from-violet-400", to: "to-purple-600" },
+  { name: "Italienisch", emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
+  { name: "Japanisch",   emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
+  { name: "Mexikanisch", emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
+  { name: "Indisch",     emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
+  { name: "Französisch", emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
   { name: "Thailändisch",emoji: "🍜", from: "from-emerald-400", to: "to-teal-600" },
-  { name: "Amerikanisch",emoji: "🍔", from: "from-orange-400", to: "to-red-400" },
-  { name: "Britisch",    emoji: "🫖", from: "from-blue-400",  to: "to-indigo-600" },
+  { name: "Amerikanisch",emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
+  { name: "Britisch",    emoji: "🫖", from: "from-blue-400",    to: "to-indigo-600" },
 ];
+
+// ─── Countdown Timer ─────────────────────────────────────────────────────────
 
 function CountdownTimer({ expiresAt }: { expiresAt: string }) {
   const [timeLeft, setTimeLeft] = useState<string>("");
-
   useEffect(() => {
     const calculate = () => {
       const diff = new Date(expiresAt).getTime() - Date.now();
@@ -32,13 +59,12 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     };
     setTimeLeft(calculate());
     const id = setInterval(() => setTimeLeft(calculate()), 1000);
     return () => clearInterval(id);
   }, [expiresAt]);
-
   return (
     <div className="flex items-center gap-1.5 font-mono font-bold text-sm bg-black/30 text-white px-3 py-1.5 rounded-full backdrop-blur-md">
       <Timer className="w-3.5 h-3.5" />
@@ -47,12 +73,13 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
   );
 }
 
+// ─── Loyalty strip ────────────────────────────────────────────────────────────
+
 const TIER_CONFIG: Record<string, { gradient: string; badge: string; glow: string }> = {
   Bronze: { gradient: "from-amber-700/20 via-amber-500/10 to-transparent", badge: "bg-amber-100 text-amber-800 border-amber-300", glow: "shadow-amber-200" },
   Silver: { gradient: "from-slate-500/20 via-slate-400/10 to-transparent", badge: "bg-slate-100 text-slate-700 border-slate-300", glow: "shadow-slate-200" },
   Gold:   { gradient: "from-yellow-500/20 via-amber-400/10 to-transparent", badge: "bg-yellow-100 text-yellow-800 border-yellow-300", glow: "shadow-yellow-200" },
 };
-
 const MSG_ICON: Record<string, React.ElementType> = {
   win_back: RefreshCw,
   thank_you: Star,
@@ -65,17 +92,12 @@ function PersonalizedSection({ email }: { email: string }) {
     { email },
     { query: { queryKey: getGetPersonalizedOffersQueryKey({ email }), enabled: !!email } }
   );
-
   if (isLoading) return (
     <section className="px-4 py-4">
-      <div className="container mx-auto max-w-6xl">
-        <Skeleton className="h-24 w-full rounded-3xl" />
-      </div>
+      <div className="container mx-auto max-w-6xl"><Skeleton className="h-24 w-full rounded-3xl" /></div>
     </section>
   );
-
   if (!data) return null;
-
   const Icon = data.messageType ? (MSG_ICON[data.messageType] ?? Gift) : Gift;
   const cfg = TIER_CONFIG[data.tier] ?? TIER_CONFIG.Bronze;
   const pct = data.tier === "Gold" ? 100
@@ -92,9 +114,7 @@ function PersonalizedSection({ email }: { email: string }) {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.badge}`}>
-                  {data.tier} Mitglied
-                </span>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.badge}`}>{data.tier} Mitglied</span>
                 <span className="text-xs text-muted-foreground font-medium">{data.points} Pkt.</span>
               </div>
               {data.personalizedMessage && (
@@ -102,7 +122,6 @@ function PersonalizedSection({ email }: { email: string }) {
               )}
             </div>
           </div>
-
           <div className="flex items-center gap-4 shrink-0">
             {data.nextTier && (
               <div className="hidden sm:block w-32 space-y-1">
@@ -125,16 +144,134 @@ function PersonalizedSection({ email }: { email: string }) {
   );
 }
 
+// ─── Mode icon helper ─────────────────────────────────────────────────────────
+
+function ModeIcon({ mode }: { mode: string }) {
+  if (mode === "morning")   return <Sun className="w-3.5 h-3.5" />;
+  if (mode === "lunch")     return <UtensilsCrossed className="w-3.5 h-3.5" />;
+  if (mode === "afternoon") return <Coffee className="w-3.5 h-3.5" />;
+  if (mode === "evening")   return <Sunset className="w-3.5 h-3.5" />;
+  return <Moon className="w-3.5 h-3.5" />;
+}
+
+// ─── Section accent classes ───────────────────────────────────────────────────
+
+const ACCENT_CLASSES: Record<string, { icon: string; link: string; sectionBg: string; dot: string }> = {
+  primary: { icon: "bg-gradient-to-br from-primary to-accent", link: "text-primary bg-primary/10 hover:bg-primary/15", sectionBg: "bg-gradient-to-b from-primary/5 to-transparent", dot: "bg-primary" },
+  amber:   { icon: "bg-gradient-to-br from-amber-500 to-orange-500", link: "text-amber-700 bg-amber-100 hover:bg-amber-200", sectionBg: "bg-gradient-to-b from-amber-500/6 to-transparent", dot: "bg-amber-500" },
+  rose:    { icon: "bg-gradient-to-br from-rose-500 to-pink-600", link: "text-rose-700 bg-rose-100 hover:bg-rose-200", sectionBg: "bg-gradient-to-b from-rose-500/6 to-transparent", dot: "bg-rose-500" },
+  violet:  { icon: "bg-gradient-to-br from-violet-500 to-purple-600", link: "text-violet-700 bg-violet-100 hover:bg-violet-200", sectionBg: "bg-gradient-to-b from-violet-500/6 to-transparent", dot: "bg-violet-500" },
+  emerald: { icon: "bg-gradient-to-br from-emerald-500 to-teal-600", link: "text-emerald-700 bg-emerald-100 hover:bg-emerald-200", sectionBg: "bg-gradient-to-b from-emerald-500/6 to-transparent", dot: "bg-emerald-500" },
+};
+
+// ─── Dynamic Section ─────────────────────────────────────────────────────────
+
+function DynamicSection({
+  section, allData, flashDeals, loading, onCardClick, layout = "grid3",
+}: {
+  section: ModeSection;
+  allData: MarketplaceRestaurant[] | undefined;
+  flashDeals: MarketplaceFlashDeal[];
+  loading: boolean;
+  onCardClick: (type: string) => void;
+  layout?: "grid3" | "grid4";
+}) {
+  const ac = ACCENT_CLASSES[section.accent] ?? ACCENT_CLASSES.primary;
+  const filtered = allData?.filter((r) => {
+    if (section.businessType && (r as any).businessType !== section.businessType) return false;
+    if (section.openNow && !r.isOpenNow) return false;
+    if (section.featured && !r.isFeatured) return false;
+    return true;
+  }) ?? [];
+  const items = filtered.slice(0, section.maxItems);
+  const gridCls = layout === "grid4"
+    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5";
+
+  return (
+    <section className={`py-10 px-4 ${ac.sectionBg}`}>
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              {section.id.startsWith("open") ? (
+                <span className="relative flex h-5 w-5 items-center justify-center">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 ${ac.dot}`} />
+                  <span className={`relative flex h-3 w-3 rounded-full ${ac.dot}`} />
+                </span>
+              ) : (
+                <div className={`w-6 h-6 rounded-lg ${ac.icon} flex items-center justify-center text-sm`}>
+                  {section.icon}
+                </div>
+              )}
+              <h2 className="text-2xl font-extrabold tracking-tight">{section.title}</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">{section.subtitle}</p>
+          </div>
+          <Link href={section.exploreLink} className={`press-scale text-sm font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 ${ac.link}`}>
+            Alle <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+        <div className={gridCls}>
+          {loading ? (
+            Array.from({ length: section.maxItems }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-[4/3] w-full rounded-3xl" />
+                <Skeleton className="h-5 w-3/4 rounded-full" />
+                <Skeleton className="h-4 w-1/2 rounded-full" />
+              </div>
+            ))
+          ) : items.length > 0 ? (
+            items.map((r) => (
+              <div key={r.id} onClick={() => onCardClick((r as any).businessType ?? "restaurant")}>
+                <RestaurantCard restaurant={r} showFlashDeal={flashDeals.some((fd) => fd.restaurantId === r.id)} />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              Derzeit keine Einträge gefunden.
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Hero headline ────────────────────────────────────────────────────────────
+
+function HeroHeadlineHighlight({ text, highlight }: { text: string; highlight: string }) {
+  return <>{text}{" "}<span className="gradient-text">{highlight}</span></>;
+}
+
+const HEADLINE_MAP: Record<string, { pre: string; highlight: string }> = {
+  morning:   { pre: "Starten Sie Ihren Tag mit dem", highlight: "perfekten Kaffee." },
+  lunch:     { pre: "Zeit für eine perfekte", highlight: "Mittagspause." },
+  afternoon: { pre: "Machen Sie eine Pause beim", highlight: "besten Kaffee." },
+  evening:   { pre: "Ihr perfekter Abend", highlight: "beginnt hier." },
+  night:     { pre: "Die Nacht", highlight: "gehört Ihnen." },
+};
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
 export default function Home() {
   useSeo({
-    title: "Londons beste Restaurants entdecken",
-    description: "Entdecken und buchen Sie die besten Restaurants in London mit exklusiven Blitzangeboten und Treuepunkten.",
+    title: "Restaurants, Cafés & Bars entdecken",
+    description: "Entdecken und buchen Sie die besten Restaurants, Cafés und Bars mit exklusiven Angeboten.",
   });
+
+  const { mode, config, track, interactions } = useLifestyleMode();
+  const hl = HEADLINE_MAP[mode];
 
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [manualCity, setManualCity] = useState("");
   const [showCityFallback, setShowCityFallback] = useState(false);
+  const [modeBannerDismissed, setModeBannerDismissed] = useState(false);
+  const [friendCount, setFriendCount] = useState(0);
   const geo = useGeolocation();
+
+  // ── Social cues from context ─────────────────────────────────────────────
+  const { cues } = useSocialCues();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -144,33 +281,104 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (geo.status === "denied" || geo.status === "unavailable") {
-      setShowCityFallback(true);
-    }
+    if (geo.status === "denied" || geo.status === "unavailable") setShowCityFallback(true);
   }, [geo.status]);
 
-  const { data: flashDeals, isLoading: loadingDeals } = useListFlashDeals();
-  const { data: featured, isLoading: loadingFeatured } = useListMarketplaceRestaurants({ featured: true });
-  const { data: openNow, isLoading: loadingOpen } = useListMarketplaceRestaurants({ openNow: true });
-  const { data: allRestaurants } = useListMarketplaceRestaurants({});
-  const activeDeal = flashDeals?.[0];
+  const { data: flashDeals = [], isLoading: loadingDeals } = useListFlashDeals();
+  const { data: allRestaurants, isLoading: loadingAll } = useListMarketplaceRestaurants({});
+  const activeDeal = flashDeals[0];
+
+  // ── Customer profile ─────────────────────────────────────────────────────
+  const { data: customerProfile } = useQuery({
+    queryKey: ["customer-profile-home", customerEmail],
+    queryFn: async () => {
+      if (!customerEmail) return null;
+      const res = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(customerEmail)}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!customerEmail,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // ── Friends data ─────────────────────────────────────────────────────────
+  const { data: friends = [] } = useQuery<FriendProfile[]>({
+    queryKey: ["friends", customerEmail],
+    queryFn: () => getFriends(customerEmail),
+    enabled: !!customerEmail,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    setFriendCount(friends.length);
+  }, [friends.length]);
+
+  // ── Friend Radar data ─────────────────────────────────────────────────────
+  const { data: radarZones = [] } = useQuery<RadarZone[]>({
+    queryKey: ["friend-radar", customerEmail],
+    queryFn: () => getFriendRadar(customerEmail),
+    enabled: !!customerEmail && friends.length > 0,
+    staleTime: 3 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  // ── UserContext for smart offers ─────────────────────────────────────────
+  const userContext = useMemo((): UserContext => ({
+    favoriteCuisines:      customerProfile?.favoriteCuisines ?? [],
+    dietaryStyle:          customerProfile?.dietaryStyle ?? "no_preference",
+    allergies:             customerProfile?.allergies ?? [],
+    favoriteRestaurantIds: customerProfile?.favoriteRestaurantIds ?? [],
+    totalBookings:         customerProfile?.stats?.totalBookings ?? 0,
+    lat:  geo.lat,
+    lng:  geo.lng,
+  }), [customerProfile, geo.lat, geo.lng]);
+
+  // ── Auto Plans engine ─────────────────────────────────────────────────────
+  const autoPlan = useMemo(() => {
+    if (!customerEmail || !allRestaurants || allRestaurants.length === 0) return null;
+    return evaluateAutoPlans({
+      email: customerEmail,
+      restaurants: allRestaurants,
+      flashDeals,
+      friends,
+      radarZones,
+      cues,
+      mode,
+    });
+  }, [customerEmail, allRestaurants, flashDeals, friends, radarZones, cues, mode]);
+
+  const searchUrl = manualCity ? `/explore?search=${encodeURIComponent(manualCity)}` : "/explore";
 
   return (
     <div className="flex flex-col min-h-screen">
 
+      {/* ── ACTIVE PLANS BANNER (incoming invitations) ── */}
+      {customerEmail && <ActivePlansBanner email={customerEmail} />}
+
+      {/* ── AUTO PLAN CARD (proactive suggestion) ── */}
+      {autoPlan?.isReady && autoPlan.suggestion && (
+        <AutoPlanCard
+          autoPlan={autoPlan}
+          email={customerEmail}
+          restaurants={allRestaurants ?? []}
+          flashDeals={flashDeals}
+          friends={friends}
+          radarZones={radarZones}
+          cues={cues}
+          mode={mode}
+        />
+      )}
+
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden pt-8 pb-10 md:pt-16 md:pb-20">
-        {/* Background gradient blob */}
-        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/20 to-accent/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-accent/15 to-primary/10 blur-3xl pointer-events-none" />
+      <section className="relative overflow-hidden pt-8 pb-10 md:pt-16 md:pb-20 transition-all duration-700">
+        <div className={`absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-gradient-to-br ${config.blobPrimary} blur-3xl pointer-events-none transition-all duration-700`} />
+        <div className={`absolute -bottom-24 -right-24 w-[400px] h-[400px] rounded-full bg-gradient-to-br ${config.blobAccent} blur-3xl pointer-events-none transition-all duration-700`} />
 
         <div className="container mx-auto px-4 max-w-6xl relative z-10">
           <div className="grid md:grid-cols-2 gap-10 items-center">
 
-            {/* Left: headline + CTA */}
+            {/* Left */}
             <div className="space-y-6 text-center md:text-left">
-
-              {/* Brand wordmark */}
               <div className="flex items-center gap-3 justify-center md:justify-start">
                 <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
                   <UtensilsCrossed className="w-5.5 h-5.5 text-white" style={{ width: "22px", height: "22px" }} />
@@ -180,33 +388,35 @@ export default function Home() {
                 </span>
               </div>
 
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-4 py-2 rounded-full border border-primary/20">
-                <Sparkles className="w-3.5 h-3.5" />
-                Londons beste Tische
-              </div>
+              {!modeBannerDismissed && (
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-4 py-2 rounded-full border border-primary/20 transition-all duration-500">
+                  <ModeIcon mode={mode} />
+                  {config.badgeLabel} — {config.label}
+                  <button onClick={() => setModeBannerDismissed(true)} className="ml-1 text-primary/50 hover:text-primary transition-colors">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
 
-              <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight text-foreground">
-                Finden Sie Ihren<br />
-                nächsten{" "}
-                <span className="gradient-text">Lieblingstisch.</span>
+              <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight text-foreground transition-all duration-500">
+                <HeroHeadlineHighlight text={hl.pre} highlight={hl.highlight} />
               </h1>
 
-              <p className="text-muted-foreground text-lg max-w-md mx-auto md:mx-0 leading-relaxed">
-                Ausgewählte Restauranterlebnisse — von Geheimtipps bis Michelin-Sterne.
+              <p className="text-muted-foreground text-lg max-w-md mx-auto md:mx-0 leading-relaxed transition-all duration-500">
+                {config.subline}
               </p>
 
-              {/* Search bar */}
               <div className="relative max-w-sm mx-auto md:mx-0">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  placeholder="Restaurant, Küche oder Ort..."
+                  placeholder={config.searchPlaceholder}
                   value={manualCity}
                   onChange={(e) => setManualCity(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && manualCity) window.location.href = `/explore?search=${encodeURIComponent(manualCity)}`; }}
+                  onKeyDown={(e) => { if (e.key === "Enter" && manualCity) window.location.href = searchUrl; }}
                   className="pl-12 pr-16 h-14 rounded-2xl bg-card border-border/60 shadow-lg text-sm font-medium focus:ring-2 focus:ring-primary/30"
                 />
                 {manualCity && (
-                  <Link href={`/explore?search=${encodeURIComponent(manualCity)}`}>
+                  <Link href={searchUrl}>
                     <button className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center shadow-md">
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -214,13 +424,31 @@ export default function Home() {
                 )}
               </div>
 
-              {/* CTA buttons */}
               <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                 <Button asChild size="lg" className="rounded-2xl h-12 px-6 font-bold bg-gradient-to-br from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/30 border-0">
-                  <Link href="/explore">
-                    Entdecken <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
+                  <Link href="/explore">Entdecken <ArrowRight className="w-4 h-4 ml-2" /></Link>
                 </Button>
+
+                {/* Instant Plan button — hero variant */}
+                {customerEmail && allRestaurants && (
+                  <InstantPlanButton
+                    email={customerEmail}
+                    restaurants={allRestaurants}
+                    flashDeals={flashDeals}
+                    friends={friends}
+                    radarZones={radarZones}
+                    cues={cues}
+                    mode={mode}
+                    variant="hero"
+                  />
+                )}
+
+                <Link href="/explore?businessType=cafe" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-amber-300 bg-amber-50 text-amber-800 text-sm font-semibold press-scale hover:bg-amber-100 transition-colors">
+                  <Coffee className="w-4 h-4" /> Cafés
+                </Link>
+                <Link href="/explore?businessType=bar" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold press-scale hover:bg-rose-100 transition-colors">
+                  <Wine className="w-4 h-4" /> Bars
+                </Link>
 
                 {geo.status === "idle" && (
                   <Button size="lg" variant="outline" className="rounded-2xl h-12 px-5 font-semibold border-primary/30 hover:border-primary/60 hover:bg-primary/5 press-scale" onClick={geo.request}>
@@ -268,19 +496,13 @@ export default function Home() {
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                      {/* Flash badge */}
                       <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
                         <div className="bg-gradient-to-br from-accent to-rose-600 text-white font-extrabold px-4 py-2.5 rounded-2xl shadow-xl shadow-rose-300/40 -rotate-2">
                           <div className="text-3xl leading-none">{activeDeal.percentage}%</div>
                           <div className="text-[10px] uppercase tracking-widest font-bold opacity-90">RABATT HEUTE</div>
                         </div>
-                        {activeDeal.flashExpiresAt && (
-                          <CountdownTimer expiresAt={activeDeal.flashExpiresAt} />
-                        )}
+                        {activeDeal.flashExpiresAt && <CountdownTimer expiresAt={activeDeal.flashExpiresAt} />}
                       </div>
-
-                      {/* Info overlay */}
                       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         <div className="flex items-center gap-2 text-white/70 mb-1 text-sm">
                           <span className="text-lg">{activeDeal.restaurant.cuisineEmoji}</span>
@@ -296,13 +518,11 @@ export default function Home() {
                 </Link>
               ) : (
                 <div className="bg-card border border-border/50 rounded-3xl p-8 text-center shadow-xl aspect-[4/5] flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-5 text-4xl">
-                    ⚡
-                  </div>
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-5 text-4xl">⚡</div>
                   <h3 className="font-bold text-xl mb-2">Keine Blitzangebote</h3>
                   <p className="text-muted-foreground text-sm mb-6">Schauen Sie später für exklusive Rabatte vorbei.</p>
                   <Button asChild variant="outline" className="rounded-2xl">
-                    <Link href="/explore">Alle Restaurants</Link>
+                    <Link href="/explore">Alle entdecken</Link>
                   </Button>
                 </div>
               )}
@@ -314,17 +534,61 @@ export default function Home() {
       {/* ── PERSONALIZED STRIP ── */}
       {customerEmail && <PersonalizedSection email={customerEmail} />}
 
+      {/* ── AI SMART OFFERS ── */}
+      <SmartOffersSection
+        restaurants={allRestaurants ?? []}
+        flashDeals={flashDeals}
+        user={userContext}
+        mode={mode}
+        interactions={interactions}
+        isLoading={loadingAll}
+      />
+
+      {/* ── LIVE SECTIONS (Hot jetzt, Lunch-Rush, Nightlife-Heatmap…) ── */}
+      <LiveSections
+        restaurants={allRestaurants ?? []}
+        flashDeals={flashDeals}
+        mode={mode}
+        cues={cues}
+        isLoading={loadingAll}
+        userLat={geo.lat}
+        userLng={geo.lng}
+      />
+
+      {/* ── SOCIAL FEED (What friends are doing) ── */}
+      {customerEmail && (
+        <ActivityFeedSection email={customerEmail} friendCount={friendCount} />
+      )}
+
+      {/* ── GROUP SUGGESTIONS (Join friends, Plan together) ── */}
+      {customerEmail && (
+        <GroupSuggestionsSection email={customerEmail} friendCount={friendCount} />
+      )}
+
       {/* ── NEAR YOU NOW ── */}
       {geo.status === "granted" && geo.lat !== null && geo.lng !== null && allRestaurants && allRestaurants.length > 0 && (
         <NearYouNow
           restaurants={allRestaurants}
-          flashDeals={flashDeals ?? []}
+          flashDeals={flashDeals}
           userLat={geo.lat}
           userLng={geo.lng}
           maxCount={4}
           radiusKm={10}
         />
       )}
+
+      {/* ── DYNAMIC MODE SECTIONS ── */}
+      {config.sections.map((section) => (
+        <DynamicSection
+          key={section.id}
+          section={section}
+          allData={allRestaurants}
+          flashDeals={flashDeals}
+          loading={loadingAll}
+          onCardClick={track}
+          layout={section.maxItems === 4 ? "grid4" : "grid3"}
+        />
+      ))}
 
       {/* ── CUISINE BUBBLES ── */}
       <section className="py-10 px-4">
@@ -347,83 +611,32 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FEATURED ── */}
-      <section className="py-10 px-4 bg-gradient-to-b from-primary/5 to-transparent">
+      {/* ── BUSINESS TYPE QUICK-NAV ── */}
+      <section className="py-8 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                  <Star className="w-3.5 h-3.5 text-white fill-white" />
+          <h2 className="text-2xl font-extrabold mb-5 tracking-tight">Nach Betriebsart</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { type: "restaurant", emoji: "🍽️", label: "Restaurants", from: "from-primary/80", to: "to-accent/80", textCls: "text-primary" },
+              { type: "cafe", emoji: "☕", label: "Cafés", from: "from-amber-500", to: "to-orange-500", textCls: "text-amber-700" },
+              { type: "bar", emoji: "🍸", label: "Bars", from: "from-rose-500", to: "to-pink-600", textCls: "text-rose-700" },
+            ].map((bt) => (
+              <Link
+                key={bt.type}
+                href={`/explore?businessType=${bt.type}`}
+                onClick={() => track(bt.type)}
+                className="group press-scale"
+              >
+                <div className="relative rounded-3xl overflow-hidden border border-border/50 bg-card hover:border-border shadow-md hover:shadow-xl transition-all duration-300">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${bt.from} ${bt.to} opacity-10 group-hover:opacity-18 transition-opacity`} />
+                  <div className="relative p-5 text-center space-y-2">
+                    <div className="text-4xl">{bt.emoji}</div>
+                    <div className={`text-sm font-bold ${bt.textCls}`}>{bt.label}</div>
+                    <div className="text-xs text-muted-foreground">Entdecken</div>
+                  </div>
                 </div>
-                <h2 className="text-2xl font-extrabold tracking-tight">Empfehlungen</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">Die meistdiskutierten Lokale der Stadt</p>
-            </div>
-            <Link href="/explore?featured=true" className="press-scale text-sm font-bold text-primary bg-primary/10 hover:bg-primary/15 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
-              Alle <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {loadingFeatured ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-[4/3] w-full rounded-3xl" />
-                  <Skeleton className="h-5 w-3/4 rounded-full" />
-                  <Skeleton className="h-4 w-1/2 rounded-full" />
-                </div>
-              ))
-            ) : featured && featured.length > 0 ? (
-              featured.slice(0, 3).map(r => (
-                <RestaurantCard key={r.id} restaurant={r} showFlashDeal />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                Keine Empfehlungen gefunden.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── OPEN NOW ── */}
-      <section className="py-10 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="relative flex h-5 w-5 items-center justify-center">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50" />
-                  <span className="relative flex h-3 w-3 rounded-full bg-emerald-500" />
-                </span>
-                <h2 className="text-2xl font-extrabold tracking-tight">Jetzt geöffnet</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">Hunger jetzt? Diese Lokale warten auf Sie</p>
-            </div>
-            <Link href="/explore?openNow=true" className="press-scale text-sm font-bold text-primary bg-primary/10 hover:bg-primary/15 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
-              Alle <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {loadingOpen ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-[4/3] w-full rounded-3xl" />
-                  <Skeleton className="h-5 w-3/4 rounded-full" />
-                  <Skeleton className="h-4 w-1/2 rounded-full" />
-                </div>
-              ))
-            ) : openNow && openNow.length > 0 ? (
-              openNow.slice(0, 4).map(r => (
-                <RestaurantCard key={r.id} restaurant={r} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                Derzeit keine Restaurants geöffnet.
-              </div>
-            )}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -434,18 +647,47 @@ export default function Home() {
           <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary via-violet-600 to-accent p-8 md:p-12 text-white text-center shadow-2xl shadow-primary/30">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
             <div className="relative z-10">
-              <div className="text-5xl mb-4">🍽️</div>
-              <h2 className="text-2xl md:text-3xl font-extrabold mb-3 tracking-tight">Alle Restaurants entdecken</h2>
-              <p className="text-white/75 mb-6 max-w-md mx-auto">Filtern Sie nach Küche, Preis, Bewertung und Verfügbarkeit.</p>
-              <Button asChild size="lg" className="rounded-2xl bg-white text-primary font-bold hover:bg-white/90 shadow-xl press-scale h-12 px-8 border-0">
-                <Link href="/explore">
-                  Jetzt entdecken <Compass className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
+              <div className="text-5xl mb-4">{config.ctaEmoji}</div>
+              <h2 className="text-2xl md:text-3xl font-extrabold mb-3 tracking-tight">{config.ctaTitle}</h2>
+              <p className="text-white/75 mb-6 max-w-md mx-auto">{config.ctaSubtitle}</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button asChild size="lg" className="rounded-2xl bg-white text-primary font-bold hover:bg-white/90 shadow-xl press-scale h-12 px-8 border-0">
+                  <Link href="/explore">
+                    Jetzt entdecken <Compass className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+                {customerEmail && allRestaurants && (
+                  <InstantPlanButton
+                    email={customerEmail}
+                    restaurants={allRestaurants}
+                    flashDeals={flashDeals}
+                    friends={friends}
+                    radarZones={radarZones}
+                    cues={cues}
+                    mode={mode}
+                    variant="inline"
+                    className="bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold h-12"
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ── FLOATING ACTION BUTTON ── */}
+      {customerEmail && allRestaurants && (
+        <InstantPlanButton
+          email={customerEmail}
+          restaurants={allRestaurants}
+          flashDeals={flashDeals}
+          friends={friends}
+          radarZones={radarZones}
+          cues={cues}
+          mode={mode}
+          variant="fab"
+        />
+      )}
 
     </div>
   );

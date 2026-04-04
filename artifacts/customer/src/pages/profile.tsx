@@ -115,16 +115,36 @@ const TIER_CONFIG = {
 // ─── Premium plan features ────────────────────────────────────────────────────
 
 const PREMIUM_FEATURES = [
-  { icon: Calendar, label: "Reservierungsverwaltung", desc: "Tischbuchungen in Echtzeit verwalten" },
-  { icon: Store, label: "Tischplan & Verfügbarkeit", desc: "Visueller Grundriss, flexible Zeitslots" },
+  { icon: Calendar, label: "Buchungs- & Reservierungsverwaltung", desc: "Gäste & Buchungen in Echtzeit verwalten" },
+  { icon: Store, label: "Verfügbarkeit & Belegungsplan", desc: "Visueller Grundriss, flexible Zeitslots" },
   { icon: Users, label: "Mitarbeiter & Schichten", desc: "Dienstpläne, Zeiterfassung, Erinnerungen" },
-  { icon: FileText, label: "Speisekarten-Editor", desc: "Menü digital pflegen und veröffentlichen" },
+  { icon: FileText, label: "Angebots- & Menü-Editor", desc: "Speisekarte oder Getränkekarte digital pflegen" },
   { icon: BarChart2, label: "Analytics & Berichte", desc: "Umsatz, Auslastung, Gästeverhalten" },
   { icon: Megaphone, label: "Marketing & Kampagnen", desc: "E-Mail-Kampagnen, Rückgewinnungs-Tools" },
   { icon: Star, label: "Bewertungsmanagement", desc: "Bewertungen lesen und professionell antworten" },
   { icon: Zap, label: "POS-System", desc: "Kassenbereich direkt im Dashboard" },
   { icon: Crown, label: "Treue-Programme", desc: "Kundenbindung durch Punkte & Prämien" },
 ];
+
+type BusinessType = "restaurant" | "cafe" | "bar";
+
+const BUSINESS_TYPE_OPTIONS: { value: BusinessType; label: string; emoji: string; desc: string }[] = [
+  { value: "restaurant", label: "Restaurant", emoji: "🍽️", desc: "Speisekarte, Tische, Reservierungen" },
+  { value: "cafe", label: "Café", emoji: "☕", desc: "Frühstück, Take-away, Kaffeespezialitäten" },
+  { value: "bar", label: "Bar", emoji: "🍸", desc: "Happy Hour, Getränke, Nachtbetrieb" },
+];
+
+function getBusinessLabel(biz?: string | null): string {
+  if (biz === "cafe") return "Café";
+  if (biz === "bar") return "Bar";
+  return "Restaurant";
+}
+
+function getBusinessEmoji(biz?: string | null): string {
+  if (biz === "cafe") return "☕";
+  if (biz === "bar") return "🍸";
+  return "🍽️";
+}
 
 // ─── Smart Insight Generator ──────────────────────────────────────────────────
 
@@ -420,9 +440,10 @@ function PremiumModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onActivate: () => void;
+  onActivate: (businessType: BusinessType) => void;
 }) {
   const [step, setStep] = useState(0);
+  const [selectedBusinessType, setSelectedBusinessType] = useState<BusinessType>("restaurant");
   const [processing, setProcessing] = useState(false);
   const [walletType, setWalletType] = useState<WalletType>("detecting");
   const [showCardForm, setShowCardForm] = useState(false);
@@ -492,7 +513,7 @@ function PremiumModal({
   };
 
   const handleGoToDashboard = () => {
-    onActivate();
+    onActivate(selectedBusinessType);
     onClose();
     window.location.href = window.location.origin + "/";
   };
@@ -511,10 +532,10 @@ function PremiumModal({
                   <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                     <Crown className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">Restaurant Premium</span>
+                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">Business Premium</span>
                 </div>
-                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Alles was Ihr Restaurant braucht</h2>
-                <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Verwaltungssystem — Reservierungen, Personal, Küche, Marketing und mehr.</p>
+                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Alles was Ihr Betrieb braucht</h2>
+                <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Verwaltungssystem für Restaurants, Cafés und Bars — Buchungen, Personal, Marketing und mehr.</p>
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-4xl font-serif font-bold">€29</span>
                   <span className="text-white/70 text-sm">/Monat</span>
@@ -542,6 +563,28 @@ function PremiumModal({
               </div>
             </div>
 
+            {/* Business type selector */}
+            <div className="px-6 pb-2 space-y-3">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Für welchen Betrieb?</p>
+              <div className="grid grid-cols-3 gap-2">
+                {BUSINESS_TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSelectedBusinessType(opt.value)}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all text-center ${
+                      selectedBusinessType === opt.value
+                        ? "border-primary bg-primary/8 shadow-md shadow-primary/15"
+                        : "border-border bg-muted/30 hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="text-2xl leading-none">{opt.emoji}</span>
+                    <span className={`text-xs font-bold leading-tight ${selectedBusinessType === opt.value ? "text-primary" : "text-foreground"}`}>{opt.label}</span>
+                    <span className="text-[9px] text-muted-foreground leading-tight">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* CTA */}
             <div className="p-5 border-t bg-background/50 backdrop-blur-sm space-y-3">
               <Button
@@ -549,7 +592,7 @@ function PremiumModal({
                 onClick={() => setStep(1)}
               >
                 <Crown className="w-4 h-4 mr-2" />
-                Premium freischalten — 30 Tage kostenlos
+                {getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Premium — 30 Tage kostenlos
               </Button>
               <button onClick={onClose} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
                 Vielleicht später
@@ -571,7 +614,7 @@ function PremiumModal({
               </button>
               <div className="text-center pt-2">
                 <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">Sicherer Checkout</div>
-                <div className="font-serif text-xl font-bold">Restaurant Premium</div>
+                <div className="font-serif text-xl font-bold">{getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Premium</div>
                 <div className="text-white/80 text-sm mt-1">€29/Monat · 30 Tage kostenlos · Jederzeit kündbar</div>
               </div>
             </div>
@@ -758,7 +801,7 @@ function PremiumModal({
             <div>
               <h3 className="font-serif text-2xl font-bold mb-2">Herzlichen Glückwunsch!</h3>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-                Ihr Restaurant Premium-Zugang ist jetzt aktiv. Ihr komplettes Verwaltungs-Dashboard wartet auf Sie.
+                Ihr {getBusinessLabel(selectedBusinessType)} Premium-Zugang ist jetzt aktiv. Ihr komplettes Verwaltungs-Dashboard wartet auf Sie.
               </p>
             </div>
             <div className="w-full space-y-2.5 pt-2">
@@ -799,6 +842,10 @@ function OwnerPremiumCard({
   isPremium: boolean;
   onOpenModal: () => void;
 }) {
+  const storedBiz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
+  const bizLabel = getBusinessLabel(storedBiz);
+  const bizEmoji = getBusinessEmoji(storedBiz);
+
   if (isPremium) {
     return (
       <button
@@ -808,15 +855,15 @@ function OwnerPremiumCard({
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-violet-600 to-accent p-5 shadow-xl shadow-primary/25">
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-              <Building2 className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 text-2xl">
+              {bizEmoji}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold tracking-widest uppercase text-white/70">Restaurant Premium</span>
+                <span className="text-[10px] font-bold tracking-widest uppercase text-white/70">{bizLabel} Premium</span>
                 <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Aktiv</span>
               </div>
-              <div className="font-serif text-lg font-bold text-white leading-tight">Mein Restaurant-Dashboard</div>
+              <div className="font-serif text-lg font-bold text-white leading-tight">Mein {bizLabel}-Dashboard</div>
               <div className="text-white/70 text-xs mt-0.5">Tippen zum Öffnen</div>
             </div>
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">

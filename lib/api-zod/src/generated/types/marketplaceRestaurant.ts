@@ -30,6 +30,7 @@ export interface MarketplaceRestaurant {
   isFeatured: boolean;
   isPartner: boolean;
   isOpenNow: boolean;
+  businessType: string;
   hasActiveFlash: boolean;
   flashPercentage?: number | null;
   flashLabel?: string | null;
