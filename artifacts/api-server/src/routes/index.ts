@@ -29,6 +29,7 @@ import bookingPlansRouter from "./booking-plans";
 import profileRouter from "./profile";
 import customerProfileRouter from "./customer-profile";
 import mealPlanRouter from "./meal-plan";
+import appFeedbackRouter from "./app-feedback";
 
 const router: IRouter = Router();
 
@@ -62,5 +63,6 @@ router.use("/booking-plans", bookingPlansRouter);
 router.use("/profile", profileRouter);
 router.use("/customer-profile", customerProfileRouter);
 router.use("/meal-plan", mealPlanRouter);
+router.use("/app-feedback", appFeedbackRouter);
 
 export default router;

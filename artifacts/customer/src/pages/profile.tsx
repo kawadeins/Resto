@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
+import { ProfileFeedbackWidget } from "@/components/app-rating-prompt";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -1664,7 +1665,21 @@ export default function Profile() {
               )}
             </div>
 
-            {/* 4. Sign out — lowest priority */}
+            {/* 4. Feedback & Bewertung */}
+            <div className="bg-card border rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                  <Star className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base leading-none">Feedback & Bewertung</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Teile deine Erfahrung mit RestoSmart</p>
+                </div>
+              </div>
+              <ProfileFeedbackWidget email={email} />
+            </div>
+
+            {/* 5. Sign out — lowest priority */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-3 text-muted-foreground/70 text-sm">Sitzung</h3>
               <button

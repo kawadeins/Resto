@@ -22,3 +22,4 @@ export * from "./booking_plans";
 export * from "./customer_profiles";
 export * from "./meal_plans";
 export * from "./group_plans";
+export * from "./app_feedback";

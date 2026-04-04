@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
 import NotFound from "@/pages/not-found";
+import { useState, useEffect } from "react";
 
 import Home from "@/pages/home";
 import Explore from "@/pages/explore";
@@ -11,6 +12,8 @@ import Restaurant from "@/pages/restaurant";
 import MyBookings from "@/pages/my-bookings";
 import Profile from "@/pages/profile";
 import MealPlan from "@/pages/meal-plan";
+import { AppRatingPrompt } from "@/components/app-rating-prompt";
+import { SmartReminders } from "@/components/smart-reminders";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +31,22 @@ function Router() {
   );
 }
 
+function GlobalLayers() {
+  const [email, setEmail] = useState("");
+  useEffect(() => {
+    const sync = () => setEmail(localStorage.getItem("restosmart_email") ?? "");
+    sync();
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+  return (
+    <>
+      <SmartReminders email={email} />
+      <AppRatingPrompt email={email} />
+    </>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -36,6 +55,7 @@ function App() {
           <Layout>
             <Router />
           </Layout>
+          <GlobalLayers />
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
