@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { UtensilsCrossed, Compass, CalendarCheck, UserCircle } from "lucide-react";
+import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -7,6 +7,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", label: "Startseite", icon: UtensilsCrossed },
     { href: "/explore", label: "Entdecken", icon: Compass },
+    { href: "/meal-plan", label: "Essensplan", icon: CalendarDays },
     { href: "/my-bookings", label: "Buchungen", icon: CalendarCheck },
     { href: "/profile", label: "Profil", icon: UserCircle },
   ];

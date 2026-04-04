@@ -66,6 +66,12 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 9. **Owner Premium Card** — Prominent card at top of profile; sales card for non-premium users (shows 9 features, pricing, 30-day free trial); becomes a direct dashboard gateway after activation. Activation state stored in localStorage (`restosmart_owner_premium`, `restosmart_owner_email`).
 10. **Premium Flow** — 3-step modal: (1) plan presentation with feature grid + pricing, (2) simulated payment form (card number/name/expiry/CVC), (3) success screen with dashboard redirect to `/` (owner admin app)
 11. **Privacy & Security Section** — In Settings tab: data transparency card, notification toggle switches, active sessions list, data export, account deletion with confirmation flow
+12. **Mahlzeitenplan (Meal Plan)** (`/meal-plan`) — Smart weekly meal planner with personal + group dining modes:
+    - **Personal Plan**: 7-day tab selector (today highlighted), two slots per day (Mittagessen ☀️ / Abendessen 🌙), food type bubble grid (12 categories: Burger, Pizza, Fleisch, Fisch, Pasta, Sushi, Vegan, Desserts, Salat, Mexikanisch, Asiatisch, Orientalisch), weekly overview strip showing planned meals at a glance
+    - **Smart Matches**: "Heutige Matches" section auto-surfaces nearby restaurants that match today's planned food type using rule-based cuisine keyword scoring; shows open/closed status, flash deals, ratings
+    - **Group Plan Mode**: Full creation flow with title, date/time, meal slot, food theme bubble picker, participant list (name + phone), reminder timing (1 hour / 1 day / both); per-plan restaurant suggestions; organized into upcoming/past sections
+    - DB: `meal_plans` (unique per email+day+slot), `group_plans` (participants stored as JSON)
+    - API: `GET/PUT/DELETE /api/meal-plan/:email`, `GET /api/meal-plan/:email/suggestions`, `POST /api/meal-plan/group`, `GET /api/meal-plan/group/:email`, `GET/DELETE /api/meal-plan/group/:id/suggestions`
 
 ## Availability System
 

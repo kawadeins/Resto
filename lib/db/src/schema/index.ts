@@ -20,3 +20,5 @@ export * from "./employee_off_days";
 export * from "./employee_vacations";
 export * from "./booking_plans";
 export * from "./customer_profiles";
+export * from "./meal_plans";
+export * from "./group_plans";

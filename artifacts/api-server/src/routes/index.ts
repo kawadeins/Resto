@@ -28,6 +28,7 @@ import employeeVacationsRouter from "./employee-vacations";
 import bookingPlansRouter from "./booking-plans";
 import profileRouter from "./profile";
 import customerProfileRouter from "./customer-profile";
+import mealPlanRouter from "./meal-plan";
 
 const router: IRouter = Router();
 
@@ -60,5 +61,6 @@ router.use("/employee-vacations", employeeVacationsRouter);
 router.use("/booking-plans", bookingPlansRouter);
 router.use("/profile", profileRouter);
 router.use("/customer-profile", customerProfileRouter);
+router.use("/meal-plan", mealPlanRouter);
 
 export default router;

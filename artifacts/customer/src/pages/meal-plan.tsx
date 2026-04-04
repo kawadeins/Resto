@@ -1,0 +1,951 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  CalendarDays, Users, Plus, Trash2, ChevronRight, MapPin, Star,
+  Clock, Zap, Bell, User, Phone, X, Check, Sparkles, UtensilsCrossed,
+  ChefHat, Calendar, Loader2
+} from "lucide-react";
+import { Link } from "wouter";
+
+const API = import.meta.env.BASE_URL.replace(/\/$/, "").replace(/\/[^/]*$/, "") + "/api-server/api";
+
+const DAYS = [
+  { id: "Monday", short: "Mo", label: "Montag" },
+  { id: "Tuesday", short: "Di", label: "Dienstag" },
+  { id: "Wednesday", short: "Mi", label: "Mittwoch" },
+  { id: "Thursday", short: "Do", label: "Donnerstag" },
+  { id: "Friday", short: "Fr", label: "Freitag" },
+  { id: "Saturday", short: "Sa", label: "Samstag" },
+  { id: "Sunday", short: "So", label: "Sonntag" },
+];
+
+const TODAY_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
+
+const MEAL_SLOTS = [
+  { id: "lunch", label: "Mittagessen", emoji: "☀️" },
+  { id: "dinner", label: "Abendessen", emoji: "🌙" },
+];
+
+const FOOD_TYPES = [
+  { id: "burger", emoji: "🍔", label: "Burger", from: "from-amber-400", to: "to-orange-500" },
+  { id: "pizza", emoji: "🍕", label: "Pizza", from: "from-red-400", to: "to-rose-500" },
+  { id: "meat", emoji: "🥩", label: "Fleisch", from: "from-orange-500", to: "to-red-600" },
+  { id: "fish", emoji: "🐟", label: "Fisch", from: "from-blue-400", to: "to-cyan-500" },
+  { id: "pasta", emoji: "🍝", label: "Pasta", from: "from-yellow-400", to: "to-amber-500" },
+  { id: "sushi", emoji: "🍣", label: "Sushi", from: "from-rose-400", to: "to-pink-600" },
+  { id: "vegan", emoji: "🌱", label: "Vegan", from: "from-green-400", to: "to-emerald-600" },
+  { id: "desserts", emoji: "🍰", label: "Desserts", from: "from-pink-400", to: "to-fuchsia-500" },
+  { id: "salat", emoji: "🥗", label: "Salat", from: "from-lime-400", to: "to-green-500" },
+  { id: "mexican", emoji: "🌮", label: "Mexikanisch", from: "from-amber-300", to: "to-orange-400" },
+  { id: "asian", emoji: "🍜", label: "Asiatisch", from: "from-red-300", to: "to-orange-500" },
+  { id: "oriental", emoji: "🥙", label: "Orientalisch", from: "from-amber-400", to: "to-yellow-500" },
+];
+
+const FOOD_THEME_GROUPS = [
+  { id: "burger", emoji: "🍔", label: "Burger", from: "from-amber-400", to: "to-orange-500" },
+  { id: "pizza", emoji: "🍕", label: "Pizza", from: "from-red-400", to: "to-rose-500" },
+  { id: "sushi", emoji: "🍣", label: "Sushi", from: "from-rose-400", to: "to-pink-600" },
+  { id: "meat", emoji: "🥩", label: "Grill & Fleisch", from: "from-orange-500", to: "to-red-600" },
+  { id: "fish", emoji: "🐟", label: "Fisch & Meeresfrüchte", from: "from-blue-400", to: "to-cyan-500" },
+  { id: "pasta", emoji: "🍝", label: "Pasta & Italienisch", from: "from-yellow-400", to: "to-amber-500" },
+  { id: "vegan", emoji: "🌱", label: "Vegan & Vegetarisch", from: "from-green-400", to: "to-emerald-600" },
+  { id: "asian", emoji: "🍜", label: "Asiatisch", from: "from-red-300", to: "to-orange-500" },
+  { id: "oriental", emoji: "🥙", label: "Orientalisch", from: "from-amber-400", to: "to-yellow-500" },
+  { id: "mexican", emoji: "🌮", label: "Mexikanisch", from: "from-amber-300", to: "to-orange-400" },
+];
+
+const REMINDER_OPTIONS = [
+  { id: "1_hour_before", label: "1 Stunde vorher" },
+  { id: "1_day_before", label: "1 Tag vorher" },
+  { id: "both", label: "Beides" },
+];
+
+const MEAL_SLOT_OPTIONS = [
+  { id: "lunch", label: "Mittagessen ☀️" },
+  { id: "dinner", label: "Abendessen 🌙" },
+  { id: "brunch", label: "Brunch 🥐" },
+];
+
+function getFoodTypeData(id: string) {
+  return FOOD_TYPES.find((f) => f.id === id);
+}
+
+function SmartMatchCard({ restaurant, foodType }: { restaurant: any; foodType: string }) {
+  const ft = getFoodTypeData(foodType);
+  return (
+    <Link href={`/restaurant/${restaurant.id}`}>
+      <div className="flex items-center gap-3 p-3 rounded-2xl border border-border/60 bg-card hover:border-primary/30 hover:shadow-md transition-all press-scale cursor-pointer">
+        {restaurant.heroImage ? (
+          <img src={restaurant.heroImage} className="w-14 h-14 rounded-xl object-cover shrink-0" alt={restaurant.name} />
+        ) : (
+          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"} flex items-center justify-center text-2xl shrink-0`}>
+            {ft?.emoji ?? "🍽️"}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm truncate">{restaurant.name}</p>
+          <p className="text-xs text-muted-foreground truncate">{restaurant.address}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="flex items-center gap-1 text-xs text-amber-500 font-semibold">
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />{restaurant.rating.toFixed(1)}
+            </span>
+            {restaurant.isOpenNow ? (
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Geöffnet</span>
+            ) : (
+              <span className="text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">Geschlossen</span>
+            )}
+            {restaurant.hasActiveFlash && (
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-full">
+                <Zap className="w-2.5 h-2.5" />-{restaurant.flashPercentage}%
+              </span>
+            )}
+          </div>
+        </div>
+        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+      </div>
+    </Link>
+  );
+}
+
+function SlotPicker({
+  day, slot, currentFoodType, onSelect, onClear,
+}: {
+  day: string; slot: { id: string; label: string; emoji: string };
+  currentFoodType: string | null; onSelect: (foodType: string) => void; onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = FOOD_TYPES.find((f) => f.id === currentFoodType);
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-semibold flex items-center gap-1.5">
+          <span className="text-base">{slot.emoji}</span> {slot.label}
+        </span>
+        {selected && (
+          <button onClick={onClear} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 press-scale">
+            <X className="w-3 h-3" /> Löschen
+          </button>
+        )}
+      </div>
+
+      {selected ? (
+        <button
+          onClick={() => setOpen(!open)}
+          className={`w-full flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r ${selected.from} ${selected.to} text-white shadow-md press-scale`}
+        >
+          <span className="text-2xl">{selected.emoji}</span>
+          <div className="text-left">
+            <p className="font-bold text-sm">{selected.label}</p>
+            <p className="text-xs opacity-80">Tippe zum Ändern</p>
+          </div>
+          <Check className="w-4 h-4 ml-auto" />
+        </button>
+      ) : (
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-full flex items-center gap-2 p-3 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/40 text-muted-foreground hover:text-primary transition-all press-scale text-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Gericht planen
+        </button>
+      )}
+
+      {open && (
+        <div className="mt-3 p-3 rounded-2xl border border-border/60 bg-muted/30 backdrop-blur-sm">
+          <div className="grid grid-cols-4 gap-2">
+            {FOOD_TYPES.map((ft) => (
+              <button
+                key={ft.id}
+                onClick={() => { onSelect(ft.id); setOpen(false); }}
+                className={`relative flex flex-col items-center gap-1.5 press-scale group`}
+              >
+                <div className={`w-full aspect-square rounded-xl flex items-center justify-center text-xl transition-all ${
+                  currentFoodType === ft.id
+                    ? `bg-gradient-to-br ${ft.from} ${ft.to} shadow-sm`
+                    : "bg-background border border-border/60 group-hover:border-primary/30"
+                }`}>
+                  {ft.emoji}
+                </div>
+                <span className="text-[10px] font-bold text-center text-muted-foreground leading-tight">{ft.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TodayMatchesSection({ plans, email }: { plans: any[]; email: string }) {
+  const todayPlans = plans.filter((p) => p.dayOfWeek === TODAY_EN);
+  if (!todayPlans.length) return null;
+
+  return (
+    <div className="mt-6 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-2xl p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+          <Sparkles className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <h3 className="font-bold text-sm">Heutige Matches</h3>
+          <p className="text-xs text-muted-foreground">Passende Restaurants für deinen Plan heute</p>
+        </div>
+      </div>
+      {todayPlans.map((plan) => (
+        <TodaySlotMatches key={`${plan.dayOfWeek}-${plan.mealSlot}`} plan={plan} email={email} />
+      ))}
+    </div>
+  );
+}
+
+function TodaySlotMatches({ plan, email }: { plan: any; email: string }) {
+  const slot = MEAL_SLOTS.find((s) => s.id === plan.mealSlot);
+  const ft = getFoodTypeData(plan.foodType);
+  const { data: suggestions, isLoading } = useQuery({
+    queryKey: ["meal-suggestions", plan.foodType],
+    queryFn: async () => {
+      const r = await fetch(`${API}/meal-plan/${encodeURIComponent(email)}/suggestions?foodType=${plan.foodType}`);
+      return r.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return (
+    <div className="mb-4 last:mb-0">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-sm">{slot?.emoji}</span>
+        <span className="text-xs font-semibold text-muted-foreground">{slot?.label}</span>
+        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r ${ft?.from} ${ft?.to}`}>
+          {ft?.emoji} {ft?.label}
+        </div>
+      </div>
+      {isLoading ? (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground p-2">
+          <Loader2 className="w-4 h-4 animate-spin" /> Suche Restaurants…
+        </div>
+      ) : suggestions?.length > 0 ? (
+        <div className="space-y-2">
+          {suggestions.slice(0, 3).map((r: any) => (
+            <SmartMatchCard key={r.id} restaurant={r} foodType={plan.foodType} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground py-2 px-3 bg-muted/40 rounded-xl">Keine passenden Restaurants gefunden</p>
+      )}
+    </div>
+  );
+}
+
+interface GroupParticipant { name: string; phone: string; }
+interface GroupPlan {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  mealSlot: string;
+  foodTheme: string;
+  participants: GroupParticipant[];
+  groupSize: number;
+  reminderTiming: string;
+  organizerName: string;
+}
+
+function GroupPlanCard({ plan, onDelete }: { plan: GroupPlan; onDelete: () => void }) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const ft = FOOD_THEME_GROUPS.find((f) => f.id === plan.foodTheme);
+  const dateObj = new Date(plan.date);
+  const isUpcoming = dateObj >= new Date(new Date().setHours(0,0,0,0));
+
+  const { data: suggestions } = useQuery({
+    queryKey: ["group-suggestions", plan.id],
+    queryFn: async () => {
+      const r = await fetch(`${API}/meal-plan/group/${plan.id}/suggestions`);
+      return r.json();
+    },
+    enabled: showSuggestions,
+  });
+
+  const reminder = REMINDER_OPTIONS.find((r) => r.id === plan.reminderTiming);
+  const participants = Array.isArray(plan.participants) ? plan.participants : [];
+
+  return (
+    <div className={`rounded-2xl border overflow-hidden transition-all ${isUpcoming ? "border-primary/20 bg-card" : "border-border/50 bg-muted/20 opacity-70"}`}>
+      <div className={`h-2 bg-gradient-to-r ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"}`} />
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"} flex items-center justify-center text-xl shrink-0`}>
+              {ft?.emoji ?? "🍽️"}
+            </div>
+            <div>
+              <h3 className="font-bold text-sm">{plan.title}</h3>
+              <p className="text-xs text-muted-foreground">{ft?.label ?? plan.foodTheme}</p>
+            </div>
+          </div>
+          <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors press-scale">
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Calendar className="w-3.5 h-3.5 text-primary" />
+            <span>{dateObj.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" })}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Clock className="w-3.5 h-3.5 text-primary" />
+            <span>{plan.time} Uhr</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Users className="w-3.5 h-3.5 text-primary" />
+            <span>{plan.groupSize} Personen</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Bell className="w-3.5 h-3.5 text-primary" />
+            <span>{reminder?.label ?? plan.reminderTiming}</span>
+          </div>
+        </div>
+
+        {participants.length > 0 && (
+          <div className="mb-3">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Teilnehmer</p>
+            <div className="flex flex-wrap gap-1.5">
+              {participants.map((p, i) => (
+                <div key={i} className="flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-full px-2.5 py-1">
+                  <User className="w-3 h-3 text-primary" />
+                  <span className="text-[11px] font-semibold">{p.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setShowSuggestions(!showSuggestions)}
+          className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors press-scale"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          {showSuggestions ? "Vorschläge verbergen" : "Passende Restaurants anzeigen"}
+        </button>
+
+        {showSuggestions && suggestions && (
+          <div className="mt-3 space-y-2">
+            {suggestions.length > 0 ? (
+              suggestions.slice(0, 3).map((r: any) => (
+                <SmartMatchCard key={r.id} restaurant={r} foodType={plan.foodTheme} />
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-2">Keine passenden Restaurants gefunden</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
+  onClose: () => void; onCreated: () => void; email: string; userName: string;
+}) {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("19:00");
+  const [mealSlot, setMealSlot] = useState("dinner");
+  const [foodTheme, setFoodTheme] = useState("");
+  const [reminderTiming, setReminderTiming] = useState("1_hour_before");
+  const [participants, setParticipants] = useState<GroupParticipant[]>([{ name: "", phone: "" }]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const addParticipant = () => setParticipants([...participants, { name: "", phone: "" }]);
+  const removeParticipant = (i: number) => setParticipants(participants.filter((_, j) => j !== i));
+  const updateParticipant = (i: number, field: "name" | "phone", value: string) => {
+    const next = [...participants];
+    next[i][field] = value;
+    setParticipants(next);
+  };
+
+  const handleCreate = async () => {
+    if (!title.trim() || !date || !foodTheme) {
+      setError("Bitte alle Pflichtfelder ausfüllen");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const validParticipants = participants.filter((p) => p.name.trim());
+      const res = await fetch(`${API}/meal-plan/group`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizerEmail: email,
+          organizerName: userName,
+          title: title.trim(),
+          date,
+          time,
+          mealSlot,
+          foodTheme,
+          participants: validParticipants,
+          groupSize: validParticipants.length + 1,
+          reminderTiming,
+        }),
+      });
+      if (!res.ok) throw new Error("Fehler");
+      onCreated();
+    } catch {
+      setError("Fehler beim Erstellen. Bitte versuche es erneut.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md bg-background rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-1.5 bg-gradient-to-r from-primary to-accent" />
+        <div className="p-5 border-b flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Users className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="font-bold text-base">Gruppenplan erstellen</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-5 space-y-4">
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              Titel *
+            </label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="z.B. Schulklasse Abendessen, Geburtstag…"
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Datum *</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Uhrzeit</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Mahlzeit</label>
+            <div className="grid grid-cols-3 gap-2">
+              {MEAL_SLOT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setMealSlot(opt.id)}
+                  className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all press-scale ${
+                    mealSlot === opt.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              Essensthema *
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {FOOD_THEME_GROUPS.map((ft) => (
+                <button
+                  key={ft.id}
+                  onClick={() => setFoodTheme(ft.id)}
+                  className="relative flex flex-col items-center gap-1.5 press-scale"
+                >
+                  <div className={`w-full aspect-square rounded-xl flex items-center justify-center text-xl transition-all ${
+                    foodTheme === ft.id
+                      ? `bg-gradient-to-br ${ft.from} ${ft.to} shadow-sm`
+                      : "bg-muted/50 border border-border/60"
+                  }`}>
+                    {ft.emoji}
+                  </div>
+                  {foodTheme === ft.id && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                      <Check className="w-2.5 h-2.5 text-primary" />
+                    </div>
+                  )}
+                  <span className="text-[9px] font-bold text-center text-muted-foreground leading-tight line-clamp-2">{ft.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Erinnerung</label>
+            <div className="grid grid-cols-3 gap-2">
+              {REMINDER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setReminderTiming(opt.id)}
+                  className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all press-scale ${
+                    reminderTiming === opt.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Teilnehmer</label>
+              <button
+                onClick={addParticipant}
+                className="text-xs font-semibold text-primary flex items-center gap-1 press-scale"
+              >
+                <Plus className="w-3.5 h-3.5" /> Hinzufügen
+              </button>
+            </div>
+            <div className="space-y-2">
+              {participants.map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                    {i + 1}
+                  </div>
+                  <input
+                    value={p.name}
+                    onChange={(e) => updateParticipant(i, "name", e.target.value)}
+                    placeholder="Name"
+                    className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <input
+                    value={p.phone}
+                    onChange={(e) => updateParticipant(i, "phone", e.target.value)}
+                    placeholder="📱 Telefon"
+                    type="tel"
+                    className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  {participants.length > 1 && (
+                    <button onClick={() => removeParticipant(i)} className="p-1 hover:text-destructive press-scale">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-3 py-2">{error}</p>
+          )}
+        </div>
+
+        <div className="p-5 border-t shrink-0">
+          <button
+            onClick={handleCreate}
+            disabled={saving}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
+            {saving ? "Erstellen…" : "Gruppenplan erstellen"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function MealPlan() {
+  const [email, setEmail] = useState(() => localStorage.getItem("restosmart_email") ?? "");
+  const [inputEmail, setInputEmail] = useState("");
+  const [activeTab, setActiveTab] = useState<"personal" | "group">("personal");
+  const [selectedDay, setSelectedDay] = useState(TODAY_EN);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const qc = useQueryClient();
+
+  const isLoggedIn = !!email;
+
+  const { data: plans = [], isLoading: plansLoading } = useQuery<any[]>({
+    queryKey: ["meal-plan", email],
+    queryFn: async () => {
+      const r = await fetch(`${API}/meal-plan/${encodeURIComponent(email)}`);
+      return r.json();
+    },
+    enabled: isLoggedIn,
+    staleTime: 30 * 1000,
+  });
+
+  const { data: profile } = useQuery<any>({
+    queryKey: ["profile", email],
+    queryFn: async () => {
+      const r = await fetch(`${API}/customer-profile/${encodeURIComponent(email)}`);
+      return r.json();
+    },
+    enabled: isLoggedIn,
+  });
+
+  const { data: groupPlans = [], isLoading: groupLoading } = useQuery<GroupPlan[]>({
+    queryKey: ["group-plans", email],
+    queryFn: async () => {
+      const r = await fetch(`${API}/meal-plan/group/${encodeURIComponent(email)}`);
+      return r.json();
+    },
+    enabled: isLoggedIn,
+    staleTime: 30 * 1000,
+  });
+
+  const upsertSlot = useMutation({
+    mutationFn: async ({ dayOfWeek, mealSlot, foodType }: { dayOfWeek: string; mealSlot: string; foodType: string }) => {
+      const r = await fetch(`${API}/meal-plan/${encodeURIComponent(email)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dayOfWeek, mealSlot, foodType }),
+      });
+      return r.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["meal-plan", email] }),
+  });
+
+  const deleteSlot = useMutation({
+    mutationFn: async ({ dayOfWeek, mealSlot }: { dayOfWeek: string; mealSlot: string }) => {
+      const r = await fetch(`${API}/meal-plan/${encodeURIComponent(email)}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dayOfWeek, mealSlot }),
+      });
+      return r.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["meal-plan", email] }),
+  });
+
+  const deleteGroup = useMutation({
+    mutationFn: async (id: number) => {
+      const r = await fetch(`${API}/meal-plan/group/${id}`, { method: "DELETE" });
+      return r.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["group-plans", email] }),
+  });
+
+  const handleLogin = () => {
+    if (!inputEmail.trim()) return;
+    localStorage.setItem("restosmart_email", inputEmail.trim());
+    setEmail(inputEmail.trim());
+  };
+
+  function getPlanForSlot(day: string, slot: string) {
+    return plans.find((p) => p.dayOfWeek === day && p.mealSlot === slot) ?? null;
+  }
+
+  function countPlannedDay(day: string) {
+    return plans.filter((p) => p.dayOfWeek === day).length;
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/30 mb-4">
+          <CalendarDays className="w-8 h-8 text-white" />
+        </div>
+        <h1 className="font-bold text-2xl mb-2">Mahlzeitenplan</h1>
+        <p className="text-muted-foreground text-sm mb-6 max-w-xs">
+          Plane deine Woche, entdecke passende Restaurants und organisiere Gruppenessen.
+        </p>
+        <div className="w-full max-w-xs space-y-3">
+          <input
+            type="email"
+            value={inputEmail}
+            onChange={(e) => setInputEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            placeholder="deine@email.de"
+            className="w-full px-4 py-3 rounded-2xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-center"
+          />
+          <button
+            onClick={handleLogin}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale"
+          >
+            Plan aufrufen
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const userName = profile?.name ?? email.split("@")[0];
+  const upcomingGroupPlans = (groupPlans as GroupPlan[]).filter(
+    (p) => new Date(p.date) >= new Date(new Date().setHours(0, 0, 0, 0))
+  );
+  const pastGroupPlans = (groupPlans as GroupPlan[]).filter(
+    (p) => new Date(p.date) < new Date(new Date().setHours(0, 0, 0, 0))
+  );
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/25">
+            <CalendarDays className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-xl leading-tight">Mahlzeitenplan</h1>
+            <p className="text-xs text-muted-foreground">Hallo, {userName} 👋</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex gap-2 mb-6 bg-muted/40 p-1 rounded-2xl">
+        <button
+          onClick={() => setActiveTab("personal")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all press-scale ${
+            activeTab === "personal"
+              ? "bg-white shadow-sm text-primary"
+              : "text-muted-foreground"
+          }`}
+        >
+          <UtensilsCrossed className="w-4 h-4" /> Mein Wochenplan
+        </button>
+        <button
+          onClick={() => setActiveTab("group")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all press-scale ${
+            activeTab === "group"
+              ? "bg-white shadow-sm text-primary"
+              : "text-muted-foreground"
+          }`}
+        >
+          <Users className="w-4 h-4" /> Gruppenplan
+          {upcomingGroupPlans.length > 0 && (
+            <span className="ml-0.5 w-4 h-4 bg-gradient-to-br from-primary to-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+              {upcomingGroupPlans.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Personal Plan Tab */}
+      {activeTab === "personal" && (
+        <div>
+          {/* Day selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-5 scrollbar-none">
+            {DAYS.map((day) => {
+              const isToday = day.id === TODAY_EN;
+              const isSelected = day.id === selectedDay;
+              const count = countPlannedDay(day.id);
+              return (
+                <button
+                  key={day.id}
+                  onClick={() => setSelectedDay(day.id)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-2xl transition-all press-scale shrink-0 relative ${
+                    isSelected
+                      ? "bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30"
+                      : isToday
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : "bg-muted/40 text-muted-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  <span className="text-[10px] font-semibold">{day.short}</span>
+                  {count > 0 && (
+                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white/70" : "bg-primary"}`} />
+                  )}
+                  {!count && <span className="w-1.5 h-1.5" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Selected day label */}
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-bold text-base">
+              {DAYS.find((d) => d.id === selectedDay)?.label}
+              {selectedDay === TODAY_EN && (
+                <span className="ml-2 text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Heute</span>
+              )}
+            </h2>
+          </div>
+
+          {/* Meal slots */}
+          {plansLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="bg-card border border-border/60 rounded-2xl p-4">
+              {MEAL_SLOTS.map((slot, i) => {
+                const plan = getPlanForSlot(selectedDay, slot.id);
+                return (
+                  <div key={slot.id}>
+                    <SlotPicker
+                      day={selectedDay}
+                      slot={slot}
+                      currentFoodType={plan?.foodType ?? null}
+                      onSelect={(foodType) => upsertSlot.mutate({ dayOfWeek: selectedDay, mealSlot: slot.id, foodType })}
+                      onClear={() => deleteSlot.mutate({ dayOfWeek: selectedDay, mealSlot: slot.id })}
+                    />
+                    {i < MEAL_SLOTS.length - 1 && <hr className="border-border/40 my-2" />}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Weekly overview strip */}
+          {plans.length > 0 && (
+            <div className="mt-5">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Wochenübersicht</h3>
+              <div className="grid grid-cols-7 gap-1">
+                {DAYS.map((day) => {
+                  const dayPlans = plans.filter((p) => p.dayOfWeek === day.id);
+                  const isToday = day.id === TODAY_EN;
+                  return (
+                    <button
+                      key={day.id}
+                      onClick={() => setSelectedDay(day.id)}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all press-scale ${
+                        selectedDay === day.id ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className={`text-[9px] font-bold ${isToday ? "text-primary" : "text-muted-foreground"}`}>
+                        {day.short}
+                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        {MEAL_SLOTS.map((slot) => {
+                          const plan = dayPlans.find((p) => p.mealSlot === slot.id);
+                          const ft = plan ? getFoodTypeData(plan.foodType) : null;
+                          return (
+                            <div
+                              key={slot.id}
+                              className={`w-6 h-4 rounded-md flex items-center justify-center text-[8px] ${
+                                ft ? `bg-gradient-to-br ${ft.from} ${ft.to}` : "bg-muted/50 border border-dashed border-border/40"
+                              }`}
+                            >
+                              {ft ? ft.emoji : ""}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Today's matches */}
+          {plans.length > 0 && <TodayMatchesSection plans={plans} email={email} />}
+
+          {plans.length === 0 && !plansLoading && (
+            <div className="mt-6 text-center py-8 text-muted-foreground">
+              <ChefHat className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm font-medium">Noch keine Mahlzeiten geplant</p>
+              <p className="text-xs mt-1">Tippe auf „Gericht planen" um loszulegen</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Group Plan Tab */}
+      {activeTab === "group" && (
+        <div>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="font-bold text-base">Gruppenpläne</h2>
+              <p className="text-xs text-muted-foreground">Organisiere gemeinsame Mahlzeiten</p>
+            </div>
+            <button
+              onClick={() => setShowCreateGroup(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-lg shadow-primary/25 press-scale"
+            >
+              <Plus className="w-4 h-4" /> Neu
+            </button>
+          </div>
+
+          {groupLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : groupPlans.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-primary/40" />
+              </div>
+              <p className="font-semibold text-sm text-muted-foreground">Noch keine Gruppenpläne</p>
+              <p className="text-xs text-muted-foreground/70 mt-1 mb-4">
+                Erstelle einen Plan für deine Schulklasse, Familie oder Freunde.
+              </p>
+              <button
+                onClick={() => setShowCreateGroup(true)}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale"
+              >
+                Ersten Plan erstellen
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {upcomingGroupPlans.length > 0 && (
+                <>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Bevorstehend</p>
+                  {upcomingGroupPlans.map((plan) => (
+                    <GroupPlanCard
+                      key={plan.id}
+                      plan={plan}
+                      onDelete={() => deleteGroup.mutate(plan.id)}
+                    />
+                  ))}
+                </>
+              )}
+              {pastGroupPlans.length > 0 && (
+                <>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-4">Vergangen</p>
+                  {pastGroupPlans.map((plan) => (
+                    <GroupPlanCard
+                      key={plan.id}
+                      plan={plan}
+                      onDelete={() => deleteGroup.mutate(plan.id)}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showCreateGroup && (
+        <CreateGroupPlanModal
+          email={email}
+          userName={userName}
+          onClose={() => setShowCreateGroup(false)}
+          onCreated={() => {
+            setShowCreateGroup(false);
+            qc.invalidateQueries({ queryKey: ["group-plans", email] });
+          }}
+        />
+      )}
+    </div>
+  );
+}
