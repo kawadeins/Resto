@@ -48,7 +48,7 @@ function HeatmapCell({ value, max }: { value: number; max: number }) {
     <div
       className="rounded-sm h-7 flex items-center justify-center text-[10px] font-medium transition-colors"
       style={{ backgroundColor: bg, color: ratio > 0.4 ? "white" : "hsl(var(--muted-foreground))" }}
-      title={`${value.toFixed(1)} avg/week`}
+      title={`${value.toFixed(1)} Ø/Woche`}
     >
       {value > 0 ? value.toFixed(1) : ""}
     </div>
@@ -164,9 +164,9 @@ function SuggestionsPanel() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetInsightsSuggestionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetInsightsOutcomesQueryKey() });
-        toast({ title: "Scheduled discount created", description: "Your recurring discount is now active." });
+        toast({ title: "Geplanter Rabatt erstellt", description: "Ihr wiederkehrender Rabatt ist jetzt aktiv." });
       },
-      onError: () => toast({ title: "Failed to create discount", variant: "destructive" }),
+      onError: () => toast({ title: "Rabatt konnte nicht erstellt werden", variant: "destructive" }),
     },
   });
 
@@ -359,8 +359,8 @@ function DailyInsightBanner() {
   const { toast } = useToast();
   const flashMutation = useActivateFlashDeal({
     mutation: {
-      onSuccess: () => toast({ title: "Flash deal activated", description: "Live in the marketplace now." }),
-      onError: () => toast({ title: "Failed", variant: "destructive" }),
+      onSuccess: () => toast({ title: "Blitzangebot aktiviert", description: "Jetzt im Marktplatz live." }),
+      onError: () => toast({ title: "Aktivierung fehlgeschlagen", variant: "destructive" }),
     },
   });
 

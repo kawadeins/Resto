@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
@@ -226,7 +226,7 @@ export default function Restaurant() {
 
   useSeo({
     title: restaurant?.name || "Restaurant",
-    description: restaurant?.description || "Book a table",
+    description: restaurant?.description || "Tisch buchen",
     image: restaurant?.heroImage || undefined,
   });
 
@@ -416,7 +416,7 @@ export default function Restaurant() {
           <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
               <div>
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="text-2xl">{restaurant.cuisineEmoji}</span>
                   <Badge variant="secondary" className="font-medium text-sm">
                     {restaurant.cuisine}
@@ -425,6 +425,11 @@ export default function Restaurant() {
                   {restaurant.isOpenNow && (
                     <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">Jetzt geöffnet</Badge>
                   )}
+                  {/* Verified operator badge */}
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/8 border border-primary/25 px-2.5 py-1 rounded-full">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Geprüfter Betreiber
+                  </span>
                 </div>
                 <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight text-foreground mb-2">
                   {restaurant.name}

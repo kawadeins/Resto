@@ -81,7 +81,7 @@ export default function Menu() {
     return {
       activeCount: active.length,
       avgMargin,
-      highestMarginDish: sorted[0]?.name || "N/A"
+      highestMarginDish: sorted[0]?.name || "–"
     };
   }, [menuItems]);
 
@@ -285,9 +285,9 @@ export default function Menu() {
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editingDish ? "Edit Dish" : "Add New Dish"}</SheetTitle>
+            <SheetTitle>{editingDish ? "Gericht bearbeiten" : "Neues Gericht hinzufügen"}</SheetTitle>
             <SheetDescription>
-              Configure dish details and link ingredients to calculate real-time margins.
+              Gerichtdetails eingeben und Zutaten verknüpfen, um die Gewinnmarge in Echtzeit zu berechnen.
             </SheetDescription>
           </SheetHeader>
 
@@ -444,7 +444,7 @@ export default function Menu() {
 
               <SheetFooter className="pt-6">
                 <Button type="submit" className="w-full" disabled={createMenuItem.isPending || updateMenuItem.isPending || setMenuItemIngredients.isPending}>
-                  {editingDish ? "Save Dish & Recipe" : "Create Dish & Recipe"}
+                  {editingDish ? "Gericht & Rezept speichern" : "Gericht & Rezept anlegen"}
                 </Button>
               </SheetFooter>
             </form>

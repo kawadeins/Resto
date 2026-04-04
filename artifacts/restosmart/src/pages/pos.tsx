@@ -26,7 +26,7 @@ const CATEGORIES = ["Alle", "Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Gri
 export default function Pos() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Alle");
   const [sellingDish, setSellingDish] = useState<MenuItem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");

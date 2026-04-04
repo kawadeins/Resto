@@ -165,12 +165,14 @@ function AvatarUpload({
   email,
   onUpload,
   size = "lg",
+  isPremium = false,
 }: {
   photoUrl: string | null;
   name: string;
   email: string;
   onUpload: (url: string) => void;
   size?: "sm" | "lg";
+  isPremium?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -191,8 +193,12 @@ function AvatarUpload({
   };
 
   return (
-    <div className="relative group cursor-pointer" onClick={() => inputRef.current?.click()}>
-      <div className={`${dim} rounded-full overflow-hidden border-4 border-background shadow-lg bg-primary/10 flex items-center justify-center`}>
+    <div className="relative group cursor-pointer shrink-0" onClick={() => inputRef.current?.click()}>
+      {/* Premium glow ring */}
+      {isPremium && (
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent blur-md opacity-40 scale-110 pointer-events-none" />
+      )}
+      <div className={`relative ${dim} rounded-full overflow-hidden border-4 ${isPremium ? "border-primary/60 shadow-xl shadow-primary/30" : "border-background shadow-lg"} bg-primary/10 flex items-center justify-center`}>
         {uploading ? (
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         ) : photoUrl ? (
@@ -206,6 +212,12 @@ function AvatarUpload({
       <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
         <Camera className="w-5 h-5 text-white" />
       </div>
+      {/* Premium crown badge */}
+      {isPremium && (
+        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center border-2 border-background shadow-lg shadow-primary/30 pointer-events-none">
+          <Crown className="w-3.5 h-3.5 text-white" />
+        </div>
+      )}
       <input ref={inputRef} type="file" accept="image/*" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
     </div>
@@ -1123,9 +1135,17 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* ── Hero banner ──────────────────────────────── */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-violet-500/5 to-accent/8 border-b border-primary/10">
-        {/* Subtle dot pattern */}
+      <div className={`relative overflow-hidden border-b transition-all duration-500 ${
+        ownerPremium
+          ? "bg-gradient-to-br from-primary/14 via-violet-500/8 to-accent/12 border-primary/20"
+          : "bg-gradient-to-br from-primary/10 via-violet-500/5 to-accent/8 border-primary/10"
+      }`}>
+        {/* Dot pattern */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--primary)) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+        {/* Premium shimmer edge */}
+        {ownerPremium && (
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
+        )}
         <div className="container mx-auto px-4 max-w-4xl py-8 md:py-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
             <AvatarUpload
@@ -1133,8 +1153,19 @@ export default function Profile() {
               name={profile.name}
               email={profile.email}
               onUpload={(url) => save({ photoUrl: url } as any)}
+              isPremium={ownerPremium}
             />
             <div className="flex-1 text-center sm:text-left space-y-1">
+              {/* Verified label — only for premium owners */}
+              {ownerPremium && (
+                <div className="inline-flex items-center gap-1.5 mb-2">
+                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/25 px-3 py-1 rounded-full">
+                    <Shield className="w-3 h-3 text-primary" />
+                    <span className="text-[11px] font-bold text-primary tracking-wide uppercase">Verifizierter Restaurantbesitzer</span>
+                    <CheckCircle2 className="w-3 h-3 text-primary" />
+                  </div>
+                </div>
+              )}
               <h1 className="font-serif text-2xl md:text-3xl font-bold leading-tight">
                 {profile.name || "Kein Name gesetzt"}
               </h1>
@@ -1145,7 +1176,7 @@ export default function Profile() {
                 </span>
                 {ownerPremium && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-primary to-accent text-white shadow-sm shadow-primary/25">
-                    <Crown className="w-3 h-3" /> Restaurant Premium
+                    <Crown className="w-3 h-3" /> Premium
                   </span>
                 )}
                 <span className="text-xs text-muted-foreground">{profile.loyalty.points} Punkte</span>

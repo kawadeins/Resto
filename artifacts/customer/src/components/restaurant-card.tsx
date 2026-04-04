@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Star, Clock, MapPin, TrendingDown, Navigation, Armchair, Zap } from "lucide-react";
+import { Star, Clock, MapPin, TrendingDown, Navigation, Armchair, Zap, ShieldCheck } from "lucide-react";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
 
 interface RestaurantCardProps {
@@ -114,11 +114,15 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             <span className="shrink-0 text-sm font-semibold text-muted-foreground">{priceString}</span>
           </div>
 
-          {/* Cuisine chip */}
-          <div className="flex items-center gap-2">
+          {/* Cuisine chip + verified badge */}
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">
               <span className="text-sm leading-none">{restaurant.cuisineEmoji}</span>
               {restaurant.cuisine}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary/80 bg-primary/8 border border-primary/20 px-2 py-0.5 rounded-full">
+              <ShieldCheck className="w-3 h-3" />
+              Verifiziert
             </span>
             <AvailabilityChip restaurant={restaurant} />
           </div>

@@ -76,7 +76,7 @@ export default function MyBookings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           restaurantId: data.restaurantId,
-          customerName: activeEmail.split("@")[0] || "Guest",
+          customerName: activeEmail.split("@")[0] || "Gast",
           customerEmail: activeEmail,
           bookingId: data.bookingId,
           rating: reviewRating,
@@ -136,7 +136,7 @@ export default function MyBookings() {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="ihre@email.com"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 className="pl-10 h-12"
@@ -220,7 +220,7 @@ export default function MyBookings() {
                     loyaltyBalance.tier.toLowerCase() === 'silver' ? 'border-slate-400 text-slate-600 bg-slate-50' : 
                     'border-amber-400 text-amber-700 bg-amber-50'
                   }`}>
-                    {loyaltyBalance.tier.toUpperCase()} TIER
+                    {loyaltyBalance.tier === "gold" ? "GOLD" : loyaltyBalance.tier === "silver" ? "SILBER" : "BRONZE"} RANG
                   </Badge>
                 </div>
                 <p className="text-muted-foreground text-sm">Gesamt verdient: {loyaltyBalance.totalEarned} Pkt.</p>

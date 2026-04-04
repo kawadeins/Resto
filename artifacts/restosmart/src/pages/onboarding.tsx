@@ -141,7 +141,7 @@ function Step1({
           <Input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="e.g. La Bella Cucina"
+            placeholder="z. B. La Bella Cucina"
           />
         </div>
         <div className="space-y-1.5">
@@ -157,7 +157,7 @@ function Step1({
           <Input
             value={form.address}
             onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-            placeholder="e.g. 42 High Street"
+            placeholder="z. B. Musterstr. 42"
           />
         </div>
         <div className="space-y-1.5">
@@ -165,7 +165,7 @@ function Step1({
           <Input
             value={form.city}
             onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-            placeholder="e.g. London"
+            placeholder="z. B. Wien"
           />
         </div>
         <div className="space-y-1.5">
@@ -173,7 +173,7 @@ function Step1({
           <Input
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-            placeholder="e.g. 020 7946 0958"
+            placeholder="z. B. +43 1 234 5678"
           />
         </div>
         <div className="space-y-1.5">
@@ -181,7 +181,7 @@ function Step1({
           <Input
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            placeholder="hello@yourrestaurant.com"
+            placeholder="info@ihrrestaurant.at"
           />
         </div>
       </div>
@@ -627,7 +627,7 @@ export default function Onboarding() {
         queryClient.invalidateQueries({ queryKey: getGetMyRestaurantQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
       },
-      onError: () => toast({ title: "Failed to save restaurant info", variant: "destructive" }),
+      onError: () => toast({ title: "Restaurantdaten konnten nicht gespeichert werden", variant: "destructive" }),
     },
   });
 
@@ -635,9 +635,9 @@ export default function Onboarding() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
-        toast({ title: "Bookings enabled", description: "Customers can now book your restaurant." });
+        toast({ title: "Buchungssystem aktiviert", description: "Kunden können Ihr Restaurant jetzt online buchen." });
       },
-      onError: () => toast({ title: "Failed to enable bookings", variant: "destructive" }),
+      onError: () => toast({ title: "Buchungssystem konnte nicht aktiviert werden", variant: "destructive" }),
     },
   });
 
@@ -645,10 +645,10 @@ export default function Onboarding() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
-        toast({ title: "You're live!", description: "Your restaurant is now visible in the marketplace." });
+        toast({ title: "Sie sind live!", description: "Ihr Restaurant ist jetzt im Marktplatz sichtbar." });
         navigate("/");
       },
-      onError: () => toast({ title: "Something went wrong", variant: "destructive" }),
+      onError: () => toast({ title: "Etwas ist schiefgelaufen", variant: "destructive" }),
     },
   });
 

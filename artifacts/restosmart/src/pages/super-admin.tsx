@@ -119,16 +119,16 @@ export default function SuperAdmin() {
       return res.json();
     },
     onSuccess: (_, vars) => {
-      toast({ title: vars.activate ? "Pilot mode activated — all features unlocked." : "Pilot mode deactivated." });
+      toast({ title: vars.activate ? "Pilotmodus aktiviert — alle Funktionen freigeschaltet." : "Pilotmodus deaktiviert." });
       queryClient.invalidateQueries({ queryKey: ["pilot-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["super-admin-restaurants"] });
     },
-    onError: () => toast({ title: "Failed to update pilot status", variant: "destructive" }),
+    onError: () => toast({ title: "Pilotmodus konnte nicht aktualisiert werden", variant: "destructive" }),
   });
 
   useEffect(() => {
     if (statsError) {
-      toast({ title: "Authentication Failed", description: "Invalid Super Admin Key", variant: "destructive" });
+      toast({ title: "Authentifizierung fehlgeschlagen", description: "Ungültiger Super-Admin-Schlüssel", variant: "destructive" });
       setIsAuthenticated(false);
       setAdminKey("");
     }
@@ -145,10 +145,10 @@ export default function SuperAdmin() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Restaurant status updated" });
+      toast({ title: "Restaurantstatus aktualisiert" });
       queryClient.invalidateQueries({ queryKey: ["super-admin-restaurants"] });
     },
-    onError: () => toast({ title: "Failed to update restaurant", variant: "destructive" })
+    onError: () => toast({ title: "Restaurant konnte nicht aktualisiert werden", variant: "destructive" })
   });
 
   const updateSetting = useMutation({
@@ -162,10 +162,10 @@ export default function SuperAdmin() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Setting saved successfully" });
+      toast({ title: "Einstellung erfolgreich gespeichert" });
       queryClient.invalidateQueries({ queryKey: ["platform-settings"] });
     },
-    onError: () => toast({ title: "Failed to save setting", variant: "destructive" })
+    onError: () => toast({ title: "Einstellung konnte nicht gespeichert werden", variant: "destructive" })
   });
 
   if (!isAuthenticated) {
@@ -291,7 +291,7 @@ export default function SuperAdmin() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Registered Restaurants
+            Registrierte Restaurants
           </CardTitle>
           <CardDescription>Alle Mandanten auf der Plattform verwalten</CardDescription>
         </CardHeader>
@@ -337,7 +337,7 @@ export default function SuperAdmin() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="text-sm">
-                          <div>{r.bookingCount} books</div>
+                          <div>{r.bookingCount} Buchungen</div>
                           <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
                             {r.avgRating?.toFixed(1) || "-"} <Star className="w-3 h-3 fill-current" /> ({r.reviewCount})
                           </div>

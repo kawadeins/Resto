@@ -302,7 +302,7 @@ function CreateCampaignModal({
   onCreated: (id: number) => void;
 }) {
   const [message, setMessage] = useState(template.defaultMessage);
-  const [name, setName] = useState(`${template.label} — ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`);
+  const [name, setName] = useState(`${template.label} — ${new Date().toLocaleDateString("de-DE", { day: "numeric", month: "short" })}`);
   const { toast } = useToast();
   const createCampaign = useCreateCampaign();
   const launchCampaign = useLaunchCampaign();
@@ -658,7 +658,7 @@ export default function Campaigns() {
                         <td className="py-3">
                           <div className="flex items-center gap-2">
                             <span className="text-muted-foreground text-xs">
-                              {c.sentAt ? new Date(c.sentAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—"}
+                              {c.sentAt ? new Date(c.sentAt).toLocaleDateString("de-DE", { day: "numeric", month: "short" }) : "—"}
                             </span>
                             {c.status !== "draft" && (
                               <Button
