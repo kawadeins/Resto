@@ -32,6 +32,8 @@ import mealPlanRouter from "./meal-plan";
 import appFeedbackRouter from "./app-feedback";
 import socialRouter from "./social";
 import instantPlansRouter from "./instant-plans";
+import promotionsRouter from "./promotions";
+import founderRouter from "./founder";
 
 const router: IRouter = Router();
 
@@ -68,5 +70,7 @@ router.use("/meal-plan", mealPlanRouter);
 router.use("/app-feedback", appFeedbackRouter);
 router.use("/social", socialRouter);
 router.use("/instant-plans", instantPlansRouter);
+router.use("/promotions", promotionsRouter);
+router.use("/founder", founderRouter);
 
 export default router;

@@ -54,6 +54,15 @@ function getTypeConfig(businessType?: BizType) {
   return TYPE_CONFIG[businessType ?? "restaurant"] ?? TYPE_CONFIG.restaurant;
 }
 
+const BOOST_LABELS: Record<string, string> = {
+  breakfast_boost:  "Frühstücks-Boost",
+  lunch_boost:      "Mittags-Boost",
+  happy_hour_boost: "Happy-Hour-Boost",
+  nightlife_boost:  "Nightlife-Boost",
+  local_spotlight:  "Local Spotlight",
+  local_heat_boost: "Heat Boost",
+};
+
 function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant }) {
   const status = (restaurant as any).availabilityStatus;
   if (!restaurant.isOpenNow || !status || status === "closed") return null;

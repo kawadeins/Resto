@@ -243,6 +243,13 @@ export function scoreRestaurant(
   if (restaurant.isPartner) { score += 10; reasons.push(R.premium()); }
   else if (restaurant.isFeatured) { score += 5; }
 
+  // ── 11b. Ethical boost (premium businesses get relevance-aware uplift) ────
+  // Max +12 points — never enough to outrank a significantly better restaurant.
+  // Only applies during the boost's active time window (handled server-side via hasActiveBoost).
+  if ((restaurant as any).hasActiveBoost) {
+    score += 12;
+  }
+
   // ── 12. Availability ──────────────────────────────────────────────────────
   const avail = (restaurant as any).availabilityStatus;
   if (avail === "available") score += 10;

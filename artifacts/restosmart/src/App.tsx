@@ -24,6 +24,7 @@ import Campaigns from "@/pages/campaigns";
 import Tables from "@/pages/tables";
 import Payroll from "@/pages/payroll";
 import Profile from "@/pages/profile";
+import Founder from "@/pages/founder";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -142,36 +143,43 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <PremiumGate>
-            <Layout>
-              <Switch>
-                {/* Redirect /login directly back to customer profile — no separate owner login */}
-                <Route path="/login">
-                  <Redirect to="/" />
-                </Route>
-                <Route path="/" component={Overview} />
-                <Route path="/staff" component={Staff} />
-                <Route path="/inventory" component={Inventory} />
-                <Route path="/finances" component={Finances} />
-                <Route path="/reservations" component={Reservations} />
-                <Route path="/analytics" component={Analytics} />
-                <Route path="/menu" component={Menu} />
-                <Route path="/pos" component={Pos} />
-                <Route path="/marketing" component={Marketing} />
-                <Route path="/bookings" component={Bookings} />
-                <Route path="/billing" component={Billing} />
-                <Route path="/reviews" component={Reviews} />
-                <Route path="/super-admin" component={SuperAdmin} />
-                <Route path="/insights" component={Insights} />
-                <Route path="/onboarding" component={Onboarding} />
-                <Route path="/campaigns" component={Campaigns} />
-                <Route path="/tables" component={Tables} />
-                <Route path="/payroll" component={Payroll} />
-                <Route path="/profile" component={Profile} />
-                <Route component={NotFound} />
-              </Switch>
-            </Layout>
-          </PremiumGate>
+          <Switch>
+            {/* Founder Command Center — completely outside PremiumGate, has its own auth */}
+            <Route path="/founder" component={Founder} />
+
+            {/* All other routes require premium */}
+            <Route>
+              <PremiumGate>
+                <Layout>
+                  <Switch>
+                    <Route path="/login">
+                      <Redirect to="/" />
+                    </Route>
+                    <Route path="/" component={Overview} />
+                    <Route path="/staff" component={Staff} />
+                    <Route path="/inventory" component={Inventory} />
+                    <Route path="/finances" component={Finances} />
+                    <Route path="/reservations" component={Reservations} />
+                    <Route path="/analytics" component={Analytics} />
+                    <Route path="/menu" component={Menu} />
+                    <Route path="/pos" component={Pos} />
+                    <Route path="/marketing" component={Marketing} />
+                    <Route path="/bookings" component={Bookings} />
+                    <Route path="/billing" component={Billing} />
+                    <Route path="/reviews" component={Reviews} />
+                    <Route path="/super-admin" component={SuperAdmin} />
+                    <Route path="/insights" component={Insights} />
+                    <Route path="/onboarding" component={Onboarding} />
+                    <Route path="/campaigns" component={Campaigns} />
+                    <Route path="/tables" component={Tables} />
+                    <Route path="/payroll" component={Payroll} />
+                    <Route path="/profile" component={Profile} />
+                    <Route component={NotFound} />
+                  </Switch>
+                </Layout>
+              </PremiumGate>
+            </Route>
+          </Switch>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

@@ -95,9 +95,18 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 - `GET /api/performance/leaderboard` — Reliability leaderboard
 - `POST /api/performance/set-rate` — Update employee hourly rate
 
+## Founder Command Center
+
+- **Route**: `/founder` in the admin (restosmart) app — bypasses PremiumGate entirely, has its own gate
+- **Auth**: Founder key stored in localStorage (`restosmart_founder_key`); default key: `rs_founder_2026`; server validates via `x-founder-key` header against env var `FOUNDER_KEY` (default: `rs_founder_2026`)
+- **API**: `GET /api/founder/metrics` (aggregated KPIs, rankings, alerts, breakdowns) + `GET /api/founder/businesses` (enriched business list)
+- **Dashboard sections**: Executive KPI strip (MRR, premium, churn, boosts, conversions), exec alerts, business type breakdown, city leaderboard, boost performance by type (with CTR + ROI), 4-column rankings (top boosted, top spenders, upsell candidates, churn risk), full business directory with inline founder notes/tags/flags stored in localStorage
+- **Data**: All computed from `restaurants`, `promotions`, `promotion_events` tables; reservation totals from `reservations` (no restaurant_id on that table, so per-restaurant booking count uses boost bookings as proxy)
+
 ## Auth
 
 - Super-admin: `X-Super-Admin-Key` header, env var `SUPER_ADMIN_KEY` (default: `restosmart-super-2025`)
+- Founder: `x-founder-key` header, env var `FOUNDER_KEY` (default: `rs_founder_2026`); localStorage key `restosmart_founder_key`
 - Customer: email-based identity stored in localStorage (`restosmart_email`)
 - Owner Premium: localStorage (`restosmart_owner_premium` = `"active"`, `restosmart_owner_email` = the email that activated)
 - Geo: sessionStorage (`restosmart_geolocation`)

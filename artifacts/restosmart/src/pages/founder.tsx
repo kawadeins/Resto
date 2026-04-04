@@ -1,0 +1,1001 @@
+import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Info,
+  RefreshCw, Shield, Lock, Eye, EyeOff, ArrowUpRight, ArrowDownRight,
+  Zap, Users, Star, MapPin, BarChart3, DollarSign, Target, Rocket,
+  Store, Coffee, Wine, UtensilsCrossed, Tag, Flag, Search, ChevronUp,
+  ChevronDown, Activity, Flame, Crown, Award, AlertCircle, X,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const API = window.location.origin + "/api";
+const FOUNDER_KEY_STORAGE = "restosmart_founder_key";
+const CORRECT_KEY = "rs_founder_2026";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function fmt(n: number, opts?: Intl.NumberFormatOptions) {
+  return new Intl.NumberFormat("de-DE", opts).format(n);
+}
+
+function fmtEur(cents: number) {
+  return fmt(Math.round(cents / 100), { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+}
+
+function fmtEurDirect(eur: number) {
+  return fmt(eur, { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+}
+
+function pct(a: number, b: number) {
+  if (!b) return "0,0%";
+  return fmt((a / b) * 100, { maximumFractionDigits: 1 }) + "%";
+}
+
+const BIZ_LABELS: Record<string, string> = {
+  restaurant: "Restaurant",
+  cafe: "Café",
+  bar: "Bar",
+};
+
+const BIZ_ICONS: Record<string, typeof Store> = {
+  restaurant: UtensilsCrossed,
+  cafe: Coffee,
+  bar: Wine,
+};
+
+const BIZ_COLORS: Record<string, string> = {
+  restaurant: "text-violet-400 bg-violet-500/10 border-violet-500/20",
+  cafe: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  bar: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+};
+
+const BOOST_LABELS: Record<string, string> = {
+  breakfast_boost: "Frühstücks-Boost",
+  lunch_boost: "Mittags-Boost",
+  happy_hour_boost: "Happy-Hour-Boost",
+  nightlife_boost: "Nightlife-Boost",
+  local_spotlight: "Local Spotlight",
+  local_heat_boost: "Heat Boost",
+};
+
+// ─── Auth Gate ────────────────────────────────────────────────────────────────
+
+function AuthGate({ onAuth }: { onAuth: () => void }) {
+  const [input, setInput] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  function submit() {
+    if (input === CORRECT_KEY) {
+      localStorage.setItem(FOUNDER_KEY_STORAGE, input);
+      onAuth();
+    } else {
+      setError(true);
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+      setTimeout(() => setError(false), 3000);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#080810] flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-sm"
+      >
+        {/* Logo */}
+        <div className="flex justify-center mb-10">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 flex items-center justify-center shadow-2xl shadow-violet-900/60">
+              <Crown className="w-10 h-10 text-white" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-[#080810]">
+              <Shield className="w-3 h-3 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-white tracking-tight mb-2">
+            Founder Command Center
+          </h1>
+          <p className="text-sm text-[#666]">
+            Exklusiver Zugang — Gründer-Schlüssel erforderlich
+          </p>
+        </div>
+
+        <motion.div
+          animate={shake ? { x: [-8, 8, -6, 6, -4, 0] } : {}}
+          transition={{ duration: 0.4 }}
+          className="space-y-3"
+        >
+          <div className={cn(
+            "relative rounded-2xl border transition-colors",
+            error ? "border-red-500/60 bg-red-500/5" : "border-white/10 bg-white/4"
+          )}>
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555]" />
+            <input
+              type={showKey ? "text" : "password"}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && submit()}
+              placeholder="Founder-Schlüssel eingeben"
+              className="w-full bg-transparent pl-11 pr-12 py-4 text-white text-sm outline-none placeholder:text-[#444]"
+              autoFocus
+            />
+            <button
+              onClick={() => setShowKey(v => !v)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#888] transition-colors"
+            >
+              {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-400 text-center"
+            >
+              Ungültiger Schlüssel — Zugriff verweigert
+            </motion.p>
+          )}
+
+          <button
+            onClick={submit}
+            className="w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-900/40"
+          >
+            Zugriff gewähren
+          </button>
+        </motion.div>
+
+        <p className="text-center text-xs text-[#333] mt-6">
+          Dieser Bereich ist ausschließlich für den Plattform-Gründer zugänglich.
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
+
+function KpiCard({
+  label, value, sub, trend, icon: Icon, color = "violet", size = "normal"
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  trend?: { value: string; up: boolean } | null;
+  icon: typeof TrendingUp;
+  color?: "violet" | "emerald" | "amber" | "rose" | "blue" | "indigo";
+  size?: "normal" | "large";
+}) {
+  const colorMap = {
+    violet:  { icon: "text-violet-400",  glow: "shadow-violet-900/30",  border: "border-violet-500/15", bg: "from-violet-500/8" },
+    emerald: { icon: "text-emerald-400", glow: "shadow-emerald-900/30", border: "border-emerald-500/15", bg: "from-emerald-500/8" },
+    amber:   { icon: "text-amber-400",   glow: "shadow-amber-900/30",   border: "border-amber-500/15",  bg: "from-amber-500/8" },
+    rose:    { icon: "text-rose-400",    glow: "shadow-rose-900/30",    border: "border-rose-500/15",   bg: "from-rose-500/8" },
+    blue:    { icon: "text-blue-400",    glow: "shadow-blue-900/30",    border: "border-blue-500/15",   bg: "from-blue-500/8" },
+    indigo:  { icon: "text-indigo-400",  glow: "shadow-indigo-900/30",  border: "border-indigo-500/15", bg: "from-indigo-500/8" },
+  };
+  const c = colorMap[color];
+  return (
+    <div className={cn(
+      "relative rounded-2xl border bg-gradient-to-br to-transparent p-5 shadow-lg",
+      c.border, c.glow, c.bg, "border-white/5"
+    )}>
+      <div className="flex items-start justify-between mb-3">
+        <div className={cn("p-2 rounded-xl bg-white/5", c.icon)}>
+          <Icon className="w-4 h-4" />
+        </div>
+        {trend && (
+          <div className={cn("flex items-center gap-1 text-xs font-semibold",
+            trend.up ? "text-emerald-400" : "text-red-400"
+          )}>
+            {trend.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+            {trend.value}
+          </div>
+        )}
+      </div>
+      <div className={cn("font-bold text-white leading-tight", size === "large" ? "text-3xl" : "text-2xl")}>
+        {value}
+      </div>
+      <div className="text-xs text-[#666] mt-1">{label}</div>
+      {sub && <div className="text-[10px] text-[#444] mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+// ─── Alert Badge ──────────────────────────────────────────────────────────────
+
+function AlertBadge({ alert }: { alert: { type: string; severity: string; title: string; detail: string } }) {
+  const s = {
+    high:    { cls: "border-red-500/30 bg-red-500/8",     icon: AlertTriangle, color: "text-red-400" },
+    medium:  { cls: "border-amber-500/30 bg-amber-500/8", icon: AlertCircle,   color: "text-amber-400" },
+    info:    { cls: "border-blue-500/30 bg-blue-500/8",   icon: Info,          color: "text-blue-400" },
+    success: { cls: "border-emerald-500/30 bg-emerald-500/8", icon: CheckCircle, color: "text-emerald-400" },
+  }[alert.severity] ?? { cls: "border-white/10 bg-white/4", icon: Info, color: "text-white" };
+  const AlertIcon = s.icon;
+  return (
+    <div className={cn("rounded-xl border p-3.5 flex gap-3 items-start", s.cls)}>
+      <AlertIcon className={cn("w-4 h-4 mt-0.5 shrink-0", s.color)} />
+      <div>
+        <div className="text-sm font-semibold text-white leading-tight">{alert.title}</div>
+        <div className="text-xs text-[#666] mt-0.5 leading-snug">{alert.detail}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Business Row ─────────────────────────────────────────────────────────────
+
+function BusinessRow({
+  biz, notes, tag, flagged, onNote, onTag, onFlag,
+}: {
+  biz: any;
+  notes: string;
+  tag: string;
+  flagged: boolean;
+  onNote: (v: string) => void;
+  onTag: (v: string) => void;
+  onFlag: () => void;
+}) {
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteInput, setNoteInput] = useState(notes);
+  const BizIcon = BIZ_ICONS[biz.businessType] ?? Store;
+  const bizColor = BIZ_COLORS[biz.businessType] ?? BIZ_COLORS.restaurant;
+
+  return (
+    <tr className="border-b border-white/4 hover:bg-white/2 transition-colors group">
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-3">
+          <button onClick={onFlag} className="shrink-0">
+            <Flag className={cn("w-3.5 h-3.5 transition-colors",
+              flagged ? "text-amber-400 fill-amber-400/30" : "text-[#333] group-hover:text-[#555]"
+            )} />
+          </button>
+          <div>
+            <div className="text-sm font-semibold text-white leading-tight">{biz.name}</div>
+            <div className="text-xs text-[#555]">{biz.city}</div>
+          </div>
+        </div>
+      </td>
+      <td className="py-3 px-4">
+        <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-lg border", bizColor)}>
+          <BizIcon className="w-3 h-3" />
+          {BIZ_LABELS[biz.businessType] ?? biz.businessType}
+        </span>
+      </td>
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-1.5">
+          {biz.isPartner ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/25 text-violet-300">
+              <Crown className="w-2.5 h-2.5" /> Premium
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/8 text-[#555]">
+              Free
+            </span>
+          )}
+          {!biz.isActive && (
+            <span className="text-[10px] text-red-400 font-medium">Inaktiv</span>
+          )}
+        </div>
+      </td>
+      <td className="py-3 px-4 text-right">
+        <div className="flex items-center justify-end gap-1">
+          <Star className="w-3 h-3 text-amber-400 fill-amber-400/40" />
+          <span className="text-sm font-semibold text-white">{biz.rating > 0 ? biz.rating.toFixed(1) : "—"}</span>
+          <span className="text-xs text-[#444]">({biz.reviewCount})</span>
+        </div>
+      </td>
+      <td className="py-3 px-4 text-right">
+        <span className="text-sm text-white font-medium">{biz.recentBookings}</span>
+        <span className="text-xs text-[#444] ml-1">/ 30d</span>
+      </td>
+      <td className="py-3 px-4 text-right">
+        {biz.promo.total_promos > 0 ? (
+          <div>
+            <span className="text-sm font-semibold text-violet-300">{fmtEur(biz.promo.total_budget_cents)}</span>
+            <span className="text-xs text-[#444] ml-1">({biz.promo.total_promos} Boosts)</span>
+          </div>
+        ) : (
+          <span className="text-xs text-[#333]">—</span>
+        )}
+      </td>
+      <td className="py-3 px-4">
+        {editingNote ? (
+          <div className="flex gap-1.5">
+            <input
+              value={noteInput}
+              onChange={e => setNoteInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { onNote(noteInput); setEditingNote(false); } }}
+              autoFocus
+              className="flex-1 text-xs bg-white/8 border border-white/15 rounded-lg px-2.5 py-1.5 text-white outline-none placeholder:text-[#444] min-w-0"
+              placeholder="Notiz hinzufügen..."
+            />
+            <button onClick={() => { onNote(noteInput); setEditingNote(false); }}
+              className="text-emerald-400 hover:text-emerald-300 transition-colors">
+              <CheckCircle className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => setEditingNote(false)} className="text-[#444] hover:text-[#666]">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button onClick={() => setEditingNote(true)} className="text-left">
+            {notes ? (
+              <span className="text-xs text-[#888] hover:text-white transition-colors line-clamp-1">{notes}</span>
+            ) : (
+              <span className="text-xs text-[#333] hover:text-[#555] transition-colors opacity-0 group-hover:opacity-100">+ Notiz</span>
+            )}
+          </button>
+        )}
+      </td>
+      <td className="py-3 px-4">
+        <select
+          value={tag}
+          onChange={e => onTag(e.target.value)}
+          className="text-xs bg-white/5 border border-white/8 rounded-lg px-2 py-1 text-[#888] outline-none hover:border-white/15 transition-colors appearance-none cursor-pointer"
+        >
+          <option value="">— Tag —</option>
+          <option value="vip">VIP</option>
+          <option value="follow_up">Follow-Up</option>
+          <option value="upsell">Upsell</option>
+          <option value="churn_risk">Abwanderungsrisiko</option>
+          <option value="new">Neu</option>
+          <option value="watch">Beobachten</option>
+        </select>
+      </td>
+    </tr>
+  );
+}
+
+// ─── Sortable table header ────────────────────────────────────────────────────
+
+function SortHeader({ label, field, sort, onSort }: {
+  label: string; field: string;
+  sort: { field: string; asc: boolean };
+  onSort: (f: string) => void;
+}) {
+  const active = sort.field === field;
+  return (
+    <th
+      onClick={() => onSort(field)}
+      className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right cursor-pointer hover:text-[#666] transition-colors select-none"
+    >
+      <div className="flex items-center justify-end gap-1">
+        {label}
+        {active
+          ? sort.asc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+          : <div className="w-3 h-3" />}
+      </div>
+    </th>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+function Dashboard({ founderKey }: { founderKey: string }) {
+  const headers = { "x-founder-key": founderKey };
+
+  const metricsQuery = useQuery({
+    queryKey: ["founder-metrics"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/founder/metrics`, { headers });
+      if (!r.ok) throw new Error("Unauthorized");
+      return r.json();
+    },
+    refetchInterval: 60_000,
+  });
+
+  const bizQuery = useQuery({
+    queryKey: ["founder-businesses"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/founder/businesses`, { headers });
+      if (!r.ok) throw new Error("Unauthorized");
+      return r.json() as Promise<any[]>;
+    },
+    refetchInterval: 60_000,
+  });
+
+  // Founder notes/tags/flags stored in localStorage
+  const [businessMeta, setBusinessMeta] = useState<Record<number, { note: string; tag: string; flagged: boolean }>>(() => {
+    try { return JSON.parse(localStorage.getItem("restosmart_founder_biz_meta") ?? "{}"); } catch { return {}; }
+  });
+
+  function saveMeta(meta: typeof businessMeta) {
+    setBusinessMeta(meta);
+    localStorage.setItem("restosmart_founder_biz_meta", JSON.stringify(meta));
+  }
+
+  function updateMeta(id: number, patch: Partial<{ note: string; tag: string; flagged: boolean }>) {
+    const existing = businessMeta[id] ?? { note: "", tag: "", flagged: false };
+    saveMeta({ ...businessMeta, [id]: { ...existing, ...patch } });
+  }
+
+  // Search + sort state
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<{ field: string; asc: boolean }>({ field: "recentBookings", asc: false });
+  const [filterPremium, setFilterPremium] = useState<"all" | "premium" | "free">("all");
+  const [filterBiz, setFilterBiz] = useState("all");
+
+  function toggleSort(field: string) {
+    setSort(prev => prev.field === field ? { field, asc: !prev.asc } : { field, asc: false });
+  }
+
+  const businesses: any[] = bizQuery.data ?? [];
+
+  const filteredBiz = businesses
+    .filter(b => {
+      if (search) {
+        const s = search.toLowerCase();
+        if (!b.name.toLowerCase().includes(s) && !b.city.toLowerCase().includes(s)) return false;
+      }
+      if (filterPremium === "premium" && !b.isPartner) return false;
+      if (filterPremium === "free" && b.isPartner) return false;
+      if (filterBiz !== "all" && b.businessType !== filterBiz) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      let va: number, vb: number;
+      switch (sort.field) {
+        case "rating": va = a.rating; vb = b.rating; break;
+        case "recentBookings": va = a.recentBookings; vb = b.recentBookings; break;
+        case "boostBudget": va = a.promo.total_budget_cents; vb = b.promo.total_budget_cents; break;
+        case "reviews": va = a.reviewCount; vb = b.reviewCount; break;
+        default: va = a.recentBookings; vb = b.recentBookings;
+      }
+      return sort.asc ? va - vb : vb - va;
+    });
+
+  const flaggedBiz = businesses.filter(b => businessMeta[b.id]?.flagged);
+  const taggedBiz = businesses.filter(b => businessMeta[b.id]?.tag);
+
+  if (metricsQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-[#080810] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-10 h-10 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin mx-auto" />
+          <p className="text-sm text-[#555]">Lade Plattformdaten…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (metricsQuery.isError) {
+    return (
+      <div className="min-h-screen bg-[#080810] flex items-center justify-center">
+        <div className="text-center text-red-400">Zugriff verweigert oder Fehler beim Laden.</div>
+      </div>
+    );
+  }
+
+  const m = metricsQuery.data;
+  const { kpis, byBizType, byCity, promoByType, rankings, alerts } = m;
+
+  const flaggedCount = flaggedBiz.length;
+
+  return (
+    <div className="min-h-screen bg-[#080810] text-white">
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-40 border-b border-white/6 bg-[#080810]/95 backdrop-blur-xl">
+        <div className="max-w-screen-2xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-900/40">
+                <Crown className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white leading-tight">Founder Command Center</div>
+                <div className="text-[10px] text-[#444] leading-tight">RestoSmart · Internes Cockpit</div>
+              </div>
+            </div>
+            <div className="h-5 w-px bg-white/6" />
+            <div className="flex items-center gap-1.5 text-xs text-[#444]">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live-Daten
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {flaggedCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full">
+                <Flag className="w-3 h-3" />
+                {flaggedCount} markiert
+              </div>
+            )}
+            <button
+              onClick={() => { metricsQuery.refetch(); bizQuery.refetch(); }}
+              className="flex items-center gap-1.5 text-xs text-[#555] hover:text-white transition-colors px-3 py-1.5 rounded-xl border border-white/6 hover:border-white/15"
+            >
+              <RefreshCw className={cn("w-3 h-3", metricsQuery.isFetching && "animate-spin")} />
+              Aktualisieren
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-screen-2xl mx-auto px-6 py-8 space-y-8">
+
+        {/* ── Section: Executive KPIs ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-5">
+            <BarChart3 className="w-4 h-4 text-violet-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Executive KPIs</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
+            <KpiCard
+              label="Monthly Recurring Revenue"
+              value={fmtEurDirect(kpis.mrrEur)}
+              sub={`${kpis.premiumBusinesses} Premium-Abonnements × €49`}
+              icon={DollarSign}
+              color="violet"
+              size="large"
+            />
+            <KpiCard
+              label="Premium-Betriebe"
+              value={fmt(kpis.premiumBusinesses)}
+              sub={`${kpis.nonPremiumActive} aktive Free-Betriebe`}
+              icon={Crown}
+              color="violet"
+              trend={kpis.newPremium30d > 0 ? { value: `+${kpis.newPremium30d} (30d)`, up: true } : null}
+            />
+            <KpiCard
+              label="Neu (30 Tage)"
+              value={fmt(kpis.newPremium30d)}
+              sub="Neue Premium-Abonnements"
+              icon={Rocket}
+              color="emerald"
+            />
+            <KpiCard
+              label="Abwanderungsrisiko"
+              value={fmt(kpis.churnRisk)}
+              sub="Premium ohne Aktivität"
+              icon={TrendingDown}
+              color={kpis.churnRisk > 0 ? "rose" : "emerald"}
+            />
+            <KpiCard
+              label="Boost-Umsatz"
+              value={fmtEurDirect(kpis.boostRevenueEur)}
+              sub={`${kpis.totalPromos} Promotions gesamt`}
+              icon={Zap}
+              color="amber"
+            />
+            <KpiCard
+              label="Buchungen beeinflusst"
+              value={fmt(kpis.totalBookingsInfluenced)}
+              sub={`${kpis.activePromos} Boosts aktiv`}
+              icon={Target}
+              color="blue"
+            />
+            <KpiCard
+              label="Gesamtreichweite"
+              value={fmt(kpis.totalBoostImpressions)}
+              sub={`${kpis.boostConvRate} Klickrate`}
+              icon={Activity}
+              color="indigo"
+            />
+            <KpiCard
+              label="Platform Revenue"
+              value={fmtEurDirect(kpis.totalRevenueEur)}
+              sub="Abos + Boost-Budgets"
+              icon={TrendingUp}
+              color="emerald"
+              size="large"
+            />
+          </div>
+        </section>
+
+        {/* ── Section: Alerts ── */}
+        {alerts.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-5">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Executive-Alerts</span>
+              <span className="text-xs bg-amber-500/15 text-amber-400 border border-amber-500/25 px-2 py-0.5 rounded-full font-bold">
+                {alerts.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {alerts.map((alert: any, i: number) => (
+                <AlertBadge key={i} alert={alert} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Section: Business Type + City ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+          {/* Business Type Breakdown */}
+          <section>
+            <div className="flex items-center gap-2 mb-5">
+              <Store className="w-4 h-4 text-violet-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Betriebstyp-Analyse</span>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/6">
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Typ</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Gesamt</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Premium</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Aktivierungsrate</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">⌀ Rating</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Boost-Budget</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(byBizType as any[]).map((row: any) => {
+                    const BizIcon = BIZ_ICONS[row.business_type] ?? Store;
+                    const bizColor = BIZ_COLORS[row.business_type] ?? BIZ_COLORS.restaurant;
+                    const activationRate = row.total > 0 ? ((row.premium / row.total) * 100).toFixed(0) : "0";
+                    return (
+                      <tr key={row.business_type} className="border-b border-white/4 hover:bg-white/2 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className={cn("inline-flex items-center gap-2 text-xs font-bold px-2.5 py-1 rounded-lg border", bizColor)}>
+                            <BizIcon className="w-3 h-3" />
+                            {BIZ_LABELS[row.business_type] ?? row.business_type}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm font-semibold text-white">{row.total}</td>
+                        <td className="py-3 px-4 text-right">
+                          <span className="text-sm font-bold text-violet-300">{row.premium}</span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="w-16 h-1.5 rounded-full bg-white/6">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-500"
+                                style={{ width: `${activationRate}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-[#666]">{activationRate}%</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Star className="w-3 h-3 text-amber-400 fill-amber-400/40" />
+                            <span className="text-sm text-white">{row.avg_rating ?? "—"}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm font-semibold text-amber-300">
+                          {fmtEur(row.total_budget_cents ?? 0)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* City Leaderboard */}
+          <section>
+            <div className="flex items-center gap-2 mb-5">
+              <MapPin className="w-4 h-4 text-blue-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Stadt-Leaderboard</span>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/6">
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Stadt</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Betriebe</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Premium</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">⌀ Rating</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Boost-Buchungen</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-right">Impressionen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(byCity as any[]).slice(0, 12).map((row: any, i: number) => (
+                    <tr key={row.city} className="border-b border-white/4 hover:bg-white/2 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2.5">
+                          {i < 3 && (
+                            <span className="text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center bg-violet-500/15 text-violet-400">
+                              {i + 1}
+                            </span>
+                          )}
+                          <span className="text-sm font-semibold text-white">{row.city}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-[#888]">{row.total}</td>
+                      <td className="py-3 px-4 text-right">
+                        <span className="text-sm font-bold text-violet-300">{row.premium}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Star className="w-3 h-3 text-amber-400 fill-amber-400/40" />
+                          <span className="text-sm text-white">{row.avg_rating ?? "—"}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-emerald-300">
+                        {fmt(row.boost_bookings ?? 0)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-[#666]">
+                        {fmt(row.boost_impressions ?? 0)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        {/* ── Section: Boost Performance by Type ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-5">
+            <Zap className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Boost-Performance nach Typ</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            {(promoByType as any[]).map((row: any) => {
+              const ctr = row.total_impressions > 0
+                ? ((row.total_clicks / row.total_impressions) * 100).toFixed(1) : "0.0";
+              const roi = row.total_bookings > 0 && row.total_budget_cents > 0
+                ? (((row.total_bookings * 35 * 100) / row.total_budget_cents) * 100).toFixed(0) : null;
+              return (
+                <div key={row.type} className="rounded-2xl border border-white/6 bg-white/2 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-300 leading-tight">
+                      {BOOST_LABELS[row.type] ?? row.type}
+                    </span>
+                    <span className="text-[10px] text-[#444] bg-white/5 border border-white/8 px-1.5 py-0.5 rounded-full">
+                      {row.count}×
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#444]">Budget</span>
+                      <span className="text-white font-semibold">{fmtEur(row.total_budget_cents ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#444]">Impressionen</span>
+                      <span className="text-[#888]">{fmt(row.total_impressions ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#444]">Klicks</span>
+                      <span className="text-[#888]">{fmt(row.total_clicks ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#444]">CTR</span>
+                      <span className="text-blue-300 font-semibold">{ctr}%</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#444]">Buchungen</span>
+                      <span className="text-emerald-300 font-bold">{row.total_bookings ?? 0}</span>
+                    </div>
+                    {roi && (
+                      <div className="flex justify-between text-xs pt-1 border-t border-white/5">
+                        <span className="text-[#444]">Est. ROI</span>
+                        <span className="text-violet-300 font-bold">{roi}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ── Section: Rankings ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-5">
+            <Award className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Rankings & Intelligence</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+            {/* Top boosted */}
+            <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+              <div className="px-4 py-3 border-b border-white/6 flex items-center gap-2">
+                <Flame className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-xs font-bold text-white">Top Boost-ROI</span>
+              </div>
+              <div className="divide-y divide-white/4">
+                {rankings.topBoosted.slice(0, 8).map((r: any, i: number) => (
+                  <div key={r.id} className="px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/2 transition-colors">
+                    <span className="text-[10px] font-bold text-[#333] w-4">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">{r.name}</div>
+                      <div className="text-[10px] text-[#444]">{r.city}</div>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-400 shrink-0">
+                      {r.promo.totalBookings} Buchungen
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top spenders */}
+            <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+              <div className="px-4 py-3 border-b border-white/6 flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-xs font-bold text-white">Größte Boost-Investitionen</span>
+              </div>
+              <div className="divide-y divide-white/4">
+                {rankings.topSpenders.slice(0, 8).map((r: any, i: number) => (
+                  <div key={r.id} className="px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/2 transition-colors">
+                    <span className="text-[10px] font-bold text-[#333] w-4">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">{r.name}</div>
+                      <div className="text-[10px] text-[#444]">{r.city}</div>
+                    </div>
+                    <span className="text-xs font-bold text-amber-300 shrink-0">
+                      {fmtEur(r.promo.totalBudget)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Upsell candidates */}
+            <div className="rounded-2xl border border-violet-500/15 bg-violet-500/4 overflow-hidden">
+              <div className="px-4 py-3 border-b border-violet-500/15 flex items-center gap-2">
+                <Rocket className="w-3.5 h-3.5 text-violet-400" />
+                <span className="text-xs font-bold text-white">Upsell-Kandidaten</span>
+                <span className="text-[10px] text-violet-400 font-bold ml-auto">{rankings.upsellCandidates.length}</span>
+              </div>
+              <div className="divide-y divide-violet-500/8">
+                {rankings.upsellCandidates.slice(0, 8).map((r: any) => (
+                  <div key={r.id} className="px-4 py-2.5 flex items-center gap-2.5 hover:bg-violet-500/6 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">{r.name}</div>
+                      <div className="text-[10px] text-[#555]">{r.city} · {BIZ_LABELS[r.businessType] ?? r.businessType}</div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-xs text-violet-300 font-bold">{r.recentBookings}B</div>
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400/50" />
+                        <span className="text-[10px] text-[#555]">{r.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Churn risk */}
+            <div className="rounded-2xl border border-red-500/15 bg-red-500/4 overflow-hidden">
+              <div className="px-4 py-3 border-b border-red-500/15 flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                <span className="text-xs font-bold text-white">Abwanderungsrisiko</span>
+                <span className="text-[10px] text-red-400 font-bold ml-auto">{rankings.churnRiskBusinesses.length}</span>
+              </div>
+              <div className="divide-y divide-red-500/8">
+                {rankings.churnRiskBusinesses.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-xs text-[#444]">Kein Risiko erkannt ✓</div>
+                ) : rankings.churnRiskBusinesses.slice(0, 8).map((r: any) => (
+                  <div key={r.id} className="px-4 py-2.5 flex items-center gap-2.5 hover:bg-red-500/6 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">{r.name}</div>
+                      <div className="text-[10px] text-[#555]">{r.city}</div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-[10px] text-red-300 font-semibold">0 Buchungen</div>
+                      <div className="text-[10px] text-[#444]">kein Boost</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section: Business Directory ── */}
+        <section>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#555]">Betriebsverzeichnis</span>
+              <span className="text-xs text-[#333] bg-white/5 border border-white/8 px-2 py-0.5 rounded-full">
+                {filteredBiz.length} / {businesses.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Filter by premium */}
+              <select
+                value={filterPremium}
+                onChange={e => setFilterPremium(e.target.value as any)}
+                className="text-xs bg-white/5 border border-white/8 rounded-xl px-3 py-2 text-[#888] outline-none hover:border-white/15 transition-colors appearance-none cursor-pointer"
+              >
+                <option value="all">Alle</option>
+                <option value="premium">Nur Premium</option>
+                <option value="free">Nur Free</option>
+              </select>
+              {/* Filter by biz type */}
+              <select
+                value={filterBiz}
+                onChange={e => setFilterBiz(e.target.value)}
+                className="text-xs bg-white/5 border border-white/8 rounded-xl px-3 py-2 text-[#888] outline-none hover:border-white/15 transition-colors appearance-none cursor-pointer"
+              >
+                <option value="all">Alle Typen</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="cafe">Café</option>
+                <option value="bar">Bar</option>
+              </select>
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#444]" />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Suchen…"
+                  className="pl-8 pr-4 py-2 text-xs bg-white/5 border border-white/8 rounded-xl text-white outline-none placeholder:text-[#333] hover:border-white/15 focus:border-white/20 transition-colors w-48"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/6">
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Betrieb</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Typ</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Status</th>
+                    <SortHeader label="Rating" field="rating" sort={sort} onSort={toggleSort} />
+                    <SortHeader label="Buchungen (30d)" field="recentBookings" sort={sort} onSort={toggleSort} />
+                    <SortHeader label="Boost-Budget" field="boostBudget" sort={sort} onSort={toggleSort} />
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Notiz</th>
+                    <th className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest text-[#444] text-left">Tag</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBiz.map(biz => (
+                    <BusinessRow
+                      key={biz.id}
+                      biz={biz}
+                      notes={businessMeta[biz.id]?.note ?? ""}
+                      tag={businessMeta[biz.id]?.tag ?? ""}
+                      flagged={businessMeta[biz.id]?.flagged ?? false}
+                      onNote={v => updateMeta(biz.id, { note: v })}
+                      onTag={v => updateMeta(biz.id, { tag: v })}
+                      onFlag={() => updateMeta(biz.id, { flagged: !(businessMeta[biz.id]?.flagged ?? false) })}
+                    />
+                  ))}
+                  {filteredBiz.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-xs text-[#333]">
+                        Keine Betriebe gefunden.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Footer ── */}
+        <div className="text-center text-xs text-[#222] py-4 border-t border-white/4">
+          Founder Command Center · RestoSmart Intern · Streng vertraulich
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Export ──────────────────────────────────────────────────────────────
+
+export default function Founder() {
+  const [authed, setAuthed] = useState<boolean>(() => {
+    return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
+  });
+
+  if (!authed) {
+    return <AuthGate onAuth={() => setAuthed(true)} />;
+  }
+
+  return <Dashboard founderKey={CORRECT_KEY} />;
+}

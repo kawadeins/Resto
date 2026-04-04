@@ -35,7 +35,8 @@ type AvailInfo = { status: string; availableSeats: number; nextAvailableSlot: st
 function mapRestaurant(
   r: typeof restaurantsTable.$inferSelect,
   flashDeal: typeof discountsTable.$inferSelect | null,
-  avail?: AvailInfo
+  avail?: AvailInfo,
+  activeBoostTypes?: string[]
 ) {
   const now = new Date();
   const open = isOpen(r);
@@ -90,6 +91,8 @@ function mapRestaurant(
     maxPartySize: r.maxPartySize ?? 8,
     walkInsEnabled: r.walkInsEnabled ?? true,
     businessType: r.businessType ?? "restaurant",
+    hasActiveBoost: (activeBoostTypes?.length ?? 0) > 0,
+    activeBoostType: activeBoostTypes?.[0] ?? null,
   };
 }
 
@@ -102,11 +105,51 @@ async function getTodayReservations() {
   }).from(reservationsTable).where(eq(reservationsTable.date, today));
 }
 
+// ─── Active promotion boosts (for ethical relevance-aware visibility) ─────────
+
+const BOOST_HOURS: Record<string, [number, number]> = {
+  breakfast_boost:  [6, 10],
+  lunch_boost:      [11, 14],
+  happy_hour_boost: [15, 19],
+  nightlife_boost:  [19, 26], // 26 = 2am next day
+  local_spotlight:  [0, 24],
+  local_heat_boost: [0, 24],
+};
+
+function isBoostTimeActive(type: string, hour: number): boolean {
+  const [s, e] = BOOST_HOURS[type] ?? [0, 24];
+  if (e > 24) return hour >= s || hour <= (e - 24);
+  return hour >= s && hour <= e;
+}
+
+async function getActiveBoostMap(): Promise<Map<number, string[]>> {
+  try {
+    const rows = await db.execute(sql`
+      SELECT restaurant_id, type FROM promotions
+      WHERE status = 'active' AND (ends_at IS NULL OR ends_at > NOW())
+    `);
+    const map = new Map<number, string[]>();
+    const hour = new Date().getHours();
+    for (const row of rows.rows as { restaurant_id: number; type: string }[]) {
+      if (isBoostTimeActive(row.type, hour)) {
+        const existing = map.get(row.restaurant_id) ?? [];
+        map.set(row.restaurant_id, [...existing, row.type]);
+      }
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
 router.get("/restaurants", async (req, res) => {
   try {
     const { cuisine, priceRange, rating, openNow, search, featured, businessType } = req.query as Record<string, string>;
-    const flash = await getActiveFlash();
-    const todayRes = await getTodayReservations();
+    const [flash, todayRes, boostMap] = await Promise.all([
+      getActiveFlash(),
+      getTodayReservations(),
+      getActiveBoostMap(),
+    ]);
 
     let rows = await db.select().from(restaurantsTable).where(eq(restaurantsTable.isActive, true));
 
@@ -155,7 +198,7 @@ router.get("/restaurants", async (req, res) => {
         },
         todayRes
       );
-      return mapRestaurant(r, flash, avail);
+      return mapRestaurant(r, flash, avail, boostMap.get(r.id));
     }));
   } catch (err) {
     req.log.error({ err }, "Failed to list restaurants");

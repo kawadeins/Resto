@@ -16,6 +16,7 @@ import {
   useGetInsightsDailySummary,
   getGetInsightsDailySummaryQueryKey,
 } from "@workspace/api-client-react";
+import { PromotionTools } from "@/components/promotion-tools";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -738,6 +739,25 @@ export default function Overview() {
           </Card>
         </motion.div>
       )}
+
+      {/* ── Promotion Engine (quick access) ──────────────────────────────────── */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-500" />
+              Promotion Engine
+            </h3>
+            <p className="text-xs text-muted-foreground">Boosts aktivieren — Sichtbarkeit sofort erhöhen.</p>
+          </div>
+          <Link href="/analytics">
+            <Button variant="outline" size="sm" className="text-xs h-8 gap-1.5">
+              Performance <ArrowRight className="w-3 h-3" />
+            </Button>
+          </Link>
+        </div>
+        <PromotionTools />
+      </motion.div>
     </div>
   );
 }

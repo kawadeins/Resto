@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { PromotionTools } from "@/components/promotion-tools";
+import { PromotionPerformance } from "@/components/promotion-performance";
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -445,6 +447,21 @@ export default function Analytics() {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+
+      {/* ── Promotion Engine ─────────────────────────────────────────────────── */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
+            <Zap className="w-5 h-5 text-amber-500" />
+            Promotion Engine
+          </h3>
+          <p className="text-muted-foreground text-sm mt-1">
+            Starten Sie gezielte Boosts, messen Sie Einblendungen, Klicks und Buchungen — in Echtzeit.
+          </p>
+        </div>
+        <PromotionTools />
+        <PromotionPerformance />
       </div>
     </div>
   );
