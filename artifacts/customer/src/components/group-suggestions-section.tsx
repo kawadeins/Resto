@@ -138,17 +138,12 @@ export function GroupSuggestionsSection({ email, friendCount }: GroupSuggestions
         <div className="flex items-end justify-between mb-5 flex-wrap gap-3">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              {/* Live pulse */}
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-accent" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
-              </span>
               <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-accent to-rose-500 flex items-center justify-center shadow-md shadow-accent/25">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <h2 className="text-xl font-extrabold tracking-tight">Vorschläge für dich</h2>
             </div>
-            <p className="text-xs text-muted-foreground">Basierend auf Freunden & Aktivitäten in deiner Nähe</p>
+            <p className="text-xs text-muted-foreground">Basierend auf Freundesaktivitäten der letzten 6 Stunden</p>
           </div>
           <Link href="/friends" className="text-xs font-bold text-primary bg-primary/8 hover:bg-primary/15 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
             Alle Freunde <ArrowRight className="w-3.5 h-3.5" />

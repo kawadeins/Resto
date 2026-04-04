@@ -34,6 +34,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
+import { recordHabitEvent } from "@/lib/habit-engine";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -231,6 +232,11 @@ export default function Restaurant() {
     image: restaurant?.heroImage || undefined,
   });
 
+  // Record explore visit habit event once per page load
+  useEffect(() => {
+    if (restaurantId) recordHabitEvent("explore_visit");
+  }, [restaurantId]);
+
   const { data: reviews } = useListReviews(
     { restaurantId },
     {
@@ -254,6 +260,7 @@ export default function Restaurant() {
   const createReview = useCreateReview({
     mutation: {
       onSuccess: () => {
+        recordHabitEvent("review_submit");
         toast({ title: "Bewertung eingereicht!", description: "Danke für Ihr Feedback." });
         setShowReviewForm(false);
         reviewForm.reset();
@@ -272,9 +279,10 @@ export default function Restaurant() {
     mutation: {
       onSuccess: () => {
         setBookingSuccess(true);
+        recordHabitEvent("booking_complete");
         toast({
-          title: "Buchung bestätigt!",
-          description: "Wir haben eine Bestätigung an Ihre E-Mail gesendet.",
+          title: "Buchung bestätigt! 🎉",
+          description: "Bestätigung per E-Mail. Treuepunkte werden nach Ihrem Besuch gutgeschrieben.",
         });
         // Record social activity (fire-and-forget — non-blocking)
         const userEmail = typeof window !== "undefined"
@@ -847,17 +855,32 @@ export default function Restaurant() {
               
               <div className="p-6">
                 {bookingSuccess ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="text-center py-6 space-y-4">
+                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <h3 className="font-serif text-2xl font-bold mb-2">Tisch bestätigt!</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Ihr Tisch bei {restaurant.name} ist reserviert. Wir haben die Details an Ihre E-Mail gesendet.
-                    </p>
-                    <Button onClick={() => setBookingSuccess(false)} variant="outline" className="w-full rounded-full">
-                      Weiteren Tisch buchen
-                    </Button>
+                    <div>
+                      <h3 className="font-serif text-2xl font-bold mb-1">Tisch bestätigt!</h3>
+                      <p className="text-muted-foreground text-sm">
+                        Reservierung bei {restaurant.name} ist gespeichert. Details wurden per E-Mail gesendet.
+                      </p>
+                    </div>
+                    {/* Reward hint */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+                      <span className="text-2xl">⭐</span>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-amber-800">Treuepunkte warten auf Sie</p>
+                        <p className="text-xs text-amber-700">Punkte werden nach Ihrem Besuch gutgeschrieben.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button asChild size="sm" className="flex-1 rounded-full bg-gradient-to-r from-primary to-accent text-white border-0">
+                        <Link href="/bookings">Meine Buchungen</Link>
+                      </Button>
+                      <Button onClick={() => setBookingSuccess(false)} variant="outline" size="sm" className="flex-1 rounded-full">
+                        Nochmal buchen
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

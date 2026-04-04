@@ -59,7 +59,7 @@ const BADGES: Record<string, LiveBadge> = {
   trending:    { icon: "🌟", text: "Trending jetzt",     cls: "bg-purple-100 text-purple-700 border-purple-200", pulse: true },
   hot:         { icon: "🔥", text: "Hot jetzt",          cls: "bg-rose-100 text-rose-700 border-rose-200",       pulse: true },
   busy:        { icon: "⚡", text: "Gerade beliebt",     cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  friends_hot: { icon: "👥", text: "Freunde sind hier",  cls: "bg-primary/10 text-primary border-primary/25" },
+  friends_hot: { icon: "👥", text: "Freunde zuletzt aktiv",  cls: "bg-primary/10 text-primary border-primary/25" },
   lunch_rush:  { icon: "🍽️", text: "Lunch-Rush",         cls: "bg-orange-100 text-orange-700 border-orange-200", pulse: true },
   happy_hour:  { icon: "🍸", text: "Happy Hour",         cls: "bg-rose-100 text-rose-700 border-rose-200",       pulse: true },
   cafe_rush:   { icon: "☕", text: "Café-Rush",          cls: "bg-amber-100 text-amber-700 border-amber-200" },

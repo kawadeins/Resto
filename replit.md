@@ -73,6 +73,30 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
     - DB: `meal_plans` (unique per email+day+slot), `group_plans` (participants stored as JSON)
     - API: `GET/PUT/DELETE /api/meal-plan/:email`, `GET /api/meal-plan/:email/suggestions`, `POST /api/meal-plan/group`, `GET /api/meal-plan/group/:email`, `GET/DELETE /api/meal-plan/group/:id/suggestions`
 
+## Growth Loop & Habit Engine (Customer)
+
+### Habit Events (wired to real actions in `restaurant.tsx`)
+- `explore_visit` — fires on restaurant detail page load (useEffect)
+- `booking_complete` — fires on successful booking API response
+- `review_submit` — fires on successful review API response
+- Engine: `artifacts/customer/src/lib/habit-engine.ts`; data stored in localStorage `restosmart_habit_data`
+
+### Booking Success State
+- Toast shows loyalty points hint ("Punkte werden nach Ihrem Besuch gutgeschrieben")
+- Full success state renders a reward panel (amber ⭐ callout) + dual CTAs: "Meine Buchungen" + "Nochmal buchen"
+- Loyalty points are only awarded when owner marks guest as "arrived" — NOT at booking time (honest)
+
+### Smart Offers Section ("Für Sie ausgewählt")
+- `artifacts/customer/src/components/smart-offers-section.tsx`
+- Always shows ranked restaurants (score > 0) even with zero personalization (rating + availability always produce a score)
+- Each card has an explicit CTA: "Jetzt buchen" (flash deal) / "Details ansehen" (regular) + limited availability chip
+
+### Honest Social Signals (No Fake Urgency)
+- Group Suggestions section header: no live-pulse indicator; subtitle: "Basierend auf Freundesaktivitäten der letzten 6 Stunden"
+- Group suggestion urgency: `high → medium`, `medium → low` in `artifacts/api-server/src/routes/social.ts` — no misleading pulse animations
+- "Freunde sind hier" badge → "Freunde zuletzt aktiv" in `artifacts/customer/src/lib/live-activity.ts`
+- "Auto Plan" / ping animation → "Vorschlag für heute" + Zap icon in `auto-plan-card.tsx`
+
 ## Availability System
 
 - Statuses: `available` | `limited` | `nearly_full` | `full` | `closed` | `paused`

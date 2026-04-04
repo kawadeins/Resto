@@ -532,7 +532,7 @@ router.get("/group-suggestions/:email", async (req, res) => {
           title: `${friendLabel} ${place.friends.length === 1 ? "war" : "waren"} hier`,
           cta: `Triff ${place.friends.length === 1 ? place.friends[0] : "deine Freunde"} ${timeCtx}`,
           ctaButton: "Jetzt buchen",
-          urgency: place.friends.length >= 2 ? "high" : "medium",
+          urgency: place.friends.length >= 2 ? "medium" : "low",
         });
       }
     }

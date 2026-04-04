@@ -1,0 +1,250 @@
+Perform a "Core Lock + First Real Growth Loop Activation" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT add random new features.
+Do NOT redesign the app.
+Do NOT expand scope.
+
+This is a stabilization + growth activation phase.
+
+========================
+GOAL
+========================
+
+1. Lock all core systems so they become stable and reliable
+2. Remove instability and fake behavior
+3. Activate ONE powerful real growth loop that drives:
+   - engagement
+   - retention
+   - bookings
+   - monetization
+
+This is the transition from:
+👉 feature-rich app
+to:
+👉 real product engine
+
+========================
+1. CORE SYSTEM LOCK (CRITICAL)
+========================
+
+Identify and LOCK the following systems as production-stable:
+
+- authentication (Apple / Google / session)
+- user profile + preferences
+- premium business system
+- owner dashboard access
+- business profiles (restaurant / café / bar)
+- discovery (homepage + filters)
+- map + location system
+- place detail pages
+- booking / plan system (at least one must be solid)
+- notifications core system
+
+For each system:
+
+- ensure it works reliably
+- ensure data persistence is correct
+- ensure no fake states exist
+- ensure no broken flows
+- ensure no duplicated logic
+
+Once verified:
+👉 mark it as LOCKED
+👉 avoid unnecessary future changes
+
+========================
+2. REMOVE FAKE / WEAK SYSTEMS
+========================
+
+Audit all advanced systems:
+
+- smart offers
+- live heat map
+- friend radar
+- auto plans
+- instant plans
+- habit system
+
+For each system:
+
+IF:
+- no real data
+- no real logic
+- no real usage
+
+THEN:
+- simplify it
+- downgrade it
+- or temporarily disable misleading behavior
+
+DO NOT keep fake intelligence.
+
+The app must feel:
+👉 real
+👉 honest
+👉 consistent
+
+========================
+3. CHOOSE ONE PRIMARY GROWTH LOOP (VERY IMPORTANT)
+========================
+
+Select ONE main loop to activate first.
+
+Preferred loop:
+
+👉 DISCOVERY → OFFER → ACTION → REWARD → RETURN
+
+This loop should be:
+
+1. User opens app
+2. sees relevant places / offers
+3. clicks → views → acts (booking / plan / save)
+4. gets reward (points / satisfaction / result)
+5. receives reminder / suggestion later
+6. returns to app
+
+DO NOT activate multiple loops at once.
+
+========================
+4. ACTIVATE SMART OFFERS AS PRIMARY ENGINE
+========================
+
+Use Smart Offers as the core growth driver.
+
+Ensure:
+
+- offers are real and relevant
+- offers match user context:
+  - time of day
+  - location
+  - preferences
+- offers clearly show value
+- offers link to action (view → book → go)
+
+Add section:
+
+👉 "For You"
+👉 "Smart Offers Nearby"
+
+Each card must include:
+- reason (why this is shown)
+- clear CTA
+
+========================
+5. CONNECT ACTION → RESULT
+========================
+
+Ensure every interaction leads somewhere:
+
+- clicking place → opens real detail
+- clicking offer → shows real value
+- booking → saved + visible
+- plan → stored + reminded
+- save → appears in favorites
+
+NO dead ends.
+
+========================
+6. ADD LIGHT REWARD LOOP
+========================
+
+Introduce simple reward feedback:
+
+- points for actions
+- confirmation states
+- “you unlocked” feedback
+- visible progress
+
+Keep it:
+- simple
+- clean
+- not gamified heavily
+
+========================
+7. RETURN TRIGGER SYSTEM
+========================
+
+Ensure users come back.
+
+Use:
+
+- smart notifications
+- reminders
+- light habit triggers
+
+Examples:
+
+- “A place near you matches your plan”
+- “New offer near you”
+- “You have something to check”
+
+DO NOT spam.
+
+========================
+8. MINIMUM SOCIAL / LIVE CONNECTION
+========================
+
+If social system exists:
+
+Use only basic signals:
+
+- “popular nearby”
+- “visited recently”
+- “trending now”
+
+Avoid:
+- fake friend activity
+- fake live signals
+
+========================
+9. PERFORMANCE CLEANUP
+========================
+
+Ensure:
+
+- screens load fast
+- no unnecessary re-renders
+- no heavy unused logic
+- no blocking UI
+
+The app must feel:
+👉 smooth
+👉 fast
+👉 responsive
+
+========================
+10. FINAL EXPERIENCE CHECK
+========================
+
+Simulate:
+
+User opens app:
+
+- sees something relevant immediately
+- understands what to do
+- takes action easily
+- gets result
+- feels value
+- has reason to return
+
+If this loop works:
+👉 system is successful
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster becomes:
+
+- stable
+- real
+- actionable
+- valuable
+- ready for real users
+
+Instead of:
+👉 feature collection
+
+It becomes:
+👉 growth engine

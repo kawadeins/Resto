@@ -4,7 +4,7 @@
  * Subtle, premium, and single-tap actionable.
  */
 import { useState } from "react";
-import { X, Zap, Users, MapPin, ChevronRight, Sparkles } from "lucide-react";
+import { X, Zap, Users, MapPin, ChevronRight } from "lucide-react";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
 import type { LifestyleMode } from "@/hooks/use-lifestyle-mode";
 import type { FriendProfile, RadarZone, SocialCue } from "@/lib/social-api";
@@ -67,12 +67,8 @@ export function AutoPlanCard({
             {/* Header label */}
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 bg-background/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/30 shadow-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-primary" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                </span>
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-[11px] font-extrabold text-primary">Auto Plan</span>
+                <Zap className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[11px] font-extrabold text-primary">Vorschlag für heute</span>
               </div>
               <span className="text-xs text-muted-foreground">{triggerReason}</span>
             </div>

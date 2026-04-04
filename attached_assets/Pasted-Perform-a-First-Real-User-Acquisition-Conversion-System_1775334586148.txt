@@ -1,0 +1,263 @@
+Perform a "First Real User Acquisition + Conversion System Activation" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random features.
+Do NOT overcomplicate growth.
+
+This is a real-world growth + conversion activation phase.
+
+========================
+GOAL
+========================
+
+Turn RestoMaster into a system that:
+
+1. Attracts real users
+2. Converts users into active behavior (explore → book → plan)
+3. Converts businesses into paying premium customers
+4. Creates measurable growth loops
+
+This is the shift from:
+👉 product
+to:
+👉 growth engine
+
+========================
+1. DEFINE PRIMARY TARGET (CRITICAL)
+========================
+
+Focus ONLY on one initial market:
+
+- City: Vienna
+- Audience:
+  - young adults (18–35)
+  - students
+  - social users
+  - people who go out frequently
+
+Do NOT target everyone.
+
+========================
+2. USER ACQUISITION ENTRY POINTS
+========================
+
+Create clear entry reasons for users:
+
+Examples:
+
+- “Find the best places near you right now”
+- “See what’s trending tonight”
+- “Get real offers nearby”
+- “Plan outings instantly with friends”
+
+Ensure homepage communicates value in <3 seconds.
+
+========================
+3. FIRST USER EXPERIENCE (ONBOARDING LIGHT)
+========================
+
+When a new user enters:
+
+- show value immediately
+- do NOT block with heavy onboarding
+- optionally ask:
+  - food preferences
+  - vibe (coffee / food / nightlife)
+
+Then instantly show:
+👉 relevant content
+
+========================
+4. ACTIVATION MOMENT (VERY IMPORTANT)
+========================
+
+Define the first “wow” moment:
+
+User must:
+- open app
+- see something relevant
+- click a place
+- feel:
+👉 “this is useful”
+
+Examples:
+- nearby offer
+- trending place
+- café for morning
+- bar for tonight
+
+If this moment fails → user churns.
+
+========================
+5. ACTION TRIGGER SYSTEM
+========================
+
+Push user to first action:
+
+- open place
+- save place
+- create plan
+- view offer
+- check map
+
+Use:
+- clear CTA
+- “near you now”
+- urgency labels
+
+========================
+6. CONVERSION LOOP (USER SIDE)
+========================
+
+Build loop:
+
+1. Discover
+2. Click
+3. Engage (view / save / plan)
+4. Return
+
+Support with:
+- reminders
+- smart suggestions
+- relevant offers
+
+========================
+7. BUSINESS CONVERSION (VERY IMPORTANT 💰)
+========================
+
+Convert businesses into premium.
+
+Inside app:
+
+Show:
+- visibility advantage
+- “you could be shown more”
+- “customers nearby”
+- “you are missing exposure”
+
+Trigger upsell when:
+- business sees activity
+- business sees demand
+- business sees potential
+
+========================
+8. LOCAL DEMAND CREATION
+========================
+
+Focus on Vienna only.
+
+Ensure:
+
+- enough demo + real places
+- map feels alive
+- discovery feels full
+- categories populated
+
+App must feel:
+👉 active city
+not empty platform
+
+========================
+9. GROWTH LOOPS (CORE)
+========================
+
+Activate simple loops:
+
+LOOP 1:
+User → finds place → returns
+
+LOOP 2:
+User → invites friends → more users
+
+LOOP 3:
+User → interacts → better suggestions → more usage
+
+LOOP 4:
+Business → sees demand → buys premium → gets visibility
+
+========================
+10. SOCIAL TRIGGERS (LIGHT)
+========================
+
+Use simple signals:
+
+- “popular nearby”
+- “trending tonight”
+- “people are going here”
+
+Avoid fake signals.
+
+========================
+11. NOTIFICATION STRATEGY
+========================
+
+Send only strong signals:
+
+- “This place near you is trending now”
+- “Perfect coffee nearby”
+- “A good spot for tonight”
+
+No spam.
+
+========================
+12. MEASURE CORE METRICS
+========================
+
+Track:
+
+- app opens
+- first click
+- place views
+- saves
+- plan creation
+- bookings
+- return rate
+- premium conversions
+
+========================
+13. REMOVE FRICTION
+========================
+
+Fix anything that blocks:
+
+- slow loading
+- unclear buttons
+- dead clicks
+- confusing navigation
+
+Every click must feel smooth.
+
+========================
+14. DO NOT OVERCOMPLICATE
+========================
+
+- no big marketing system
+- no ads network
+- no viral hacks yet
+
+Focus on:
+👉 real usage
+👉 real behavior
+👉 real conversion
+
+========================
+FINAL GOAL
+========================
+
+User opens RestoMaster and feels:
+
+- “This is useful right now”
+- “I found something instantly”
+- “I want to open this again”
+
+Business feels:
+
+- “This app can bring me customers”
+- “I want more visibility”
+
+RestoMaster becomes:
+
+🔥 real marketplace
+🔥 real growth system
+🔥 real revenue engine

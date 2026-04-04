@@ -133,6 +133,18 @@ function SmartOfferCard({ offer, rank }: { offer: SmartOffer; rank: number }) {
               {r.address}{r.city ? `, ${r.city}` : ""}
             </p>
           )}
+
+          {/* CTA */}
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+              {r.isOpenNow ? "Jetzt buchen" : "Details ansehen"} <ChevronRight className="w-3.5 h-3.5" />
+            </span>
+            {r.availabilityStatus === "limited" && (
+              <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                Nur noch wenige Tische
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>
