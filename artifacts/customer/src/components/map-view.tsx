@@ -18,7 +18,7 @@ import { scoreLiveActivity, type ActivityIntensity } from "@/lib/live-activity";
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_CENTER: [number, number] = [51.5074, -0.1278];
+const DEFAULT_CENTER: [number, number] = [48.2093, 16.3726]; // Wien, Innere Stadt
 const DEFAULT_ZOOM = 13;
 
 function safeCoords(lat?: number | null, lng?: number | null): [number, number] {

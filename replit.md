@@ -75,10 +75,19 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 
 ## Wien Market Focus (Growth Activation)
 
-### City Data (12 Wien venues)
-- **Existing 6** restaurants migrated from London → Wien (Stephansplatz, Mariahilfer Str., Naschmarkt, Rotenturmstraße, Schottenring, Gürtel/Neubau)
-- **New 6 added**: Café Prater (cafe, Prater), Kaffeepause Josefstadt (cafe, 8th), Rote Bar Wien (bar, 1st, partner), Heuriger Grinzing (bar, 19th, partner), Grünwald Bistro (veg restaurant, 7th), Mochi Ramen Wien (restaurant, 6th, partner)
-- All restaurants have proper Wien addresses, coordinates, Austrian-style tags
+### City Data (30 Wien venues — City Domination Update)
+- **IDs 1–6**: Original venues migrated to Wien (Stephansplatz, Mariahilfer Str., Naschmarkt, Rotenturmstraße, Schottenring, Neubau)
+- **IDs 7–12**: First batch — Café Prater, Kaffeepause Josefstadt, Rote Bar Wien, Heuriger Grinzing, Grünwald Bistro, Mochi Ramen Wien
+- **IDs 13–30**: City Domination batch — 18 new venues across 1st (Innere Stadt), 2nd (Leopoldstadt), 3rd (Landstraße), 4th (Wieden), 6th (Mariahilf), 7th (Neubau), 8th (Josefstadt), 9th (Alsergrund), 15th (Rudolfsheim)
+- All 30 venues tagged with district tags (innerestadt, leopoldstadt, neubau, alsergrund, rudolfsheim, mariahilf, etc.)
+- Map default center fixed: 48.2093, 16.3726 (Wien Innere Stadt) — was London (bug fix)
+
+### City Domination Features
+- **Wien Bezirke quick-nav** on homepage (between Business Type and CTA) — 5 districts → explore/?search=tag
+- **Wien Bezirke chips** in explore sidebar — instant district filter that toggles search state
+- **"Trending in Wien"** section on homepage — always shows top 3 rated restaurants, no geo required
+- **Explore header** updated: "Wien entdecken" + "30 Lokale · Restaurants, Cafés & Bars"
+- **Results count** localized: "X Lokale in Wien gefunden"
 
 ### Hero Copy (Zeit-sensitiv, Wien-fokussiert)
 - `HEADLINE_MAP` in `home.tsx`: "Was geht heute Abend in Wien?", "Guten Morgen Wien — Ihr Kaffee wartet.", etc.

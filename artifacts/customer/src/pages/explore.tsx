@@ -137,7 +137,8 @@ export default function Explore() {
       {/* Filters Sidebar */}
       <aside className="w-full md:w-64 shrink-0 space-y-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-5">Entdecken</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-1">Wien entdecken</h1>
+          <p className="text-xs text-muted-foreground mb-4">30 Lokale · Restaurants, Cafés & Bars</p>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -146,6 +147,38 @@ export default function Explore() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
+        </div>
+
+        {/* ── Wien Bezirk quick-chips ── */}
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            📍 Wien Bezirke
+          </p>
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { label: "1. Bezirk",  tag: "innerestadt", emoji: "🏛️" },
+              { label: "2. Bezirk",  tag: "leopoldstadt",emoji: "🎡" },
+              { label: "6./7.",      tag: "neubau",       emoji: "🎨" },
+              { label: "9. Bezirk", tag: "alsergrund",   emoji: "📚" },
+              { label: "15. Bez.",   tag: "rudolfsheim",  emoji: "🏘️" },
+            ].map((d) => {
+              const active = search === d.tag;
+              return (
+                <button
+                  key={d.tag}
+                  onClick={() => setSearch(active ? "" : d.tag)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all press-scale ${
+                    active
+                      ? "bg-primary text-white border-primary"
+                      : "bg-muted/50 border-border/50 text-foreground hover:border-primary/30 hover:bg-primary/5"
+                  }`}
+                >
+                  <span>{d.emoji}</span>
+                  <span>{d.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -325,7 +358,7 @@ export default function Explore() {
           <p className="text-muted-foreground text-sm">
             {isLoading
               ? "Wird gesucht..."
-              : `${displayList.length} Restaurant${displayList.length !== 1 ? "s" : ""} gefunden${sortByNearest && geo.status === "granted" ? " · nach Entfernung sortiert" : ""}`}
+              : `${displayList.length} Lokal${displayList.length !== 1 ? "e" : ""} in Wien gefunden${sortByNearest && geo.status === "granted" ? " · nach Entfernung sortiert" : ""}`}
           </p>
 
           {/* List / Map toggle */}

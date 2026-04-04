@@ -620,6 +620,37 @@ export default function Home() {
         />
       )}
 
+      {/* ── TRENDING IN WIEN (always visible) ── */}
+      {allRestaurants && allRestaurants.length > 0 && (
+        <section className="py-8 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🔥</span>
+                <div>
+                  <h2 className="text-xl font-extrabold tracking-tight">Trending in Wien</h2>
+                  <p className="text-xs text-muted-foreground">Die beliebtesten Lokale gerade</p>
+                </div>
+              </div>
+              <Link href="/explore?rating=4" className="text-xs font-bold text-primary hover:underline press-scale">Alle →</Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...allRestaurants]
+                .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+                .slice(0, 3)
+                .map((r) => (
+                  <RestaurantCard
+                    key={r.id}
+                    restaurant={r}
+                    flashDeals={flashDeals}
+                    onClick={() => track(r.name)}
+                  />
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── DYNAMIC MODE SECTIONS ── */}
       {config.sections.map((section) => (
         <DynamicSection
@@ -676,6 +707,42 @@ export default function Home() {
                     <div className="text-4xl">{bt.emoji}</div>
                     <div className={`text-sm font-bold ${bt.textCls}`}>{bt.label}</div>
                     <div className="text-xs text-muted-foreground">Entdecken</div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WIEN DISTRICTS QUICK-NAV ── */}
+      <section className="py-8 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-2xl font-extrabold tracking-tight">Entdecke Wien nach Bezirk</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">Hyper-lokal — wähle dein Viertel</p>
+            </div>
+            <Link href="/explore" className="text-xs font-bold text-primary hover:underline press-scale">Alle →</Link>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {[
+              { label: "1. Innere Stadt", tag: "innerestadt", emoji: "🏛️", bg: "from-amber-400 to-orange-500" },
+              { label: "2. Leopoldstadt", tag: "leopoldstadt", emoji: "🎡", bg: "from-emerald-400 to-teal-500" },
+              { label: "6./7. Neubau", tag: "neubau",         emoji: "🎨", bg: "from-violet-400 to-purple-500" },
+              { label: "9. Alsergrund",  tag: "alsergrund",   emoji: "📚", bg: "from-sky-400 to-blue-500" },
+              { label: "15. Rudolfsheim",tag: "rudolfsheim",  emoji: "🏘️", bg: "from-rose-400 to-pink-500" },
+            ].map((d) => (
+              <Link
+                key={d.tag}
+                href={`/explore?search=${d.tag}`}
+                className="group press-scale"
+              >
+                <div className="relative rounded-2xl overflow-hidden border border-border/40 bg-card shadow-sm hover:shadow-lg transition-all duration-300">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${d.bg} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                  <div className="relative p-4 text-center space-y-1.5">
+                    <div className="text-3xl">{d.emoji}</div>
+                    <div className="text-[11px] font-bold text-foreground/80 leading-tight">{d.label}</div>
                   </div>
                 </div>
               </Link>
