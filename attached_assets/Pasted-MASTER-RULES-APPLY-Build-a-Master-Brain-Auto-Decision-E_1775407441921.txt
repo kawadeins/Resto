@@ -1,0 +1,299 @@
+MASTER RULES APPLY
+
+Build a "Master Brain + Auto Decision Engine (Unified System Intelligence Layer)" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the entire app.
+Do NOT break any existing system.
+This is a unification + intelligence + decision layer.
+
+This system must connect ALL core systems into one central brain and add automatic prioritization and decision support.
+
+========================
+GOAL
+========================
+
+Create a central system ("Master Brain") that:
+
+- monitors all systems
+- analyzes their health and performance
+- detects issues and risks
+- prioritizes problems automatically
+- suggests what to fix first
+- supports or triggers safe actions
+
+And displays everything inside a Founder-only dashboard section.
+
+========================
+1. MASTER BRAIN INTEGRATION (CORE)
+========================
+
+Connect ALL major systems:
+
+- Premium system
+- Billing / Payments
+- Boost / Ads system
+- Monetization engine
+- Competition engine
+- Growth engine
+- Self-Serve system
+- Watchdog system
+- Self-Healing system
+- Launch Control system
+- Social system
+- Heat map
+- Instant / Auto plans
+
+Each system must send signals to Master Brain.
+
+========================
+2. SYSTEM STATUS MODEL
+========================
+
+Each system must report:
+
+- name
+- role (what it does)
+- health status (green/yellow/red)
+- performance (speed)
+- error level
+- risk level
+- last update
+- requires attention (yes/no)
+
+========================
+3. VISUAL STATUS SYSTEM
+========================
+
+🟢 Green → stable  
+🟡 Yellow → warning  
+🔴 Red → critical  
+
+Each system must clearly show this.
+
+========================
+4. SPEED / PERFORMANCE INDICATOR
+========================
+
+Each system displays:
+
+- Fast (high)
+- Normal (medium)
+- Slow (low)
+
+Visual:
+- bar / meter / %
+
+========================
+5. SYSTEM INTELLIGENCE DASHBOARD
+========================
+
+Inside Founder Dashboard create:
+
+👉 "Master Brain" section
+
+Layout:
+
+LEFT:
+- list/grid of all systems
+
+RIGHT:
+- selected system details
+
+Each system card shows:
+
+- name
+- role
+- status color
+- speed
+- current issue
+- risk level
+- short summary
+
+========================
+6. LIVE SYSTEM ANALYSIS
+========================
+
+Each system shows analysis like:
+
+- "System stable"
+- "Minor delays detected"
+- "High load detected"
+- "Billing mismatch risk"
+- "Conversion drop detected"
+
+Keep simple and readable.
+
+========================
+7. AUTO DECISION ENGINE (CRITICAL)
+========================
+
+Add a decision layer on top of Master Brain.
+
+The system must:
+
+- analyze all systems
+- detect which problems matter most
+- prioritize them automatically
+
+========================
+8. PRIORITY SCORING SYSTEM
+========================
+
+Calculate priority score based on:
+
+- severity (critical > high > medium)
+- revenue impact
+- number of affected users/businesses
+- system importance (billing > social)
+- persistence of issue
+
+Output:
+
+- Highest Priority Issue
+- Secondary Issues
+- Low Priority Issues
+
+========================
+9. AUTO PRIORITY PANEL
+========================
+
+Add section:
+
+👉 "What needs attention now"
+
+Show:
+
+- Top 3 issues
+- why they matter
+- impact level
+- system affected
+
+========================
+10. SMART DECISION OUTPUT
+========================
+
+For each issue show:
+
+- what happened
+- why it matters
+- system impact
+- suggested action
+
+Examples:
+
+- "Fix billing mismatch first — affects revenue"
+- "Boost delivery delay — medium impact"
+- "Social lag — low priority"
+
+========================
+11. SAFE AUTO-ACTION HOOK
+========================
+
+When safe, system can:
+
+- trigger retry
+- trigger sync
+- trigger reconciliation
+- escalate to Ops
+
+Never perform destructive actions.
+
+========================
+12. SYSTEM IMPORTANCE WEIGHT
+========================
+
+Define importance:
+
+- Critical: billing, premium
+- High: monetization, boost
+- Medium: growth, social
+- Low: secondary features
+
+Used in decision scoring.
+
+========================
+13. INCIDENT + OPS INTEGRATION
+========================
+
+Connect with Ops system:
+
+- show incidents per system
+- show auto-healing results
+- highlight unresolved issues
+
+========================
+14. MINI METRICS
+========================
+
+Each system shows:
+
+- success rate
+- error rate
+- activity level
+- response speed
+
+Keep lightweight.
+
+========================
+15. ACTION FLAGS
+========================
+
+Mark systems:
+
+- "Action Needed"
+- "Auto-handled"
+- "Monitoring"
+
+========================
+16. REAL-TIME FEEL
+========================
+
+- periodic refresh
+- live-like updates
+- no fake real-time
+
+========================
+17. FOUNDER CONTROL
+========================
+
+Founder can:
+
+- inspect system
+- trigger re-check
+- view incidents
+- follow suggested actions
+
+========================
+18. DO NOT OVERCOMPLICATE
+========================
+
+No:
+- complex DevOps UI
+- heavy dashboards
+- noisy data
+
+Focus:
+- clarity
+- priority
+- decision support
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have a central brain that:
+
+- sees all systems
+- understands system health
+- detects issues
+- prioritizes them
+- guides action
+
+Founder should feel:
+
+👉 “I see everything”  
+👉 “I know what matters”  
+👉 “I know what to fix first”  
+
+This becomes the intelligent control center of the platform.
