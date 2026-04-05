@@ -56,8 +56,6 @@ function TrialBanner() {
     ctaLabel = "Jetzt upgraden";
   }
 
-  const customerProfileUrl = window.location.origin + "/customer/profile";
-
   return (
     <div className={cn(
       "flex items-center justify-between gap-3 px-4 py-2.5 text-sm font-medium",
@@ -75,10 +73,14 @@ function TrialBanner() {
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <a
-          href={customerProfileUrl}
+        <button
+          onClick={() => {
+            localStorage.setItem("restosmart_owner_premium", "active");
+            localStorage.removeItem("restosmart_trial_end");
+            window.location.reload();
+          }}
           className={cn(
-            "text-xs font-bold px-3 py-1.5 rounded-full transition-colors",
+            "text-xs font-bold px-3 py-1.5 rounded-full transition-colors cursor-pointer",
             isUrgent
               ? "bg-red-500 hover:bg-red-400 text-white"
               : isWarning
@@ -87,7 +89,7 @@ function TrialBanner() {
           )}
         >
           {ctaLabel}
-        </a>
+        </button>
         <button
           onClick={() => setDismissed(true)}
           className="opacity-40 hover:opacity-80 transition-opacity"
@@ -129,8 +131,8 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
       cta: "Sichtbarkeit sichern",
     },
     analytics: {
-      headline: "Dein Profil wurde 124× angesehen während der Testphase",
-      body: "Behalte diesen Sichtbarkeits-Vorteil dauerhaft. Schon ein zusätzlicher Gast rechtfertigt den Monatsbetrag.",
+      headline: "Volle Analysen verfügbar in der Testphase",
+      body: "Behalte diesen Einblick dauerhaft. Schon ein zusätzlicher Gast rechtfertigt den Monatsbetrag.",
       cta: "Für 39,90€ fortsetzen",
     },
     marketing: {
@@ -153,7 +155,6 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
   const { headline: fallbackHeadline, body, cta: fallbackCta } = contextual[context] ?? contextual.overview;
   const { copy: headline } = getVariantCopy(variants, "banner_headline", fallbackHeadline);
   const { copy: cta, variantId: trialCtaId } = getVariantCopy(variants, "trial_cta", fallbackCta);
-  const customerProfileUrl = window.location.origin + "/customer/profile";
   const isUrgent = daysLeft <= 3;
 
   return (
@@ -174,18 +175,22 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
             <div className="text-sm font-bold text-violet-300">{daysLeft} Tage</div>
           </div>
         )}
-        <a
-          href={customerProfileUrl}
-          onClick={() => { if (trialCtaId) trackVariantClick(trialCtaId, false); }}
+        <button
+          onClick={() => {
+            if (trialCtaId) trackVariantClick(trialCtaId, false);
+            localStorage.setItem("restosmart_owner_premium", "active");
+            localStorage.removeItem("restosmart_trial_end");
+            window.location.reload();
+          }}
           className={cn(
-            "text-xs font-bold px-3 py-2 rounded-xl text-white hover:opacity-90 transition-opacity whitespace-nowrap",
+            "text-xs font-bold px-3 py-2 rounded-xl text-white hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer",
             isUrgent
               ? "bg-gradient-to-r from-red-600 to-pink-600"
               : "bg-gradient-to-r from-violet-600 to-pink-600"
           )}
         >
           {cta}
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -236,7 +241,9 @@ function getOwnerInfo() {
 }
 
 function exitToProfile() {
-  window.location.href = window.location.origin + "/customer/profile";
+  localStorage.removeItem("restosmart_owner_premium");
+  localStorage.removeItem("restosmart_trial_end");
+  window.location.reload();
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

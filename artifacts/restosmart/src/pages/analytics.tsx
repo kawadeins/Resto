@@ -43,12 +43,10 @@ export default function Analytics() {
   }, [loadingSubscription, isPro]);
 
   if (!loadingSubscription && !isPro) {
-    const customerProfileUrl = typeof window !== "undefined" ? window.location.origin + "/customer/profile" : "/customer/profile";
     return (
       <div className="flex items-center justify-center min-h-[80vh] px-4">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xl space-y-4">
 
-          {/* PROBLEM — shown first */}
           <div className="rounded-xl border border-red-800/40 bg-red-950/20 p-4 flex items-start gap-3">
             <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -57,12 +55,10 @@ export default function Analytics() {
             </div>
             <div>
               <p className="text-xs font-semibold text-red-300">
-                {isTrial ? "Deine Analysen sind in der Testphase nicht verfügbar" : "Ohne Premium siehst du keine Geschäftsdaten"}
+                Ohne Premium siehst du keine Geschäftsdaten
               </p>
               <p className="text-[11px] text-red-400/60 mt-0.5">
-                {isTrial
-                  ? "Aktiviere Premium, um deine Umsatzdaten, Stoßzeiten und Reservierungsquellen zu sehen."
-                  : "Andere Betriebe optimieren täglich – nutze auch du deine Daten für bessere Entscheidungen."}
+                Andere Betriebe optimieren täglich — nutze auch du deine Daten für bessere Entscheidungen.
               </p>
             </div>
           </div>
@@ -75,15 +71,12 @@ export default function Analytics() {
               <div>
                 <CardTitle className="text-xl">Analysen & Intelligenz</CardTitle>
                 <CardDescription className="mt-2">
-                  {isTrial
-                    ? "Behalte deinen Wettbewerbsvorteil dauerhaft – aktiviere Premium für volle Einblicke."
-                    : "Erreiche mehr Gäste zur richtigen Zeit mit datenbasierten Entscheidungen."}
+                  Erreiche mehr Gäste zur richtigen Zeit mit datenbasierten Entscheidungen.
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-5 pt-2">
 
-              {/* VALUE — what you get */}
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
                   { icon: BarChart3, color: "text-violet-400", label: "30-Tage-Umsatztrends" },
@@ -98,33 +91,27 @@ export default function Analytics() {
                 ))}
               </div>
 
-              {/* ROI FRAMING */}
               <div className="rounded-xl border border-amber-800/30 bg-amber-950/10 px-4 py-3 flex items-center gap-3">
                 <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-xs text-amber-300/70 leading-relaxed">
-                  {"Schon ein optimierter Abend rechtfertigt den Monatsbetrag. 39,90€ im Monat."}
+                  Schon ein optimierter Abend rechtfertigt den Monatsbetrag. 39,90€ im Monat.
                 </p>
               </div>
 
-              {/* CTA */}
               <div className="flex flex-col items-center gap-3 pt-2">
-                {isTrial ? (
-                  <a
-                    href={customerProfileUrl}
-                    className="inline-flex items-center justify-center w-full sm:w-auto px-8 h-12 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/20"
-                  >
-                    Für 39,90€ / Monat fortsetzen
-                  </a>
-                ) : (
-                  <a
-                    href={customerProfileUrl}
-                    className="inline-flex items-center justify-center w-full sm:w-auto px-8 h-12 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/20"
-                  >
-                    Analysen freischalten – 14 Tage kostenlos
-                  </a>
-                )}
+                <button
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-8 h-12 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/20 cursor-pointer"
+                  onClick={() => {
+                    const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+                    localStorage.setItem("restosmart_owner_premium", "trial");
+                    localStorage.setItem("restosmart_trial_end", trialEnd);
+                    window.location.reload();
+                  }}
+                >
+                  Analysen freischalten — 14 Tage kostenlos
+                </button>
                 <p className="text-[11px] text-muted-foreground/50">Jederzeit kündbar. Keine langfristige Verpflichtung.</p>
               </div>
             </CardContent>

@@ -82,7 +82,8 @@ export function PromotionTools() {
   });
 
   const restaurantId = data?.restaurantId ?? null;
-  const businessType = data?.businessType ?? "restaurant";
+  const localBizType = typeof window !== "undefined" ? localStorage.getItem("restosmart_owner_business_type") : null;
+  const businessType = localBizType || data?.businessType || "restaurant";
   const promotions = data?.promotions ?? [];
 
   const { data: budgetData } = useQuery<{ restaurantId: number; budgets: BudgetState[] }>({

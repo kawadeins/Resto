@@ -91,7 +91,7 @@ export default function Marketing() {
   const { data: subscription } = useGetSubscription({
     query: { queryKey: getGetSubscriptionQueryKey() }
   });
-  const isPro = subscription?.isActive === true && subscription?.status !== "trial";
+  const isPro = subscription?.isActive === true;
 
   const { data: deals, isLoading: loadingDeals } = useListDeals({
     query: { queryKey: getListDealsQueryKey() },
@@ -118,17 +118,17 @@ export default function Marketing() {
       { data: { label: "Flash Deal", percentage: 25 } },
       {
         onSuccess: () => {
-          toast({ title: "Flash deal activated — 25% off for 30 minutes!" });
+          toast({ title: "Flash-Deal aktiviert — 25% Rabatt für 30 Minuten!" });
           refresh();
         },
-        onError: () => toast({ title: "Failed to activate flash deal", variant: "destructive" }),
+        onError: () => toast({ title: "Flash-Deal konnte nicht aktiviert werden", variant: "destructive" }),
       }
     );
   };
 
   const handleCreateScheduled = () => {
     if (!scheduledForm.label || scheduledForm.days.length === 0) {
-      toast({ title: "Please fill in all required fields", variant: "destructive" });
+      toast({ title: "Bitte alle Pflichtfelder ausfüllen", variant: "destructive" });
       return;
     }
     createScheduled.mutate(
@@ -144,12 +144,12 @@ export default function Marketing() {
       },
       {
         onSuccess: () => {
-          toast({ title: "Scheduled deal created." });
+          toast({ title: "Geplanter Deal erstellt." });
           setShowScheduledForm(false);
           setScheduledForm({ label: "", percentage: 20, startTime: "14:00", endTime: "17:00", days: [], notes: "" });
           refresh();
         },
-        onError: () => toast({ title: "Failed to create deal", variant: "destructive" }),
+        onError: () => toast({ title: "Deal konnte nicht erstellt werden", variant: "destructive" }),
       }
     );
   };
@@ -157,14 +157,14 @@ export default function Marketing() {
   const handleToggle = (id: number, enabled: boolean) => {
     toggleDeal.mutate({ id, data: { enabled } }, {
       onSuccess: () => refresh(),
-      onError: () => toast({ title: "Failed to update deal", variant: "destructive" }),
+      onError: () => toast({ title: "Deal konnte nicht aktualisiert werden", variant: "destructive" }),
     });
   };
 
   const handleDelete = (id: number) => {
     deleteDeal.mutate({ id }, {
-      onSuccess: () => { toast({ title: "Deal removed." }); refresh(); },
-      onError: () => toast({ title: "Failed to remove deal", variant: "destructive" }),
+      onSuccess: () => { toast({ title: "Deal gelöscht." }); refresh(); },
+      onError: () => toast({ title: "Deal konnte nicht gelöscht werden", variant: "destructive" }),
     });
   };
 
@@ -177,12 +177,12 @@ export default function Marketing() {
       { data: { title: blastForm.title, message: blastForm.message, targetCount: blastForm.targetCount } },
       {
         onSuccess: () => {
-          toast({ title: `Blast sent to ${blastForm.targetCount} customers.` });
+          toast({ title: `Blast an ${blastForm.targetCount} Kunden gesendet.` });
           setShowBlastForm(false);
           setBlastForm({ title: "", message: "", targetCount: 0 });
           refresh();
         },
-        onError: () => toast({ title: "Failed to send blast", variant: "destructive" }),
+        onError: () => toast({ title: "Blast konnte nicht gesendet werden", variant: "destructive" }),
       }
     );
   };

@@ -7,7 +7,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Crown, X, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Crown, X, CheckCircle2 } from "lucide-react";
 import { PREMIUM_VALUE_BY_TYPE, PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME } from "@/lib/monetization-engine";
 
 interface PremiumValuePanelProps {
@@ -20,7 +20,6 @@ export function PremiumValuePanel({ businessType, onDismiss, compact = false }: 
   const [dismissed, setDismissed] = useState(false);
 
   const cfg = PREMIUM_VALUE_BY_TYPE[businessType] ?? PREMIUM_VALUE_BY_TYPE.restaurant;
-  const customerProfileUrl = window.location.origin + "/customer/profile";
 
   if (dismissed) return null;
 
@@ -40,10 +39,15 @@ export function PremiumValuePanel({ businessType, onDismiss, compact = false }: 
             <div className="font-bold text-sm">{cfg.headline}</div>
             <div className="text-xs text-muted-foreground truncate">{cfg.subline}</div>
           </div>
-          <Button asChild size="sm" className="shrink-0 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90">
-            <a href={customerProfileUrl} target="_blank" rel="noopener noreferrer">
-              Freischalten <ExternalLink className="w-3 h-3 ml-1" />
-            </a>
+          <Button size="sm" className="shrink-0 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 cursor-pointer"
+            onClick={() => {
+              const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+              localStorage.setItem("restosmart_owner_premium", "trial");
+              localStorage.setItem("restosmart_trial_end", trialEnd);
+              window.location.reload();
+            }}
+          >
+            Freischalten
           </Button>
           {onDismiss && (
             <button onClick={handleDismiss} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -101,15 +105,19 @@ export function PremiumValuePanel({ businessType, onDismiss, compact = false }: 
           </div>
 
           {/* CTA */}
-          <Button asChild size="lg" className="w-full bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 shadow-lg shadow-primary/25 font-bold h-12 rounded-xl">
-            <a href={customerProfileUrl} target="_blank" rel="noopener noreferrer">
-              <Crown className="w-4 h-4 mr-2" />
-              Premium freischalten
-              <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-70" />
-            </a>
+          <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 shadow-lg shadow-primary/25 font-bold h-12 rounded-xl cursor-pointer"
+            onClick={() => {
+              const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+              localStorage.setItem("restosmart_owner_premium", "trial");
+              localStorage.setItem("restosmart_trial_end", trialEnd);
+              window.location.reload();
+            }}
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            Premium freischalten
           </Button>
           <p className="text-center text-[11px] text-muted-foreground">
-            Verwaltet über Ihr Kundenprofil · Jederzeit kündbar
+            14 Tage kostenlos · Jederzeit kündbar
           </p>
         </CardContent>
       </Card>
