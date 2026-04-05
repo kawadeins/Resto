@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { track } from "@/lib/conversion-tracking";
 import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
@@ -28,6 +29,7 @@ import Payroll from "@/pages/payroll";
 import Profile from "@/pages/profile";
 import Founder from "@/pages/founder";
 import Optimizer from "@/pages/optimizer";
+import Boost from "@/pages/boost";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,10 +90,30 @@ function TrialExpiredRequired() {
     : "restaurant";
   const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
 
-  const proofStats = [
-    { label: "Dein Profil wurde angesehen", value: "124×" },
-    { label: "Neue Buchungsanfragen", value: "8" },
-    { label: "Sichtbarkeits-Boost während Testphase", value: "+340%" },
+  const { data: promoData } = useQuery({
+    queryKey: ["promotions-my-expired"],
+    queryFn: async () => {
+      const res = await fetch("/api/promotions/my");
+      if (!res.ok) return { promotions: [] as { impressions: number; clicks: number; bookings_attributed: number }[] };
+      return res.json() as Promise<{ promotions: { impressions: number; clicks: number; bookings_attributed: number }[] }>;
+    },
+    staleTime: 300_000,
+  });
+
+  const promos = promoData?.promotions ?? [];
+  const totalImpressions = promos.reduce((s: number, p) => s + (p.impressions || 0), 0);
+  const totalBookings = promos.reduce((s: number, p) => s + (p.bookings_attributed || 0), 0);
+  const totalBoosts = promos.length;
+  const hasPromoData = totalImpressions > 0 || totalBoosts > 0;
+
+  const proofStats = hasPromoData ? [
+    { label: "Boost-Einblendungen in der Testphase", value: totalImpressions.toLocaleString("de") },
+    { label: "Buchungen über Boosts", value: totalBookings.toLocaleString("de") },
+    { label: "Boosts gestartet", value: String(totalBoosts) },
+  ] : [
+    { label: "Vorteile von Premium", value: "Mehr Sichtbarkeit" },
+    { label: "Platzierung im Entdecken-Feed", value: "Priorität" },
+    { label: "Boost-Tools verfügbar", value: "6 Typen" },
   ];
 
   return (
@@ -366,6 +388,7 @@ function App() {
                     <Route path="/payroll" component={Payroll} />
                     <Route path="/profile" component={Profile} />
                     <Route path="/optimizer" component={Optimizer} />
+                    <Route path="/boost" component={Boost} />
                     <Route component={NotFound} />
                   </Switch>
                 </Layout>

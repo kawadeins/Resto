@@ -1,0 +1,296 @@
+MASTER RULES APPLY
+
+Perform a full "Business Premium Dashboard Activation + Paid Systems Integrity Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random new features.
+Do NOT focus on Founder Dashboard in this pass.
+This pass is ONLY for the paid business dashboard experience.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Audit, activate, connect, and validate all Premium / paid business systems inside the business owner dashboard.
+
+The goal is to make sure that every paid system that was previously added is now:
+
+- truly connected
+- visible in the right place
+- working with real logic
+- not demo-only
+- not fake
+- not partially disconnected
+
+This pass must turn the Premium business dashboard into a real operational paid dashboard.
+
+========================
+1. FULL PREMIUM DASHBOARD AUDIT (CRITICAL)
+========================
+
+Inspect the full business dashboard and identify all Premium / paid systems that already exist or were previously added.
+
+Examples include:
+- Premium business access
+- verification / trust badge
+- premium visibility tools
+- boost / sponsored visibility tools
+- promoted placement tools
+- dynamic pricing logic if present
+- monetization-related controls
+- analytics / performance insights
+- premium trial state
+- paid conversion prompts
+- business growth prompts
+- competition / visibility signals
+
+For each one, verify whether it is:
+- fully working
+- partially working
+- UI-only
+- demo-only
+- broken
+- misplaced in dashboard
+
+========================
+2. ACTIVATE ALL PAID SYSTEMS
+========================
+
+Take all existing paid systems and make sure they are actually activated inside the business dashboard.
+
+If a paid system exists in code or partial UI but is not fully active:
+- connect it
+- activate it
+- place it correctly
+- make it usable
+
+Do NOT leave paid systems half-finished.
+
+========================
+3. REMOVE DEMO / FAKE PAID STATES
+========================
+
+Find and fix all fake or demo-only Premium states.
+
+Examples:
+- fake visibility numbers
+- fake premium benefits not actually connected
+- fake campaign success messages
+- fake boost activation
+- fake analytics
+- fake pricing states
+- fake premium upgrade effects
+
+If something is not real:
+- connect it properly
+- or tone it down / disable it safely
+
+Truth is required.
+
+========================
+4. PREMIUM STRUCTURE INSIDE DASHBOARD
+========================
+
+Organize the paid business dashboard so every Premium system appears in the correct place.
+
+Examples of clean dashboard structure:
+- premium status / verification
+- visibility / reach tools
+- boost / sponsored tools
+- performance / analytics
+- growth opportunities
+- billing / subscription state
+- trial state / paid state
+- upgrade prompts only where relevant
+
+The dashboard must not feel random or scattered.
+
+========================
+5. BUSINESS TYPE SUPPORT
+========================
+
+Ensure all paid systems work correctly for:
+- restaurants
+- cafés
+- bars
+
+Do NOT leave restaurant-only logic where it should also support cafés and bars.
+
+Adapt systems where needed:
+- restaurants → lunch/dinner visibility
+- cafés → coffee/breakfast/work-hour visibility
+- bars → nightlife/evening/happy hour visibility
+
+========================
+6. PREMIUM ACCESS TRUTH
+========================
+
+Verify that Premium access inside the business dashboard is fully truthful.
+
+Check:
+- active premium status
+- 14-day trial status
+- expired trial status
+- paid subscription status
+- locked vs unlocked premium tools
+
+Ensure:
+- correct access state
+- correct messaging
+- no mismatch between billing truth and dashboard truth
+
+========================
+7. BOOST / SPONSORED TOOL VALIDATION
+========================
+
+Audit the visibility boost / sponsored placement area.
+
+Ensure:
+- business owner can access it if eligible
+- pricing is shown correctly
+- budget tools are visible and understandable
+- visibility placement options are real
+- campaign state is truthful
+- no fake delivery or fake activation states exist
+
+If dynamic pricing exists:
+- ensure it is connected
+- ensure price display is real
+- ensure no placeholder pricing remains
+
+========================
+8. PAID ANALYTICS VALIDATION
+========================
+
+Audit all paid analytics inside the business dashboard.
+
+Ensure analytics shown to the business owner are:
+- real
+- current
+- connected
+- understandable
+
+Examples:
+- impressions
+- clicks
+- profile views
+- visibility increase
+- boost results
+- premium performance
+
+Remove fake or static metrics.
+
+========================
+9. GROWTH / CONVERSION SYSTEM VALIDATION
+========================
+
+Audit all Premium conversion and growth surfaces inside the dashboard.
+
+Examples:
+- trial countdown
+- premium value blocks
+- visibility opportunity prompts
+- missed exposure prompts
+- upgrade-to-paid prompts
+- business growth suggestions
+
+Ensure:
+- they appear at the right moment
+- they are connected to real logic
+- they are in German where required
+- they are not duplicated excessively
+
+========================
+10. BILLING / SUBSCRIPTION STATE INSIDE DASHBOARD
+========================
+
+Make sure the dashboard clearly reflects:
+- current premium package
+- official price = 39,90€
+- 14-day trial where relevant
+- billing state
+- active / inactive / expired state
+
+Remove any conflicting price or package wording.
+
+========================
+11. DASHBOARD NAVIGATION CLEANUP
+========================
+
+Ensure every paid system is reachable from the business dashboard correctly.
+
+Check:
+- no dead buttons
+- no hidden sections that should be visible
+- no broken navigation
+- no wrong redirects
+- no repeated upsell sections in random places
+
+The dashboard must feel intentional and professional.
+
+========================
+12. END-TO-END PAID BUSINESS FLOW
+========================
+
+Validate the full business paid flow:
+
+- business owner enters dashboard
+- sees premium/trial status
+- sees premium tools
+- accesses boost/visibility tools
+- sees analytics
+- sees growth prompts
+- understands subscription state
+- can continue using paid systems correctly
+
+Everything must work end-to-end.
+
+========================
+13. FINAL CONNECTION PASS
+========================
+
+After the audit, perform final binding so that all valid paid systems are connected to:
+
+- real dashboard sections
+- real business type logic
+- real premium state
+- real analytics if available
+- real billing/subscription truth
+- real boost/visibility states
+
+No important paid system should remain floating or disconnected.
+
+========================
+14. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Paid systems fully working
+B. Paid systems activated during this pass
+C. Paid systems still partial
+D. Fake/demo states removed
+E. Dashboard sections reorganized/fixed
+F. Remaining blockers if any
+G. Whether the business paid dashboard is now truly operational
+
+========================
+FINAL GOAL
+========================
+
+The business owner dashboard should become a real Premium operating dashboard for restaurants, cafés, and bars.
+
+All paid systems previously added must now be:
+- connected
+- truthful
+- usable
+- properly placed
+- fully operational
+
+This pass must prepare the paid dashboard for real business use, not demo use.

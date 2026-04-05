@@ -20,21 +20,21 @@ export default function Analytics() {
     query: { queryKey: getGetSubscriptionQueryKey() }
   });
   
-  const isPro = subscription?.isActive === true && subscription?.status !== "trial";
+  const isActive = subscription?.isActive === true;
+  const isTrial = subscription?.isActive === true && subscription?.status === "trial";
+  const isPro = isActive;
 
   const { data: performance, isLoading: loadingPerf } = useGetPerformanceAnalytics({
-    query: { queryKey: getGetPerformanceAnalyticsQueryKey(), enabled: isPro }
+    query: { queryKey: getGetPerformanceAnalyticsQueryKey(), enabled: isActive }
   });
 
   const { data: dailyData, isLoading: loadingDaily } = useGetDailyAnalytics({
-    query: { queryKey: getGetDailyAnalyticsQueryKey(), enabled: isPro }
+    query: { queryKey: getGetDailyAnalyticsQueryKey(), enabled: isActive }
   });
 
   const { data: menuAnalytics, isLoading: loadingMenu } = useGetMenuAnalytics({
-    query: { queryKey: getGetMenuAnalyticsQueryKey(), enabled: isPro }
+    query: { queryKey: getGetMenuAnalyticsQueryKey(), enabled: isActive }
   });
-
-  const isTrial = subscription?.isActive === true && subscription?.status === "trial";
 
   useEffect(() => {
     if (!loadingSubscription && !isPro) {
@@ -136,6 +136,7 @@ export default function Analytics() {
 
   return (
     <div className="space-y-8 pb-10">
+      {isTrial && <TrialConversionBanner context="analytics" />}
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Analysen & Intelligenz</h2>

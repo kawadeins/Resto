@@ -23,7 +23,8 @@ RestoSmart is a full-stack SaaS web application designed as a premium restaurant
 
 -   **Owner Dashboard (`artifacts/restosmart`):**
     -   **UI/UX:** Dark theme, Inter font, professional aesthetic.
-    -   **Modules:** Overview KPIs, Staff Management (CRUD, rota, smart reminders, performance/payroll), Table Availability (slot heatmap, pause controls), Reviews & Reputation (4-tab filter, review request sender, rating sync), Inventory, Finances, Analytics, Marketing/Campaigns, Dead Hours/Growth Hub, POS, Menu, Billing.
+    -   **Modules:** Overview KPIs, Staff Management (CRUD, rota, smart reminders, performance/payroll), Table Availability (slot heatmap, pause controls), Reviews & Reputation (4-tab filter, review request sender, rating sync), Inventory, Finances, Analytics (trial users get full access + TrialConversionBanner), Sichtbarkeit & Boost (/boost — dedicated boost/promotion page), Marketing/Campaigns, Dead Hours/Growth Hub, POS, Menu, Billing (real stats from /api/promotions/my, Echtdaten badge).
+    -   **Premium System:** `restosmart_owner_premium` = "active"|"trial"|null. Trial users see full analytics. Expired trial shows real promotion stats (not fake numbers). `/boost` route with Flame icon in nav between Analyse and Marketing.
     -   **Design:** Focus on information density and actionable insights.
 -   **Customer Marketplace (`artifacts/customer`):**
     -   **UI/UX:** Warm/foodie aesthetic.

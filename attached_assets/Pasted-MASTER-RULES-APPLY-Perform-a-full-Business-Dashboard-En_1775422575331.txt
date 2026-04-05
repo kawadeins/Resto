@@ -1,0 +1,200 @@
+MASTER RULES APPLY
+
+Perform a full "Business Dashboard End-to-End Real Usage Test Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT add new features.
+Do NOT redesign the UI.
+Do NOT fake results.
+
+This is a real usage simulation and validation pass for the business owner dashboard.
+
+========================
+GOAL
+========================
+
+Simulate a real business owner using the dashboard and verify that all paid systems work correctly from start to finish.
+
+This must feel like a real production scenario, not a demo.
+
+========================
+1. ENTRY FLOW TEST
+========================
+
+Simulate a business owner:
+
+- logs in
+- enters business dashboard
+- sees correct dashboard (restaurant / café / bar)
+
+Verify:
+- dashboard loads correctly
+- no broken UI
+- no missing sections
+
+========================
+2. PREMIUM STATE TEST
+========================
+
+Test all states:
+
+- no premium
+- active trial (14 days)
+- active paid (39,90€)
+- expired trial
+- expired premium
+
+Verify:
+- correct UI for each state
+- correct locked/unlocked features
+- no mismatch
+
+========================
+3. PREMIUM ACTIVATION FLOW
+========================
+
+Simulate:
+
+- user starts trial
+- user upgrades to paid
+
+Verify:
+- state updates correctly
+- dashboard reflects change instantly
+- premium tools unlock correctly
+
+========================
+4. BOOST / VISIBILITY FLOW
+========================
+
+Simulate business using boost:
+
+- open boost section
+- set budget
+- activate campaign
+
+Verify:
+- no errors
+- campaign state is real
+- no fake success messages
+- correct status shown
+
+========================
+5. ANALYTICS FLOW
+========================
+
+Check analytics section:
+
+- impressions
+- clicks
+- visibility
+- performance indicators
+
+Verify:
+- values are real or clearly explained
+- no static fake numbers
+- no broken charts
+
+========================
+6. GROWTH / PROMPTS FLOW
+========================
+
+Check:
+
+- upgrade prompts
+- visibility suggestions
+- growth messages
+
+Verify:
+- appear in correct context
+- not spammy
+- not duplicated
+- relevant to business type
+
+========================
+7. BUSINESS TYPE VALIDATION
+========================
+
+Test for:
+
+- restaurant
+- café
+- bar
+
+Verify:
+- correct messaging
+- correct tools
+- no mixing logic
+
+========================
+8. NAVIGATION TEST
+========================
+
+Check:
+
+- all buttons clickable
+- no dead links
+- correct routing
+- no broken pages
+
+========================
+9. BILLING CONSISTENCY TEST
+========================
+
+Verify:
+
+- dashboard reflects billing truth
+- premium state matches payment state
+- no mismatch
+
+========================
+10. ERROR & EDGE CASE TEST
+========================
+
+Simulate:
+
+- no data
+- new business
+- inactive business
+- low activity
+
+Verify:
+- dashboard still stable
+- no crashes
+- no fake data
+
+========================
+11. REALITY CHECK
+========================
+
+For every section, classify:
+
+- Fully Working
+- Working but Weak
+- UI Only
+- Broken
+
+========================
+12. FINAL REPORT
+========================
+
+Output:
+
+A. What works perfectly  
+B. What works but needs improvement  
+C. What is fake or weak  
+D. What is broken  
+E. Whether dashboard feels production-ready  
+
+========================
+FINAL GOAL
+========================
+
+The business dashboard should feel like:
+
+👉 a real tool for business owners  
+👉 not a demo  
+👉 not fake  
+👉 not broken  
+
+Everything must work end-to-end.

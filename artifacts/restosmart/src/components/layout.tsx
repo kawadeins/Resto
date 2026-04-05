@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
   UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
   Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
-  Clock, X,
+  Clock, X, Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -204,6 +204,7 @@ const navigation = [
   { name: "Kassenterminal", href: "/pos", icon: ShoppingCart },
   { name: "Finanzen", href: "/finances", icon: DollarSign },
   { name: "Analyse", href: "/analytics", icon: BarChart3 },
+  { name: "Sichtbarkeit & Boost", href: "/boost", icon: Flame },
   { name: "Marketing", href: "/marketing", icon: Megaphone },
   { name: "Tote Stunden", href: "/insights", icon: Lightbulb },
   { name: "Wachstum", href: "/campaigns", icon: TrendingUp },

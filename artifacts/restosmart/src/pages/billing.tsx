@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { track } from "@/lib/conversion-tracking";
 import { useCancelSubscription, useGetSubscription } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle2, Crown, Calendar, ExternalLink, AlertTriangle, Shield,
-  Clock, TrendingUp, Eye, Zap, ArrowRight,
+  Clock, TrendingUp, Eye, Zap, ArrowRight, MousePointer,
 } from "lucide-react";
 import {
   getBizType,
@@ -16,14 +17,35 @@ import {
   BIZ_TABLE_MODULE_LABEL,
   BIZ_RESERVATION_LABEL,
 } from "@/lib/biz-copy";
-import { PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME, FEATURE_TIERS } from "@/lib/monetization-engine";
+import { PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME } from "@/lib/monetization-engine";
 
-const TRIAL_VALUE_STATS = [
-  { icon: Eye, label: "Profilaufrufe im Testzeitraum", value: "124" },
-  { icon: TrendingUp, label: "Sichtbarkeits-Boost", value: "+340%" },
-  { icon: CheckCircle2, label: "Neue Buchungsanfragen", value: "8" },
-  { icon: Zap, label: "Smart Offers versendet", value: "3" },
-];
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
+interface MyPromotionsData {
+  restaurantId: number | null;
+  restaurantName: string;
+  businessType: string;
+  promotions: {
+    id: number;
+    type: string;
+    status: string;
+    impressions: number;
+    clicks: number;
+    bookings_attributed: number;
+  }[];
+}
+
+function useTrialStats() {
+  return useQuery<MyPromotionsData>({
+    queryKey: ["promotions-my-billing"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/promotions/my`);
+      if (!res.ok) return { restaurantId: null, restaurantName: "", businessType: "restaurant", promotions: [] };
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 function getTrialInfo() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -41,6 +63,7 @@ export default function Billing() {
   const { toast } = useToast();
   const cancelSubscription = useCancelSubscription();
   const { data: subscription } = useGetSubscription({});
+  const { data: promoData } = useTrialStats();
   const biz = getBizType();
   const bizLabel = BIZ_LABEL[biz];
   const bizPossessive = BIZ_POSSESSIVE[biz];
@@ -211,29 +234,54 @@ export default function Billing() {
             </p>
           </div>
 
-          {/* Value Summary Card */}
-          <div className="rounded-2xl border border-border bg-muted/10 p-6 space-y-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm">Was deine Testphase gebracht hat</h3>
-              </div>
-              <span className="text-[10px] text-primary/70 font-bold uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">Live-Daten</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {TRIAL_VALUE_STATS.map((stat) => (
-                <div key={stat.label} className="rounded-xl bg-background/50 border border-white/5 p-4">
-                  <div className="text-2xl font-bold text-primary mb-0.5">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground leading-snug">{stat.label}</div>
+          {/* Value Summary Card — real data from promotions */}
+          {(() => {
+            const promos = promoData?.promotions ?? [];
+            const totalImpressions = promos.reduce((s, p) => s + (p.impressions || 0), 0);
+            const totalClicks = promos.reduce((s, p) => s + (p.clicks || 0), 0);
+            const totalBookings = promos.reduce((s, p) => s + (p.bookings_attributed || 0), 0);
+            const totalBoosts = promos.length;
+            const hasData = totalImpressions > 0 || totalBoosts > 0;
+            const realStats = [
+              { icon: Eye, label: "Boost-Einblendungen", value: totalImpressions.toLocaleString("de") },
+              { icon: MousePointer, label: "Klicks auf dein Profil", value: totalClicks.toLocaleString("de") },
+              { icon: CheckCircle2, label: "Buchungen über Boosts", value: totalBookings.toLocaleString("de") },
+              { icon: Zap, label: "Boosts gestartet", value: String(totalBoosts) },
+            ];
+            return (
+              <div className="rounded-2xl border border-border bg-muted/10 p-6 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <h3 className="font-semibold text-sm">Was deine Testphase gebracht hat</h3>
+                  </div>
+                  <span className="text-[10px] text-primary/70 font-bold uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">
+                    Echtdaten
+                  </span>
                 </div>
-              ))}
-            </div>
-            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
-              <p className="text-xs text-primary/80 font-medium leading-relaxed">
-                Mit aktivem Premium behältst du diesen Sichtbarkeits-Vorteil dauerhaft — und erreichst noch mehr Kunden in deiner Nähe.
-              </p>
-            </div>
-          </div>
+                {hasData ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {realStats.map((stat) => (
+                      <div key={stat.label} className="rounded-xl bg-background/50 border border-white/5 p-4">
+                        <div className="text-2xl font-bold text-primary mb-0.5">{stat.value}</div>
+                        <div className="text-xs text-muted-foreground leading-snug">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl bg-muted/30 border border-white/5 p-4 text-center space-y-2">
+                    <p className="text-sm text-muted-foreground">Noch keine Boost-Aktivität in deiner Testphase.</p>
+                    <p className="text-xs text-muted-foreground/60">Starte einen Boost unter Marketing, um deine Sichtbarkeit zu messen.</p>
+                  </div>
+                )}
+                <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+                  <p className="text-xs text-primary/80 font-medium leading-relaxed">
+                    Mit aktivem Premium behältst du diesen Sichtbarkeits-Vorteil dauerhaft — und erreichst noch mehr Kunden in deiner Nähe.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </>
       )}
 
