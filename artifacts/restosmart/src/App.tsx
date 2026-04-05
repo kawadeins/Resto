@@ -40,7 +40,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const CUSTOMER_PROFILE_URL = window.location.origin + "/customer/profile";
 
 // ─── Premium gate ─────────────────────────────────────────────────────────────
 
@@ -182,16 +181,19 @@ function TrialExpiredRequired() {
               </svg>
             </div>
           </div>
-          <a
-            href={CUSTOMER_PROFILE_URL}
-            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
+          <button
+            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity cursor-pointer"
             onClick={() => {
               track("upgrade_cta_clicked", { ctaLabel: "Jetzt für 39,90€ / Monat fortsetzen", dedup: false });
               if (expiredHlId) trackVariantClick(expiredHlId, false);
+              localStorage.setItem("restosmart_owner_premium", "active");
+              localStorage.removeItem("restosmart_trial_end");
+              track("premium_activated", { businessType: biz, source: "expired_gate" });
+              window.location.reload();
             }}
           >
             Jetzt für 39,90€ / Monat fortsetzen
-          </a>
+          </button>
           <p className="text-[11px] text-[#444]">
             Jederzeit kündbar. Keine langfristige Verpflichtung.
           </p>
@@ -326,16 +328,20 @@ function PremiumRequired() {
             <span className="text-xs text-[#555]">14 Tage kostenlos testen, danach</span>
             <div className="text-2xl font-bold text-white mt-0.5">39,90€ <span className="text-[#555] text-base font-normal">/ Monat</span></div>
           </div>
-          <a
-            href={CUSTOMER_PROFILE_URL}
-            className="flex items-center justify-center gap-2 w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
+          <button
+            className="flex items-center justify-center gap-2 w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity cursor-pointer"
             onClick={() => {
               track("upgrade_cta_clicked", { ctaLabel: gateCta, dedup: false });
               if (gateCtaId) trackVariantClick(gateCtaId, false);
+              const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+              localStorage.setItem("restosmart_owner_premium", "trial");
+              localStorage.setItem("restosmart_trial_end", trialEnd);
+              track("trial_started", { businessType: biz });
+              window.location.reload();
             }}
           >
             {gateCta}
-          </a>
+          </button>
           <p className="text-[11px] text-[#444] leading-relaxed">
             Jederzeit kündbar. Keine langfristige Verpflichtung.
           </p>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
-  CheckCircle2, Crown, Calendar, ExternalLink, AlertTriangle, Shield,
+  CheckCircle2, Crown, Calendar, AlertTriangle, Shield,
   Clock, TrendingUp, Eye, Zap, ArrowRight, MousePointer,
 } from "lucide-react";
 import {
@@ -70,7 +70,6 @@ export default function Billing() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelled, setCancelled] = useState(false);
 
-  const customerProfileUrl = window.location.origin + "/customer/profile";
   const trial = getTrialInfo();
   const isTrial = !!trial;
 
@@ -108,13 +107,16 @@ export default function Billing() {
             {bizLabel} Premium-Zugang wurde beendet. Sie können jederzeit über Ihr Kundenprofil wieder einsteigen.
           </p>
         </div>
-        <a
-          href={customerProfileUrl}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+        <button
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors cursor-pointer"
+          onClick={() => {
+            localStorage.setItem("restosmart_owner_premium", "active");
+            localStorage.removeItem("restosmart_trial_end");
+            window.location.reload();
+          }}
         >
-          Zum Kundenprofil
-          <ExternalLink className="w-3.5 h-3.5" />
-        </a>
+          Jetzt Premium aktivieren
+        </button>
       </div>
     );
   }
@@ -222,13 +224,17 @@ export default function Billing() {
             </div>
 
             {/* Upgrade CTA */}
-            <a
-              href={customerProfileUrl}
-              className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/20 hover:opacity-90 transition-opacity"
+            <button
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/20 hover:opacity-90 transition-opacity cursor-pointer"
+              onClick={() => {
+                localStorage.setItem("restosmart_owner_premium", "active");
+                localStorage.removeItem("restosmart_trial_end");
+                window.location.reload();
+              }}
             >
               Jetzt für 39,90€ / Monat fortsetzen
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </button>
             <p className="text-[11px] text-center text-muted-foreground/60">
               Jederzeit kündbar. Keine langfristige Verpflichtung.
             </p>
@@ -354,20 +360,25 @@ export default function Billing() {
         <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div className="flex-1">
           <div className="font-semibold text-sm mb-1">
-            {isTrial ? "Auf Premium upgraden" : "Abonnement wird im Kundenprofil verwaltet"}
+            {isTrial ? "Auf Premium upgraden" : "Premium aktiv"}
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed mb-3">
             {isTrial
               ? "Schalten Sie für €39,90/Monat frei und behalten Sie dauerhaften Zugang zu allen Premium-Funktionen. Keine automatische Abbuchung — Sie bestätigen die Zahlung manuell."
-              : "Pläne, Zahlungsmethoden und Upgrades werden ausschließlich über das Kundenprofil gesteuert — dem zentralen Ort für Ihre Premium-Mitgliedschaft."}
+              : "Ihr Premium-Abonnement ist aktiv. Alle Funktionen stehen Ihnen uneingeschränkt zur Verfügung."}
           </p>
-          <a
-            href={customerProfileUrl}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-          >
-            {isTrial ? "Jetzt upgraden" : "Zum Kundenprofil"}
-            <ExternalLink className="w-3 h-3" />
-          </a>
+          {isTrial && (
+            <button
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline cursor-pointer"
+              onClick={() => {
+                localStorage.setItem("restosmart_owner_premium", "active");
+                localStorage.removeItem("restosmart_trial_end");
+                window.location.reload();
+              }}
+            >
+              Jetzt upgraden
+            </button>
+          )}
         </div>
       </div>
 
