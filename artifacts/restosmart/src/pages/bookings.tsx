@@ -989,7 +989,7 @@ export default function Bookings() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Erwarteter Umsatz</p>
+                      <p className="text-xs text-muted-foreground font-medium">Gesch. Umsatz (Ø €35/Gast)</p>
                       <p className="text-2xl font-bold mt-1 text-emerald-500">
                         {expectedRevenue.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
                       </p>

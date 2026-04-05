@@ -53,11 +53,19 @@ export default function Pos() {
 
   const todayStats = useMemo(() => {
     if (!salesLog) return { revenue: 0, profit: 0 };
-    // Simulated "Today" filter for demo (in real app, use dates)
-    return salesLog.reduce((acc, sale) => ({
-      revenue: acc.revenue + (sale.totalRevenue || 0),
-      profit: acc.profit + (sale.totalProfit || 0)
-    }), { revenue: 0, profit: 0 });
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    return salesLog
+      .filter((sale) => {
+        if (!sale.soldAt) return false;
+        const d = new Date(sale.soldAt);
+        const saleStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        return saleStr === todayStr;
+      })
+      .reduce((acc, sale) => ({
+        revenue: acc.revenue + (sale.totalRevenue || 0),
+        profit: acc.profit + (sale.totalProfit || 0),
+      }), { revenue: 0, profit: 0 });
   }, [salesLog]);
 
   const handleConfirmSale = () => {

@@ -1,0 +1,264 @@
+MASTER RULES APPLY
+
+Perform a "Business Dashboard Real Validation + Fix + Readiness Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add new features.
+Do NOT focus on Founder Dashboard.
+This pass is ONLY for the business owner dashboard.
+
+This is a real validation and fixing pass to ensure all business premium systems are actually working in production-like conditions.
+
+========================
+GOAL
+========================
+
+Verify that the business dashboard is:
+
+- real (not demo)
+- connected (no broken logic)
+- truthful (no fake data)
+- usable end-to-end
+- ready for real business owners
+
+Then fix any issues found.
+
+========================
+1. PREMIUM STATE VALIDATION
+========================
+
+Test all premium states:
+
+- no premium
+- active trial (14 days)
+- active paid (39.90€)
+- expired trial
+- expired premium
+
+Verify:
+- correct UI for each state
+- correct locked/unlocked features
+- instant update when state changes
+- no mismatch with billing state
+
+Fix:
+- any incorrect state logic
+- any delay in unlocking features
+- any mismatch between billing and dashboard
+
+========================
+2. BOOST SYSTEM VALIDATION
+========================
+
+Test boost/sponsored visibility flow:
+
+- open boost section
+- set budget
+- activate campaign
+
+Verify:
+- no errors
+- no fake success messages
+- campaign state updates correctly
+- no "stuck" state
+- no fake delivery claims
+
+Fix:
+- any non-functional buttons
+- any fake success logic
+- any broken campaign lifecycle
+
+========================
+3. ANALYTICS TRUTH CHECK
+========================
+
+Inspect analytics:
+
+- impressions
+- clicks
+- visibility
+- performance metrics
+
+Verify:
+- data is real OR
+- clearly labeled "No data yet"
+
+Fix:
+- remove fake/static numbers
+- replace with real logic or honest empty state
+
+========================
+4. NAVIGATION TEST
+========================
+
+Test all dashboard navigation:
+
+- every button clickable
+- no dead links
+- no empty pages
+- no broken routing
+
+Fix:
+- any broken navigation
+- any hidden or unreachable section
+
+========================
+5. PREMIUM UNLOCK TEST
+========================
+
+Simulate upgrade:
+
+- trial → paid
+- no premium → trial
+
+Verify:
+- features unlock instantly
+- dashboard updates correctly
+- no refresh issues
+- no partial unlock
+
+Fix:
+- any delayed unlock
+- any inconsistent access
+
+========================
+6. FAKE / DEMO DETECTION
+========================
+
+Scan for any fake behavior:
+
+- fake analytics
+- fake boost success
+- fake premium effects
+- fake visibility improvements
+- fake system messages
+
+Fix:
+- remove fake logic
+- replace with real behavior OR honest placeholder
+
+========================
+7. BUSINESS TYPE VALIDATION
+========================
+
+Test for:
+
+- restaurant
+- café
+- bar
+
+Verify:
+- correct wording
+- correct features
+- no logic mixing
+
+Fix:
+- any restaurant-only logic
+- any missing support for cafés/bars
+
+========================
+8. BILLING CONSISTENCY CHECK
+========================
+
+Verify:
+
+- premium state = billing state
+- trial state correct
+- paid state correct
+- expired state correct
+
+Fix:
+- any mismatch
+- any incorrect display
+
+========================
+9. EMPTY / LOW DATA HANDLING
+========================
+
+Simulate:
+
+- new business
+- no data
+- low activity
+
+Verify:
+- dashboard still usable
+- no crashes
+- no fake data
+
+Fix:
+- add clean empty states
+- avoid broken visuals
+
+========================
+10. REALITY CLASSIFICATION
+========================
+
+For each section classify:
+
+- Fully Working
+- Working but Weak
+- UI Only
+- Broken
+- Fake/Demo
+
+========================
+11. AUTO FIX PASS
+========================
+
+Fix all:
+
+- broken sections
+- fake logic
+- disconnected systems
+- dead navigation
+- inconsistent states
+
+Do NOT overbuild.
+Only fix what exists.
+
+========================
+12. FINAL READINESS CHECK
+========================
+
+After fixes, verify:
+
+- premium works end-to-end
+- boost works without fake
+- analytics is truthful
+- navigation is clean
+- dashboard feels real
+
+========================
+13. FINAL REPORT
+========================
+
+Output:
+
+A. Fully working systems  
+B. Systems fixed  
+C. Remaining weak areas  
+D. Removed fake/demo elements  
+E. Any remaining blockers  
+F. Final readiness level  
+
+========================
+FINAL GOAL
+========================
+
+The business dashboard must become:
+
+- real (not demo)
+- stable
+- connected
+- honest
+- usable
+
+The business owner should feel:
+
+👉 "This is a real tool I can use"
+
+NOT:
+
+👉 "This looks like a demo"

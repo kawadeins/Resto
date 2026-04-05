@@ -68,23 +68,21 @@ const STEPS: Step[] = [
   },
 ];
 
-// ─── Value signals (simulated, realistic) ────────────────────────────────────
+// ─── Value signals (real data or honest empty state) ─────────────────────────
 
 function getValueSignals(bizType: string) {
-  const hour  = new Date().getHours();
-  const views = 12 + Math.floor(Math.random() * 30);
-  const reach = 120 + Math.floor(Math.random() * 80);
+  const hour = new Date().getHours();
 
   const peakLabel = bizType === "cafe"
-    ? (hour >= 6 && hour < 12 ? "Frühstücks-Peak aktiv" : "Café-Nachfrage in Wien")
+    ? (hour >= 6 && hour < 12 ? "Frühstücks-Peak" : "Café-Stunden")
     : bizType === "bar"
-    ? (hour >= 19 ? "Nachtleben-Peak aktiv" : "Happy-Hour-Fenster heute")
-    : (hour >= 11 && hour < 14 ? "Mittags-Peak aktiv" : "Abend-Nachfrage in Wien");
+    ? (hour >= 19 ? "Nachtleben-Stunden" : "Happy-Hour-Fenster")
+    : (hour >= 11 && hour < 14 ? "Mittagszeit" : "Abend-Fenster");
 
   return [
-    { icon: Eye,        color: "text-blue-500",   bg: "bg-blue-50 border-blue-100",   value: `${views}×`,  label: "Profil-Aufrufe heute" },
-    { icon: Users,      color: "text-violet-500",  bg: "bg-violet-50 border-violet-100", value: `${reach}`,  label: "Nutzer in deiner Nähe" },
-    { icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50 border-emerald-100", value: peakLabel, label: "Jetzt gerade" },
+    { icon: Eye,        color: "text-blue-500",   bg: "bg-blue-50 border-blue-100",   value: "Aktiv",     label: "Profil sichtbar" },
+    { icon: Users,      color: "text-violet-500",  bg: "bg-violet-50 border-violet-100", value: "Wien",    label: "Marktplatz-Region" },
+    { icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50 border-emerald-100", value: peakLabel, label: "Aktuelles Zeitfenster" },
   ];
 }
 

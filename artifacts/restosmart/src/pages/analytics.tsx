@@ -130,7 +130,7 @@ export default function Analytics() {
           <p className="text-muted-foreground mt-2">Tiefgehende Einblicke in Ihre Unternehmensleistung.</p>
         </div>
         <div className="text-sm text-muted-foreground font-mono bg-muted/30 px-3 py-1.5 rounded-md border">
-          Live • Gerade aktualisiert
+          Echtdaten aus Ihrem Betrieb
         </div>
       </div>
 

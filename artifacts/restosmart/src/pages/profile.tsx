@@ -455,7 +455,7 @@ export default function ProfilePage() {
                     id="city"
                     value={f.city ?? ""}
                     onChange={(e) => set("city", e.target.value)}
-                    placeholder="Berlin"
+                    placeholder="Wien"
                   />
                 </div>
                 <div className="space-y-2">
@@ -467,7 +467,7 @@ export default function ProfilePage() {
                       className="pl-9"
                       value={f.phone ?? ""}
                       onChange={(e) => set("phone", e.target.value)}
-                      placeholder="+49 30 12345678"
+                      placeholder="+43 1 12345678"
                     />
                   </div>
                 </div>
@@ -497,7 +497,7 @@ export default function ProfilePage() {
                     step="0.000001"
                     value={f.lat ?? ""}
                     onChange={(e) => set("lat", parseFloat(e.target.value) as any)}
-                    placeholder="52.520008"
+                    placeholder="48.208174"
                   />
                 </div>
                 <div className="space-y-2">
@@ -508,7 +508,7 @@ export default function ProfilePage() {
                     step="0.000001"
                     value={f.lng ?? ""}
                     onChange={(e) => set("lng", parseFloat(e.target.value) as any)}
-                    placeholder="13.404954"
+                    placeholder="16.373819"
                   />
                 </div>
               </div>
@@ -686,7 +686,7 @@ export default function ProfilePage() {
               <Textarea
                 value={f.about ?? ""}
                 onChange={(e) => set("about", e.target.value)}
-                placeholder="Wir haben dieses Restaurant vor 10 Jahren gegründet, weil wir die Leidenschaft für authentische mediterrane Küche mit Berlin teilen wollten. Jedes Gericht erzählt eine Geschichte…"
+                placeholder="Wir haben dieses Restaurant vor 10 Jahren gegründet, weil wir die Leidenschaft für authentische Küche mit Wien teilen wollten. Jedes Gericht erzählt eine Geschichte…"
                 className="min-h-[280px] resize-none text-base leading-relaxed"
               />
               <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -771,7 +771,7 @@ export default function ProfilePage() {
                     id="googleMaps"
                     value={f.googleMapsUrl ?? ""}
                     onChange={(e) => set("googleMapsUrl", e.target.value)}
-                    placeholder="https://maps.google.com/?q=Mein+Restaurant+Berlin"
+                    placeholder="https://maps.google.com/?q=Mein+Restaurant+Wien"
                   />
                   <p className="text-xs text-muted-foreground">
                     Google Maps öffnen → Link teilen → Link kopieren

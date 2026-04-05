@@ -451,19 +451,19 @@ export default function Overview() {
           <div className="flex gap-6 flex-wrap flex-1">
             <div className="text-center min-w-[64px]">
               <p className="text-xl font-extrabold text-violet-400">
-                {localReach?.bookingsThisWeek ?? (summary?.reservationsToday ?? 0) + 18}
+                {localReach?.bookingsThisWeek != null ? localReach.bookingsThisWeek : "–"}
               </p>
               <p className="text-[11px] text-muted-foreground leading-tight">Buchungen<br/>diese Woche</p>
             </div>
             <div className="text-center min-w-[64px]">
               <p className="text-xl font-extrabold text-emerald-400">
-                {localReach?.totalEstimatedImpressions ?? 420}
+                {localReach?.totalEstimatedImpressions != null ? localReach.totalEstimatedImpressions : "–"}
               </p>
-              <p className="text-[11px] text-muted-foreground leading-tight">Sichtbarkeits-<br/>aufrufe</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Gesch. Reichweite</p>
             </div>
             <div className="text-center min-w-[64px]">
-              <p className="text-xl font-extrabold text-amber-400">12</p>
-              <p className="text-[11px] text-muted-foreground leading-tight">Lokale<br/>in Wien</p>
+              <p className="text-xl font-extrabold text-amber-400">{localReach?.activeDeals ?? 0}</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Aktive<br/>Deals</p>
             </div>
           </div>
 
@@ -594,7 +594,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Erwarteter Umsatz</CardTitle>
+              <CardTitle className="text-sm font-medium">Gesch. Umsatz</CardTitle>
               <TrendingUp className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
@@ -605,7 +605,7 @@ export default function Overview() {
                   {(summary?.expectedRevenue ?? 0).toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
                 </div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Aus bestätigten Buchungen</p>
+              <p className="text-xs text-muted-foreground mt-1">Hochrechnung aus Buchungen</p>
             </CardContent>
           </Card>
         </motion.div>
