@@ -573,7 +573,12 @@ function FounderBusinessGrowthSection({ founderKey, businessClaims }: {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                      {claim.source === "self_serve" && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-500/10 border-emerald-500/25 text-emerald-400">
+                          SELF-SERVE
+                        </span>
+                      )}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCfg.cls}`}>
                         {statusCfg.label}
                       </span>

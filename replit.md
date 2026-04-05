@@ -110,6 +110,48 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
 - `premium-conversion-panel.tsx` — full funnel analytics, biz-type split, CTA comparison, insights
 - `variant-optimization-panel.tsx` — per-element variant CTR breakdown, winner status, auto-optimize trigger button, "how it works" explanation
 
+## Business Self-Serve Growth Loop
+
+### Entry Point
+- **`/for-business` page** (customer app) — comprehensive self-serve landing for business owners
+  - Business type selector (Restaurant / Café / Bar) with type-specific copy, value props, and missed opportunity framing
+  - Live demand signals pulled from `/api/business-claims/growth-signals` (real DB data)
+  - Platform stats: 30 venues, real booking count, avg rating
+  - Premium vs Free tier comparison, boost explainer
+  - "Jetzt Betrieb eintragen" form (replaces old "contact in 24h" model)
+- **Footer CTA** in customer app navbar footer: "Restaurant, Café oder Bar?" banner always visible
+
+### Self-Serve Instant Activation Flow (No 24h Wait)
+When form submits (`POST /api/business-claims` with `source: "self_serve"`):
+1. API stores claim with `source = "self_serve"`, returns `{selfServe: true}`
+2. Client sets localStorage: `restosmart_owner_email`, `restosmart_owner_premium = "trial"`, `restosmart_owner_business_type`, `restosmart_trial_end` (now + 14 days), `restosmart_trial_started`
+3. Fires `self_serve_signup` event to conversion tracking API
+4. Shows "Dein Betrieb ist aktiviert!" success screen (NOT "contact in 24h")
+5. "Dashboard jetzt öffnen" CTA → `window.location.href = origin + "/restosmart/"`
+6. Trial is immediately active in the restosmart dashboard
+
+### Growth Activation Hub (restosmart overview)
+- **`artifacts/restosmart/src/components/growth-activation-hub.tsx`** — shown for trial users at top of overview
+- **4-step checklist** with localStorage-tracked completion:
+  - Profil aktiviert (auto-done)
+  - Profil vervollständigen → /settings
+  - Erstes Angebot erstellen → /discounts
+  - Premium freischalten → billing
+- **Value signals**: profile views, nearby users, demand signal (real-time, simulated realistic)
+- **Trial countdown**: days remaining, color-coded (amber <7d, rose <3d)
+- Progress bar showing % activation complete
+- Premium CTA inline when ≥50% complete
+- Collapsible and dismissible (sessionStorage)
+
+### Founder Visibility
+- Business Growth Engine section in founder panel (already existed) shows all claims
+- Self-serve signups tagged with green "SELF-SERVE" badge in claims list
+- `/api/founder/claims` returns `source` column — self-serve vs manual submissions are distinguishable
+
+### API Routes
+- `POST /api/business-claims` — now accepts `source` field, returns `selfServe: boolean`
+- `GET /api/business-claims/growth-signals` — real platform stats for value prop (30 venues, bookings, rating)
+
 ## Wien Market Focus (Growth Activation)
 
 ### City Data (30 Wien venues — City Domination Update)

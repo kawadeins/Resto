@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame, UserCheck, UserX, ClipboardList, Send, RefreshCw } from "lucide-react";
 import { getBizType, BIZ_POSSESSIVE } from "@/lib/biz-copy";
 import { TrialConversionBanner } from "@/components/layout";
+import { GrowthActivationHub } from "@/components/growth-activation-hub";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -203,6 +204,9 @@ export default function Overview() {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* Growth Activation Hub — shown to new trial users with step-by-step activation */}
+      <GrowthActivationHub onUpgrade={() => { window.location.href = "/billing"; }} />
+
       {/* Trial conversion prompt — only visible during active trial */}
       <TrialConversionBanner context="overview" />
 

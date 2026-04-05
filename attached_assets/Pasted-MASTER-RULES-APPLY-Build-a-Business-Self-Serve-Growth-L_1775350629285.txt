@@ -1,0 +1,289 @@
+MASTER RULES APPLY
+
+Build a "Business Self-Serve Growth Loop" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing functionality.
+Do NOT turn this into a complex CRM system.
+All business-facing UI and messaging must be in German.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+This system builds on:
+- Premium system (39,90€ / month)
+- 14-day trial
+- Conversion Booster
+- Conversion Analytics
+- Auto-Optimization Loop
+- Business Growth Engine
+
+========================
+GOAL
+========================
+
+Create a fully self-serve growth loop where business owners can:
+
+- discover the platform
+- join easily
+- activate their business
+- experience value quickly
+- upgrade to Premium
+- grow visibility
+- reinvest in boosts
+
+WITHOUT manual sales or external outreach.
+
+========================
+1. SELF-SERVE ENTRY (CRITICAL)
+========================
+
+Create a frictionless business entry flow.
+
+A business owner should be able to:
+
+- understand the platform quickly
+- see value immediately
+- join without complexity
+
+German entry examples:
+- "Geschäft hinzufügen"
+- "Dein Business eintragen"
+- "Jetzt starten"
+
+Flow:
+- select business type (Restaurant / Café / Bar)
+- enter basic details
+- continue directly to activation
+
+========================
+2. INSTANT VALUE EXPERIENCE
+========================
+
+Immediately after joining:
+
+- show business profile live
+- show how it appears in app
+- show initial visibility potential
+
+German examples:
+- "So sehen Kunden dein Geschäft"
+- "Dein Profil ist jetzt sichtbar"
+
+This creates instant reward.
+
+========================
+3. QUICK ACTIVATION LOOP
+========================
+
+Guide the business owner through 3–4 simple steps:
+
+- complete profile
+- add images
+- confirm business type
+- activate visibility
+
+Use German progress steps:
+- "Profil vervollständigen"
+- "Sichtbarkeit aktivieren"
+- "Mehr Reichweite freischalten"
+
+Keep it fast and clear.
+
+========================
+4. TRIAL ENTRY POINT
+========================
+
+Offer 14-day Premium trial at the right moment:
+
+German CTA:
+- "14 Tage kostenlos testen"
+
+Show:
+- what they unlock
+- why it matters
+
+Do NOT overwhelm early.
+Introduce at high-value moment.
+
+========================
+5. VALUE LOOP (VERY IMPORTANT)
+========================
+
+During usage, continuously show value signals:
+
+- profile views
+- discovery exposure
+- search appearances
+- nearby visibility
+
+German examples:
+- "Dein Geschäft wurde 78 Mal angesehen"
+- "Mehr Nutzer entdecken dein Profil"
+
+This builds belief.
+
+========================
+6. GROWTH ACTION LOOP
+========================
+
+Guide business toward actions that improve visibility:
+
+Examples:
+- improve profile
+- activate Premium
+- use boost tools
+- optimize presence
+
+German prompts:
+- "Erhöhe deine Sichtbarkeit"
+- "Mehr Kunden erreichen"
+- "Jetzt optimieren"
+
+========================
+7. PREMIUM UPGRADE LOOP
+========================
+
+Convert at the right moments:
+
+- after value is seen
+- near trial end
+- after exposure proof
+- when trying advanced features
+
+German CTAs:
+- "Premium aktivieren"
+- "Für 39,90€ / Monat fortsetzen"
+
+========================
+8. BOOST / REINVEST LOOP
+========================
+
+After Premium activation:
+
+- introduce boost tools
+- allow spending on visibility
+- connect spending to results
+
+German examples:
+- "Mehr Sichtbarkeit jetzt boosten"
+- "Dein Geschäft hervorheben"
+
+This creates continuous revenue.
+
+========================
+9. CONTINUOUS FEEDBACK LOOP
+========================
+
+Always show:
+
+- what is working
+- what can improve
+- where opportunity exists
+
+Examples:
+- "Starke Nachfrage in deiner Umgebung"
+- "Jetzt ist eine gute Zeit für mehr Sichtbarkeit"
+
+========================
+10. LOW-FRICTION UX
+========================
+
+Keep everything:
+
+- simple
+- fast
+- intuitive
+
+Avoid:
+- complex onboarding
+- too many forms
+- heavy setup
+
+Goal:
+👉 join → activate → see value → upgrade
+
+========================
+11. TRUST + PROFESSIONAL FEEL
+========================
+
+Make system feel:
+
+- serious
+- business-oriented
+- reliable
+
+German tone:
+- professional
+- clear
+- not aggressive
+- not spammy
+
+========================
+12. DATA SUPPORT
+========================
+
+Track:
+
+- business signups
+- activation rate
+- trial starts
+- trial usage
+- premium conversion
+- boost usage
+- reinvestment rate
+
+========================
+13. LOOP STRUCTURE (CORE)
+========================
+
+The system should naturally create this loop:
+
+1. Discover platform  
+2. Join easily  
+3. Activate business  
+4. See value  
+5. Start trial  
+6. Experience growth  
+7. Convert to Premium  
+8. Use boost tools  
+9. See more results  
+10. Reinvest  
+11. Repeat  
+
+========================
+14. DO NOT OVERCOMPLICATE
+========================
+
+- no enterprise onboarding
+- no sales funnels everywhere
+- no aggressive upselling
+
+Focus on:
+- clarity
+- speed
+- value
+- natural growth
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster becomes a self-growing business platform where:
+
+- businesses join on their own
+- activate quickly
+- see real value
+- convert to Premium
+- continue investing in visibility
+
+The platform grows without heavy manual sales effort.
+
+It becomes:
+
+👉 a self-serve growth engine  
+👉 a monetization loop  
+👉 a scalable business system

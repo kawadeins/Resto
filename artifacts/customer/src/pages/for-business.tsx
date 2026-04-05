@@ -210,12 +210,31 @@ export default function ForBusiness() {
           phone:        data.phone,
           city:         data.city,
           message:      data.message,
+          source:       "self_serve",
         }),
       });
       if (!r.ok) throw new Error("Fehler beim Absenden");
       return r.json();
     },
-    onSuccess: () => setFormStep("success"),
+    onSuccess: (_, variables) => {
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 14);
+      localStorage.setItem("restosmart_owner_email", variables.email);
+      localStorage.setItem("restosmart_owner_premium", "trial");
+      localStorage.setItem("restosmart_owner_business_type", variables.businessType);
+      localStorage.setItem("restosmart_trial_end", trialEnd.toISOString());
+      localStorage.setItem("restosmart_trial_started", new Date().toISOString());
+      fetch(`${API_BASE}/api/conversion/event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType: "self_serve_signup",
+          businessType: variables.businessType,
+          source: "for_business_form",
+        }),
+      }).catch(() => {});
+      setFormStep("success");
+    },
   });
 
   const signals = signalsQuery.data;
@@ -590,12 +609,12 @@ export default function ForBusiness() {
       <section id="claim-form" className="py-16 px-4">
         <div className="container mx-auto max-w-xl">
           <div className="text-center mb-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">14 Tage kostenlos testen</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Kostenlos starten</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              Ihr Betrieb auf RestoSmart
+              Jetzt Betrieb eintragen
             </h2>
             <p className="text-muted-foreground mt-2 text-sm max-w-md mx-auto">
-              Tragen Sie Ihre Daten ein. Wir melden uns innerhalb von 24 Stunden und führen Sie durch das Onboarding.
+              In 2 Minuten eingetragen — sofort aktiv. 14 Tage voller Zugang, keine Kreditkarte.
             </p>
           </div>
 
@@ -605,14 +624,42 @@ export default function ForBusiness() {
                 key="success"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="rounded-3xl border-2 border-emerald-200 bg-emerald-50 p-10 text-center"
+                className="rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 p-8 text-center"
               >
-                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-emerald-600" />
+                <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${cfg.gradient} flex items-center justify-center mx-auto mb-5 shadow-xl`}>
+                  <CheckCircle className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-xl font-extrabold text-foreground mb-2">Anfrage eingegangen!</h3>
-                <p className="text-muted-foreground mb-1">Wir melden uns innerhalb von <strong>24 Stunden</strong>.</p>
-                <p className="text-sm text-muted-foreground">Schauen Sie auch in Ihren Spam-Ordner.</p>
+                <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Profil jetzt live
+                </div>
+                <h3 className="text-2xl font-extrabold text-foreground mb-2">Dein Betrieb ist aktiviert!</h3>
+                <p className="text-muted-foreground text-sm mb-5">
+                  14-Tage-Testphase gestartet — voller Zugang, keine Kreditkarte.
+                </p>
+                <div className="bg-white/80 border border-border/60 rounded-2xl p-4 mb-6 text-left space-y-2.5">
+                  {[
+                    "Dein Betrieb ist auf der Plattform sichtbar",
+                    "Voller Zugang zum Business-Dashboard",
+                    "14 Tage alle Premium-Funktionen kostenlos",
+                    "Analytics, Boosts & Wachstumstools freigeschaltet",
+                  ].map(item => (
+                    <div key={item} className="flex items-center gap-2.5">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span className="text-sm text-foreground/80">{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  className={`w-full h-13 rounded-2xl bg-gradient-to-r ${cfg.gradient} text-white font-bold text-base shadow-lg px-6 py-3.5 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity`}
+                  onClick={() => { window.location.href = window.location.origin + "/restosmart/"; }}
+                >
+                  Dashboard jetzt öffnen
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Du wirst direkt zu deinem Business-Dashboard weitergeleitet.
+                </p>
               </motion.div>
             ) : (
               <motion.div

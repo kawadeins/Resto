@@ -111,6 +111,7 @@ const ClaimSchema = z.object({
   phone:        z.string().optional(),
   city:         z.string().optional().default("Wien"),
   message:      z.string().optional(),
+  source:       z.string().optional().default("for_business_page"),
 });
 
 router.post("/", async (req, res) => {
@@ -119,20 +120,24 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "Ungültige Daten", details: parsed.error.flatten() });
   }
 
-  const { businessName, businessType, ownerName, email, phone, city, message } = parsed.data;
+  const { businessName, businessType, ownerName, email, phone, city, message, source } = parsed.data;
 
   try {
     const result = await db.execute(sql`
-      INSERT INTO business_claims (business_name, business_type, owner_name, email, phone, city, message)
-      VALUES (${businessName}, ${businessType}, ${ownerName}, ${email}, ${phone ?? null}, ${city ?? "Wien"}, ${message ?? null})
+      INSERT INTO business_claims (business_name, business_type, owner_name, email, phone, city, message, source)
+      VALUES (${businessName}, ${businessType}, ${ownerName}, ${email}, ${phone ?? null}, ${city ?? "Wien"}, ${message ?? null}, ${source ?? "for_business_page"})
       RETURNING id, created_at
     `);
 
     const claim = result.rows[0] as any;
+    const isSelfServe = source === "self_serve";
     return res.status(201).json({
       ok: true,
       claimId: claim.id,
-      message: "Anfrage eingegangen. Wir melden uns innerhalb von 24 Stunden.",
+      selfServe: isSelfServe,
+      message: isSelfServe
+        ? "Betrieb aktiviert. Testphase läuft."
+        : "Anfrage eingegangen. Wir melden uns innerhalb von 24 Stunden.",
     });
   } catch (err) {
     req.log.error({ err }, "Failed to create business claim");
