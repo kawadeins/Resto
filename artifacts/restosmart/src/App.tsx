@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { track } from "@/lib/conversion-tracking";
+import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -76,6 +77,12 @@ function PremiumGate({ children }: { children: React.ReactNode }) {
 
 function TrialExpiredRequired() {
   useEffect(() => { track("trial_expired_viewed"); }, []);
+  const { variants, loaded } = useVariants();
+  useEffect(() => {
+    if (!loaded) return;
+    if (variants.expired_headline) trackVariantImpression(variants.expired_headline.id);
+  }, [loaded]);
+  const { copy: expiredHeadline, variantId: expiredHlId } = getVariantCopy(variants, "expired_headline", "Aktiviere Premium, um sichtbar zu bleiben");
   const biz = typeof window !== "undefined"
     ? localStorage.getItem("restosmart_owner_business_type") ?? "restaurant"
     : "restaurant";
@@ -106,7 +113,7 @@ function TrialExpiredRequired() {
         <div className="space-y-2">
           <div className="text-[10px] font-bold tracking-widest uppercase text-amber-400">Deine Testphase ist beendet</div>
           <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
-            Aktiviere Premium, um<br />sichtbar zu bleiben
+            {expiredHeadline}
           </h1>
           <p className="text-[#888] text-sm leading-relaxed">
             Premium-Betriebe werden häufiger angezeigt. Du verpasst gerade potenzielle Kunden in deiner Nähe.
@@ -156,7 +163,10 @@ function TrialExpiredRequired() {
           <a
             href={CUSTOMER_PROFILE_URL}
             className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
-            onClick={() => track("upgrade_cta_clicked", { ctaLabel: "Jetzt für 39,90€ / Monat fortsetzen", dedup: false })}
+            onClick={() => {
+              track("upgrade_cta_clicked", { ctaLabel: "Jetzt für 39,90€ / Monat fortsetzen", dedup: false });
+              if (expiredHlId) trackVariantClick(expiredHlId, false);
+            }}
           >
             Jetzt für 39,90€ / Monat fortsetzen
           </a>
@@ -171,6 +181,14 @@ function TrialExpiredRequired() {
 
 function PremiumRequired() {
   useEffect(() => { track("premium_gate_viewed"); }, []);
+  const { variants, loaded } = useVariants();
+  useEffect(() => {
+    if (!loaded) return;
+    if (variants.gate_headline) trackVariantImpression(variants.gate_headline.id);
+    if (variants.gate_cta) trackVariantImpression(variants.gate_cta.id);
+  }, [loaded]);
+  const { copy: gateHeadline } = getVariantCopy(variants, "gate_headline", "Mehr Sichtbarkeit. Mehr Gäste. Mehr Umsatz.");
+  const { copy: gateCta, variantId: gateCtaId } = getVariantCopy(variants, "gate_cta", "Jetzt 14 Tage kostenlos starten");
   const biz = typeof window !== "undefined"
     ? localStorage.getItem("restosmart_owner_business_type") ?? "restaurant"
     : "restaurant";
@@ -235,7 +253,7 @@ function PremiumRequired() {
           <div className="space-y-2">
             <div className="text-[10px] font-bold tracking-widest uppercase text-violet-400">RestoSmart Business Premium</div>
             <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
-              Mehr Sichtbarkeit.<br />Mehr Kunden. Mehr Wachstum.
+              {gateHeadline}
             </h1>
             <p className="text-[10px] text-violet-400/70 font-semibold uppercase tracking-widest">{"Für Restaurants, Cafés & Bars"}</p>
             <p className="text-[#666] text-sm leading-relaxed mt-2">
@@ -289,9 +307,12 @@ function PremiumRequired() {
           <a
             href={CUSTOMER_PROFILE_URL}
             className="flex items-center justify-center gap-2 w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
-            onClick={() => track("upgrade_cta_clicked", { ctaLabel: "Jetzt 14 Tage kostenlos starten", dedup: false })}
+            onClick={() => {
+              track("upgrade_cta_clicked", { ctaLabel: gateCta, dedup: false });
+              if (gateCtaId) trackVariantClick(gateCtaId, false);
+            }}
           >
-            Jetzt 14 Tage kostenlos starten
+            {gateCta}
           </a>
           <p className="text-[11px] text-[#444] leading-relaxed">
             Jederzeit kündbar. Keine langfristige Verpflichtung.

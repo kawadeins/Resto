@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import PremiumConversionPanel from "@/components/premium-conversion-panel";
+import VariantOptimizationPanel from "@/components/variant-optimization-panel";
 import {
   TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Info,
   RefreshCw, Shield, Lock, Eye, EyeOff, ArrowUpRight, ArrowDownRight,
@@ -1994,8 +1995,11 @@ export default function Founder() {
       {view === "dashboard" && <Dashboard founderKey={CORRECT_KEY} />}
       {view === "pipeline" && <WienPipelineView founderKey={CORRECT_KEY} />}
       {view === "conversion" && (
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-12">
           <PremiumConversionPanel />
+          <div className="border-t border-white/6 pt-10">
+            <VariantOptimizationPanel />
+          </div>
         </div>
       )}
     </div>

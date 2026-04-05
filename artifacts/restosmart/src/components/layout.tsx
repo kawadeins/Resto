@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { track } from "@/lib/conversion-tracking";
+import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 
 function getTrialState() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -103,6 +104,12 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
   useEffect(() => {
     if (isTrial) track("trial_conversion_banner_viewed", { messageLabel: context });
   }, []);
+  const { variants, loaded } = useVariants();
+  useEffect(() => {
+    if (!loaded || !isTrial) return;
+    if (variants.banner_headline) trackVariantImpression(variants.banner_headline.id);
+    if (variants.trial_cta) trackVariantImpression(variants.trial_cta.id);
+  }, [loaded]);
 
   if (typeof window === "undefined") return null;
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -143,7 +150,9 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
     },
   };
 
-  const { headline, body, cta } = contextual[context] ?? contextual.overview;
+  const { headline: fallbackHeadline, body, cta: fallbackCta } = contextual[context] ?? contextual.overview;
+  const { copy: headline } = getVariantCopy(variants, "banner_headline", fallbackHeadline);
+  const { copy: cta, variantId: trialCtaId } = getVariantCopy(variants, "trial_cta", fallbackCta);
   const customerProfileUrl = window.location.origin + "/customer/profile";
   const isUrgent = daysLeft <= 3;
 
@@ -167,6 +176,7 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
         )}
         <a
           href={customerProfileUrl}
+          onClick={() => { if (trialCtaId) trackVariantClick(trialCtaId, false); }}
           className={cn(
             "text-xs font-bold px-3 py-2 rounded-xl text-white hover:opacity-90 transition-opacity whitespace-nowrap",
             isUrgent

@@ -73,6 +73,43 @@ RestoSmart is a premium restaurant management dashboard built as a full-stack Sa
     - DB: `meal_plans` (unique per email+day+slot), `group_plans` (participants stored as JSON)
     - API: `GET/PUT/DELETE /api/meal-plan/:email`, `GET /api/meal-plan/:email/suggestions`, `POST /api/meal-plan/group`, `GET /api/meal-plan/group/:email`, `GET/DELETE /api/meal-plan/group/:id/suggestions`
 
+## Premium Auto-Conversion Optimization Loop
+
+### DB Tables
+- `conversion_events` — raw funnel event log (event_type, business_type, session_id, cta_label, message_label, metadata)
+- `conversion_variants` — A/B variant registry (element_type, business_type, variant_key, copy_text, impressions, clicks, conversions, is_winner, is_retired)
+
+### API Endpoints
+- `POST /api/conversion/event` — fire-and-forget conversion event (no auth)
+- `GET /api/conversion/analytics` — founder funnel analytics (founder auth)
+- `GET /api/variants/active?businessType=X` — returns weighted-random active variant per element type (no auth)
+- `POST /api/variants/impression` — increment variant impression count (no auth)
+- `POST /api/variants/click` — increment click/conversion count, triggers auto-optimize (no auth)
+- `GET /api/variants/insights` — founder variant performance (founder auth)
+- `POST /api/variants/auto-optimize` — founder trigger auto-win selection (founder auth)
+
+### Variant Element Types (7 tested elements)
+- `gate_headline` — PremiumRequired paywall headline (3 variants incl. biz-specific C)
+- `gate_subheadline` — Paywall subheadline (3 variants incl. biz-specific)
+- `gate_cta` — PremiumRequired CTA button text (A/B/C)
+- `expired_headline` — TrialExpiredRequired headline (A/B/C per biz type)
+- `banner_headline` — TrialConversionBanner headline (A/B/C per biz type)
+- `trial_cta` — TrialConversionBanner CTA text (A/B/C)
+- `proof_focus` — Proof/ROI card copy (A/B/C per biz type)
+
+### Auto-Win Logic
+- Winner declared when: impressions ≥ 40 AND leading CTR ≥ 20% higher than runner-up
+- Winners always served; losers retired automatically
+- Fires on every click to stay current (no cron needed)
+
+### Client Library (`artifacts/restosmart/src/lib/`)
+- `conversion-tracking.ts` — `track(event, opts)` with session dedup, fires to POST /api/conversion/event
+- `variant-system.ts` — `useVariants()` hook, `getVariantCopy()`, `trackVariantImpression()`, `trackVariantClick()`; 5-min sessionStorage cache
+
+### Founder Panel (Conversion Intelligence tab in /founder)
+- `premium-conversion-panel.tsx` — full funnel analytics, biz-type split, CTA comparison, insights
+- `variant-optimization-panel.tsx` — per-element variant CTR breakdown, winner status, auto-optimize trigger button, "how it works" explanation
+
 ## Wien Market Focus (Growth Activation)
 
 ### City Data (30 Wien venues — City Domination Update)

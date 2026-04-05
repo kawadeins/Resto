@@ -1,0 +1,309 @@
+MASTER RULES APPLY
+
+Build a "Premium Auto-Conversion Optimization Loop" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing functionality.
+Do NOT use fake AI claims.
+Do NOT create uncontrolled experiments.
+All business-facing Premium copy must remain in German.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+This system must work on top of:
+- Premium Conversion Booster System
+- Premium Conversion Analytics Engine
+- 14-day Premium trial flow
+- Founder Command Center
+
+========================
+GOAL
+========================
+
+Continuously improve Premium conversion automatically by learning from real conversion behavior and adjusting:
+
+- Premium messaging
+- CTA wording
+- conversion timing
+- upgrade moments
+- visibility of Premium prompts
+- business-type-specific persuasion
+
+The system should help RestoMaster improve Premium conversion over time without guessing.
+
+========================
+1. AUTO-OPTIMIZATION SCOPE
+========================
+
+This loop should optimize only safe conversion variables such as:
+
+- headline wording
+- subheadline wording
+- CTA wording
+- placement of upgrade prompts
+- timing of upgrade prompts
+- trial-end reminder timing
+- business-type-specific value emphasis
+- visibility of proof / ROI cards
+
+Do NOT change core payment logic automatically.
+Do NOT change pricing automatically here.
+Do NOT create unstable UX.
+
+========================
+2. USE REAL CONVERSION DATA
+========================
+
+Use real data from the Premium Conversion Analytics Engine such as:
+
+- premium page views
+- CTA clicks
+- trial starts
+- upgrade clicks
+- checkout starts
+- payment completions
+- trial behavior
+- business type
+- city / region
+- message performance
+- drop-off stage
+
+Optimization must be based on real results.
+
+========================
+3. MESSAGE PERFORMANCE LOOP
+========================
+
+Automatically compare different German messaging variations.
+
+Examples:
+- “Mehr Sichtbarkeit”
+- “Mehr Kunden”
+- “Mehr Reichweite”
+- “Verifizierter Business-Status”
+- “39,90€ im Monat für mehr lokale Sichtbarkeit”
+
+The system should:
+- identify better-performing variants
+- gradually favor stronger variants
+- reduce use of weaker variants
+
+Do NOT randomly switch everything at once.
+Keep changes controlled.
+
+========================
+4. CTA OPTIMIZATION LOOP
+========================
+
+Test and optimize Premium CTA wording such as:
+
+- “Jetzt 14 Tage kostenlos starten”
+- “Premium aktivieren”
+- “Für 39,90€ / Monat fortsetzen”
+- “Mehr Sichtbarkeit freischalten”
+
+Track:
+- view rate
+- click rate
+- conversion after click
+
+The system should favor the CTA with better real conversion performance.
+
+========================
+5. TIMING OPTIMIZATION
+========================
+
+Optimize when Premium prompts appear.
+
+Examples:
+- after dashboard use
+- after analytics view
+- after visibility proof
+- near trial end
+- after boost tool access attempt
+- after seeing missed opportunity
+
+The system should identify the strongest conversion moments and increase emphasis there.
+
+========================
+6. BUSINESS-TYPE OPTIMIZATION
+========================
+
+Optimize Premium persuasion differently by business type.
+
+Restaurants:
+- visibility for lunch/dinner
+- bookings / discovery messaging
+
+Cafés:
+- morning traffic
+- breakfast / coffee visibility
+
+Bars:
+- nightlife
+- evening traffic
+- happy hour relevance
+
+The system should automatically learn which sales angle converts best for each type.
+
+========================
+7. TRIAL CONVERSION LOOP
+========================
+
+Track which trial behaviors predict paid conversion.
+
+Examples:
+- trial user opened dashboard 5 times
+- trial user viewed visibility metrics
+- trial user opened boost tools
+- trial user saw ROI proof
+
+Then:
+- show stronger conversion prompts to high-intent trial users
+- simplify prompts for low-activity trial users
+- optimize reminder timing near day 10–14
+
+========================
+8. PROOF / ROI CARD OPTIMIZATION
+========================
+
+Test and optimize proof blocks such as:
+
+- profile views gained
+- discovery exposure gained
+- visibility increase
+- local reach growth
+- smart offer appearances
+
+The system should learn:
+- which proof makes users upgrade more
+- where proof should appear
+- when proof is most persuasive
+
+========================
+9. SAFE OPTIMIZATION RULES
+========================
+
+The system must remain controlled.
+
+Rules:
+- no aggressive manipulation
+- no fake urgency
+- no random UX chaos
+- no too many simultaneous experiments
+- no breaking consistency
+
+Only optimize within controlled boundaries.
+
+========================
+10. VARIANT MANAGEMENT
+========================
+
+Use a simple controlled variant system.
+
+For each tested element:
+- variant A
+- variant B
+- optional variant C
+
+Track:
+- impressions
+- clicks
+- trial starts
+- conversions
+
+Then:
+- prefer stronger variant
+- retire weak variant
+
+========================
+11. FOUNDER VISIBILITY
+========================
+
+Show auto-optimization insights inside Founder Command Center.
+
+Examples:
+- best-performing Premium headline
+- best-performing CTA
+- highest-converting upgrade moment
+- best business-type conversion angle
+- strongest proof card
+
+Founder should understand what the system is learning.
+
+========================
+12. AUTO-WIN RULE
+========================
+
+When one variant clearly outperforms another, allow the system to automatically make the stronger one the default.
+
+Only do this when:
+- enough data exists
+- difference is meaningful
+- result is stable
+
+Do NOT switch too early.
+
+========================
+13. LOW-PERFORMER CLEANUP
+========================
+
+Automatically reduce or phase out:
+- weak Premium copy
+- weak CTA text
+- weak conversion cards
+- weak prompt placements
+
+This keeps the conversion system cleaner over time.
+
+========================
+14. CONTINUOUS LOOP
+========================
+
+The system should run continuously:
+
+- observe
+- compare
+- learn
+- optimize
+- repeat
+
+This should make Premium conversion stronger every month.
+
+========================
+15. DO NOT OVERCOMPLICATE
+========================
+
+- no black-box AI
+- no full experimentation platform
+- no unstable personalization chaos
+
+Focus on:
+- real premium conversion improvement
+- controlled optimization
+- data-backed upgrades
+- simple strong loop
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have a Premium conversion system that improves itself over time.
+
+The platform should automatically learn:
+
+- which German messages sell best
+- which CTA converts best
+- which timing works best
+- which business types respond to which value proposition
+
+The result should be:
+
+- higher Premium conversion
+- better trial-to-paid performance
+- less guesswork
+- smarter monetization growth
