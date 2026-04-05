@@ -1,0 +1,462 @@
+MASTER RULES APPLY
+
+Build a "Master Brain + Auto Decision + Auto Execution System" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the entire app.
+Do NOT break existing functionality.
+Do NOT remove any existing Ops / Founder / Watchdog / Self-Healing systems.
+This is NOT a cosmetic feature.
+This is the central intelligence and control layer of the whole platform.
+
+CRITICAL:
+Before enabling autonomous behavior, first verify and confirm that all major systems are actually connected to the Master Brain correctly.
+The system must not pretend integration if integration is incomplete.
+
+========================
+GOAL
+========================
+
+Create the real central brain of RestoMaster that:
+
+- connects all critical systems
+- verifies that these systems are correctly integrated
+- monitors their health and performance
+- analyzes incidents and risks
+- prioritizes what matters most
+- decides what should happen first
+- safely executes automatic actions where allowed
+- reports everything clearly to the Founder
+
+This system must live inside the Founder Dashboard as a dedicated high-priority control section.
+
+It should feel like:
+- the original main brain of the platform
+- the secret founder control core
+- the operational intelligence center
+- the autonomous platform guardian
+
+========================
+1. MASTER BRAIN LINK VERIFICATION (CRITICAL FIRST STEP)
+========================
+
+Before turning on automatic decision or automatic execution, the system must verify that all major systems are actually linked to the Master Brain correctly.
+
+Check each core system and confirm:
+
+- is it connected?
+- is it sending status?
+- is it sending incidents?
+- is it sending performance data?
+- is it sending risk signals?
+- is it returning correct health states?
+
+Systems to verify:
+
+- Premium system
+- Billing / Payments
+- Boost / Sponsored Visibility
+- Monetization engine
+- Competition engine
+- Business Growth engine
+- Business Self-Serve flow
+- Watchdog / Ops system
+- Self-Healing system
+- Launch Control system
+- Auth / session system
+- User profile system
+- Discovery / homepage system
+- Map / location system
+- Smart offers
+- Social / friends system
+- Heat map / live activity
+- Instant plans
+- Auto plans
+- Founder dashboard modules
+
+For each system, explicitly mark:
+
+- Connected
+- Partially Connected
+- Not Connected
+- Connected but not reporting correctly
+
+Do NOT assume.
+Verify.
+
+========================
+2. MASTER BRAIN READINESS CHECK
+========================
+
+The Master Brain must only move into autonomous mode if all critical systems are verified enough.
+
+Critical systems that must be verified first:
+- Billing
+- Premium
+- Ops / Watchdog
+- Self-Healing
+- Auth / access control
+- Founder dashboard integration
+
+If these are not stable enough:
+- do NOT fully activate autonomous execution
+- show warning inside founder view
+- continue in monitoring / decision-only mode
+
+========================
+3. MASTER BRAIN DASHBOARD SECTION
+========================
+
+Inside the Founder Dashboard, create a dedicated top-level section such as:
+
+- Master Brain
+- System Brain
+- Zentrale Intelligenz
+- Kontrollzentrum
+
+This must become one of the most important founder sections.
+
+This section must include:
+- overall brain status
+- integration readiness
+- critical systems health
+- top issues
+- auto-actions taken
+- what still needs founder review
+
+========================
+4. SYSTEM OVERVIEW GRID
+========================
+
+Show all major systems in a clear overview.
+
+Each system card must display:
+
+- system name
+- short role / specialty
+- health color:
+  - green = stable
+  - yellow = warning
+  - red = critical
+- speed / performance indicator
+- current issue summary
+- risk level
+- last checked
+- connected status
+- requires attention? yes/no
+
+Examples:
+- Billing — Payment integrity and subscription truth
+- Premium — Access and business package activation
+- Boost — Visibility campaign delivery
+- Ops — Incident detection and monitoring
+- Self-Healing — Safe repair layer
+- Map — Geolocation and nearby accuracy
+- Smart Offers — Recommendation value layer
+
+========================
+5. SPEED + HEALTH VISUALIZATION
+========================
+
+Each system must have a simple visual performance indicator.
+
+Display:
+- Fast / Normal / Slow
+or
+- percentage / bar meter
+
+Color example:
+- Green = fast / healthy
+- Yellow = acceptable / minor issue
+- Red = degraded / needs repair
+
+This should be easy to scan quickly.
+
+========================
+6. SPLIT CONTROL VIEW
+========================
+
+Use a two-part Founder layout:
+
+LEFT SIDE:
+- all systems overview
+- health / speed / risk summary
+
+RIGHT SIDE:
+- selected system details
+
+When founder clicks a system, show:
+- deeper system analysis
+- recent incidents
+- recent auto-actions
+- unresolved issues
+- recommended founder action
+- connection status to Master Brain
+
+========================
+7. MASTER BRAIN ANALYSIS LAYER
+========================
+
+For every system, the Master Brain should produce a readable internal analysis such as:
+
+- "System stable"
+- "Minor performance drop detected"
+- "Billing mismatch risk increasing"
+- "Auto-recovery active"
+- "High load detected"
+- "Manual review recommended"
+
+Keep this clear and practical.
+
+========================
+8. AUTO DECISION ENGINE
+========================
+
+On top of all reporting, add automatic prioritization and decision logic.
+
+The brain must determine:
+
+- what is most important right now
+- what affects revenue most
+- what affects trust most
+- what affects user/business experience most
+- what can safely wait
+
+It should automatically produce:
+- Highest Priority
+- Secondary Priority
+- Low Priority
+
+========================
+9. PRIORITY SCORING LOGIC
+========================
+
+Build a clear priority score based on:
+
+- severity
+- revenue impact
+- number of affected users/businesses
+- system importance
+- persistence of issue
+- whether auto-fix succeeded or failed
+
+Critical systems like:
+- billing
+- premium
+- payment truth
+- boost delivery
+must weigh more than secondary systems.
+
+========================
+10. ACTION NEEDED PANEL
+========================
+
+Add a dedicated panel:
+
+- What Needs Attention Now
+- Highest Priority Issues
+- Immediate Founder Review
+
+Show:
+- top issues
+- why they matter
+- impact
+- whether auto-action already tried
+- what should happen next
+
+Founder should know instantly what is most important.
+
+========================
+11. AUTO EXECUTION LAYER (SAFE AUTONOMOUS MODE)
+========================
+
+Add safe automatic execution on top of decision logic.
+
+This means:
+- the system does not only detect and prioritize
+- it can also safely act where rules allow
+
+Allowed safe actions include:
+- retry sync
+- retry activation
+- billing reconciliation
+- re-check premium truth
+- restore valid premium state
+- reactivate valid boost campaign
+- refresh stale operational state
+- queue manual review
+- escalate to Ops
+
+The system must never do destructive actions automatically.
+
+========================
+12. AUTONOMOUS MODE SAFETY RULES
+========================
+
+Autonomous execution must only run if:
+
+- integration readiness is verified
+- critical billing truth is available
+- confidence is high enough
+- action is safe and reversible
+
+If not safe:
+- alert founder
+- recommend action
+- do not auto-execute blindly
+
+========================
+13. AUTO EXECUTION RESULT REPORTING
+========================
+
+Every automatic action must be reported inside the Master Brain.
+
+For each auto-action show:
+- what triggered it
+- what was checked
+- what action was executed
+- whether it succeeded
+- whether more action is needed
+
+Examples:
+- "Billing mismatch detected → reconciliation attempted → resolved"
+- "Boost activation delay → retry executed → success"
+- "Premium state conflict → verification failed → manual review needed"
+
+========================
+14. 100% DASHBOARD CONNECTION CHECK
+========================
+
+Before finalizing this system, verify that the Master Brain is truly linked to the Founder Dashboard correctly.
+
+Ensure:
+- the section appears in the founder dashboard
+- it loads reliably
+- it reads all connected systems
+- it shows real values, not placeholders
+- it updates with current system truth
+- it reflects live incident and healing behavior where available
+
+This must be checked carefully.
+
+========================
+15. SECRET FOUNDER CONTROL FEED
+========================
+
+Inside the founder dashboard, integrate a secret internal feed that shows:
+
+- critical incidents
+- auto-fixed items
+- manual review queue
+- update needed warnings
+- system connection warnings
+- master brain decisions
+- auto-action history
+
+This is the hidden founder intelligence feed.
+
+========================
+16. RECOMMENDED FOUNDER ACTIONS
+========================
+
+For every major unresolved issue, the Master Brain must tell the founder:
+
+- what happened
+- why it matters
+- what was already attempted
+- what should be done next
+
+Examples:
+- "Check webhook configuration"
+- "Review billing truth for affected business"
+- "Manual review required"
+- "No action required — issue auto-resolved"
+
+========================
+17. MASTER BRAIN MODES
+========================
+
+Support modes such as:
+
+- Monitoring Only
+- Decision Support
+- Safe Autonomous Mode
+
+If systems are not fully ready, stay in lower mode.
+If systems are verified enough, activate higher mode.
+
+This prevents unsafe automation.
+
+========================
+18. FOUNDER SUMMARY BLOCK
+========================
+
+At the top of the Master Brain section, show a summary like:
+
+- "All critical systems connected"
+- "2 high-priority issues need attention"
+- "5 systems healthy, 2 warning, 1 critical"
+- "3 auto-actions completed successfully"
+- "Autonomous mode active / limited / disabled"
+
+This should feel like a control tower summary.
+
+========================
+19. NO FAKE INTELLIGENCE
+========================
+
+Do NOT claim the Master Brain knows more than it actually knows.
+
+Use:
+- verified system signals
+- incidents
+- performance metrics
+- risk scoring
+- reconciliation
+- safe repair rules
+- controlled autonomous actions
+
+If something is uncertain:
+show uncertainty clearly.
+
+========================
+20. DO NOT OVERCOMPLICATE
+========================
+
+Do NOT turn this into:
+- a giant DevOps suite
+- an enterprise observability monster
+- a fake AI theater dashboard
+
+Focus on:
+- system visibility
+- system integration truth
+- priority decisions
+- safe autonomous action
+- founder clarity
+- platform protection
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should now have a true central Master Brain that:
+
+- verifies all major systems are connected
+- monitors the health of the entire platform
+- shows system speed, health, and risk clearly
+- prioritizes what matters most
+- safely acts automatically where possible
+- reports all details to the founder dashboard
+- becomes the real central control and intelligence core of the company
+
+The founder should open the dashboard and feel:
+
+- I see all major systems
+- I know what is healthy
+- I know what is slow
+- I know what is broken
+- I know what the system already fixed
+- I know what still needs me
+- the platform is not blind
+- the platform is working with a real brain

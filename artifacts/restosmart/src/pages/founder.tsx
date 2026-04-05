@@ -1937,508 +1937,674 @@ function Dashboard({ founderKey }: { founderKey: string }) {
   );
 }
 
-// ─── Founder Master Brain ─────────────────────────────────────────────────────
+// ─── Founder Master Brain + Auto Decision Engine ────────────────────────────
 
-interface BrainSystem {
-  id: string;
-  name: string;
-  role: string;
-  health: "green" | "yellow" | "red";
-  speed: "fast" | "normal" | "slow";
-  errorLevel: number;
-  riskLevel: number;
-  lastUpdate: string;
-  requiresAttention: boolean;
-  actionFlag: "action_needed" | "auto_handled" | "monitoring";
-  summary: string;
-  analysis: string;
-  importanceWeight: "critical" | "high" | "medium" | "low";
-  metrics: { successRate: number; errorRate: number; activityLevel: number; responseSpeed: number };
-  incidents: { open: number; healed: number; escalated: number };
-  details: Record<string, any>;
-}
-
-interface BrainPriority {
-  rank: number;
-  title: string;
-  reason: string;
-  impact: string;
-  system: string;
-  severity: "critical" | "high" | "medium" | "low";
-  score: number;
-  suggestedAction: string;
-  safeAutoAction: string | null;
-}
-
-interface BrainStatus {
-  overallHealth: "green" | "yellow" | "red";
-  healthCounts: { green: number; yellow: number; red: number };
-  totalSystems: number;
-  totalIncidentsOpen: number;
-  totalHealed: number;
-  avgResponseSpeed: number;
-  systems: BrainSystem[];
-  priorities: BrainPriority[];
-  topPriorities: BrainPriority[];
-  lastAnalysis: string;
-}
-
-const BRAIN_HEALTH_STYLES: Record<string, { label: string; color: string; bg: string; border: string; icon: string }> = {
-  green:  { label: "Alle Systeme stabil",  color: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/20", icon: "bg-emerald-500" },
-  yellow: { label: "Warnungen aktiv",      color: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-500/20",   icon: "bg-amber-500" },
-  red:    { label: "Kritische Probleme",   color: "text-red-400",     bg: "bg-red-500/8",     border: "border-red-500/20",     icon: "bg-red-500" },
-};
-
-const BRAIN_IMPORTANCE_STYLES: Record<string, { label: string; color: string }> = {
-  critical: { label: "Kritisch",   color: "text-red-400" },
-  high:     { label: "Hoch",       color: "text-rose-400" },
-  medium:   { label: "Mittel",     color: "text-amber-400" },
-  low:      { label: "Niedrig",    color: "text-blue-400" },
-};
-
-const BRAIN_SPEED_BAR: Record<string, { width: string; color: string; label: string }> = {
-  fast:   { width: "w-full",  color: "bg-emerald-500", label: "Schnell" },
-  normal: { width: "w-2/3",   color: "bg-amber-500",   label: "Normal" },
-  slow:   { width: "w-1/3",   color: "bg-rose-500",    label: "Langsam" },
-};
-
-const BRAIN_FLAG_STYLES: Record<string, { label: string; color: string; bg: string }> = {
-  action_needed: { label: "Aktion nötig",  color: "text-rose-400",    bg: "bg-rose-500/10" },
-  auto_handled:  { label: "Auto-bearbeitet", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  monitoring:    { label: "Monitoring",     color: "text-blue-400",    bg: "bg-blue-500/10" },
-};
-
-const BRAIN_SYSTEM_ICONS: Record<string, typeof Shield> = {
-  premium: Crown,
-  billing: Banknote,
-  boost: Zap,
-  growth: Rocket,
-  competition: Activity,
-  watchdog: Shield,
-  cities: MapPin,
-  social: Users,
-  instant_plans: Clock,
-  reviews: Star,
-  data_integrity: CheckSquare,
-  abuse: AlertTriangle,
-};
-
-function FounderBrainCenter({ founderKey }: { founderKey: string }) {
-  const headers: Record<string, string> = { "x-founder-key": founderKey, "Content-Type": "application/json" };
-  const qc = useQueryClient();
-  const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
-
-  const statusQuery = useQuery<BrainStatus>({
-    queryKey: ["brain-status"],
-    queryFn: async () => {
-      const r = await fetch(`${API}/brain/status`, { headers });
-      if (!r.ok) throw new Error("Failed");
-      return r.json();
-    },
-    staleTime: 30_000,
-    refetchInterval: 60_000,
-  });
-
-  const triggerAction = useMutation({
-    mutationFn: async (actionType: string) => {
-      const r = await fetch(`${API}/brain/action/${actionType}`, { method: "POST", headers });
-      if (!r.ok) throw new Error("Failed");
-      return r.json();
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["brain-status"] });
-      qc.invalidateQueries({ queryKey: ["ops-summary"] });
-      qc.invalidateQueries({ queryKey: ["ops-incidents"] });
-    },
-  });
-
-  const d = statusQuery.data;
-  const selected = d?.systems.find(s => s.id === selectedSystem) ?? null;
-  const healthStyle = d ? BRAIN_HEALTH_STYLES[d.overallHealth] : BRAIN_HEALTH_STYLES.green;
-
-  if (statusQuery.isLoading) {
-    return (
-      <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-4">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-20 rounded-xl bg-white/3 animate-pulse" />)}
-      </div>
-    );
+  interface BrainSystem {
+    id: string; name: string; role: string; health: "green" | "yellow" | "red";
+    speed: "fast" | "normal" | "slow"; errorLevel: number; riskLevel: number;
+    lastUpdate: string; requiresAttention: boolean;
+    actionFlag: "action_needed" | "auto_handled" | "monitoring";
+    summary: string; analysis: string;
+    importanceWeight: "critical" | "high" | "medium" | "low";
+    connectionStatus: "connected" | "partially_connected" | "not_connected" | "not_reporting";
+    connectionDetails: { sendsStatus: boolean; sendsIncidents: boolean; sendsPerformance: boolean; sendsRiskSignals: boolean; returnsHealth: boolean };
+    metrics: { successRate: number; errorRate: number; activityLevel: number; responseSpeed: number };
+    incidents: { open: number; healed: number; escalated: number };
+    details: Record<string, any>;
+    recommendedAction: string;
   }
 
-  if (statusQuery.isError) {
-    return (
-      <div className="max-w-screen-xl mx-auto px-6 py-8">
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-3" />
-          <p className="text-sm font-bold text-red-400 mb-1">Brain-Analyse fehlgeschlagen</p>
-          <p className="text-[11px] text-[#555] mb-3">Verbindung zum System konnte nicht hergestellt werden.</p>
-          <button onClick={() => statusQuery.refetch()} className="text-[11px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-4 py-1.5 rounded-xl hover:bg-emerald-500/15 transition-colors">
-            Erneut versuchen
-          </button>
+  interface BrainPriority {
+    rank: number; title: string; reason: string; impact: string; system: string;
+    severity: "critical" | "high" | "medium" | "low"; score: number;
+    suggestedAction: string; safeAutoAction: string | null;
+    whatHappened: string; whyItMatters: string; whatWasAttempted: string; whatShouldHappenNext: string;
+  }
+
+  interface BrainAutoAction {
+    id: string; timestamp: string; system: string; trigger: string;
+    action: string; result: "success" | "failed" | "partial"; details: string; needsMoreAction: boolean;
+  }
+
+  interface BrainStatus {
+    overallHealth: "green" | "yellow" | "red";
+    healthCounts: { green: number; yellow: number; red: number };
+    totalSystems: number; totalIncidentsOpen: number; totalHealed: number; avgResponseSpeed: number;
+    brainMode: "monitoring" | "decision_support" | "safe_autonomous";
+    brainModeReason: string; readinessPercent: number;
+    connectionCounts: { connected: number; partial: number; notConnected: number; notReporting: number };
+    summaryLines: string[];
+    systems: BrainSystem[]; priorities: BrainPriority[]; topPriorities: BrainPriority[];
+    autoActionsThisRun: BrainAutoAction[]; autoActionHistory: BrainAutoAction[];
+    lastAnalysis: string;
+  }
+
+  const BRAIN_HEALTH_MAP: Record<string, { label: string; color: string; bg: string; border: string; dot: string }> = {
+    green:  { label: "Alle Systeme stabil",  color: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/20", dot: "bg-emerald-500" },
+    yellow: { label: "Warnungen aktiv",      color: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-500/20",   dot: "bg-amber-500" },
+    red:    { label: "Kritische Probleme",   color: "text-red-400",     bg: "bg-red-500/8",     border: "border-red-500/20",     dot: "bg-red-500" },
+  };
+
+  const BRAIN_CONN_MAP: Record<string, { label: string; color: string; dot: string }> = {
+    connected:            { label: "Verbunden",             color: "text-emerald-400", dot: "bg-emerald-500" },
+    partially_connected:  { label: "Teilweise",             color: "text-amber-400",   dot: "bg-amber-500" },
+    not_connected:        { label: "Nicht verbunden",       color: "text-red-400",     dot: "bg-red-500" },
+    not_reporting:        { label: "Keine Daten",           color: "text-rose-400",    dot: "bg-rose-500" },
+  };
+
+  const BRAIN_MODE_MAP: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+    monitoring:        { label: "Nur Monitoring",          color: "text-blue-400",    bg: "bg-blue-500/8",    icon: "eye" },
+    decision_support:  { label: "Entscheidungshilfe",      color: "text-amber-400",   bg: "bg-amber-500/8",   icon: "brain" },
+    safe_autonomous:   { label: "Sicher Autonom",          color: "text-emerald-400", bg: "bg-emerald-500/8", icon: "zap" },
+  };
+
+  const BRAIN_SEV_MAP: Record<string, { label: string; color: string; bg: string }> = {
+    critical: { label: "KRITISCH", color: "text-red-400",    bg: "bg-red-500/10" },
+    high:     { label: "HOCH",     color: "text-rose-400",   bg: "bg-rose-500/10" },
+    medium:   { label: "MITTEL",   color: "text-amber-400",  bg: "bg-amber-500/10" },
+    low:      { label: "NIEDRIG",  color: "text-blue-400",   bg: "bg-blue-500/10" },
+  };
+
+  const BRAIN_SYS_ICONS: Record<string, typeof Shield> = {
+    premium: Crown, billing: Banknote, boost: Zap, growth: Rocket, competition: Activity,
+    watchdog: Shield, cities: MapPin, social: Users, instant_plans: Clock, reviews: Star,
+    data_integrity: CheckSquare, abuse: AlertTriangle, monetization: Euro,
+    discovery: Search, map: MapPin, smart_offers: Tag, user_profiles: Users,
+    reservations: Clock, loyalty: Award, conversion: BarChart3, notifications: Mail,
+    auth: Lock, founder_dashboard: Crown,
+  };
+
+  function FounderBrainCenter({ founderKey }: { founderKey: string }) {
+    const headers: Record<string, string> = { "x-founder-key": founderKey, "Content-Type": "application/json" };
+    const qc = useQueryClient();
+    const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
+    const [activeSection, setActiveSection] = useState<"overview" | "feed" | "actions">("overview");
+    const [expandedPriority, setExpandedPriority] = useState<number | null>(null);
+
+    const statusQuery = useQuery<BrainStatus>({
+      queryKey: ["brain-status"],
+      queryFn: async () => {
+        const r = await fetch(`${API}/brain/status`, { headers });
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
+      },
+      staleTime: 30_000, refetchInterval: 60_000,
+    });
+
+    const triggerAction = useMutation({
+      mutationFn: async (actionType: string) => {
+        const r = await fetch(`${API}/brain/action/${actionType}`, { method: "POST", headers });
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
+      },
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: ["brain-status"] });
+        qc.invalidateQueries({ queryKey: ["ops-summary"] });
+        qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+      },
+    });
+
+    const d = statusQuery.data;
+    const selected = d?.systems.find(s => s.id === selectedSystem) ?? null;
+    const hStyle = d ? BRAIN_HEALTH_MAP[d.overallHealth] : BRAIN_HEALTH_MAP.green;
+    const mStyle = d ? BRAIN_MODE_MAP[d.brainMode] : BRAIN_MODE_MAP.monitoring;
+
+    if (statusQuery.isLoading) {
+      return (
+        <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-4">
+          {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 rounded-xl bg-white/3 animate-pulse" />)}
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!d) return null;
-
-  return (
-    <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-5">
-
-      {/* ── Header + Health Bar ──────────────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center", healthStyle.icon)}>
-              <Flame className="w-5 h-5 text-white" />
-            </div>
-            <span className={cn("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0a0a0f] animate-pulse", healthStyle.icon)} />
+    if (statusQuery.isError) {
+      return (
+        <div className="max-w-screen-xl mx-auto px-6 py-8">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 text-center">
+            <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-3" />
+            <p className="text-sm font-bold text-red-400 mb-1">Brain-Analyse fehlgeschlagen</p>
+            <p className="text-[11px] text-[#555] mb-3">Verbindung zum System konnte nicht hergestellt werden.</p>
+            <button onClick={() => statusQuery.refetch()} className="text-[11px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-4 py-1.5 rounded-xl hover:bg-emerald-500/15 transition-colors">
+              Erneut versuchen
+            </button>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white">Master Brain</h2>
-              <span className={cn("text-[10px] font-bold px-2.5 py-0.5 rounded-full border", healthStyle.color, healthStyle.bg, healthStyle.border)}>
-                {healthStyle.label}
+        </div>
+      );
+    }
+
+    if (!d) return null;
+
+    return (
+      <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-5">
+
+        {/* ── FOUNDER SUMMARY BLOCK ──────────────────────────────────── */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", hStyle.dot)}>
+                <Flame className="w-6 h-6 text-white" />
+              </div>
+              <span className={cn("absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#0a0a0f] animate-pulse", hStyle.dot)} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-white">Master Brain</h2>
+                <span className={cn("text-[10px] font-bold px-2.5 py-0.5 rounded-full border", hStyle.color, hStyle.bg, hStyle.border)}>{hStyle.label}</span>
+                <span className={cn("text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/10", mStyle.color, mStyle.bg)}>{mStyle.label}</span>
+              </div>
+              <p className="text-[10px] text-[#444] mt-0.5">{d.totalSystems} Systeme verbunden · Zentrale Intelligenz · Auto Decision Engine</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={() => triggerAction.mutate("health-check")} disabled={triggerAction.isPending}
+              className={cn("flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all",
+                triggerAction.isPending ? "text-[#444] border-white/6 bg-white/2" : "text-emerald-400 border-emerald-500/20 bg-emerald-500/8 hover:bg-emerald-500/15")}>
+              <Zap className="w-3 h-3" />{triggerAction.isPending ? "Läuft..." : "System-Check"}
+            </button>
+            <button onClick={() => qc.invalidateQueries({ queryKey: ["brain-status"] })} className="text-[#444] hover:text-[#888] transition-colors p-1.5">
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── SUMMARY LINES ──────────────────────────────────────────── */}
+        <div className={cn("rounded-xl border px-4 py-3", hStyle.border, hStyle.bg)}>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {d.summaryLines.map((line, i) => (
+              <span key={i} className="text-[11px] font-medium text-white/80 flex items-center gap-1.5">
+                <span className={cn("w-1 h-1 rounded-full shrink-0", hStyle.dot)} />{line}
               </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── READINESS + MODE + HEALTH GRID ─────────────────────────── */}
+        <div className="grid grid-cols-8 gap-2">
+          <div className={cn("rounded-xl border px-3 py-2.5 text-center", hStyle.border, hStyle.bg)}>
+            <p className={cn("text-lg font-bold", hStyle.color)}>{d.totalSystems}</p>
+            <p className="text-[8px] text-[#444]">Systeme</p>
+          </div>
+          <div className="rounded-xl border border-emerald-500/12 bg-emerald-500/3 px-3 py-2.5 text-center">
+            <p className="text-lg font-bold text-emerald-400">{d.healthCounts.green}</p>
+            <p className="text-[8px] text-[#444]">Stabil</p>
+          </div>
+          <div className="rounded-xl border border-amber-500/12 bg-amber-500/3 px-3 py-2.5 text-center">
+            <p className={cn("text-lg font-bold", d.healthCounts.yellow > 0 ? "text-amber-400" : "text-[#333]")}>{d.healthCounts.yellow}</p>
+            <p className="text-[8px] text-[#444]">Warnung</p>
+          </div>
+          <div className="rounded-xl border border-red-500/12 bg-red-500/3 px-3 py-2.5 text-center">
+            <p className={cn("text-lg font-bold", d.healthCounts.red > 0 ? "text-red-400" : "text-[#333]")}>{d.healthCounts.red}</p>
+            <p className="text-[8px] text-[#444]">Kritisch</p>
+          </div>
+          <div className="rounded-xl border border-white/6 bg-white/2 px-3 py-2.5 text-center">
+            <p className={cn("text-lg font-bold", d.totalIncidentsOpen > 0 ? "text-amber-400" : "text-emerald-400")}>{d.totalIncidentsOpen}</p>
+            <p className="text-[8px] text-[#444]">Incidents</p>
+          </div>
+          <div className="rounded-xl border border-white/6 bg-white/2 px-3 py-2.5 text-center">
+            <p className="text-lg font-bold text-emerald-400">{d.totalHealed}</p>
+            <p className="text-[8px] text-[#444]">Auto-Geheilt</p>
+          </div>
+          <div className="rounded-xl border border-violet-500/12 bg-violet-500/3 px-3 py-2.5 text-center">
+            <p className="text-lg font-bold text-violet-400">{d.readinessPercent}%</p>
+            <p className="text-[8px] text-[#444]">Readiness</p>
+          </div>
+          <div className="rounded-xl border border-white/6 bg-white/2 px-3 py-2.5 text-center">
+            <p className="text-lg font-bold text-blue-400">{d.connectionCounts.connected}</p>
+            <p className="text-[8px] text-[#444]">Voll verb.</p>
+          </div>
+        </div>
+
+        {/* ── BRAIN MODE WARNING ─────────────────────────────────────── */}
+        {d.brainMode !== "safe_autonomous" && (
+          <div className={cn("rounded-xl border px-4 py-3 flex items-center gap-3",
+            d.brainMode === "monitoring" ? "border-blue-500/15 bg-blue-500/3" : "border-amber-500/15 bg-amber-500/3")}>
+            <Eye className={cn("w-4 h-4 shrink-0", d.brainMode === "monitoring" ? "text-blue-400" : "text-amber-400")} />
+            <div>
+              <p className={cn("text-[11px] font-bold", d.brainMode === "monitoring" ? "text-blue-400" : "text-amber-400")}>
+                {d.brainMode === "monitoring" ? "Autonomer Modus deaktiviert" : "Eingeschränkter Modus"}
+              </p>
+              <p className="text-[10px] text-[#555]">{d.brainModeReason}</p>
             </div>
-            <p className="text-[10px] text-[#444] mt-0.5">
-              {d.totalSystems} Systeme verbunden · Unified System Intelligence · Auto Decision Engine
-            </p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => triggerAction.mutate("health-check")}
-            disabled={triggerAction.isPending}
-            className={cn(
-              "flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all",
-              triggerAction.isPending ? "text-[#444] border-white/6 bg-white/2" : "text-emerald-400 border-emerald-500/20 bg-emerald-500/8 hover:bg-emerald-500/15"
-            )}
-          >
-            <Zap className="w-3 h-3" />
-            {triggerAction.isPending ? "Läuft..." : "System-Check"}
-          </button>
-          <button
-            onClick={() => qc.invalidateQueries({ queryKey: ["brain-status"] })}
-            className="text-[#444] hover:text-[#888] transition-colors p-1.5"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
+        )}
 
-      {/* ── Health Overview Bar ───────────────────────────────────────── */}
-      <div className="grid grid-cols-6 gap-2">
-        <div className={cn("rounded-xl border px-3 py-2.5 text-center", healthStyle.border, healthStyle.bg)}>
-          <p className={cn("text-lg font-bold", healthStyle.color)}>{d.totalSystems}</p>
-          <p className="text-[9px] text-[#444]">Systeme</p>
+        {/* ── SECTION TABS ───────────────────────────────────────────── */}
+        <div className="flex gap-1 border-b border-white/6 pb-0.5">
+          {[
+            { key: "overview" as const, label: "System-Übersicht", icon: BarChart3 },
+            { key: "feed" as const, label: "Founder Intelligence Feed", icon: Activity },
+            { key: "actions" as const, label: "Auto-Actions & History", icon: Zap },
+          ].map(tab => (
+            <button key={tab.key} onClick={() => setActiveSection(tab.key)}
+              className={cn("flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-[10px] font-bold transition-all",
+                activeSection === tab.key ? "bg-white/6 text-white border-b-2 border-violet-400" : "text-[#444] hover:text-[#888] hover:bg-white/3")}>
+              <tab.icon className="w-3 h-3" />{tab.label}
+            </button>
+          ))}
         </div>
-        <div className="rounded-xl border border-emerald-500/12 bg-emerald-500/3 px-3 py-2.5 text-center">
-          <p className="text-lg font-bold text-emerald-400">{d.healthCounts.green}</p>
-          <p className="text-[9px] text-[#444]">Stabil</p>
-        </div>
-        <div className="rounded-xl border border-amber-500/12 bg-amber-500/3 px-3 py-2.5 text-center">
-          <p className={cn("text-lg font-bold", d.healthCounts.yellow > 0 ? "text-amber-400" : "text-[#333]")}>{d.healthCounts.yellow}</p>
-          <p className="text-[9px] text-[#444]">Warnung</p>
-        </div>
-        <div className="rounded-xl border border-red-500/12 bg-red-500/3 px-3 py-2.5 text-center">
-          <p className={cn("text-lg font-bold", d.healthCounts.red > 0 ? "text-red-400" : "text-[#333]")}>{d.healthCounts.red}</p>
-          <p className="text-[9px] text-[#444]">Kritisch</p>
-        </div>
-        <div className="rounded-xl border border-white/6 bg-white/2 px-3 py-2.5 text-center">
-          <p className={cn("text-lg font-bold", d.totalIncidentsOpen > 0 ? "text-amber-400" : "text-emerald-400")}>{d.totalIncidentsOpen}</p>
-          <p className="text-[9px] text-[#444]">Incidents</p>
-        </div>
-        <div className="rounded-xl border border-white/6 bg-white/2 px-3 py-2.5 text-center">
-          <p className="text-lg font-bold text-emerald-400">{d.totalHealed}</p>
-          <p className="text-[9px] text-[#444]">Auto-Geheilt</p>
-        </div>
-      </div>
 
-      {/* ── Auto Priority Panel ───────────────────────────────────────── */}
-      {d.topPriorities.length > 0 && (
-        <div className="rounded-xl border border-red-500/15 bg-red-500/3 px-4 py-3.5">
-          <div className="flex items-center gap-2 mb-3">
-            <Target className="w-3.5 h-3.5 text-red-400" />
-            <p className="text-[11px] font-bold text-red-400 uppercase tracking-widest">
-              Was jetzt Aufmerksamkeit braucht
-            </p>
-          </div>
-          <div className="space-y-2">
-            {d.topPriorities.map((p, i) => {
-              const sevStyle = BRAIN_IMPORTANCE_STYLES[p.severity] ?? BRAIN_IMPORTANCE_STYLES.medium;
-              return (
-                <div key={i} className="flex items-start gap-3 rounded-lg bg-white/3 px-3 py-2.5">
-                  <span className="text-base font-bold text-red-400/60 mt-0.5">#{p.rank}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold text-white">{p.title}</p>
-                    <p className="text-[10px] text-[#555] mt-0.5">{p.reason}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={cn("text-[9px] font-bold", sevStyle.color)}>{p.impact}</span>
-                      <span className="text-[9px] text-[#333]">Priorität: {p.score}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full",
-                      p.severity === "critical" ? "text-red-400 bg-red-500/10" :
-                      p.severity === "high" ? "text-rose-400 bg-rose-500/10" :
-                      "text-amber-400 bg-amber-500/10"
-                    )}>{sevStyle.label.toUpperCase()}</span>
-                    {p.safeAutoAction && (
-                      <button
-                        onClick={() => triggerAction.mutate(p.safeAutoAction!)}
-                        disabled={triggerAction.isPending}
-                        className="text-[9px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-2 py-0.5 rounded hover:bg-emerald-500/15 transition-colors"
-                      >
-                        Auto-Fix
-                      </button>
+        {/* ── PRIORITY PANEL ─────────────────────────────────────────── */}
+        {d.topPriorities.length > 0 && activeSection === "overview" && (
+          <div className="rounded-xl border border-red-500/15 bg-red-500/3 px-4 py-3.5">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-3.5 h-3.5 text-red-400" />
+              <p className="text-[11px] font-bold text-red-400 uppercase tracking-widest">Was jetzt Aufmerksamkeit braucht</p>
+            </div>
+            <div className="space-y-2">
+              {d.topPriorities.map((p, i) => {
+                const sev = BRAIN_SEV_MAP[p.severity] ?? BRAIN_SEV_MAP.medium;
+                const isExpanded = expandedPriority === i;
+                return (
+                  <div key={i} className="rounded-lg bg-white/3 overflow-hidden">
+                    <button onClick={() => setExpandedPriority(isExpanded ? null : i)}
+                      className="w-full flex items-start gap-3 px-3 py-2.5 text-left">
+                      <span className="text-base font-bold text-red-400/60 mt-0.5">#{p.rank}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-semibold text-white">{p.title}</p>
+                        <p className="text-[10px] text-[#555] mt-0.5">{p.reason}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={cn("text-[9px] font-bold", sev.color)}>{p.impact}</span>
+                          <span className="text-[9px] text-[#333]">Score: {p.score}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full", sev.color, sev.bg)}>{sev.label}</span>
+                        {p.safeAutoAction && (
+                          <button onClick={(e) => { e.stopPropagation(); triggerAction.mutate(p.safeAutoAction!); }}
+                            disabled={triggerAction.isPending}
+                            className="text-[9px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-2 py-0.5 rounded hover:bg-emerald-500/15 transition-colors">
+                            Auto-Fix
+                          </button>
+                        )}
+                        <ChevronDown className={cn("w-3 h-3 text-[#444] transition-transform", isExpanded && "rotate-180")} />
+                      </div>
+                    </button>
+                    {isExpanded && (
+                      <div className="px-3 pb-3 grid grid-cols-3 gap-2">
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Was ist passiert</p>
+                          <p className="text-[10px] text-white/80">{p.whatHappened}</p>
+                        </div>
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Warum es wichtig ist</p>
+                          <p className="text-[10px] text-white/80">{p.whyItMatters}</p>
+                        </div>
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Nächster Schritt</p>
+                          <p className="text-[10px] text-white/80">{p.whatShouldHappenNext}</p>
+                          {p.whatWasAttempted !== "Noch keine automatische Aktion durchgeführt" && (
+                            <p className="text-[9px] text-emerald-400/70 mt-1">Bereits versucht: {p.whatWasAttempted}</p>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-          {d.priorities.length > 3 && (
-            <p className="text-[9px] text-[#444] mt-2 text-center">
-              + {d.priorities.length - 3} weitere Probleme erkannt
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* ── System Grid + Detail Panel ────────────────────────────────── */}
-      <div className="grid grid-cols-12 gap-4">
-
-        {/* LEFT: System Cards */}
-        <div className="col-span-5 space-y-1.5">
-          <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Alle Systeme</p>
-          {d.systems.map(sys => {
-            const Icon = BRAIN_SYSTEM_ICONS[sys.id] ?? Shield;
-            const flagStyle = BRAIN_FLAG_STYLES[sys.actionFlag] ?? BRAIN_FLAG_STYLES.monitoring;
-            const isSelected = selectedSystem === sys.id;
-
-            return (
-              <button
-                key={sys.id}
-                onClick={() => setSelectedSystem(isSelected ? null : sys.id)}
-                className={cn(
-                  "w-full flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all",
-                  isSelected
-                    ? "bg-white/6 border-violet-500/25 ring-1 ring-violet-500/10"
-                    : sys.health === "red"
-                    ? "bg-red-500/3 border-red-500/15 hover:bg-red-500/5"
-                    : sys.health === "yellow"
-                    ? "bg-amber-500/2 border-amber-500/10 hover:bg-amber-500/5"
-                    : "bg-white/2 border-white/6 hover:bg-white/4"
-                )}
-              >
-                <div className={cn(
-                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                  sys.health === "green" ? "bg-emerald-500/15" :
-                  sys.health === "yellow" ? "bg-amber-500/15" : "bg-red-500/15"
-                )}>
-                  <Icon className={cn("w-3.5 h-3.5",
-                    sys.health === "green" ? "text-emerald-400" :
-                    sys.health === "yellow" ? "text-amber-400" : "text-red-400"
-                  )} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-[11px] font-semibold text-white truncate">{sys.name}</p>
-                    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0",
-                      sys.health === "green" ? "bg-emerald-500" :
-                      sys.health === "yellow" ? "bg-amber-500" : "bg-red-500"
-                    )} />
-                  </div>
-                  <p className="text-[9px] text-[#555] truncate mt-0.5">{sys.summary}</p>
-                </div>
-                <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0", flagStyle.color, flagStyle.bg)}>
-                  {flagStyle.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* RIGHT: Selected System Detail */}
-        <div className="col-span-7">
-          {!selected ? (
-            <div className="rounded-2xl border border-white/6 bg-white/2 h-full flex flex-col items-center justify-center p-8">
-              <Flame className="w-10 h-10 text-violet-400/20 mb-3" />
-              <p className="text-xs text-[#555]">System auswählen für Details</p>
-              <p className="text-[10px] text-[#333] mt-1">Klicke auf ein System links</p>
+                );
+              })}
             </div>
-          ) : (
-            <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
-              {/* Detail Header */}
-              <div className={cn(
-                "px-5 py-4 border-b",
-                selected.health === "red" ? "bg-red-500/3 border-red-500/10" :
-                selected.health === "yellow" ? "bg-amber-500/3 border-amber-500/10" :
-                "bg-emerald-500/3 border-emerald-500/10"
-              )}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    {(() => { const I = BRAIN_SYSTEM_ICONS[selected.id] ?? Shield; return <I className={cn("w-5 h-5", selected.health === "green" ? "text-emerald-400" : selected.health === "yellow" ? "text-amber-400" : "text-red-400")} />; })()}
-                    <div>
-                      <h3 className="text-sm font-bold text-white">{selected.name}</h3>
-                      <p className="text-[10px] text-[#555]">{selected.role}</p>
+            {d.priorities.length > 3 && (
+              <p className="text-[9px] text-[#444] mt-2 text-center">+ {d.priorities.length - 3} weitere Probleme erkannt</p>
+            )}
+          </div>
+        )}
+
+        {/* ══════ SECTION: OVERVIEW ═══════════════════════════════════ */}
+        {activeSection === "overview" && (
+          <div className="grid grid-cols-12 gap-4">
+            {/* LEFT: System Cards */}
+            <div className="col-span-5 space-y-1">
+              <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Alle {d.totalSystems} Systeme</p>
+              <div className="max-h-[600px] overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-white/5">
+                {d.systems.map(sys => {
+                  const Icon = BRAIN_SYS_ICONS[sys.id] ?? Shield;
+                  const connStyle = BRAIN_CONN_MAP[sys.connectionStatus] ?? BRAIN_CONN_MAP.not_connected;
+                  const isSelected = selectedSystem === sys.id;
+                  return (
+                    <button key={sys.id} onClick={() => setSelectedSystem(isSelected ? null : sys.id)}
+                      className={cn("w-full flex items-center gap-2 rounded-xl border px-3 py-2 text-left transition-all",
+                        isSelected ? "bg-white/6 border-violet-500/25 ring-1 ring-violet-500/10"
+                          : sys.health === "red" ? "bg-red-500/3 border-red-500/15 hover:bg-red-500/5"
+                          : sys.health === "yellow" ? "bg-amber-500/2 border-amber-500/10 hover:bg-amber-500/5"
+                          : "bg-white/2 border-white/6 hover:bg-white/4")}>
+                      <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center shrink-0",
+                        sys.health === "green" ? "bg-emerald-500/15" : sys.health === "yellow" ? "bg-amber-500/15" : "bg-red-500/15")}>
+                        <Icon className={cn("w-3 h-3", sys.health === "green" ? "text-emerald-400" : sys.health === "yellow" ? "text-amber-400" : "text-red-400")} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[10px] font-semibold text-white truncate">{sys.name}</p>
+                          <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", sys.health === "green" ? "bg-emerald-500" : sys.health === "yellow" ? "bg-amber-500" : "bg-red-500")} />
+                        </div>
+                        <p className="text-[8px] text-[#555] truncate">{sys.summary}</p>
+                      </div>
+                      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", connStyle.dot)} title={connStyle.label} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* RIGHT: Detail Panel */}
+            <div className="col-span-7">
+              {!selected ? (
+                <div className="rounded-2xl border border-white/6 bg-white/2 h-full flex flex-col items-center justify-center p-8">
+                  <Flame className="w-10 h-10 text-violet-400/20 mb-3" />
+                  <p className="text-xs text-[#555]">System auswählen für Details</p>
+                  <p className="text-[10px] text-[#333] mt-1">Klicke auf ein System links</p>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+                  {/* Header */}
+                  <div className={cn("px-5 py-4 border-b",
+                    selected.health === "red" ? "bg-red-500/3 border-red-500/10"
+                      : selected.health === "yellow" ? "bg-amber-500/3 border-amber-500/10" : "bg-emerald-500/3 border-emerald-500/10")}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        {(() => { const I = BRAIN_SYS_ICONS[selected.id] ?? Shield; return <I className={cn("w-5 h-5", selected.health === "green" ? "text-emerald-400" : selected.health === "yellow" ? "text-amber-400" : "text-red-400")} />; })()}
+                        <div>
+                          <h3 className="text-sm font-bold text-white">{selected.name}</h3>
+                          <p className="text-[10px] text-[#555]">{selected.role}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("text-[10px] font-bold px-2.5 py-0.5 rounded-full border",
+                          selected.health === "green" ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                            : selected.health === "yellow" ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
+                            : "text-red-400 bg-red-500/10 border-red-500/20")}>
+                          {selected.health === "green" ? "Stabil" : selected.health === "yellow" ? "Warnung" : "Kritisch"}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn("text-[10px] font-bold px-2.5 py-0.5 rounded-full border",
-                      selected.health === "green" ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" :
-                      selected.health === "yellow" ? "text-amber-400 bg-amber-500/10 border-amber-500/20" :
-                      "text-red-400 bg-red-500/10 border-red-500/20"
-                    )}>
-                      {selected.health === "green" ? "Stabil" : selected.health === "yellow" ? "Warnung" : "Kritisch"}
-                    </span>
-                    <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded",
-                      BRAIN_IMPORTANCE_STYLES[selected.importanceWeight]?.color ?? "text-[#555]"
-                    )}>
-                      {BRAIN_IMPORTANCE_STYLES[selected.importanceWeight]?.label ?? ""}
-                    </span>
+
+                  <div className="px-5 py-4 space-y-4">
+                    {/* Analysis */}
+                    <div className={cn("rounded-lg border px-3 py-2.5",
+                      selected.health === "red" ? "bg-red-500/5 border-red-500/15"
+                        : selected.health === "yellow" ? "bg-amber-500/5 border-amber-500/15" : "bg-emerald-500/5 border-emerald-500/15")}>
+                      <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-0.5">Live-Analyse</p>
+                      <p className={cn("text-[11px] font-medium",
+                        selected.health === "green" ? "text-emerald-400" : selected.health === "yellow" ? "text-amber-400" : "text-red-400")}>{selected.analysis}</p>
+                    </div>
+
+                    {/* Connection Verification */}
+                    <div>
+                      <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1.5">Verbindungs-Verifikation</p>
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {[
+                          { key: "sendsStatus", label: "Status" },
+                          { key: "sendsIncidents", label: "Incidents" },
+                          { key: "sendsPerformance", label: "Performance" },
+                          { key: "sendsRiskSignals", label: "Risiko" },
+                          { key: "returnsHealth", label: "Health" },
+                        ].map(check => {
+                          const ok = (selected.connectionDetails as any)[check.key];
+                          return (
+                            <div key={check.key} className={cn("rounded-lg px-2 py-1.5 text-center border",
+                              ok ? "border-emerald-500/15 bg-emerald-500/5" : "border-red-500/15 bg-red-500/5")}>
+                              <p className={cn("text-[9px] font-bold", ok ? "text-emerald-400" : "text-red-400")}>{ok ? "OK" : "—"}</p>
+                              <p className="text-[7px] text-[#444]">{check.label}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <span className={cn("w-1.5 h-1.5 rounded-full", BRAIN_CONN_MAP[selected.connectionStatus]?.dot)} />
+                        <span className={cn("text-[9px] font-bold", BRAIN_CONN_MAP[selected.connectionStatus]?.color)}>
+                          {BRAIN_CONN_MAP[selected.connectionStatus]?.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Metrics */}
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
+                        <p className={cn("text-sm font-bold", selected.metrics.successRate >= 90 ? "text-emerald-400" : selected.metrics.successRate >= 70 ? "text-amber-400" : "text-red-400")}>{selected.metrics.successRate}%</p>
+                        <p className="text-[8px] text-[#444]">Erfolgsrate</p>
+                      </div>
+                      <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
+                        <p className={cn("text-sm font-bold", selected.metrics.errorRate === 0 ? "text-emerald-400" : "text-rose-400")}>{selected.metrics.errorRate}</p>
+                        <p className="text-[8px] text-[#444]">Fehler</p>
+                      </div>
+                      <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
+                        <p className="text-sm font-bold text-blue-400">{selected.metrics.activityLevel}</p>
+                        <p className="text-[8px] text-[#444]">Aktivität</p>
+                      </div>
+                      <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
+                        <p className={cn("text-sm font-bold", selected.metrics.responseSpeed < 100 ? "text-emerald-400" : selected.metrics.responseSpeed < 500 ? "text-amber-400" : "text-rose-400")}>{selected.metrics.responseSpeed}ms</p>
+                        <p className="text-[8px] text-[#444]">Speed</p>
+                      </div>
+                    </div>
+
+                    {/* Speed Bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-[9px] text-[#444] font-bold">Performance</p>
+                        <p className="text-[9px] text-[#555]">{selected.speed === "fast" ? "Schnell" : selected.speed === "normal" ? "Normal" : "Langsam"}</p>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                        <div className={cn("h-full rounded-full transition-all",
+                          selected.speed === "fast" ? "bg-emerald-500 w-full" : selected.speed === "normal" ? "bg-amber-500 w-2/3" : "bg-rose-500 w-1/3")} />
+                      </div>
+                    </div>
+
+                    {/* Incidents */}
+                    {(selected.incidents.open > 0 || selected.incidents.healed > 0 || selected.incidents.escalated > 0) && (
+                      <div className="flex items-center gap-3">
+                        <p className="text-[9px] text-[#444] font-bold">Incidents:</p>
+                        {selected.incidents.open > 0 && <span className="text-[10px] text-amber-400 font-medium">{selected.incidents.open} offen</span>}
+                        {selected.incidents.healed > 0 && <span className="text-[10px] text-emerald-400 font-medium">{selected.incidents.healed} geheilt</span>}
+                        {selected.incidents.escalated > 0 && <span className="text-[10px] text-rose-400 font-medium">{selected.incidents.escalated} eskaliert</span>}
+                      </div>
+                    )}
+
+                    {/* Recommended Action */}
+                    <div className="rounded-lg border border-violet-500/15 bg-violet-500/3 px-3 py-2">
+                      <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-0.5">Empfohlene Aktion</p>
+                      <p className="text-[10px] text-violet-400 font-medium">{selected.recommendedAction}</p>
+                    </div>
+
+                    {/* Last Update */}
+                    <div className="flex items-center gap-2 text-[9px] text-[#333]">
+                      <Clock className="w-2.5 h-2.5" />
+                      Letzte Aktualisierung: {new Date(selected.lastUpdate).toLocaleString("de-AT", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    </div>
                   </div>
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════ SECTION: FOUNDER INTELLIGENCE FEED ══════════════════ */}
+        {activeSection === "feed" && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3.5">
+              <div className="flex items-center gap-2 mb-3">
+                <Activity className="w-3.5 h-3.5 text-violet-400" />
+                <p className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">Founder Intelligence Feed</p>
               </div>
-
-              <div className="px-5 py-4 space-y-4">
-                {/* Analysis */}
-                <div className={cn(
-                  "rounded-lg border px-3 py-2.5",
-                  selected.health === "red" ? "bg-red-500/5 border-red-500/15" :
-                  selected.health === "yellow" ? "bg-amber-500/5 border-amber-500/15" :
-                  "bg-emerald-500/5 border-emerald-500/15"
-                )}>
-                  <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-0.5">Live-Analyse</p>
-                  <p className={cn("text-[11px] font-medium",
-                    selected.health === "green" ? "text-emerald-400" :
-                    selected.health === "yellow" ? "text-amber-400" : "text-red-400"
-                  )}>{selected.analysis}</p>
-                </div>
-
-                {/* Mini Metrics */}
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
-                    <p className={cn("text-sm font-bold", selected.metrics.successRate >= 90 ? "text-emerald-400" : selected.metrics.successRate >= 70 ? "text-amber-400" : "text-red-400")}>
-                      {selected.metrics.successRate}%
-                    </p>
-                    <p className="text-[8px] text-[#444]">Erfolgsrate</p>
+              <div className="space-y-1.5">
+                {/* Critical incidents */}
+                {d.priorities.filter(p => p.severity === "critical" || p.severity === "high").map((p, i) => (
+                  <div key={`crit-${i}`} className="flex items-center gap-3 rounded-lg bg-red-500/5 border border-red-500/10 px-3 py-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold text-red-400">{p.title}</p>
+                      <p className="text-[9px] text-[#555]">{p.whatShouldHappenNext}</p>
+                    </div>
+                    <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded", BRAIN_SEV_MAP[p.severity]?.color, BRAIN_SEV_MAP[p.severity]?.bg)}>{BRAIN_SEV_MAP[p.severity]?.label}</span>
                   </div>
-                  <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
-                    <p className={cn("text-sm font-bold", selected.metrics.errorRate === 0 ? "text-emerald-400" : "text-rose-400")}>
-                      {selected.metrics.errorRate}
-                    </p>
-                    <p className="text-[8px] text-[#444]">Fehler</p>
+                ))}
+                {/* Auto-fixed items */}
+                {d.autoActionHistory.filter(a => a.result === "success").slice(-5).map((a, i) => (
+                  <div key={`auto-${i}`} className="flex items-center gap-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10 px-3 py-2">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold text-emerald-400">Auto-Fix: {a.action}</p>
+                      <p className="text-[9px] text-[#555]">{a.details}</p>
+                    </div>
+                    <span className="text-[8px] text-[#333]">{new Date(a.timestamp).toLocaleTimeString("de-AT")}</span>
                   </div>
-                  <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
-                    <p className="text-sm font-bold text-blue-400">{selected.metrics.activityLevel}</p>
-                    <p className="text-[8px] text-[#444]">Aktivität</p>
+                ))}
+                {/* Manual review queue */}
+                {d.priorities.filter(p => !p.safeAutoAction && p.severity !== "low").map((p, i) => (
+                  <div key={`review-${i}`} className="flex items-center gap-3 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
+                    <Eye className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold text-amber-400">Review nötig: {p.title}</p>
+                      <p className="text-[9px] text-[#555]">{p.suggestedAction}</p>
+                    </div>
                   </div>
-                  <div className="rounded-lg bg-white/3 px-3 py-2 text-center">
-                    <p className={cn("text-sm font-bold", selected.metrics.responseSpeed < 100 ? "text-emerald-400" : selected.metrics.responseSpeed < 500 ? "text-amber-400" : "text-rose-400")}>
-                      {selected.metrics.responseSpeed}ms
-                    </p>
-                    <p className="text-[8px] text-[#444]">Speed</p>
+                ))}
+                {/* Connection warnings */}
+                {d.systems.filter(s => s.connectionStatus === "not_connected" || s.connectionStatus === "not_reporting").map((s, i) => (
+                  <div key={`conn-${i}`} className="flex items-center gap-3 rounded-lg bg-rose-500/5 border border-rose-500/10 px-3 py-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold text-rose-400">Verbindungsproblem: {s.name}</p>
+                      <p className="text-[9px] text-[#555]">{BRAIN_CONN_MAP[s.connectionStatus]?.label}</p>
+                    </div>
                   </div>
-                </div>
-
-                {/* Speed Bar */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[9px] text-[#444] font-bold">Performance</p>
-                    <p className="text-[9px] text-[#555]">{BRAIN_SPEED_BAR[selected.speed]?.label}</p>
+                ))}
+                {/* Brain mode decisions */}
+                <div className="flex items-center gap-3 rounded-lg bg-white/3 border border-white/6 px-3 py-2">
+                  <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-semibold text-blue-400">Brain-Modus: {BRAIN_MODE_MAP[d.brainMode]?.label}</p>
+                    <p className="text-[9px] text-[#555]">{d.brainModeReason}</p>
                   </div>
-                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                    <div className={cn("h-full rounded-full transition-all", BRAIN_SPEED_BAR[selected.speed]?.color, BRAIN_SPEED_BAR[selected.speed]?.width)} />
-                  </div>
-                </div>
-
-                {/* Incidents */}
-                {(selected.incidents.open > 0 || selected.incidents.healed > 0 || selected.incidents.escalated > 0) && (
-                  <div className="flex items-center gap-3">
-                    <p className="text-[9px] text-[#444] font-bold">Incidents:</p>
-                    {selected.incidents.open > 0 && <span className="text-[10px] text-amber-400 font-medium">{selected.incidents.open} offen</span>}
-                    {selected.incidents.healed > 0 && <span className="text-[10px] text-emerald-400 font-medium">{selected.incidents.healed} geheilt</span>}
-                    {selected.incidents.escalated > 0 && <span className="text-[10px] text-rose-400 font-medium">{selected.incidents.escalated} eskaliert</span>}
-                  </div>
-                )}
-
-                {/* Last Update */}
-                <div className="flex items-center gap-2 text-[9px] text-[#333]">
-                  <Clock className="w-2.5 h-2.5" />
-                  Letzte Aktualisierung: {new Date(selected.lastUpdate).toLocaleString("de-AT", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* ── Decision Engine Output ────────────────────────────────────── */}
-      {d.priorities.length > 0 && (
-        <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3.5">
-          <div className="flex items-center gap-2 mb-3">
-            <Target className="w-3.5 h-3.5 text-violet-400" />
-            <p className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">
-              Auto Decision Engine — Alle priorisierten Probleme
-            </p>
-          </div>
-          <div className="space-y-1.5">
-            {d.priorities.map((p, i) => {
-              const sevColor = p.severity === "critical" ? "text-red-400" : p.severity === "high" ? "text-rose-400" : p.severity === "medium" ? "text-amber-400" : "text-blue-400";
-              const sysObj = d.systems.find(s => s.id === p.system);
-              return (
-                <div key={i} className="flex items-center gap-3 rounded-lg bg-white/3 px-3 py-2">
-                  <span className={cn("text-[10px] font-bold w-8 shrink-0", sevColor)}>#{p.rank}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] text-white font-medium truncate">{p.suggestedAction}</p>
-                    <p className="text-[9px] text-[#444] mt-0.5">{sysObj?.name ?? p.system} · {p.impact}</p>
-                  </div>
-                  <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0",
-                    p.severity === "critical" ? "text-red-400 bg-red-500/10" :
-                    p.severity === "high" ? "text-rose-400 bg-rose-500/10" :
-                    p.severity === "medium" ? "text-amber-400 bg-amber-500/10" :
-                    "text-blue-400 bg-blue-500/10"
-                  )}>
-                    {p.score}
-                  </span>
-                  {p.safeAutoAction && (
-                    <button
-                      onClick={() => triggerAction.mutate(p.safeAutoAction!)}
-                      disabled={triggerAction.isPending}
-                      className="text-[9px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-2 py-0.5 rounded hover:bg-emerald-500/15 transition-colors shrink-0"
-                    >
-                      Auto
-                    </button>
-                  )}
+            {/* All priorities with full detail */}
+            {d.priorities.length > 0 && (
+              <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3.5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Target className="w-3.5 h-3.5 text-violet-400" />
+                  <p className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">Auto Decision Engine — Priorisierte Probleme</p>
                 </div>
-              );
-            })}
+                <div className="space-y-1.5">
+                  {d.priorities.map((p, i) => (
+                    <div key={i} className="flex items-center gap-3 rounded-lg bg-white/3 px-3 py-2">
+                      <span className={cn("text-[10px] font-bold w-6 shrink-0", BRAIN_SEV_MAP[p.severity]?.color)}>#{p.rank}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] text-white font-medium truncate">{p.suggestedAction}</p>
+                        <p className="text-[9px] text-[#444] mt-0.5">{d.systems.find(s => s.id === p.system)?.name ?? p.system} · {p.impact}</p>
+                      </div>
+                      <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0", BRAIN_SEV_MAP[p.severity]?.color, BRAIN_SEV_MAP[p.severity]?.bg)}>{p.score}</span>
+                      {p.safeAutoAction && (
+                        <button onClick={() => triggerAction.mutate(p.safeAutoAction!)} disabled={triggerAction.isPending}
+                          className="text-[9px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-2 py-0.5 rounded hover:bg-emerald-500/15 transition-colors shrink-0">Auto</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Footer ────────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-white/4 bg-white/1 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Flame className="w-3 h-3 text-violet-400/40" />
-            <span className="text-[10px] text-[#444] font-semibold">Master Brain v1</span>
+        {/* ══════ SECTION: AUTO-ACTIONS & HISTORY ═════════════════════ */}
+        {activeSection === "actions" && (
+          <div className="space-y-4">
+            {/* Auto-actions this run */}
+            {d.autoActionsThisRun.length > 0 && (
+              <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/3 px-4 py-3.5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                  <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">Auto-Aktionen dieser Analyse</p>
+                </div>
+                <div className="space-y-1.5">
+                  {d.autoActionsThisRun.map((a, i) => (
+                    <div key={i} className={cn("flex items-center gap-3 rounded-lg px-3 py-2",
+                      a.result === "success" ? "bg-emerald-500/5 border border-emerald-500/10"
+                        : a.result === "failed" ? "bg-red-500/5 border border-red-500/10"
+                        : "bg-amber-500/5 border border-amber-500/10")}>
+                      {a.result === "success" ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        : a.result === "failed" ? <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                        : <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-semibold text-white">{a.trigger}</p>
+                        <p className="text-[9px] text-[#555]">Aktion: {a.action} · {a.details}</p>
+                      </div>
+                      {a.needsMoreAction && <span className="text-[8px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">Follow-up</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* History */}
+            <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3.5">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-3.5 h-3.5 text-violet-400" />
+                <p className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">Auto-Action History</p>
+              </div>
+              {d.autoActionHistory.length === 0 ? (
+                <p className="text-[10px] text-[#444] text-center py-4">Noch keine automatischen Aktionen durchgeführt</p>
+              ) : (
+                <div className="space-y-1">
+                  {d.autoActionHistory.slice().reverse().map((a, i) => (
+                    <div key={i} className="flex items-center gap-3 rounded-lg bg-white/3 px-3 py-2">
+                      {a.result === "success" ? <CheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
+                        : <X className="w-3 h-3 text-red-400 shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-white font-medium truncate">{a.action}: {a.trigger}</p>
+                        <p className="text-[9px] text-[#444]">{a.details}</p>
+                      </div>
+                      <span className="text-[8px] text-[#333] shrink-0">{new Date(a.timestamp).toLocaleString("de-AT", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Manual triggers */}
+            <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3.5">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="w-3.5 h-3.5 text-violet-400" />
+                <p className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">Manuelle Aktionen</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { action: "health-check", label: "Health Check", desc: "Alle Systeme prüfen", color: "emerald" },
+                  { action: "billing-reconcile", label: "Billing Abgleich", desc: "Zahlungswahrheit prüfen", color: "violet" },
+                  { action: "retry-open", label: "Retry Open", desc: "Offene Incidents wiederholen", color: "amber" },
+                ].map(btn => (
+                  <button key={btn.action} onClick={() => triggerAction.mutate(btn.action)} disabled={triggerAction.isPending}
+                    className={cn("rounded-xl border px-4 py-3 text-left transition-all hover:bg-white/4",
+                      `border-${btn.color}-500/15 bg-${btn.color}-500/3`)}>
+                    <p className={`text-[11px] font-bold text-${btn.color}-400`}>{btn.label}</p>
+                    <p className="text-[9px] text-[#555] mt-0.5">{btn.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3 text-[9px] text-[#333]">
-            <span>{d.totalSystems} Systeme</span>
-            <span>Auto-Priorisierung</span>
-            <span>Decision Engine</span>
-            <span>Safe Auto-Actions</span>
-            <span>Ø {d.avgResponseSpeed}ms Antwortzeit</span>
+        )}
+
+        {/* ── FOOTER ─────────────────────────────────────────────────── */}
+        <div className="rounded-xl border border-white/4 bg-white/1 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="w-3 h-3 text-violet-400/40" />
+              <span className="text-[10px] text-[#444] font-semibold">Master Brain v2 — Zentrale Intelligenz</span>
+            </div>
+            <div className="flex flex-wrap gap-3 text-[9px] text-[#333]">
+              <span>{d.totalSystems} Systeme</span>
+              <span>Modus: {BRAIN_MODE_MAP[d.brainMode]?.label}</span>
+              <span>Readiness: {d.readinessPercent}%</span>
+              <span>Ø {d.avgResponseSpeed}ms</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-// ─── Founder Ops Center (Hardened Mission Control) ───────────────────────────
+  // ─── Founder Ops Center (Hardened Mission Control) ───────────────────────────
 
 interface OpsIncident {
   id: number;
