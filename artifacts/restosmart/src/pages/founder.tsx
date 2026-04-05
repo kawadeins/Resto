@@ -1939,6 +1939,8 @@ function Dashboard({ founderKey }: { founderKey: string }) {
 
 // ─── Founder Master Brain + Auto Decision Engine ────────────────────────────
 
+  type RiskClassification = "demo_test" | "non_production" | "minor_operational" | "production_risk" | "launch_blocker";
+
   interface BrainSystem {
     id: string; name: string; role: string; health: "green" | "yellow" | "red";
     speed: "fast" | "normal" | "slow"; errorLevel: number; riskLevel: number;
@@ -1952,6 +1954,8 @@ function Dashboard({ founderKey }: { founderKey: string }) {
     incidents: { open: number; healed: number; escalated: number };
     details: Record<string, any>;
     recommendedAction: string;
+    riskClassification: RiskClassification;
+    classificationReason: string;
   }
 
   interface BrainPriority {
@@ -1959,6 +1963,8 @@ function Dashboard({ founderKey }: { founderKey: string }) {
     severity: "critical" | "high" | "medium" | "low"; score: number;
     suggestedAction: string; safeAutoAction: string | null;
     whatHappened: string; whyItMatters: string; whatWasAttempted: string; whatShouldHappenNext: string;
+    riskClassification: RiskClassification;
+    classificationReason: string;
   }
 
   interface BrainAutoAction {
@@ -1973,6 +1979,8 @@ function Dashboard({ founderKey }: { founderKey: string }) {
     brainMode: "monitoring" | "decision_support" | "safe_autonomous";
     brainModeReason: string; readinessPercent: number;
     connectionCounts: { connected: number; partial: number; notConnected: number; notReporting: number };
+    classificationCounts: { demo_test: number; non_production: number; minor_operational: number; production_risk: number; launch_blocker: number };
+    launchVerdict: { status: "ready" | "ready_with_risks" | "not_ready"; reason: string; realBlockerCount: number; demoAlertCount: number };
     summaryLines: string[];
     systems: BrainSystem[]; priorities: BrainPriority[]; topPriorities: BrainPriority[];
     autoActionsThisRun: BrainAutoAction[]; autoActionHistory: BrainAutoAction[];
@@ -2005,6 +2013,20 @@ function Dashboard({ founderKey }: { founderKey: string }) {
     low:      { label: "NIEDRIG",  color: "text-blue-400",   bg: "bg-blue-500/10" },
   };
 
+  const RISK_CLASS_MAP: Record<RiskClassification, { label: string; shortLabel: string; color: string; bg: string; border: string }> = {
+    demo_test:         { label: "Demo/Test",           shortLabel: "Demo",    color: "text-sky-400",     bg: "bg-sky-500/10",     border: "border-sky-500/20" },
+    non_production:    { label: "Nicht-Produktion",     shortLabel: "Non-Prod", color: "text-blue-400",    bg: "bg-blue-500/10",    border: "border-blue-500/20" },
+    minor_operational: { label: "Operativ (gering)",    shortLabel: "Minor",   color: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/20" },
+    production_risk:   { label: "Produktionsrisiko",    shortLabel: "Risiko",  color: "text-orange-400",  bg: "bg-orange-500/10",  border: "border-orange-500/20" },
+    launch_blocker:    { label: "Launch-Blocker",       shortLabel: "Blocker", color: "text-red-400",     bg: "bg-red-500/10",     border: "border-red-500/20" },
+  };
+
+  const VERDICT_MAP: Record<string, { label: string; color: string; bg: string; border: string; icon: string }> = {
+    ready:            { label: "Startbereit",                   color: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/20", icon: "check" },
+    ready_with_risks: { label: "Bedingt startbereit",           color: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-500/20",   icon: "alert" },
+    not_ready:        { label: "Nicht startbereit",             color: "text-red-400",     bg: "bg-red-500/8",     border: "border-red-500/20",     icon: "block" },
+  };
+
   const BRAIN_SYS_ICONS: Record<string, typeof Shield> = {
     premium: Crown, billing: Banknote, boost: Zap, growth: Rocket, competition: Activity,
     watchdog: Shield, cities: MapPin, social: Users, instant_plans: Clock, reviews: Star,
@@ -2021,6 +2043,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
     const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState<"overview" | "feed" | "actions">("overview");
     const [expandedPriority, setExpandedPriority] = useState<number | null>(null);
+    const [classFilter, setClassFilter] = useState<RiskClassification | "all">("all");
 
     const statusQuery = useQuery<BrainStatus>({
       queryKey: ["brain-status"],
@@ -2155,6 +2178,46 @@ function Dashboard({ founderKey }: { founderKey: string }) {
           </div>
         </div>
 
+        {/* ── LAUNCH VERDICT + CLASSIFICATION OVERVIEW ─────────────── */}
+        {(() => {
+          const v = VERDICT_MAP[d.launchVerdict.status] ?? VERDICT_MAP.not_ready;
+          return (
+            <div className={cn("rounded-xl border px-4 py-3.5", v.border, v.bg)}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {d.launchVerdict.status === "ready" ? <CheckCircle className={cn("w-4 h-4", v.color)} />
+                    : d.launchVerdict.status === "not_ready" ? <AlertTriangle className={cn("w-4 h-4", v.color)} />
+                    : <AlertCircle className={cn("w-4 h-4", v.color)} />}
+                  <span className={cn("text-[11px] font-bold uppercase tracking-widest", v.color)}>{v.label}</span>
+                </div>
+                <div className="flex items-center gap-3 text-[9px]">
+                  {d.launchVerdict.realBlockerCount > 0 && <span className="text-red-400 font-bold">{d.launchVerdict.realBlockerCount} echte Risiken</span>}
+                  {d.launchVerdict.demoAlertCount > 0 && <span className="text-sky-400 font-bold">{d.launchVerdict.demoAlertCount} Demo-Alerts</span>}
+                </div>
+              </div>
+              <p className="text-[10px] text-white/70">{d.launchVerdict.reason}</p>
+              <div className="flex flex-wrap gap-2 mt-2.5">
+                {(Object.entries(d.classificationCounts) as [RiskClassification, number][]).map(([key, count]) => {
+                  const rc = RISK_CLASS_MAP[key];
+                  return (
+                    <button key={key} onClick={() => setClassFilter(classFilter === key ? "all" : key)}
+                      className={cn("flex items-center gap-1.5 text-[9px] font-bold px-2.5 py-1 rounded-full border transition-all",
+                        classFilter === key ? `${rc.color} ${rc.bg} ${rc.border} ring-1 ring-white/10` : `text-[#555] border-white/6 bg-white/2 hover:bg-white/4`)}>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", rc.bg.replace("/10", ""))}></span>
+                      {rc.shortLabel}: {count}
+                    </button>
+                  );
+                })}
+                {classFilter !== "all" && (
+                  <button onClick={() => setClassFilter("all")} className="text-[9px] font-bold text-[#555] border border-white/6 bg-white/2 px-2.5 py-1 rounded-full hover:bg-white/4 transition-all">
+                    Alle zeigen
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── BRAIN MODE WARNING ─────────────────────────────────────── */}
         {d.brainMode !== "safe_autonomous" && (
           <div className={cn("rounded-xl border px-4 py-3 flex items-center gap-3",
@@ -2185,14 +2248,14 @@ function Dashboard({ founderKey }: { founderKey: string }) {
         </div>
 
         {/* ── PRIORITY PANEL ─────────────────────────────────────────── */}
-        {d.topPriorities.length > 0 && activeSection === "overview" && (
+        {d.topPriorities.filter(p => classFilter === "all" || p.riskClassification === classFilter).length > 0 && activeSection === "overview" && (
           <div className="rounded-xl border border-red-500/15 bg-red-500/3 px-4 py-3.5">
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-3.5 h-3.5 text-red-400" />
               <p className="text-[11px] font-bold text-red-400 uppercase tracking-widest">Was jetzt Aufmerksamkeit braucht</p>
             </div>
             <div className="space-y-2">
-              {d.topPriorities.map((p, i) => {
+              {d.topPriorities.filter(p => classFilter === "all" || p.riskClassification === classFilter).map((p, i) => {
                 const sev = BRAIN_SEV_MAP[p.severity] ?? BRAIN_SEV_MAP.medium;
                 const isExpanded = expandedPriority === i;
                 return (
@@ -2210,6 +2273,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
                       </div>
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full", sev.color, sev.bg)}>{sev.label}</span>
+                        <span className={cn("text-[8px] font-bold px-2 py-0.5 rounded-full", RISK_CLASS_MAP[p.riskClassification]?.color, RISK_CLASS_MAP[p.riskClassification]?.bg)}>{RISK_CLASS_MAP[p.riskClassification]?.shortLabel}</span>
                         {p.safeAutoAction && (
                           <button onClick={(e) => { e.stopPropagation(); triggerAction.mutate(p.safeAutoAction!); }}
                             disabled={triggerAction.isPending}
@@ -2221,21 +2285,30 @@ function Dashboard({ founderKey }: { founderKey: string }) {
                       </div>
                     </button>
                     {isExpanded && (
-                      <div className="px-3 pb-3 grid grid-cols-3 gap-2">
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Was ist passiert</p>
-                          <p className="text-[10px] text-white/80">{p.whatHappened}</p>
+                      <div className="px-3 pb-3 space-y-2">
+                        <div className={cn("rounded-lg px-3 py-2 border", RISK_CLASS_MAP[p.riskClassification]?.border, RISK_CLASS_MAP[p.riskClassification]?.bg)}>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded-full", RISK_CLASS_MAP[p.riskClassification]?.color, RISK_CLASS_MAP[p.riskClassification]?.bg)}>{RISK_CLASS_MAP[p.riskClassification]?.label}</span>
+                            <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold">Klassifikation</p>
+                          </div>
+                          <p className="text-[10px] text-white/70">{p.classificationReason}</p>
                         </div>
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Warum es wichtig ist</p>
-                          <p className="text-[10px] text-white/80">{p.whyItMatters}</p>
-                        </div>
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Nächster Schritt</p>
-                          <p className="text-[10px] text-white/80">{p.whatShouldHappenNext}</p>
-                          {p.whatWasAttempted !== "Noch keine automatische Aktion durchgeführt" && (
-                            <p className="text-[9px] text-emerald-400/70 mt-1">Bereits versucht: {p.whatWasAttempted}</p>
-                          )}
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="rounded-lg bg-white/3 px-3 py-2">
+                            <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Was ist passiert</p>
+                            <p className="text-[10px] text-white/80">{p.whatHappened}</p>
+                          </div>
+                          <div className="rounded-lg bg-white/3 px-3 py-2">
+                            <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Warum es wichtig ist</p>
+                            <p className="text-[10px] text-white/80">{p.whyItMatters}</p>
+                          </div>
+                          <div className="rounded-lg bg-white/3 px-3 py-2">
+                            <p className="text-[8px] text-[#444] uppercase tracking-widest font-bold mb-1">Nächster Schritt</p>
+                            <p className="text-[10px] text-white/80">{p.whatShouldHappenNext}</p>
+                            {p.whatWasAttempted !== "Noch keine automatische Aktion durchgeführt" && (
+                              <p className="text-[9px] text-emerald-400/70 mt-1">Bereits versucht: {p.whatWasAttempted}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -2254,11 +2327,14 @@ function Dashboard({ founderKey }: { founderKey: string }) {
           <div className="grid grid-cols-12 gap-4">
             {/* LEFT: System Cards */}
             <div className="col-span-5 space-y-1">
-              <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Alle {d.totalSystems} Systeme</p>
+              <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">
+                {classFilter === "all" ? `Alle ${d.totalSystems} Systeme` : `${RISK_CLASS_MAP[classFilter]?.label ?? classFilter} (${d.systems.filter(s => s.riskClassification === classFilter).length})`}
+              </p>
               <div className="max-h-[600px] overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-white/5">
-                {d.systems.map(sys => {
+                {d.systems.filter(sys => classFilter === "all" || sys.riskClassification === classFilter).map(sys => {
                   const Icon = BRAIN_SYS_ICONS[sys.id] ?? Shield;
                   const connStyle = BRAIN_CONN_MAP[sys.connectionStatus] ?? BRAIN_CONN_MAP.not_connected;
+                  const rc = RISK_CLASS_MAP[sys.riskClassification];
                   const isSelected = selectedSystem === sys.id;
                   return (
                     <button key={sys.id} onClick={() => setSelectedSystem(isSelected ? null : sys.id)}
@@ -2275,6 +2351,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
                         <div className="flex items-center gap-1.5">
                           <p className="text-[10px] font-semibold text-white truncate">{sys.name}</p>
                           <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", sys.health === "green" ? "bg-emerald-500" : sys.health === "yellow" ? "bg-amber-500" : "bg-red-500")} />
+                          <span className={cn("text-[7px] font-bold px-1.5 py-0.5 rounded-full shrink-0", rc?.color, rc?.bg)}>{rc?.shortLabel}</span>
                         </div>
                         <p className="text-[8px] text-[#555] truncate">{sys.summary}</p>
                       </div>
@@ -2327,6 +2404,20 @@ function Dashboard({ founderKey }: { founderKey: string }) {
                       <p className={cn("text-[11px] font-medium",
                         selected.health === "green" ? "text-emerald-400" : selected.health === "yellow" ? "text-amber-400" : "text-red-400")}>{selected.analysis}</p>
                     </div>
+
+                    {/* Risk Classification */}
+                    {(() => {
+                      const rc = RISK_CLASS_MAP[selected.riskClassification];
+                      return (
+                        <div className={cn("rounded-lg border px-3 py-2.5", rc?.border, rc?.bg)}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full", rc?.color, rc?.bg, rc?.border)}>{rc?.label}</span>
+                            <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold">Risiko-Klassifikation</p>
+                          </div>
+                          <p className="text-[10px] text-white/70">{selected.classificationReason}</p>
+                        </div>
+                      );
+                    })()}
 
                     {/* Connection Verification */}
                     <div>
@@ -2427,14 +2518,17 @@ function Dashboard({ founderKey }: { founderKey: string }) {
               </div>
               <div className="space-y-1.5">
                 {/* Critical incidents */}
-                {d.priorities.filter(p => p.severity === "critical" || p.severity === "high").map((p, i) => (
+                {d.priorities.filter(p => (p.severity === "critical" || p.severity === "high") && (classFilter === "all" || p.riskClassification === classFilter)).map((p, i) => (
                   <div key={`crit-${i}`} className="flex items-center gap-3 rounded-lg bg-red-500/5 border border-red-500/10 px-3 py-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-semibold text-red-400">{p.title}</p>
-                      <p className="text-[9px] text-[#555]">{p.whatShouldHappenNext}</p>
+                      <p className="text-[9px] text-[#555]">{p.classificationReason}</p>
                     </div>
-                    <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded", BRAIN_SEV_MAP[p.severity]?.color, BRAIN_SEV_MAP[p.severity]?.bg)}>{BRAIN_SEV_MAP[p.severity]?.label}</span>
+                    <div className="flex flex-col gap-1 items-end shrink-0">
+                      <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded", BRAIN_SEV_MAP[p.severity]?.color, BRAIN_SEV_MAP[p.severity]?.bg)}>{BRAIN_SEV_MAP[p.severity]?.label}</span>
+                      <span className={cn("text-[7px] font-bold px-1.5 py-0.5 rounded-full", RISK_CLASS_MAP[p.riskClassification]?.color, RISK_CLASS_MAP[p.riskClassification]?.bg)}>{RISK_CLASS_MAP[p.riskClassification]?.shortLabel}</span>
+                    </div>
                   </div>
                 ))}
                 {/* Auto-fixed items */}
@@ -2449,7 +2543,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
                   </div>
                 ))}
                 {/* Manual review queue */}
-                {d.priorities.filter(p => !p.safeAutoAction && p.severity !== "low").map((p, i) => (
+                {d.priorities.filter(p => !p.safeAutoAction && p.severity !== "low" && (classFilter === "all" || p.riskClassification === classFilter)).map((p, i) => (
                   <div key={`review-${i}`} className="flex items-center gap-3 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
                     <Eye className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -2487,13 +2581,14 @@ function Dashboard({ founderKey }: { founderKey: string }) {
                   <p className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">Auto Decision Engine — Priorisierte Probleme</p>
                 </div>
                 <div className="space-y-1.5">
-                  {d.priorities.map((p, i) => (
+                  {d.priorities.filter(p => classFilter === "all" || p.riskClassification === classFilter).map((p, i) => (
                     <div key={i} className="flex items-center gap-3 rounded-lg bg-white/3 px-3 py-2">
                       <span className={cn("text-[10px] font-bold w-6 shrink-0", BRAIN_SEV_MAP[p.severity]?.color)}>#{p.rank}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] text-white font-medium truncate">{p.suggestedAction}</p>
                         <p className="text-[9px] text-[#444] mt-0.5">{d.systems.find(s => s.id === p.system)?.name ?? p.system} · {p.impact}</p>
                       </div>
+                      <span className={cn("text-[7px] font-bold px-1.5 py-0.5 rounded-full shrink-0", RISK_CLASS_MAP[p.riskClassification]?.color, RISK_CLASS_MAP[p.riskClassification]?.bg)}>{RISK_CLASS_MAP[p.riskClassification]?.shortLabel}</span>
                       <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0", BRAIN_SEV_MAP[p.severity]?.color, BRAIN_SEV_MAP[p.severity]?.bg)}>{p.score}</span>
                       {p.safeAutoAction && (
                         <button onClick={() => triggerAction.mutate(p.safeAutoAction!)} disabled={triggerAction.isPending}

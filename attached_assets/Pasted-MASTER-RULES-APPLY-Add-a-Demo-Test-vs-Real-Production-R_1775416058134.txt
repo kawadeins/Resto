@@ -1,0 +1,200 @@
+MASTER RULES APPLY
+
+Add a "Demo/Test vs Real Production Risk Classification Layer" inside the existing Founder Passport / Master Brain / Founder Ops system of RestoMaster.
+
+IMPORTANT:
+Do NOT redesign the founder dashboard.
+Do NOT rebuild the Ops system.
+Do NOT remove existing incidents, alerts, or health checks.
+
+This is a classification and clarity upgrade for the founder-only control system.
+
+========================
+GOAL
+========================
+
+Make the Founder Passport / Master Brain clearly distinguish between:
+
+1. Demo / Test environment alerts
+2. Real production blockers
+3. Minor warnings
+4. Critical launch risks
+
+The founder must instantly understand whether an alert is:
+
+- expected because the system is running in demo/test mode
+- caused by missing real payments / missing real traffic
+- a true technical/platform issue
+- a real launch blocker that must be fixed before production
+
+========================
+1. ALERT CLASSIFICATION LAYER (CRITICAL)
+========================
+
+Extend the existing incident / alert logic so that each major incident can be classified into one of the following:
+
+- Demo/Test Alert
+- Non-Production Warning
+- Minor Operational Risk
+- Real Production Risk
+- Critical Launch Blocker
+
+This classification must be visible clearly inside the founder dashboard.
+
+========================
+2. DEMO / TEST ALERT DETECTION
+========================
+
+If an alert is caused mainly by the absence of real production behavior, the system should mark it clearly as a test/demo-related alert.
+
+Examples:
+- no real payment exists yet
+- no real boost campaign traffic exists yet
+- no real subscription renewal has happened yet
+- no real volume exists in that system
+- a test account creates an expected mismatch
+
+These should NOT be treated the same as real launch blockers.
+
+Use labels such as:
+- "Demo/Test Alert"
+- "Expected in non-production"
+- "No real traffic yet"
+- "No real payment data yet"
+
+========================
+3. REAL PRODUCTION RISK DETECTION
+========================
+
+If the issue would still be dangerous in real production, classify it as a real production risk.
+
+Examples:
+- auth model not production-safe
+- billing truth mismatch under real payments
+- premium access can be unlocked incorrectly
+- paid boost can fail delivery under real paid usage
+- destructive mis-sync between billing and platform state
+- route protection failure
+- founder control visibility broken
+- real self-healing failure in supported scenario
+
+These should be marked clearly as:
+- "Real Production Risk"
+or
+- "Critical Launch Blocker"
+
+========================
+4. CLASSIFICATION EXPLANATION
+========================
+
+Each incident should now show a short explanation of WHY it was classified this way.
+
+Examples:
+- "This is marked as Demo/Test because no real payment exists for this test account."
+- "This is marked as Production Risk because auth depends on localStorage and is not safe for launch."
+- "This is marked as Non-Production Warning because campaign delivery cannot be fully validated without live traffic."
+
+This is very important.
+
+========================
+5. FOUNDER DASHBOARD DISPLAY
+========================
+
+Inside Founder Passport / Master Brain / Ops, add a clear classification badge on each relevant incident:
+
+Examples:
+- Demo/Test
+- Non-Production
+- Warning
+- Production Risk
+- Launch Blocker
+
+Make these easy to scan visually.
+
+========================
+6. FILTER / GROUPING
+========================
+
+Allow founder to quickly group or filter incidents by classification:
+
+- show only real production blockers
+- show only demo/test alerts
+- show only unresolved real risks
+
+This helps the founder focus on what actually matters before launch.
+
+========================
+7. FINAL LAUNCH READINESS LOGIC
+========================
+
+When giving final verdicts like:
+- Ready
+- Ready with Minor Risks
+- Not Ready
+
+The system must weigh Demo/Test alerts differently from real launch blockers.
+
+Examples:
+- missing real boost traffic in demo should not be treated the same as broken paid boost logic
+- missing real payment data in a test account should not be treated the same as unsafe billing activation logic
+
+The final verdict must become more truthful and fair.
+
+========================
+8. TEST-DATA AWARENESS
+========================
+
+Teach the founder system to recognize when the environment is still test-heavy.
+
+Examples:
+- test-only accounts
+- no real paid transactions
+- no real campaign impressions
+- no real business usage yet
+- local/dev/test context
+
+If this is the reason behind an alert, say so clearly.
+
+========================
+9. DO NOT HIDE REAL PROBLEMS
+========================
+
+IMPORTANT:
+Do NOT downgrade real technical/security/billing risks into harmless demo labels.
+
+If something is truly dangerous for launch, it must still be shown as:
+- Real Production Risk
+or
+- Critical Launch Blocker
+
+This classification layer must improve clarity, not reduce honesty.
+
+========================
+10. FINAL OUTPUT
+========================
+
+At the end of this pass, update the Founder system so it can clearly tell the founder:
+
+- which alerts are expected in demo/test mode
+- which warnings are normal because real usage is missing
+- which issues are minor
+- which issues are actual production blockers
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster’s Founder Passport / Master Brain should no longer confuse:
+
+- expected test-state alerts
+with
+- true launch blockers
+
+The founder should instantly know:
+
+- what is normal because the platform is still in test/demo mode
+- what is truly dangerous for real production
+- what must be fixed before launch
+- what can be ignored for now until real users/payments exist
+
+This makes the final control system much more intelligent, fair, and useful.

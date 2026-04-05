@@ -14,6 +14,7 @@ type SystemSpeed = "fast" | "normal" | "slow";
 type ActionFlag = "action_needed" | "auto_handled" | "monitoring";
 type ConnectionStatus = "connected" | "partially_connected" | "not_connected" | "not_reporting";
 type BrainMode = "monitoring" | "decision_support" | "safe_autonomous";
+type RiskClassification = "demo_test" | "non_production" | "minor_operational" | "production_risk" | "launch_blocker";
 
 interface SystemSignal {
   id: string;
@@ -35,6 +36,8 @@ interface SystemSignal {
   incidents: { open: number; healed: number; escalated: number };
   details: Record<string, any>;
   recommendedAction: string;
+  riskClassification: RiskClassification;
+  classificationReason: string;
 }
 
 interface PriorityIssue {
@@ -51,6 +54,8 @@ interface PriorityIssue {
   whyItMatters: string;
   whatWasAttempted: string;
   whatShouldHappenNext: string;
+  riskClassification: RiskClassification;
+  classificationReason: string;
 }
 
 interface AutoActionRecord {
@@ -81,6 +86,145 @@ function deriveConnectionStatus(c: SystemSignal["connectionDetails"]): Connectio
   if (trueCount >= 3) return "partially_connected";
   if (trueCount >= 1) return "not_reporting";
   return "not_connected";
+}
+
+function classifySystemRisk(sys: Omit<SystemSignal, "riskClassification" | "classificationReason">): { riskClassification: RiskClassification; classificationReason: string } {
+  const id = sys.id;
+  const hasRealTraffic = sys.metrics.activityLevel > 10;
+  const hasOpenIncidents = sys.incidents.open > 0;
+  const hasEscalated = sys.incidents.escalated > 0;
+
+  if (id === "auth") {
+    return { riskClassification: "launch_blocker", classificationReason: "Auth basiert auf localStorage und Founder-Key — nicht sicher für Produktionsbetrieb mit echten Nutzern" };
+  }
+
+  if (id === "boost") {
+    if (sys.details.stuck > 0 && sys.health !== "green") {
+      if (!hasRealTraffic && sys.details.totalImpressions === 0) {
+        return { riskClassification: "non_production", classificationReason: "Boost-Delivery kann ohne echten Traffic nicht validiert werden — keine echten Kampagnen-Impressionen vorhanden" };
+      }
+      return { riskClassification: "production_risk", classificationReason: "Boost-Delivery-Logik fehlerhaft — bezahlte Kampagnen liefern unter echtem Traffic keine Impressionen" };
+    }
+  }
+
+  if (id === "billing") {
+    if (hasOpenIncidents || hasEscalated) {
+      const revenue = sys.details.totalSpend ?? 0;
+      if (revenue < 1 && !hasRealTraffic) {
+        return { riskClassification: "demo_test", classificationReason: "Billing-Incidents entstehen durch Testdaten — keine echten Zahlungen oder Kampagnen vorhanden" };
+      }
+      return { riskClassification: "production_risk", classificationReason: "Billing-Incidents unter echten Zahlungen — Abrechnungswahrheit muss geprüft werden" };
+    }
+  }
+
+  if (id === "premium") {
+    if (sys.health !== "green") {
+      return { riskClassification: "production_risk", classificationReason: "Premium-Zugang inkonsistent — kann zu unbefugtem Zugriff auf bezahlte Features führen" };
+    }
+  }
+
+  if (id === "watchdog") {
+    if (hasEscalated) {
+      if (sys.incidents.healed > sys.incidents.escalated * 2) {
+        return { riskClassification: "minor_operational", classificationReason: "Watchdog eskaliert einzelne Incidents, aber Auto-Healing funktioniert — überwiegend selbstkorrigierend" };
+      }
+      return { riskClassification: "production_risk", classificationReason: "Watchdog-Eskalationen deuten auf Systemprobleme hin, die Auto-Healing nicht lösen kann" };
+    }
+    if (hasOpenIncidents) {
+      return { riskClassification: "minor_operational", classificationReason: "Offene Watchdog-Incidents vorhanden — werden durch Auto-Healing-System bearbeitet" };
+    }
+  }
+
+  if (id === "monetization") {
+    if (hasOpenIncidents) {
+      const rev = sys.details.revenueToday ?? 0;
+      if (rev < 1) {
+        return { riskClassification: "demo_test", classificationReason: "Monetarisierungs-Alert entsteht durch fehlende echte Zahlungsdaten — kein realer Umsatz im System" };
+      }
+      return { riskClassification: "production_risk", classificationReason: "Monetarisierungsprobleme bei echtem Umsatz — Einnahmenfluss gefährdet" };
+    }
+  }
+
+  if (id === "conversion") {
+    if (sys.health !== "green" && sys.metrics.activityLevel < 20) {
+      return { riskClassification: "demo_test", classificationReason: "Conversion-Daten zu gering für valide Analyse — kein echter Nutzer-Traffic vorhanden" };
+    }
+  }
+
+  if (id === "social") {
+    if (sys.health !== "green" && sys.metrics.activityLevel < 5) {
+      return { riskClassification: "demo_test", classificationReason: "Soziale Features inaktiv mangels echter Nutzer — erwartet in Demo/Test-Phase" };
+    }
+  }
+
+  if (id === "notifications") {
+    if (sys.health !== "green" && sys.metrics.activityLevel === 0) {
+      return { riskClassification: "non_production", classificationReason: "Keine Benachrichtigungen gesendet — kann ohne echte Empfänger und Trigger nicht validiert werden" };
+    }
+  }
+
+  if (id === "reservations") {
+    if (sys.health !== "green" && sys.metrics.activityLevel === 0) {
+      return { riskClassification: "demo_test", classificationReason: "Keine Reservierungen vorhanden — erwartet in Demo-Umgebung ohne echte Gäste" };
+    }
+  }
+
+  if (id === "user_profiles") {
+    if (sys.health !== "green" && sys.metrics.activityLevel < 5) {
+      return { riskClassification: "demo_test", classificationReason: "Wenige Nutzerprofile — erwartet in Test-Umgebung ohne echte Registrierungen" };
+    }
+  }
+
+  if (id === "launch_control") {
+    if (hasOpenIncidents) {
+      return { riskClassification: "minor_operational", classificationReason: "Launch-Control zeigt offene Punkte — Plattform-Bereitschaft wird geprüft" };
+    }
+  }
+
+  if (id === "heat_map" || id === "auto_plans" || id === "instant_plans") {
+    if (sys.health !== "green" && sys.metrics.activityLevel < 5) {
+      return { riskClassification: "demo_test", classificationReason: `${sys.name} hat wenig Aktivität — erwartet ohne echten Nutzerbetrieb` };
+    }
+  }
+
+  if (id === "data_integrity") {
+    if (sys.health === "red") {
+      return { riskClassification: "production_risk", classificationReason: "Datenintegrität gefährdet — fehlerhafte Datensätze können Geschäftslogik beeinflussen" };
+    }
+    if (hasOpenIncidents) {
+      return { riskClassification: "minor_operational", classificationReason: "Kleinere Dateninkonsistenzen erkannt — kein direkter Einfluss auf Kernfunktionen" };
+    }
+  }
+
+  if (id === "abuse") {
+    if (sys.health === "red") {
+      return { riskClassification: "production_risk", classificationReason: "Missbrauchsmuster erkannt — kann Plattformintegrität gefährden" };
+    }
+  }
+
+  if (id === "founder_dashboard") {
+    if (sys.health !== "green") {
+      return { riskClassification: "production_risk", classificationReason: "Founder-Dashboard eingeschränkt — Kontrolle und Sichtbarkeit gefährdet" };
+    }
+  }
+
+  if (sys.connectionStatus === "not_connected") {
+    return { riskClassification: "launch_blocker", classificationReason: `${sys.name} ist nicht verbunden — System kann nicht überwacht werden, Launch-Risiko` };
+  }
+
+  if (sys.health === "green" && !hasOpenIncidents) {
+    return { riskClassification: "demo_test", classificationReason: "System stabil — keine Auffälligkeiten, arbeitet im Demo/Test-Modus wie erwartet" };
+  }
+
+  if (sys.health === "yellow" && !hasEscalated) {
+    return { riskClassification: "minor_operational", classificationReason: "Leichte Warnung — kein eskaliertes Problem, operativ im Normbereich" };
+  }
+
+  if (sys.health === "red") {
+    return { riskClassification: "production_risk", classificationReason: `${sys.name} zeigt kritische Signale — muss vor Produktionsstart behoben werden` };
+  }
+
+  return { riskClassification: "minor_operational", classificationReason: "System zeigt leichte Auffälligkeiten — keine unmittelbare Gefahr" };
 }
 
 async function checkPremiumSystem(): Promise<SystemSignal> {
@@ -987,6 +1131,8 @@ function buildPriorityIssues(systems: SystemSignal[]): PriorityIssue[] {
         : "Betrifft Nutzererfahrung und Plattformqualität",
       whatWasAttempted,
       whatShouldHappenNext: suggestedAction,
+      riskClassification: sys.riskClassification,
+      classificationReason: sys.classificationReason,
     });
   }
 
@@ -1086,7 +1232,7 @@ router.get("/status", async (req, res) => {
 
     const results = await Promise.allSettled(allChecks);
 
-    const systems: SystemSignal[] = results.map((r, i) => {
+    const rawSystems = results.map((r, i) => {
       if (r.status === "fulfilled") return r.value;
       console.error(`[BRAIN] ${checkNames[i]} check failed:`, (r as PromiseRejectedResult).reason?.message ?? r);
       const conn = buildConnection(false, false, false, false, false);
@@ -1106,8 +1252,13 @@ router.get("/status", async (req, res) => {
       };
     });
 
-    systems.push(checkAuthSystem());
-    systems.push(checkFounderDashboard());
+    rawSystems.push(checkAuthSystem() as any);
+    rawSystems.push(checkFounderDashboard() as any);
+
+    const systems: SystemSignal[] = rawSystems.map(sys => {
+      const classification = classifySystemRisk(sys as any);
+      return { ...sys, ...classification } as SystemSignal;
+    });
 
     const priorities = buildPriorityIssues(systems);
     const brainMode = determineBrainMode(systems);
@@ -1129,10 +1280,29 @@ router.get("/status", async (req, res) => {
     const notConnectedCount = systems.filter(s => s.connectionStatus === "not_connected").length;
     const notReportingCount = systems.filter(s => s.connectionStatus === "not_reporting").length;
 
+    const classificationCounts = {
+      demo_test: systems.filter(s => s.riskClassification === "demo_test").length,
+      non_production: systems.filter(s => s.riskClassification === "non_production").length,
+      minor_operational: systems.filter(s => s.riskClassification === "minor_operational").length,
+      production_risk: systems.filter(s => s.riskClassification === "production_risk").length,
+      launch_blocker: systems.filter(s => s.riskClassification === "launch_blocker").length,
+    };
+
+    const realBlockers = priorities.filter(p => p.riskClassification === "launch_blocker" || p.riskClassification === "production_risk");
+    const demoAlerts = priorities.filter(p => p.riskClassification === "demo_test" || p.riskClassification === "non_production");
+
+    const launchVerdict: { status: "ready" | "ready_with_risks" | "not_ready"; reason: string; realBlockerCount: number; demoAlertCount: number } =
+      classificationCounts.launch_blocker > 0
+        ? { status: "not_ready", reason: `${classificationCounts.launch_blocker} Launch-Blocker müssen vor dem Produktionsstart behoben werden`, realBlockerCount: realBlockers.length, demoAlertCount: demoAlerts.length }
+        : classificationCounts.production_risk > 0
+          ? { status: "ready_with_risks", reason: `${classificationCounts.production_risk} echte Produktionsrisiken vorhanden — vor Launch prüfen`, realBlockerCount: realBlockers.length, demoAlertCount: demoAlerts.length }
+          : { status: "ready", reason: "Keine echten Produktionsrisiken oder Launch-Blocker erkannt", realBlockerCount: 0, demoAlertCount: demoAlerts.length };
+
     const summaryLines: string[] = [];
     if (connectedCount === systems.length) summaryLines.push("Alle Systeme vollständig verbunden");
     else summaryLines.push(`${connectedCount}/${systems.length} Systeme vollständig verbunden`);
-    if (priorities.length > 0) summaryLines.push(`${priorities.filter(p => p.severity === "critical" || p.severity === "high").length} hochprioritäre Probleme`);
+    if (realBlockers.length > 0) summaryLines.push(`${realBlockers.length} echte Risiken`);
+    if (demoAlerts.length > 0) summaryLines.push(`${demoAlerts.length} Demo/Test-Alerts`);
     summaryLines.push(`${greenCount} stabil, ${yellowCount} Warnung, ${redCount} kritisch`);
     if (totalHealed > 0) summaryLines.push(`${totalHealed} Auto-Reparaturen durchgeführt`);
     summaryLines.push(`Autonomer Modus: ${brainMode.mode === "safe_autonomous" ? "Aktiv" : brainMode.mode === "decision_support" ? "Eingeschränkt" : "Deaktiviert"}`);
@@ -1148,6 +1318,8 @@ router.get("/status", async (req, res) => {
       brainModeReason: brainMode.reason,
       readinessPercent: brainMode.readiness,
       connectionCounts: { connected: connectedCount, partial: partialCount, notConnected: notConnectedCount, notReporting: notReportingCount },
+      classificationCounts,
+      launchVerdict,
       summaryLines,
       systems,
       priorities: priorities.slice(0, 15),
