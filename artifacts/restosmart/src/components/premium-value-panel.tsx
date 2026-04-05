@@ -47,7 +47,7 @@ export function PremiumValuePanel({ businessType, onDismiss, compact = false }: 
               window.location.reload();
             }}
           >
-            Freischalten
+            Jetzt sichtbar werden
           </Button>
           {onDismiss && (
             <button onClick={handleDismiss} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -114,10 +114,10 @@ export function PremiumValuePanel({ businessType, onDismiss, compact = false }: 
             }}
           >
             <Crown className="w-4 h-4 mr-2" />
-            Premium freischalten
+            Jetzt sichtbar werden
           </Button>
           <p className="text-center text-[11px] text-muted-foreground">
-            14 Tage kostenlos · Jederzeit kündbar
+            {"14 Tage kostenlos · Danach 39,90€/Monat · Jederzeit kündbar"}
           </p>
         </CardContent>
       </Card>

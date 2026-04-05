@@ -31,9 +31,9 @@ interface Step {
 // ─── Business-type copy ───────────────────────────────────────────────────────
 
 const BIZ_LABELS: Record<string, { name: string; emoji: string; greeting: string }> = {
-  restaurant: { name: "Restaurant",   emoji: "🍽️", greeting: "Dein Restaurant wächst mit RestoSmart." },
-  cafe:        { name: "Café",         emoji: "☕",  greeting: "Dein Café ist jetzt auf der Plattform aktiv." },
-  bar:         { name: "Bar",          emoji: "🍸",  greeting: "Deine Bar ist jetzt für Gäste sichtbar." },
+  restaurant: { name: "Restaurant",   emoji: "\uD83C\uDF7D\uFE0F", greeting: "Dein Restaurant ist online \u2014 werde jetzt sichtbar." },
+  cafe:        { name: "Caf\u00e9",         emoji: "\u2615",  greeting: "Dein Caf\u00e9 ist online \u2014 werde jetzt sichtbar." },
+  bar:         { name: "Bar",          emoji: "\uD83C\uDF78",  greeting: "Deine Bar ist online \u2014 werde jetzt sichtbar." },
 };
 
 // ─── Activation steps ─────────────────────────────────────────────────────────
@@ -61,8 +61,8 @@ const STEPS: Step[] = [
   },
   {
     id: "premium",
-    label: "Premium freischalten",
-    desc: "Mehr Reichweite, Boost-Tools und Analytics mit Premium für €39,90/Monat.",
+    label: "Jetzt sichtbar werden",
+    desc: "Mehr Sichtbarkeit = mehr Kunden. Teste 14 Tage kostenlos, danach 39,90\u20ac/Monat.",
     action: "upgrade",
     doneKey: "rs_act_premium",
   },
@@ -200,7 +200,7 @@ export function GrowthActivationHub({ onUpgrade }: { onUpgrade?: () => void }) {
             </span>
           </div>
           <p className="text-xs text-muted-foreground leading-snug">
-            Aktiviere dein Profil vollständig und hol das Beste aus deiner Testphase heraus.
+            Kunden in deiner Umgebung suchen genau jetzt nach Angeboten wie deinem.
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -327,9 +327,9 @@ export function GrowthActivationHub({ onUpgrade }: { onUpgrade?: () => void }) {
                     <Zap className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-foreground leading-tight">Premium freischalten</p>
+                    <p className="text-xs font-bold text-foreground leading-tight">Jetzt sichtbar werden</p>
                     <p className="text-[11px] text-muted-foreground leading-tight">
-                      Mehr Sichtbarkeit, Boosts & Analytics — €39,90/Monat
+                      {"Mehr Sichtbarkeit = mehr Kunden — 39,90€/Monat"}
                     </p>
                   </div>
                   <Button
@@ -340,7 +340,7 @@ export function GrowthActivationHub({ onUpgrade }: { onUpgrade?: () => void }) {
                       onUpgrade?.();
                     }}
                   >
-                    Aktivieren
+                    Starten
                   </Button>
                 </div>
               </div>

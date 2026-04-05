@@ -35,25 +35,25 @@ function TrialBanner() {
   let ctaLabel: string;
 
   if (daysLeft <= 0) {
-    mainMsg = "Deine Testphase läuft heute ab";
-    subMsg = "Aktiviere Premium, um sichtbar zu bleiben";
-    ctaLabel = "Premium aktivieren";
+    mainMsg = "Deine Testphase endet heute";
+    subMsg = "Jeder Tag ohne Premium bedeutet weniger Sichtbarkeit";
+    ctaLabel = "Jetzt sichtbar werden";
   } else if (daysLeft === 1) {
     mainMsg = "Letzter Tag deiner Testphase";
-    subMsg = "Danach verlierst du deine Sichtbarkeit";
-    ctaLabel = "Jetzt für 39,90€ sichern";
+    subMsg = "Behalte deine Sichtbarkeit und deinen Vorteil";
+    ctaLabel = "F\u00fcr 39,90\u20ac sichern";
   } else if (isUrgent) {
     mainMsg = `Testphase endet in ${daysLeft} Tagen`;
-    subMsg = "Premium jetzt aktivieren — Sichtbarkeit behalten";
-    ctaLabel = "Premium aktivieren";
+    subMsg = "Verliere keine Reichweite";
+    ctaLabel = "Jetzt sichtbar werden";
   } else if (isWarning) {
     mainMsg = `Noch ${daysLeft} Tage Testzugang`;
-    subMsg = "Deine Testphase endet bald — Sichtbarkeit sichern";
-    ctaLabel = "Sichtbarkeit sichern";
+    subMsg = "Mehr Sichtbarkeit = mehr Kunden";
+    ctaLabel = "Jetzt sichtbar werden";
   } else {
     mainMsg = `Noch ${daysLeft} Tage kostenloser Testzugang`;
     subMsg = null;
-    ctaLabel = "Jetzt upgraden";
+    ctaLabel = "Jetzt sichtbar werden";
   }
 
   return (
@@ -126,29 +126,29 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
 
   const contextual: Record<string, { headline: string; body: string; cta: string }> = {
     overview: {
-      headline: "Deine Testphase läuft – nutze die volle Sichtbarkeit",
-      body: `Werde in deiner Nähe häufiger entdeckt. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
-      cta: "Sichtbarkeit sichern",
+      headline: "Du k\u00f6nntest mehr Kunden erreichen",
+      body: `Mit Premium erscheint dein ${bizLabel} h\u00e4ufiger in Suche, Empfehlungen und lokalen Vorschl\u00e4gen. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
+      cta: "Jetzt sichtbar werden",
     },
     analytics: {
-      headline: "Volle Analysen verfügbar in der Testphase",
-      body: "Behalte diesen Einblick dauerhaft. Schon ein zusätzlicher Gast rechtfertigt den Monatsbetrag.",
-      cta: "Für 39,90€ fortsetzen",
+      headline: "Volle Analysen verf\u00fcgbar \u2014 behalte den Einblick",
+      body: "Schon ein zus\u00e4tzlicher Kunde pro Woche kann deine Investition mehr als ausgleichen.",
+      cta: "F\u00fcr 39,90\u20ac fortsetzen",
     },
     marketing: {
-      headline: "Boost-Tools aktiv – schalte alle frei mit Premium",
-      body: `Mehr Reichweite für dein ${bizLabel}. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
+      headline: "Mehr Sichtbarkeit = mehr Kunden",
+      body: `Boost-Tools aktiv f\u00fcr dein ${bizLabel}. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
       cta: "Premium aktivieren",
     },
     insights: {
-      headline: "Nutze dein lokales Potenzial besser",
-      body: "Erkenne Stoßzeiten und optimiere dein Angebot. Behalte alle Einblicke mit Premium.",
-      cta: "Jetzt sichern",
+      headline: "Kunden suchen genau jetzt nach Angeboten wie deinem",
+      body: "Erkenne Sto\u00dfzeiten und optimiere dein Angebot. Behalte alle Einblicke mit Premium.",
+      cta: "Jetzt sichtbar werden",
     },
     billing: {
-      headline: "Behalte deine Reichweite auch nach der Testphase",
-      body: "39,90€ im Monat für mehr lokale Sichtbarkeit – eine kleine Investition mit großer Wirkung.",
-      cta: "Für 39,90€ fortsetzen",
+      headline: "Behalte deine Sichtbarkeit und deinen Vorteil",
+      body: "39,90\u20ac im Monat \u2014 schon ein zus\u00e4tzlicher Kunde pro Woche gleicht die Investition aus.",
+      cta: "F\u00fcr 39,90\u20ac fortsetzen",
     },
   };
 
