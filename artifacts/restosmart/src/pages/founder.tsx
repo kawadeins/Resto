@@ -1937,6 +1937,425 @@ function Dashboard({ founderKey }: { founderKey: string }) {
   );
 }
 
+// ─── Founder Ops Center ───────────────────────────────────────────────────────
+
+interface OpsIncident {
+  id: number;
+  title: string;
+  system_area: string;
+  severity: string;
+  detected_at: string;
+  resolved_at: string | null;
+  affected_entity: string | null;
+  affected_city: string | null;
+  technical_summary: string;
+  anomaly_detected: string | null;
+  billing_truth: string | null;
+  platform_truth: string | null;
+  auto_action_taken: string | null;
+  recovery_result: string | null;
+  recommended_action: string | null;
+  needs_manual_review: boolean;
+  status: string;
+  incident_type: string;
+}
+
+interface OpsSummary {
+  health: string;
+  counts: {
+    total: number;
+    open: number;
+    resolved: number;
+    escalated: number;
+    pendingReview: number;
+    criticalOpen: number;
+    highOpen: number;
+    mediumOpen: number;
+    lowOpen: number;
+    last24h: number;
+    last7d: number;
+  };
+  recentCritical: any[];
+  systemAreas: any[];
+}
+
+const SEVERITY_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  critical: { bg: "bg-red-500/10",   text: "text-red-400",    border: "border-red-500/25",    label: "KRITISCH" },
+  high:     { bg: "bg-rose-500/10",  text: "text-rose-400",   border: "border-rose-500/25",   label: "HOCH" },
+  medium:   { bg: "bg-amber-500/10", text: "text-amber-400",  border: "border-amber-500/25",  label: "MITTEL" },
+  low:      { bg: "bg-blue-500/10",  text: "text-blue-400",   border: "border-blue-500/25",   label: "NIEDRIG" },
+};
+
+const HEALTH_STYLES: Record<string, { color: string; label: string; icon: string }> = {
+  healthy:  { color: "text-emerald-400", label: "Gesund",    icon: "bg-emerald-500" },
+  warning:  { color: "text-amber-400",   label: "Warnung",   icon: "bg-amber-500" },
+  degraded: { color: "text-rose-400",    label: "Beeinträchtigt", icon: "bg-rose-500" },
+  critical: { color: "text-red-400",     label: "Kritisch",  icon: "bg-red-500" },
+};
+
+const AREA_LABELS: Record<string, string> = {
+  boost_delivery: "Boost-Auslieferung",
+  boost_integrity: "Boost-Integrität",
+  billing_integrity: "Billing-Integrität",
+  platform_consistency: "Plattform-Konsistenz",
+  data_integrity: "Daten-Integrität",
+  city_health: "Stadt-Gesundheit",
+  abuse_detection: "Missbrauchs-Erkennung",
+  growth_anomaly: "Wachstums-Anomalie",
+  revenue_monitoring: "Umsatz-Monitoring",
+};
+
+function FounderOpsCenter({ founderKey }: { founderKey: string }) {
+  const headers: Record<string, string> = { "x-founder-key": founderKey, "Content-Type": "application/json" };
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState<"all" | "open" | "resolved">("open");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const summaryQuery = useQuery<OpsSummary>({
+    queryKey: ["ops-summary"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/ops/summary`, { headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const incidentsQuery = useQuery<{ incidents: OpsIncident[] }>({
+    queryKey: ["ops-incidents", filter],
+    queryFn: async () => {
+      const url = filter === "all" ? `${API}/ops/incidents` : `${API}/ops/incidents?status=${filter}`;
+      const r = await fetch(url, { headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const runHealthCheck = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`${API}/ops/health-check`, { method: "POST", headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ops-summary"] });
+      qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+    },
+  });
+
+  const updateIncident = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const r = await fetch(`${API}/ops/incidents/${id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ status }),
+      });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ops-summary"] });
+      qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+    },
+  });
+
+  const s = summaryQuery.data;
+  const incidents = incidentsQuery.data?.incidents ?? [];
+
+  const healthStyle = HEALTH_STYLES[s?.health ?? "healthy"];
+
+  return (
+    <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-6">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Shield className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">
+              Self-Healing Ops Center
+            </span>
+            {s && (
+              <span className={cn(
+                "flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                s.health === "healthy"  ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" :
+                s.health === "warning"  ? "text-amber-400 bg-amber-500/10 border-amber-500/20" :
+                s.health === "degraded" ? "text-rose-400 bg-rose-500/10 border-rose-500/20" :
+                "text-red-400 bg-red-500/10 border-red-500/20"
+              )}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", healthStyle?.icon)} />
+                {healthStyle?.label}
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-[#333]">
+            Plattform-Guardian: Anomalie-Erkennung, Billing-Integrität, automatische Recovery und Founder-Alerts.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => runHealthCheck.mutate()}
+            disabled={runHealthCheck.isPending}
+            className={cn(
+              "flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all",
+              runHealthCheck.isPending
+                ? "text-[#444] border-white/6 bg-white/2"
+                : "text-emerald-400 border-emerald-500/20 bg-emerald-500/8 hover:bg-emerald-500/15"
+            )}
+          >
+            <Zap className="w-3 h-3" />
+            {runHealthCheck.isPending ? "Prüfe..." : "Health Check"}
+          </button>
+          <button
+            onClick={() => {
+              qc.invalidateQueries({ queryKey: ["ops-summary"] });
+              qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+            }}
+            className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#888] transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" /> Aktualisieren
+          </button>
+        </div>
+      </div>
+
+      {/* Health check result */}
+      {runHealthCheck.data && (
+        <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-semibold">
+            <CheckCircle className="w-3.5 h-3.5" />
+            Health Check abgeschlossen
+          </div>
+          <p className="text-[10px] text-[#555] mt-1">
+            {runHealthCheck.data.checksRun} Checks · {runHealthCheck.data.issuesDetected} Probleme erkannt · {runHealthCheck.data.newIncidentsCreated} neue Incidents erstellt
+          </p>
+        </div>
+      )}
+
+      {/* KPI row */}
+      {s && (
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+          {[
+            { label: "Offen",       value: s.counts.open,          color: s.counts.open > 0 ? "text-amber-400" : "text-emerald-400" },
+            { label: "Kritisch",    value: s.counts.criticalOpen,  color: s.counts.criticalOpen > 0 ? "text-red-400" : "text-emerald-400" },
+            { label: "Hoch",        value: s.counts.highOpen,      color: s.counts.highOpen > 0 ? "text-rose-400" : "text-[#555]" },
+            { label: "Review nötig", value: s.counts.pendingReview, color: s.counts.pendingReview > 0 ? "text-amber-400" : "text-[#555]" },
+            { label: "Letzte 24h",  value: s.counts.last24h,       color: "text-[#888]" },
+            { label: "Gelöst",      value: s.counts.resolved,      color: "text-emerald-400" },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="rounded-xl border border-white/6 bg-white/2 px-3 py-2 text-center">
+              <p className={cn("text-base font-bold", color)}>{value}</p>
+              <p className="text-[9px] text-[#444]">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* System areas breakdown */}
+      {s && s.systemAreas.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {(s.systemAreas as any[]).map((area: any) => (
+            <span
+              key={area.system_area}
+              className={cn(
+                "text-[10px] px-2 py-0.5 rounded-full border font-medium",
+                parseInt(area.open_count) > 0
+                  ? "text-amber-400 bg-amber-500/8 border-amber-500/15"
+                  : "text-[#444] bg-white/3 border-white/6"
+              )}
+            >
+              {AREA_LABELS[area.system_area] ?? area.system_area}: {area.open_count} offen / {area.incident_count} gesamt
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Filter tabs */}
+      <div className="flex gap-1">
+        {(["open", "all", "resolved"] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={cn(
+              "text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all",
+              filter === f
+                ? "bg-white/10 text-white border border-white/15"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            {f === "open" ? "Offen" : f === "all" ? "Alle" : "Gelöst"}
+          </button>
+        ))}
+      </div>
+
+      {/* Incident feed */}
+      {incidentsQuery.isLoading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl bg-white/3 animate-pulse" />)}
+        </div>
+      ) : incidents.length === 0 ? (
+        <div className="rounded-2xl border border-white/6 bg-white/2 p-8 text-center">
+          <Shield className="w-8 h-8 text-emerald-400/30 mx-auto mb-3" />
+          <p className="text-sm text-[#555]">
+            {filter === "open" ? "Keine offenen Incidents — Plattform ist gesund." : "Keine Incidents gefunden."}
+          </p>
+          <p className="text-[10px] text-[#333] mt-1">
+            Führe einen Health Check durch um die Plattform zu prüfen.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {incidents.map((inc) => {
+            const sev = SEVERITY_STYLES[inc.severity] ?? SEVERITY_STYLES.low;
+            const isExpanded = expandedId === inc.id;
+
+            return (
+              <div
+                key={inc.id}
+                className={cn(
+                  "rounded-xl border bg-white/2 overflow-hidden transition-all",
+                  inc.status === "resolved" ? "border-white/4 opacity-60" : "border-white/6"
+                )}
+              >
+                {/* Incident header */}
+                <button
+                  onClick={() => setExpandedId(isExpanded ? null : inc.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/2 transition-colors"
+                >
+                  <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0", sev.bg, sev.text, sev.border)}>
+                    {sev.label}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-white truncate">{inc.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-[#444]">
+                        {AREA_LABELS[inc.system_area] ?? inc.system_area}
+                      </span>
+                      {inc.affected_city && (
+                        <span className="text-[10px] text-[#333]">{inc.affected_city}</span>
+                      )}
+                      <span className="text-[10px] text-[#333]">
+                        {new Date(inc.detected_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                  </div>
+                  {inc.needs_manual_review && inc.status === "open" && (
+                    <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">
+                      REVIEW
+                    </span>
+                  )}
+                  <span className={cn(
+                    "text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0",
+                    inc.status === "open" ? "text-amber-400 bg-amber-500/8"
+                    : inc.status === "resolved" ? "text-emerald-400 bg-emerald-500/8"
+                    : "text-rose-400 bg-rose-500/8"
+                  )}>
+                    {inc.status === "open" ? "Offen" : inc.status === "resolved" ? "Gelöst" : inc.status}
+                  </span>
+                  <ChevronDown className={cn("w-3.5 h-3.5 text-[#444] transition-transform shrink-0", isExpanded && "rotate-180")} />
+                </button>
+
+                {/* Expanded details */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 pt-1 border-t border-white/4 space-y-3">
+                    {/* Technical summary */}
+                    <div>
+                      <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Technische Zusammenfassung</p>
+                      <p className="text-[11px] text-[#888] leading-relaxed">{inc.technical_summary}</p>
+                    </div>
+
+                    {/* Detail grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {inc.anomaly_detected && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Anomalie erkannt</p>
+                          <p className="text-[10px] text-rose-400 mt-0.5">{inc.anomaly_detected}</p>
+                        </div>
+                      )}
+                      {inc.billing_truth && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Billing-Wahrheit</p>
+                          <p className="text-[10px] text-[#888] mt-0.5">{inc.billing_truth}</p>
+                        </div>
+                      )}
+                      {inc.platform_truth && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Plattform-Wahrheit</p>
+                          <p className="text-[10px] text-[#888] mt-0.5">{inc.platform_truth}</p>
+                        </div>
+                      )}
+                      {inc.auto_action_taken && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Automatische Aktion</p>
+                          <p className="text-[10px] text-[#888] mt-0.5">{inc.auto_action_taken}</p>
+                        </div>
+                      )}
+                      {inc.recovery_result && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Recovery-Ergebnis</p>
+                          <p className="text-[10px] text-emerald-400 mt-0.5">{inc.recovery_result}</p>
+                        </div>
+                      )}
+                      {inc.affected_entity && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Betroffene Entität</p>
+                          <p className="text-[10px] text-[#888] mt-0.5">{inc.affected_entity}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Recommended action */}
+                    {inc.recommended_action && (
+                      <div className="rounded-lg bg-violet-500/5 border border-violet-500/15 px-3 py-2">
+                        <p className="text-[9px] text-violet-400 font-bold uppercase tracking-widest">Empfohlene Aktion</p>
+                        <p className="text-[11px] text-[#888] mt-1 leading-relaxed">{inc.recommended_action}</p>
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    {inc.status === "open" && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateIncident.mutate({ id: inc.id, status: "resolved" })}
+                          className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/15 transition-colors"
+                        >
+                          <CheckCircle className="w-3 h-3" /> Als gelöst markieren
+                        </button>
+                        <button
+                          onClick={() => updateIncident.mutate({ id: inc.id, status: "escalated" })}
+                          className="flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/8 border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/15 transition-colors"
+                        >
+                          <AlertTriangle className="w-3 h-3" /> Eskalieren
+                        </button>
+                        <button
+                          onClick={() => updateIncident.mutate({ id: inc.id, status: "dismissed" })}
+                          className="flex items-center gap-1 text-[10px] text-[#444] hover:text-[#888] px-2 py-1.5 transition-colors"
+                        >
+                          <X className="w-3 h-3" /> Verwerfen
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Audit trail note */}
+      <div className="rounded-2xl border border-white/4 bg-white/1 px-5 py-4">
+        <p className="text-[11px] text-[#444] leading-relaxed">
+          <span className="text-[#666] font-semibold">Self-Healing Ops Layer:</span>
+          {" "}Alle Incidents werden mit vollem Audit-Trail gespeichert: Erkennungszeit, Anomalie-Typ, betroffene Systeme, durchgeführte Aktionen und Ergebnis.
+          Das System erkennt Probleme, versucht sichere automatische Recovery und eskaliert unsichere Fälle an den Founder.
+          Keine destruktiven Aktionen ohne Review.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Founder Cities Dashboard ─────────────────────────────────────────────────
 
 interface CityData {
@@ -2460,7 +2879,7 @@ export default function Founder() {
   const [authed, setAuthed] = useState<boolean>(() => {
     return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
   });
-  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion" | "competition" | "cities">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion" | "competition" | "cities" | "ops">("dashboard");
 
   if (!authed) {
     return <AuthGate onAuth={() => setAuthed(true)} />;
@@ -2537,6 +2956,18 @@ export default function Founder() {
             Städte
             <span className="bg-violet-500/20 text-violet-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">NEU</span>
           </button>
+          <button
+            onClick={() => setView("ops")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+              view === "ops"
+                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            Ops
+          </button>
           <div className="ml-auto text-[10px] text-[#222]">Founder · Streng vertraulich</div>
         </div>
       </div>
@@ -2552,6 +2983,7 @@ export default function Founder() {
       )}
       {view === "competition" && <FounderCompetitionInsights founderKey={CORRECT_KEY} />}
       {view === "cities" && <FounderCitiesView founderKey={CORRECT_KEY} />}
+      {view === "ops" && <FounderOpsCenter founderKey={CORRECT_KEY} />}
     </div>
   );
 }

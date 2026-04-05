@@ -1,0 +1,390 @@
+MASTER RULES APPLY
+
+Build an "AI Self-Healing Ops Layer + Founder Secret Dash Bot Alert System" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing functionality.
+This is a core internal operations, recovery, and founder-alert system.
+
+This system must be built to support future scale and internal operational safety.
+
+It must integrate with:
+- Premium Business subscriptions
+- payment / billing system
+- boost / sponsored visibility system
+- founder dashboard / founder secret route
+- monetization engine
+- business dashboard
+- notifications / internal alerts
+- anomaly detection / platform watchdog layer
+- auth / session integrity
+- core platform logs
+- risk scoring system
+
+========================
+GOAL
+========================
+
+Create an internal self-healing and founder-alert system that can:
+
+- detect system problems
+- detect billing mismatches
+- detect broken flows
+- detect suspicious or risky behavior
+- attempt safe automatic recovery where possible
+- send detailed operational reports directly to the founder / owner dashboard
+
+This system must act like:
+- internal platform guardian
+- recovery layer
+- founder intelligence bot
+- secret ops dashboard assistant
+
+========================
+1. SELF-HEALING OPS LAYER (CORE)
+========================
+
+Build a safe self-healing layer that can automatically respond to recoverable system problems.
+
+Examples of problems it should handle when safe:
+- payment webhook processed late
+- premium status not synced correctly
+- boost purchase completed but campaign not activated
+- valid payment but missing dashboard unlock
+- expired state not updated correctly
+- retryable API/process failures
+- stuck transitions between trial / paid / expired
+- delayed metrics sync
+- temporary platform inconsistency
+
+The system should:
+- detect
+- verify
+- attempt safe recovery
+- log the action
+- report the result to founder dashboard
+
+========================
+2. FOUNDER SECRET DASH BOT ALERT SYSTEM
+========================
+
+Create a founder-only internal secret alert layer that sends all important technical, billing, monetization, and integrity issues directly to the founder dashboard.
+
+This founder alert system must report:
+
+- what happened
+- where it happened
+- severity
+- affected system
+- affected account/business if relevant
+- likely reason
+- what the system did automatically
+- what still needs manual review
+- what the founder should do next
+
+This is critical.
+
+========================
+3. DETAILED ISSUE REPORTING
+========================
+
+For any important issue, generate a structured internal report inside the founder dashboard.
+
+Each report should include fields like:
+
+- Incident title
+- System area
+- Severity (Low / Medium / High / Critical)
+- Timestamp
+- Affected business / user / city if relevant
+- Short technical summary
+- Detected anomaly or failure
+- Current billing truth
+- Current platform truth
+- Automatic action taken
+- Recovery result
+- Recommended founder action
+- Needs manual review? (Yes/No)
+
+Examples:
+- payment mismatch
+- premium not activated after valid payment
+- suspicious repeated trial attempts
+- boost purchased but visibility not active
+- unusual failed payments spike
+- city-specific conversion collapse
+- system update required
+- stale or broken metrics feed
+- critical internal service inconsistency
+
+========================
+4. SAFE AUTO-RECOVERY ACTIONS
+========================
+
+Allow only controlled, reversible recovery actions.
+
+Examples:
+- retry sync
+- retry webhook reconciliation
+- restore correct premium status
+- reactivate valid boost campaign
+- temporarily hold suspicious action
+- resync billing truth
+- queue account for manual review
+- retry failed internal process
+- refresh stale operational state
+
+Do NOT allow dangerous destructive auto-actions by default.
+
+No blind deletions.
+No aggressive bans.
+No permanent lockouts without review.
+
+========================
+5. BILLING + PREMIUM SELF-HEALING
+========================
+
+Continuously verify and repair truth between:
+
+- payment success
+- subscription status
+- premium activation
+- trial status
+- business dashboard access
+- boost activation state
+
+Detect and heal mismatches such as:
+- paid but no Premium
+- Premium active without valid billing truth
+- trial expired but still fully active
+- valid boost payment with missing campaign activation
+- campaign active without billing support
+
+Whenever one of these happens:
+- try safe reconciliation
+- log all steps
+- send detailed founder report
+
+========================
+6. PLATFORM FAILURE + UPDATE WATCH
+========================
+
+Monitor for platform states that require:
+- system update
+- manual review
+- configuration review
+- business-rule correction
+- operational intervention
+
+Examples:
+- increasing payment failures
+- founder metrics no longer matching platform truth
+- premium conversion funnel suddenly broken
+- discovery/boost logic partially failing
+- suspicious ranking anomalies
+- unusual drop in bookings from promoted traffic
+- notification delivery issues
+- system behavior changed after update
+
+Send this clearly to founder dashboard with:
+- issue details
+- likely cause
+- urgency
+- recommended next step
+
+========================
+7. FOUNDER ACTION RECOMMENDATIONS
+========================
+
+Each founder alert/report should not only describe the issue, but also tell the founder what should be done.
+
+Examples:
+- "Review payment webhook configuration"
+- "Check Premium activation flow for affected businesses"
+- "Investigate failed billing increase in Vienna"
+- "Review suspicious trial abuse accounts"
+- "Inspect boost delivery logic"
+- "Verify new deployment impact on conversion funnel"
+
+This is very important.
+
+The founder dashboard must answer:
+- what happened?
+- how bad is it?
+- what was auto-fixed?
+- what still needs me?
+
+========================
+8. SECRET DASH BOT FEED
+========================
+
+Inside founder secret dashboard, create a dedicated operational feed / command stream such as:
+
+- Critical Alerts
+- Ops Incidents
+- Billing Integrity Reports
+- Recovery Actions
+- Manual Review Queue
+- Update / Maintenance Flags
+
+This should feel like:
+- secret internal operator console
+- intelligent incident feed
+- founder mission control
+
+========================
+9. INCIDENT PRIORITIZATION
+========================
+
+Classify incidents by urgency:
+
+- Low
+- Medium
+- High
+- Critical
+
+Examples:
+Low:
+- stale metrics delay
+- small retryable sync issue
+
+Medium:
+- isolated failed campaign activation
+- local analytics mismatch
+
+High:
+- repeated payment failures
+- multiple premium activation mismatches
+- city-level conversion anomaly
+
+Critical:
+- billing truth failure
+- many businesses incorrectly unlocked/locked
+- broad payment flow disruption
+- founder dashboard trust compromised
+- large suspicious abuse pattern
+
+Founder should see critical things first.
+
+========================
+10. SELF-HEALING AUDIT TRAIL
+========================
+
+Keep a detailed internal log of:
+- detection time
+- anomaly type
+- affected systems
+- action attempted
+- action result
+- final status
+- escalation status
+
+This must support trust, debugging, and post-incident review.
+
+========================
+11. MANUAL REVIEW SUPPORT
+========================
+
+When confidence is not high enough, do not pretend the system fixed the issue.
+
+Instead:
+- mark for manual review
+- explain uncertainty
+- show recommended next steps
+- keep founder informed
+
+The system must know when to:
+- auto-fix
+- auto-retry
+- alert only
+- escalate to founder
+
+========================
+12. NO FAKE AI / NO FALSE CONFIDENCE
+========================
+
+Do NOT make unsupported claims.
+
+Use:
+- anomaly detection
+- consistency checks
+- billing reconciliation
+- retry logic
+- risk scoring
+- safe rule-based recovery
+- controlled escalation
+
+If the system is unsure:
+say so clearly in the founder report.
+
+========================
+13. FOUNDER DASHBOARD INTEGRATION (CRITICAL)
+========================
+
+All important incidents, updates, recovery attempts, and internal warnings must be visible inside the founder secret dashboard.
+
+The founder must receive:
+
+- technical issue reports
+- payment issue reports
+- subscription mismatch reports
+- suspicious behavior reports
+- update-needed warnings
+- recovery action summaries
+- manual review queue
+- high-risk monetization anomalies
+
+Nothing important should stay hidden.
+
+========================
+14. SCALABILITY MINDSET
+========================
+
+Design the system with the assumption that the platform may later have:
+- 1,000,000+ users
+- very large subscription volume
+- many boost campaigns
+- many concurrent billing events
+- many operational anomalies
+
+Do NOT build this as a tiny admin hack.
+It must be structurally scalable.
+
+========================
+15. DO NOT OVERCOMPLICATE
+========================
+
+Do NOT turn this into:
+- a full enterprise NOC platform
+- a giant compliance suite
+- an impossible fully autonomous system
+
+Focus on:
+- monitoring
+- anomaly detection
+- safe recovery
+- founder visibility
+- actionable reporting
+- billing/platform integrity
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have an internal self-healing operations layer that:
+
+- detects important platform problems
+- safely fixes what can be fixed
+- escalates what cannot be fixed safely
+- sends full detailed intelligence directly to the founder secret dashboard
+
+The founder / owner should always know:
+
+- what happened
+- how serious it is
+- what the system already did
+- what still needs action
+- what should be reviewed next
+
+This system should feel like the hidden operational brain and guardian of the company.

@@ -181,6 +181,47 @@ Real-time competitive intelligence layer that surfaces market pressure, demand s
 - `GET /api/competition/insights` — founder analytics (x-founder-key header required)
 - Registered: `artifacts/api-server/src/routes/competition.ts` → `routes/index.ts`
 
+## AI Self-Healing Ops Layer + Founder Alert System
+
+Internal platform guardian: anomaly detection, billing integrity, safe auto-recovery, and founder intelligence alerts.
+
+### Database
+- **Table**: `ops_incidents` — id, title, system_area, severity (low/medium/high/critical), detected_at, resolved_at, affected_entity, affected_city, technical_summary, anomaly_detected, billing_truth, platform_truth, auto_action_taken, recovery_result, recommended_action, needs_manual_review, status (open/resolved/escalated/dismissed), incident_type, metadata (JSONB)
+
+### Health Checks (5 automated check categories)
+1. **Premium/Billing Mismatch** — boosts with 0 impressions after 2h, duplicate active boosts (>3 per restaurant)
+2. **Budget Anomalies** — boost spend exceeding daily budget by >20%
+3. **Platform Consistency** — inactive restaurants with active boosts, rating anomalies (out of 1–5 range), high city inactivity rates (>50%)
+4. **Claims Abuse Detection** — duplicate emails (>3 claims in 7 days), unusual claim volume (>20/day)
+5. **Revenue Anomalies** — active campaigns with €0 spent today
+
+### API Routes
+- `POST /api/ops/health-check` — run all 5 check categories, deduplicate within 24h window (founder auth)
+- `GET /api/ops/incidents?status=open&severity=high` — list incidents sorted by severity (founder auth)
+- `GET /api/ops/summary` — KPI summary + health status (healthy/warning/degraded/critical) (founder auth)
+- `PATCH /api/ops/incidents/:id` — update status to resolved/escalated/dismissed (founder auth)
+- Registered: `artifacts/api-server/src/routes/ops.ts` → `routes/index.ts`
+
+### Founder "Ops" Tab
+- **Component**: `FounderOpsCenter` in `artifacts/restosmart/src/pages/founder.tsx`
+- **Tab**: "Ops" (emerald, Shield icon) — 6th tab in Founder Command Center
+- **Features**:
+  - Platform health indicator (Gesund/Warnung/Beeinträchtigt/Kritisch)
+  - "Health Check" button — runs all checks on demand
+  - KPI row: open incidents, critical, high, review needed, last 24h, resolved
+  - System area breakdown badges
+  - Filterable incident feed (Offen/Alle/Gelöst)
+  - Expandable incident cards with: technical summary, anomaly, billing truth, platform truth, auto action, recovery result, recommended action
+  - Per-incident actions: "Als gelöst markieren" / "Eskalieren" / "Verwerfen"
+  - Audit trail note
+
+### Design Principles
+- No destructive auto-actions without review
+- No blind deletions, aggressive bans, or permanent lockouts
+- System knows when to: auto-fix, auto-retry, alert only, or escalate to founder
+- Incidents deduplicated within 24h to prevent spam
+- Full audit trail for every detection, action, and resolution
+
 ## City Expansion Engine
 
 Market domination system for growing city-by-city in a controlled, strategic way.

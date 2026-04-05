@@ -40,6 +40,7 @@ import conversionRouter from "./conversion";
 import variantsRouter from "./variants";
 import competitionRouter from "./competition";
 import citiesRouter from "./cities";
+import opsRouter from "./ops";
 
 const router: IRouter = Router();
 
@@ -84,5 +85,6 @@ router.use("/conversion", conversionRouter);
 router.use("/variants", variantsRouter);
 router.use("/competition", competitionRouter);
 router.use("/cities", citiesRouter);
+router.use("/ops", opsRouter);
 
 export default router;
