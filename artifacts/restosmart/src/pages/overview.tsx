@@ -25,6 +25,7 @@ import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, Shop
 import { getBizType, BIZ_POSSESSIVE } from "@/lib/biz-copy";
 import { TrialConversionBanner } from "@/components/layout";
 import { GrowthActivationHub } from "@/components/growth-activation-hub";
+import { CompetitionEngine } from "@/components/competition-engine";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -209,6 +210,12 @@ export default function Overview() {
 
       {/* Trial conversion prompt — only visible during active trial */}
       <TrialConversionBanner context="overview" />
+
+      {/* Competition Engine — visibility tier, demand signals, competition level */}
+      <CompetitionEngine
+        onBoost={() => { window.location.href = "/promotions"; }}
+        onUpgrade={() => { window.location.href = "/billing"; }}
+      />
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>

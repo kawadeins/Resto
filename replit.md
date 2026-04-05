@@ -152,6 +152,35 @@ When form submits (`POST /api/business-claims` with `source: "self_serve"`):
 - `POST /api/business-claims` — now accepts `source` field, returns `selfServe: boolean`
 - `GET /api/business-claims/growth-signals` — real platform stats for value prop (30 venues, bookings, rating)
 
+## Business Competition Engine
+
+Real-time competitive intelligence layer that surfaces market pressure, demand signals, and visibility strength to owners and the founder.
+
+### Owner-Facing Widget (`competition-engine.tsx`)
+- **File**: `artifacts/restosmart/src/components/competition-engine.tsx`
+- **Wired into**: `overview.tsx` — shown below TrialConversionBanner (all logged-in users)
+- **4 panels**:
+  1. **Visibility Strength bar** — Standard / Premium / Boost / Top 3 / Top 1 tiers with animated fill and score 0–100
+  2. **Demand Signal** — Time+biztype aware (Mittag-Peak / Abend-Peak / Frühstücks-Peak / Nachtleben) with isActive indicator
+  3. **Competition Signal** — Live count of competing boosters, market pressure level (low/medium/high)
+  4. **Slot Availability** — Top-3 and Boost slots remaining + recommended action CTA
+- **Recommended action** drives urgency CTA: "Boost jetzt aktivieren" (rose, high urgency) or "Premium aktivieren" or "Boost aktiv" (green)
+- Queries `/api/competition/signals?restaurantId=1&businessType=X&hasPremium=bool`
+
+### Founder Competition Insights Tab
+- **File**: `artifacts/restosmart/src/pages/founder.tsx` — `FounderCompetitionInsights` component
+- **Tab**: "Wettbewerb" (rose, LIVE badge) — 4th tab in founder nav
+- **Shows**:
+  - KPI row: active boosts, total daily budget, total impressions, competition intensity (niedrig/mittel/hoch)
+  - By-business-type breakdown (Restaurant/Café/Bar) with relative intensity bar
+  - Full boost history table (name, type, status, impressions, clicks, budget/day, start date)
+  - Fairness guarantee note
+
+### API Routes
+- `GET /api/competition/signals` — owner widget data (no auth required)
+- `GET /api/competition/insights` — founder analytics (x-founder-key header required)
+- Registered: `artifacts/api-server/src/routes/competition.ts` → `routes/index.ts`
+
 ## Wien Market Focus (Growth Activation)
 
 ### City Data (30 Wien venues — City Domination Update)

@@ -1,0 +1,271 @@
+MASTER RULES APPLY
+
+Build a "Business Competition Engine" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the whole app.
+Do NOT break existing functionality.
+Do NOT create a complex bidding/auction UI.
+Do NOT manipulate users unfairly.
+
+This is a controlled competition layer built on top of:
+- Premium Business System (39,90€ / month)
+- Boost / Sponsored Visibility System
+- Dynamic Pricing Engine
+- Heat Map / Live Activity
+- Ranking / Behavior Engine
+
+All business-facing UI and messaging must be in German.
+
+========================
+GOAL
+========================
+
+Create a system where businesses naturally compete for visibility in a controlled, fair, and profitable way.
+
+The system should:
+- increase demand for visibility
+- increase boost spending
+- make top positions valuable
+- create natural competition without chaos
+
+Businesses should feel:
+- “I want to be seen more than others”
+- “I should invest to stay visible”
+- “This position matters”
+
+========================
+1. VISIBILITY TIERS (CORE)
+========================
+
+Define clear visibility tiers:
+
+- Top Position (#1)
+- Top 3 Positions
+- Boosted Visibility
+- Standard Listing
+
+Higher tiers:
+- get more exposure
+- cost more
+- are more competitive
+
+Do NOT guarantee ranking — increase probability based on:
+- boost
+- relevance
+- quality
+
+========================
+2. COMPETITION SIGNALS (VERY IMPORTANT)
+========================
+
+Show controlled competition signals to businesses.
+
+German examples:
+
+- "Hohe Konkurrenz in deiner Umgebung"
+- "Andere Betriebe erhöhen aktuell ihre Sichtbarkeit"
+- "Top-Positionen sind stark nachgefragt"
+- "Jetzt sichtbar bleiben"
+
+These signals must:
+- feel real
+- be based on actual activity
+- create motivation
+
+========================
+3. LIMITED VISIBILITY SLOTS
+========================
+
+Create the feeling of limited space:
+
+Examples:
+- Top 3 positions are limited
+- premium visibility zones are limited
+- boosted slots per area are limited
+
+German examples:
+- "Begrenzte Top-Plätze verfügbar"
+- "Nur wenige sichtbare Positionen in deiner Umgebung"
+
+Do NOT fake scarcity.
+
+========================
+4. DYNAMIC COMPETITION FEEDBACK
+========================
+
+Show real-time feedback in dashboard:
+
+- demand level (low / medium / high)
+- competition level
+- current visibility strength
+
+German examples:
+- "Hohe Nachfrage in deiner Region"
+- "Starke Aktivität in deiner Umgebung"
+- "Jetzt ist ein guter Zeitpunkt für mehr Sichtbarkeit"
+
+========================
+5. POSITION VALUE AWARENESS
+========================
+
+Make businesses understand that higher positions matter.
+
+Examples:
+- more visibility
+- more discovery
+- more clicks
+- more customers
+
+German examples:
+- "Top-Positionen werden häufiger gesehen"
+- "Mehr Sichtbarkeit bedeutet mehr Reichweite"
+- "Höhere Platzierung = mehr Aufmerksamkeit"
+
+========================
+6. COMPETITION-DRIVEN BOOSTING
+========================
+
+Encourage businesses to invest in visibility:
+
+Examples:
+- increase budget
+- activate boost
+- maintain position
+
+German examples:
+- "Jetzt Sichtbarkeit erhöhen"
+- "Bleib in den Top-Ergebnissen sichtbar"
+- "Mehr Reichweite durch Boost"
+
+This must feel like:
+👉 smart opportunity  
+not pressure
+
+========================
+7. FAIRNESS RULES (CRITICAL)
+========================
+
+The system must remain fair:
+
+- relevance still matters
+- quality still matters
+- ratings still matter
+- premium boosts visibility but does not fully override quality
+
+Do NOT allow:
+- low-quality businesses dominating purely by money
+- broken ranking trust
+
+========================
+8. BUSINESS-TYPE COMPETITION
+========================
+
+Adapt competition by type:
+
+Restaurants:
+- lunch / dinner competition
+
+Cafés:
+- morning / coffee rush competition
+
+Bars:
+- evening / nightlife competition
+
+German examples:
+- "Hohe Nachfrage zur Mittagszeit"
+- "Starker Wettbewerb am Morgen"
+- "Hohe Aktivität im Nachtleben"
+
+========================
+9. HEAT MAP INTEGRATION
+========================
+
+Use live activity signals:
+
+- high-activity zones = higher competition
+- low-activity zones = cheaper opportunity
+
+German examples:
+- "Hotspot in deiner Nähe"
+- "Starke Aktivität in diesem Bereich"
+- "Jetzt gute Chance für mehr Sichtbarkeit"
+
+========================
+10. PREMIUM ADVANTAGE
+========================
+
+Premium businesses should:
+
+- get better access to visibility tools
+- have stronger presence in competition zones
+- appear more often when relevant
+
+But:
+- must still respect ranking logic
+
+========================
+11. UI / UX STYLE
+========================
+
+Use:
+
+- clean indicators
+- small badges
+- simple competition levels
+- no complex bidding screens
+
+Avoid:
+- ad manager complexity
+- confusing graphs
+- overwhelming data
+
+========================
+12. FOUNDER INSIGHT
+========================
+
+Track:
+
+- competition intensity
+- boost spending increase
+- top slot demand
+- conversion under competition
+- revenue per area
+
+Show inside Founder Command Center:
+- most competitive cities
+- most competitive business types
+- highest revenue zones
+
+========================
+13. DO NOT OVERCOMPLICATE
+========================
+
+- no real-time auctions
+- no bidding wars UI
+- no chaotic system
+
+Focus on:
+- controlled competition
+- simple signals
+- natural motivation
+- increased revenue
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should create a healthy, controlled competition where:
+
+- businesses want better visibility
+- top positions become valuable
+- demand increases
+- boost spending increases
+- revenue grows
+
+The system should feel:
+
+👉 fair  
+👉 competitive  
+👉 profitable  
+👉 smart

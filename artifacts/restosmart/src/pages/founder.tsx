@@ -1937,13 +1937,239 @@ function Dashboard({ founderKey }: { founderKey: string }) {
   );
 }
 
+// ─── Founder Competition Insights ─────────────────────────────────────────────
+
+interface CompetitionInsights {
+  summary: {
+    totalActive: number;
+    totalBudgetPerDay: number;
+    totalImpressions: number;
+    competitionIntensity: string;
+  };
+  activeBoosts: any[];
+  boostTrend: any[];
+  byBusinessType: any[];
+}
+
+function FounderCompetitionInsights({ founderKey }: { founderKey: string }) {
+  const headers = { "x-founder-key": founderKey };
+  const qc = useQueryClient();
+
+  const insightsQuery = useQuery<CompetitionInsights>({
+    queryKey: ["competition-insights"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/competition/insights`, { headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    staleTime: 60_000,
+  });
+
+  const d = insightsQuery.data;
+
+  const intensityColor = (i: string) =>
+    i === "hoch" ? "text-rose-400" : i === "mittel" ? "text-amber-400" : "text-emerald-400";
+
+  return (
+    <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-8">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Activity className="w-4 h-4 text-rose-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">
+              Wettbewerbs-Engine — Founder Insights
+            </span>
+            <span className="text-[10px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold">
+              LIVE
+            </span>
+          </div>
+          <p className="text-[11px] text-[#333]">
+            Echtzeit-Wettbewerbsdaten: Wie viele Betriebe boosten, welche Typen am aktivsten sind und wie hoch der Wettbewerbsdruck ist.
+          </p>
+        </div>
+        <button
+          onClick={() => qc.invalidateQueries({ queryKey: ["competition-insights"] })}
+          className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#888] transition-colors"
+        >
+          <RefreshCw className="w-3 h-3" /> Aktualisieren
+        </button>
+      </div>
+
+      {insightsQuery.isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-16 rounded-2xl bg-white/3 animate-pulse" />
+          ))}
+        </div>
+      ) : !d ? (
+        <div className="rounded-2xl border border-white/6 p-8 text-center text-[#333] text-sm">
+          Keine Daten verfügbar
+        </div>
+      ) : (
+        <>
+          {/* ── KPI summary ──────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              {
+                label: "Aktive Boosts",
+                value: String(d.summary.totalActive),
+                sub: "gerade aktiv",
+                color: d.summary.totalActive > 0 ? "text-rose-400" : "text-emerald-400",
+              },
+              {
+                label: "Budget / Tag",
+                value: `€${d.summary.totalBudgetPerDay.toFixed(2)}`,
+                sub: "Plattform gesamt",
+                color: "text-amber-400",
+              },
+              {
+                label: "Impressionen",
+                value: d.summary.totalImpressions.toLocaleString("de"),
+                sub: "gesamt",
+                color: "text-blue-400",
+              },
+              {
+                label: "Wettbewerbsdruck",
+                value: d.summary.competitionIntensity.toUpperCase(),
+                sub: "aktuell",
+                color: intensityColor(d.summary.competitionIntensity),
+              },
+            ].map(({ label, value, sub, color }) => (
+              <div key={label} className="rounded-2xl border border-white/6 bg-white/2 px-4 py-3 text-center">
+                <p className={`text-xl font-bold ${color}`}>{value}</p>
+                <p className="text-[10px] text-[#555] mt-0.5">{label}</p>
+                <p className="text-[9px] text-[#333]">{sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── By business type ─────────────────────────────────────────── */}
+          <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/6">
+              <span className="text-xs font-semibold text-[#888]">Wettbewerb nach Betriebstyp</span>
+            </div>
+            <div className="divide-y divide-white/4">
+              {(d.byBusinessType as any[]).map((row: any) => {
+                const BizIcon = BIZ_ICONS[row.business_type] ?? Store;
+                const bName   = BIZ_LABELS[row.business_type] ?? row.business_type;
+                const budget  = parseFloat(row.total_daily_budget ?? "0");
+                return (
+                  <div key={row.business_type} className="flex items-center gap-4 px-4 py-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                      <BizIcon className="w-4 h-4 text-[#888]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-white">{bName}s</p>
+                        <span className="text-[10px] text-[#444]">
+                          {row.total_promotions ?? 0} Boosts gesamt · {row.active_promotions ?? 0} aktiv
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="text-[10px] text-[#555]">Ø Rating: {row.avg_rating ?? "—"}</span>
+                        <span className="text-[10px] text-amber-400 font-semibold">
+                          €{budget.toFixed(2)}/Tag Budget
+                        </span>
+                        <span className="text-[10px] text-[#444]">
+                          {parseInt(row.total_impressions ?? "0").toLocaleString("de")} Impressionen
+                        </span>
+                      </div>
+                    </div>
+                    {/* Relative competition bar */}
+                    <div className="w-24 shrink-0">
+                      <div className="h-1.5 bg-white/6 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-600"
+                          style={{ width: `${Math.min(100, parseInt(row.total_impressions ?? "0") / 10)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Active boosts table ───────────────────────────────────────── */}
+          <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/6 flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#888]">Aktive & vergangene Boosts</span>
+              <span className="text-[10px] text-[#333]">{d.activeBoosts.length} Boosts insgesamt</span>
+            </div>
+            {d.activeBoosts.length === 0 ? (
+              <div className="p-8 text-center text-[#333] text-sm">
+                <Zap className="w-6 h-6 text-[#222] mx-auto mb-2" />
+                Noch keine Boosts aktiviert
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-white/4">
+                      {["Betrieb", "Typ", "Status", "Impressionen", "Klicks", "Budget/Tag", "Gestartet"].map(h => (
+                        <th key={h} className="py-2 px-4 text-left text-[10px] font-bold uppercase tracking-widest text-[#444]">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/4">
+                    {(d.activeBoosts as any[]).map((boost: any) => (
+                      <tr key={boost.id} className="hover:bg-white/2">
+                        <td className="py-2 px-4 text-white font-medium">{boost.name}</td>
+                        <td className="py-2 px-4 text-[#888]">
+                          {BOOST_LABELS[boost.type] ?? boost.type}
+                        </td>
+                        <td className="py-2 px-4">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            boost.status === "active"
+                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                              : "bg-white/5 text-[#555] border border-white/8"
+                          }`}>
+                            {boost.status === "active" ? "Aktiv" : boost.status}
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-[#888]">
+                          {parseInt(boost.impressions ?? "0").toLocaleString("de")}
+                        </td>
+                        <td className="py-2 px-4 text-[#888]">{boost.clicks ?? 0}</td>
+                        <td className="py-2 px-4 text-amber-400 font-semibold">
+                          €{parseFloat(boost.daily_budget ?? "0").toFixed(2)}
+                        </td>
+                        <td className="py-2 px-4 text-[#444]">
+                          {new Date(boost.started_at).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* ── Competition context note ──────────────────────────────────── */}
+          <div className="rounded-2xl border border-white/4 bg-white/1 px-5 py-4">
+            <p className="text-[11px] text-[#444] leading-relaxed">
+              <span className="text-[#666] font-semibold">Fairness-Garantie:</span> Die Sichtbarkeitslogik berücksichtigt Relevanz, Rating und Qualität.
+              Boosts erhöhen die Erscheinungswahrscheinlichkeit — sie garantieren keine Top-Position und können keine niedrige Qualität überbrücken.
+              Das System ist darauf ausgelegt, den Wettbewerb gesund und fair zu halten.
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export default function Founder() {
   const [authed, setAuthed] = useState<boolean>(() => {
     return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
   });
-  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion" | "competition">("dashboard");
 
   if (!authed) {
     return <AuthGate onAuth={() => setAuthed(true)} />;
@@ -1994,6 +2220,19 @@ export default function Founder() {
             Conversion Intelligence
             <span className="bg-violet-500/20 text-violet-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">NEU</span>
           </button>
+          <button
+            onClick={() => setView("competition")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+              view === "competition"
+                ? "bg-rose-500/15 text-rose-400 border border-rose-500/25"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            Wettbewerb
+            <span className="bg-rose-500/20 text-rose-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">LIVE</span>
+          </button>
           <div className="ml-auto text-[10px] text-[#222]">Founder · Streng vertraulich</div>
         </div>
       </div>
@@ -2007,6 +2246,7 @@ export default function Founder() {
           </div>
         </div>
       )}
+      {view === "competition" && <FounderCompetitionInsights founderKey={CORRECT_KEY} />}
     </div>
   );
 }
