@@ -1,0 +1,295 @@
+MASTER RULES APPLY
+
+Upgrade the existing Founder Ops / Platform Watchdog system inside RestoMaster to support safe self-healing and automatic recovery actions.
+
+IMPORTANT:
+Do NOT rebuild the entire Ops system from scratch.
+Do NOT remove the current incidents table, ops API, or Founder Ops tab.
+Do NOT break current monitoring and alert behavior.
+
+This is an upgrade pass on top of the already-built system.
+
+========================
+GOAL
+========================
+
+Turn the existing Ops / Watchdog system from:
+- detection
+- alerting
+- incident reporting
+
+into:
+- detection
+- alerting
+- safe auto-repair
+- billing reconciliation
+- founder action guidance
+
+The system should not only detect problems, but also automatically fix safe issues where possible and report exactly what happened to the founder.
+
+========================
+1. KEEP EXISTING OPS FOUNDATION
+========================
+
+Preserve and extend the current system:
+
+- ops_incidents table
+- /api/ops routes
+- Founder Ops tab
+- severity levels
+- incident feed
+- health checks
+- resolve / escalate / dismiss actions
+
+Do NOT replace these.
+Extend them.
+
+========================
+2. SAFE SELF-HEALING ACTIONS (CRITICAL)
+========================
+
+Add controlled automatic recovery actions for safe and reversible cases.
+
+Examples of auto-healing cases:
+
+- valid payment exists but Premium status not activated
+- Premium active but billing truth says inactive
+- boost payment succeeded but campaign not activated
+- boost campaign active without proper billing truth
+- delayed sync between payment state and platform state
+- retryable webhook / sync failures
+- stale ops or metrics states that can be refreshed safely
+
+For each case:
+- verify truth first
+- attempt safe recovery
+- log exactly what was done
+- create/update incident with recovery result
+
+Do NOT perform destructive actions automatically.
+
+========================
+3. BILLING RECONCILIATION LAYER
+========================
+
+Add a proper billing truth reconciliation system.
+
+Continuously compare:
+- payment provider truth
+- internal subscription truth
+- Premium access truth
+- boost campaign truth
+
+Detect and repair mismatches such as:
+- paid but not unlocked
+- unlocked but unpaid
+- boost bought but not running
+- running boost with no billing support
+- expired state not reflected correctly
+
+This is critical.
+
+========================
+4. AUTO-RETRY ENGINE
+========================
+
+For safe retryable failures, add automatic retry logic.
+
+Examples:
+- delayed sync
+- failed internal state update
+- failed activation step
+- incomplete transition between trial / paid / expired
+
+Rules:
+- retry only limited number of times
+- log retry count
+- if still failing → escalate incident
+- no infinite loops
+
+========================
+5. FOUNDER RECOMMENDED ACTIONS
+========================
+
+Enhance every important incident in Founder Ops with a strong recommendation block.
+
+Each incident should clearly show:
+
+- what happened
+- what system detected
+- what auto-action was attempted
+- whether the repair succeeded
+- what the founder should do next
+
+Examples:
+- "Check webhook configuration"
+- "Review billing truth for this business"
+- "Inspect suspicious repeated failed payments"
+- "Manual review recommended"
+- "Auto-repair succeeded, no action required"
+
+This is very important.
+
+========================
+6. INCIDENT DETAIL EXPANSION
+========================
+
+Upgrade incident details to include:
+
+- incident title
+- area/system
+- severity
+- affected business/account
+- billing truth
+- platform truth
+- auto-action attempted
+- auto-action result
+- retry count
+- founder recommended action
+- manual review required? yes/no
+- final status
+
+Make the Founder Ops cards much more operational and useful.
+
+========================
+7. AUTO-RUN HEALTH CHECKS
+========================
+
+Add automatic scheduled health checks.
+
+The system should no longer rely only on a manual "Health Check" button.
+
+Add:
+- periodic background checks
+- automatic incident creation/update
+- automatic recovery attempts where safe
+
+Keep the manual button too.
+
+========================
+8. SELF-HEALING AUDIT TRAIL
+========================
+
+Create a clean audit trail for every healing action.
+
+Log:
+- when issue detected
+- what condition triggered it
+- what truth was verified
+- what auto-action was taken
+- whether it succeeded
+- whether escalation happened
+
+This must be visible to the founder or accessible internally.
+
+========================
+9. SAFETY RULES
+========================
+
+The self-healing layer must stay safe.
+
+Do NOT automatically:
+- delete accounts
+- permanently ban accounts
+- fully deactivate businesses without verification
+- charge users
+- issue refunds blindly
+- perform destructive operations
+
+Prefer:
+- retry
+- sync
+- repair state
+- pause suspicious activity
+- escalate for review
+
+========================
+10. MANUAL REVIEW QUEUE
+========================
+
+If the system is not confident enough to auto-fix:
+- send to manual review
+- explain why
+- prioritize by severity
+
+Founder should clearly see:
+- what was auto-fixed
+- what needs manual review
+- what is still unresolved
+
+========================
+11. FOUNDER OPS UX IMPROVEMENT
+========================
+
+Improve the Founder Ops tab so it feels like a true command center.
+
+Add clearer sections such as:
+- Auto-Fixed
+- Needs Review
+- Critical Now
+- Billing Mismatches
+- Recovery Attempts
+- Recommended Founder Actions
+
+Do NOT redesign the whole founder dashboard.
+Just strengthen the Ops experience.
+
+========================
+12. PLATFORM SCALE MINDSET
+========================
+
+Implement this in a way that remains reasonable for future scale.
+
+Assume future growth in:
+- subscriptions
+- boost campaigns
+- business accounts
+- billing events
+- ops incidents
+
+Avoid fragile one-off logic.
+
+========================
+13. NO FAKE SELF-HEALING
+========================
+
+Do NOT pretend the system fixed something if it did not.
+
+If repair fails:
+- say it failed
+- escalate clearly
+- tell founder what to do
+
+Transparency is critical.
+
+========================
+14. FINAL OUTPUT
+========================
+
+At the end of the upgrade, provide a clear summary of:
+
+A. What self-healing actions were added
+B. What billing reconciliation was added
+C. What founder action guidance was added
+D. What incidents can now be auto-fixed
+E. What incidents still require manual review
+F. What scheduled checks are now automatic
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should now have an upgraded Ops system that:
+
+- detects issues
+- attempts safe auto-repair
+- reconciles billing truth
+- retries safe failures
+- reports everything clearly to the founder
+- tells the founder exactly what still needs manual action
+
+The platform should evolve from:
+- monitoring only
+
+to:
+- monitoring + safe self-healing + founder decision support

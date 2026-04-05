@@ -1,0 +1,244 @@
+MASTER RULES APPLY
+
+Perform an "Ops Validation Pass" for the upgraded Founder Ops / Platform Watchdog system inside RestoMaster.
+
+IMPORTANT:
+Do NOT rebuild the Ops system.
+Do NOT redesign the founder dashboard.
+Do NOT add random features.
+
+This is a validation and truth-check pass after the safe self-healing upgrade.
+
+========================
+GOAL
+========================
+
+Verify that the upgraded Ops system is truly working in practice.
+
+The purpose of this pass is to confirm:
+
+- which problems are now detected correctly
+- which problems are auto-fixed correctly
+- which problems are only alerted
+- which problems still require manual review
+- whether founder reporting is clear and trustworthy
+
+This pass must validate real behavior, not just code presence.
+
+========================
+1. VALIDATE OPS DETECTION
+========================
+
+Test whether the system correctly detects the main incident types, especially:
+
+- Premium / billing mismatch
+- boost activation mismatch
+- failed or delayed sync problems
+- trial / paid / expired inconsistency
+- suspicious repeated failed billing attempts
+- suspicious business/trial abuse patterns where supported
+- stale or broken state reconciliation issues
+
+Confirm:
+- incident is created
+- severity is correct
+- system area is correct
+- affected business/account is attached where relevant
+
+========================
+2. VALIDATE SAFE SELF-HEALING
+========================
+
+Test which incident types now support safe auto-healing.
+
+For each supported case, verify:
+
+- issue was detected
+- truth was checked first
+- auto-repair action was attempted
+- audit trail was written
+- result status was accurate
+- founder can see what happened
+
+Examples:
+- paid but Premium not active
+- valid boost payment but campaign inactive
+- delayed sync retry
+- stale state refresh
+- retryable activation failure
+
+Confirm that auto-fix is real, not just logged.
+
+========================
+3. VALIDATE BILLING RECONCILIATION
+========================
+
+Verify that the system correctly compares and reconciles:
+
+- payment provider truth
+- subscription truth
+- Premium access truth
+- boost truth
+
+Test mismatches such as:
+- paid but locked
+- unlocked but unpaid
+- boost active without billing support
+- billing success without feature activation
+
+Confirm:
+- mismatch is caught
+- safe reconciliation runs where allowed
+- unresolved mismatches are escalated properly
+
+========================
+4. VALIDATE AUTO-RETRY BEHAVIOR
+========================
+
+Verify that retry logic works safely.
+
+Check:
+- retries occur for retryable states
+- retry count is logged
+- retries stop after reasonable limit
+- failed retries escalate instead of looping forever
+
+This is important.
+
+========================
+5. VALIDATE FOUNDER REPORTING
+========================
+
+Inside the Founder Ops tab, verify that each meaningful incident now clearly shows:
+
+- what happened
+- why it matters
+- what auto-action was attempted
+- whether it succeeded
+- whether manual review is needed
+- what the founder should do next
+
+The founder must not see vague technical noise.
+The founder must see actionable intelligence.
+
+========================
+6. VALIDATE FOUNDER RECOMMENDED ACTIONS
+========================
+
+Check that incidents now contain strong recommendation blocks such as:
+
+- no action required
+- review billing truth
+- inspect webhook configuration
+- check affected business
+- manual review recommended
+- escalation required
+
+Confirm these recommendations match the real issue.
+
+========================
+7. VALIDATE AUTO-RUN HEALTH CHECKS
+========================
+
+Verify that automatic background checks now run without relying only on manual founder button clicks.
+
+Confirm:
+- checks run automatically
+- incidents get created/updated
+- safe auto-healing can trigger from scheduled checks
+- manual Health Check button still works
+
+========================
+8. VALIDATE INCIDENT AUDIT TRAIL
+========================
+
+Confirm each incident/recovery flow has a clear audit trail including:
+
+- detection time
+- anomaly type
+- checked truth
+- action attempted
+- action result
+- retry count if applicable
+- escalation outcome
+
+No silent hidden operations.
+
+========================
+9. VALIDATE SAFETY RULES
+========================
+
+Confirm the self-healing layer does NOT perform dangerous actions automatically.
+
+Ensure it does NOT:
+- delete accounts
+- fully ban businesses
+- permanently deactivate important entities without verification
+- charge or refund automatically without explicit logic
+- perform destructive actions without safeguards
+
+The system must remain safe and reversible-first.
+
+========================
+10. VALIDATE MANUAL REVIEW QUEUE
+========================
+
+Verify the system correctly moves uncertain or unresolved incidents into manual review.
+
+Founder should clearly see:
+- what could not be auto-fixed
+- why manual review is needed
+- which incidents are highest priority
+
+========================
+11. REALITY CHECK
+========================
+
+For the upgraded Ops system, classify each major function as one of:
+
+- Fully Working
+- Working but Fragile
+- Partial
+- Monitoring Only
+- Auto-Healing Working
+- Needs More Work
+
+Apply this to:
+- detection
+- self-healing
+- billing reconciliation
+- retry logic
+- founder reporting
+- recommended actions
+- manual review queue
+- automatic health checks
+
+========================
+12. HONEST FINAL REPORT
+========================
+
+At the end, produce a structured report with:
+
+A. Incident types now detected correctly
+B. Incident types now auto-fixed correctly
+C. Incident types still monitoring-only
+D. Incident types still requiring manual review
+E. Billing reconciliation status
+F. Founder dashboard reporting quality
+G. Remaining weaknesses or fragile areas
+H. Whether the Ops system is now safe enough for continued scaling
+
+Be honest.
+Do NOT overclaim.
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should emerge from this validation pass with a clearly verified Ops system that is:
+
+- real
+- trustworthy
+- safely self-healing where appropriate
+- transparent to the founder
+- strong enough to protect monetization and platform integrity

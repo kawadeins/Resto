@@ -1958,6 +1958,11 @@ interface OpsIncident {
   needs_manual_review: boolean;
   status: string;
   incident_type: string;
+  auto_healed: boolean;
+  retry_count: number;
+  max_retries: number;
+  healing_action_type: string | null;
+  last_retry_at: string | null;
 }
 
 interface OpsSummary {
@@ -1974,9 +1979,19 @@ interface OpsSummary {
     lowOpen: number;
     last24h: number;
     last7d: number;
+    autoHealedTotal: number;
+    autoHealed24h: number;
+    retriedTotal: number;
+    retryExhausted: number;
   };
   recentCritical: any[];
   systemAreas: any[];
+  healingStats: any[];
+  scheduledChecks: {
+    enabled: boolean;
+    intervalMinutes: number;
+    lastRun: string | null;
+  };
 }
 
 const SEVERITY_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -1997,6 +2012,7 @@ const AREA_LABELS: Record<string, string> = {
   boost_delivery: "Boost-Auslieferung",
   boost_integrity: "Boost-Integrität",
   billing_integrity: "Billing-Integrität",
+  billing_reconciliation: "Billing-Abgleich",
   platform_consistency: "Plattform-Konsistenz",
   data_integrity: "Daten-Integrität",
   city_health: "Stadt-Gesundheit",
@@ -2008,8 +2024,14 @@ const AREA_LABELS: Record<string, string> = {
 function FounderOpsCenter({ founderKey }: { founderKey: string }) {
   const headers: Record<string, string> = { "x-founder-key": founderKey, "Content-Type": "application/json" };
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<"all" | "open" | "resolved">("open");
+  type OpsFilter = "critical_now" | "needs_review" | "auto_healed" | "billing" | "open" | "all" | "resolved" | "escalated";
+  const [filter, setFilter] = useState<OpsFilter>("critical_now");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const invalidateOps = () => {
+    qc.invalidateQueries({ queryKey: ["ops-summary"] });
+    qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+  };
 
   const summaryQuery = useQuery<OpsSummary>({
     queryKey: ["ops-summary"],
@@ -2024,7 +2046,14 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
   const incidentsQuery = useQuery<{ incidents: OpsIncident[] }>({
     queryKey: ["ops-incidents", filter],
     queryFn: async () => {
-      const url = filter === "all" ? `${API}/ops/incidents` : `${API}/ops/incidents?status=${filter}`;
+      let url = `${API}/ops/incidents`;
+      if (filter === "critical_now") url += "?status=open&severity=critical";
+      else if (filter === "needs_review") url += "?category=needs_review";
+      else if (filter === "auto_healed") url += "?category=auto_healed";
+      else if (filter === "billing") url += "?category=billing";
+      else if (filter === "open") url += "?status=open";
+      else if (filter === "resolved") url += "?status=resolved";
+      else if (filter === "escalated") url += "?status=escalated";
       const r = await fetch(url, { headers });
       if (!r.ok) throw new Error("Failed");
       return r.json();
@@ -2038,10 +2067,25 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
       if (!r.ok) throw new Error("Failed");
       return r.json();
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["ops-summary"] });
-      qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+    onSuccess: invalidateOps,
+  });
+
+  const runBillingReconcile = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`${API}/ops/billing-reconcile`, { method: "POST", headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
     },
+    onSuccess: invalidateOps,
+  });
+
+  const runRetry = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`${API}/ops/retry-open`, { method: "POST", headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    onSuccess: invalidateOps,
   });
 
   const updateIncident = useMutation({
@@ -2054,16 +2098,31 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
       if (!r.ok) throw new Error("Failed");
       return r.json();
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["ops-summary"] });
-      qc.invalidateQueries({ queryKey: ["ops-incidents"] });
-    },
+    onSuccess: invalidateOps,
   });
 
   const s = summaryQuery.data;
   const incidents = incidentsQuery.data?.incidents ?? [];
-
   const healthStyle = HEALTH_STYLES[s?.health ?? "healthy"];
+
+  const HEALING_LABELS: Record<string, string> = {
+    counter_reset: "Counter-Reset",
+    pause_boosts_inactive_restaurant: "Boost-Pause (inaktiv)",
+    pause_overspend_campaign: "Budget-Schutz-Pause",
+    rating_clamp: "Rating-Korrektur",
+    info_only: "Nur Info",
+  };
+
+  const filterTabs: { key: OpsFilter; label: string; count?: number; color?: string }[] = [
+    { key: "critical_now", label: "Kritisch", count: s?.counts.criticalOpen, color: s?.counts.criticalOpen ? "text-red-400" : undefined },
+    { key: "needs_review", label: "Review nötig", count: s?.counts.pendingReview, color: s?.counts.pendingReview ? "text-amber-400" : undefined },
+    { key: "auto_healed", label: "Auto-Repariert", count: s?.counts.autoHealedTotal, color: "text-emerald-400" },
+    { key: "billing", label: "Billing" },
+    { key: "open", label: "Offen", count: s?.counts.open },
+    { key: "escalated", label: "Eskaliert", count: s?.counts.escalated, color: s?.counts.escalated ? "text-rose-400" : undefined },
+    { key: "all", label: "Alle" },
+    { key: "resolved", label: "Gelöst" },
+  ];
 
   return (
     <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-6">
@@ -2084,13 +2143,21 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                 s.health === "degraded" ? "text-rose-400 bg-rose-500/10 border-rose-500/20" :
                 "text-red-400 bg-red-500/10 border-red-500/20"
               )}>
-                <span className={cn("w-1.5 h-1.5 rounded-full", healthStyle?.icon)} />
+                <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", healthStyle?.icon)} />
                 {healthStyle?.label}
+              </span>
+            )}
+            {s?.scheduledChecks?.enabled && (
+              <span className="text-[9px] text-emerald-400/60 font-medium">
+                Auto-Check alle {s.scheduledChecks.intervalMinutes} Min
+                {s.scheduledChecks.lastRun && (
+                  <> · Letzter: {new Date(s.scheduledChecks.lastRun).toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })}</>
+                )}
               </span>
             )}
           </div>
           <p className="text-[11px] text-[#333]">
-            Plattform-Guardian: Anomalie-Erkennung, Billing-Integrität, automatische Recovery und Founder-Alerts.
+            Erkennung · Selbstheilung · Billing-Abgleich · Auto-Retry · Founder-Aktionsführung
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -2108,46 +2175,127 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
             {runHealthCheck.isPending ? "Prüfe..." : "Health Check"}
           </button>
           <button
-            onClick={() => {
-              qc.invalidateQueries({ queryKey: ["ops-summary"] });
-              qc.invalidateQueries({ queryKey: ["ops-incidents"] });
-            }}
+            onClick={() => runBillingReconcile.mutate()}
+            disabled={runBillingReconcile.isPending}
+            className={cn(
+              "flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all",
+              runBillingReconcile.isPending
+                ? "text-[#444] border-white/6 bg-white/2"
+                : "text-violet-400 border-violet-500/20 bg-violet-500/8 hover:bg-violet-500/15"
+            )}
+          >
+            <Shield className="w-3 h-3" />
+            {runBillingReconcile.isPending ? "Abgleiche..." : "Billing-Abgleich"}
+          </button>
+          <button
+            onClick={() => runRetry.mutate()}
+            disabled={runRetry.isPending}
+            className={cn(
+              "flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all",
+              runRetry.isPending
+                ? "text-[#444] border-white/6 bg-white/2"
+                : "text-blue-400 border-blue-500/20 bg-blue-500/8 hover:bg-blue-500/15"
+            )}
+          >
+            <RefreshCw className="w-3 h-3" />
+            {runRetry.isPending ? "Retry..." : "Retry offene"}
+          </button>
+          <button
+            onClick={invalidateOps}
             className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#888] transition-colors"
           >
-            <RefreshCw className="w-3 h-3" /> Aktualisieren
+            <RefreshCw className="w-3 h-3" />
           </button>
         </div>
       </div>
 
-      {/* Health check result */}
+      {/* Health check result banner */}
       {runHealthCheck.data && (
         <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-3">
           <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-semibold">
             <CheckCircle className="w-3.5 h-3.5" />
-            Health Check abgeschlossen
+            Health Check + Self-Healing abgeschlossen
+          </div>
+          <div className="flex flex-wrap gap-3 text-[10px] text-[#555] mt-1">
+            <span>{runHealthCheck.data.checksRun} Checks</span>
+            <span>{runHealthCheck.data.issuesDetected} erkannt</span>
+            <span>{runHealthCheck.data.newIncidentsCreated} neue Incidents</span>
+            <span className="text-emerald-400 font-bold">{runHealthCheck.data.autoHealed} auto-repariert</span>
+            {runHealthCheck.data.retryResult && (
+              <>
+                <span>{runHealthCheck.data.retryResult.retried} Retries</span>
+                <span className="text-emerald-400">{runHealthCheck.data.retryResult.succeeded} Retry-Erfolge</span>
+                {runHealthCheck.data.retryResult.escalated > 0 && (
+                  <span className="text-rose-400">{runHealthCheck.data.retryResult.escalated} eskaliert</span>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Billing reconcile result */}
+      {runBillingReconcile.data && (
+        <div className="rounded-xl border border-violet-500/15 bg-violet-500/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-[11px] text-violet-400 font-semibold">
+            <Shield className="w-3.5 h-3.5" />
+            Billing-Abgleich abgeschlossen
           </div>
           <p className="text-[10px] text-[#555] mt-1">
-            {runHealthCheck.data.checksRun} Checks · {runHealthCheck.data.issuesDetected} Probleme erkannt · {runHealthCheck.data.newIncidentsCreated} neue Incidents erstellt
+            {runBillingReconcile.data.issuesFound} Probleme · {runBillingReconcile.data.autoHealed} auto-repariert · {runBillingReconcile.data.newIncidents} neue Incidents
           </p>
         </div>
       )}
 
-      {/* KPI row */}
+      {/* Retry result */}
+      {runRetry.data && (
+        <div className="rounded-xl border border-blue-500/15 bg-blue-500/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-[11px] text-blue-400 font-semibold">
+            <RefreshCw className="w-3.5 h-3.5" />
+            Auto-Retry abgeschlossen
+          </div>
+          <p className="text-[10px] text-[#555] mt-1">
+            {runRetry.data.retried} versucht · {runRetry.data.succeeded} erfolgreich · {runRetry.data.escalated} eskaliert
+          </p>
+        </div>
+      )}
+
+      {/* KPI row — 2 rows */}
       {s && (
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-          {[
-            { label: "Offen",       value: s.counts.open,          color: s.counts.open > 0 ? "text-amber-400" : "text-emerald-400" },
-            { label: "Kritisch",    value: s.counts.criticalOpen,  color: s.counts.criticalOpen > 0 ? "text-red-400" : "text-emerald-400" },
-            { label: "Hoch",        value: s.counts.highOpen,      color: s.counts.highOpen > 0 ? "text-rose-400" : "text-[#555]" },
-            { label: "Review nötig", value: s.counts.pendingReview, color: s.counts.pendingReview > 0 ? "text-amber-400" : "text-[#555]" },
-            { label: "Letzte 24h",  value: s.counts.last24h,       color: "text-[#888]" },
-            { label: "Gelöst",      value: s.counts.resolved,      color: "text-emerald-400" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="rounded-xl border border-white/6 bg-white/2 px-3 py-2 text-center">
-              <p className={cn("text-base font-bold", color)}>{value}</p>
-              <p className="text-[9px] text-[#444]">{label}</p>
-            </div>
-          ))}
+        <div className="space-y-2">
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+            {[
+              { label: "Offen",           value: s.counts.open,            color: s.counts.open > 0 ? "text-amber-400" : "text-emerald-400" },
+              { label: "Kritisch",        value: s.counts.criticalOpen,    color: s.counts.criticalOpen > 0 ? "text-red-400" : "text-emerald-400" },
+              { label: "Hoch",            value: s.counts.highOpen,        color: s.counts.highOpen > 0 ? "text-rose-400" : "text-[#555]" },
+              { label: "Review nötig",    value: s.counts.pendingReview,   color: s.counts.pendingReview > 0 ? "text-amber-400" : "text-[#555]" },
+              { label: "Auto-Repariert",  value: s.counts.autoHealedTotal, color: "text-emerald-400" },
+              { label: "Healed 24h",      value: s.counts.autoHealed24h,   color: "text-emerald-400" },
+              { label: "Retried",         value: s.counts.retriedTotal,    color: "text-blue-400" },
+              { label: "Gelöst",          value: s.counts.resolved,        color: "text-emerald-400" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="rounded-xl border border-white/6 bg-white/2 px-3 py-2 text-center">
+                <p className={cn("text-base font-bold", color)}>{value ?? 0}</p>
+                <p className="text-[9px] text-[#444]">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Healing stats breakdown */}
+      {s && s.healingStats && s.healingStats.length > 0 && (
+        <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3">
+          <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-2">Healing-Aktionen Übersicht</p>
+          <div className="flex flex-wrap gap-2">
+            {(s.healingStats as any[]).map((hs: any) => (
+              <div key={hs.healing_action_type} className="flex items-center gap-1.5 text-[10px]">
+                <span className="text-[#666] font-medium">{HEALING_LABELS[hs.healing_action_type] ?? hs.healing_action_type}:</span>
+                <span className="text-emerald-400 font-bold">{hs.succeeded} OK</span>
+                {parseInt(hs.failed) > 0 && <span className="text-rose-400 font-bold">{hs.failed} fehlg.</span>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -2164,26 +2312,30 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                   : "text-[#444] bg-white/3 border-white/6"
               )}
             >
-              {AREA_LABELS[area.system_area] ?? area.system_area}: {area.open_count} offen / {area.incident_count} gesamt
+              {AREA_LABELS[area.system_area] ?? area.system_area}: {area.open_count} offen
+              {parseInt(area.healed_count) > 0 && <> · <span className="text-emerald-400">{area.healed_count} geheilt</span></>}
             </span>
           ))}
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex gap-1">
-        {(["open", "all", "resolved"] as const).map(f => (
+      {/* Command center filter tabs */}
+      <div className="flex flex-wrap gap-1">
+        {filterTabs.map(({ key, label, count, color }) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={key}
+            onClick={() => setFilter(key)}
             className={cn(
-              "text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all",
-              filter === f
+              "flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all",
+              filter === key
                 ? "bg-white/10 text-white border border-white/15"
                 : "text-[#444] hover:text-[#888] hover:bg-white/4"
             )}
           >
-            {f === "open" ? "Offen" : f === "all" ? "Alle" : "Gelöst"}
+            {label}
+            {count !== undefined && count > 0 && (
+              <span className={cn("text-[9px] font-bold", color ?? "text-[#555]")}>({count})</span>
+            )}
           </button>
         ))}
       </div>
@@ -2197,7 +2349,12 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
         <div className="rounded-2xl border border-white/6 bg-white/2 p-8 text-center">
           <Shield className="w-8 h-8 text-emerald-400/30 mx-auto mb-3" />
           <p className="text-sm text-[#555]">
-            {filter === "open" ? "Keine offenen Incidents — Plattform ist gesund." : "Keine Incidents gefunden."}
+            {filter === "critical_now" ? "Keine kritischen Incidents — Plattform ist stabil." :
+             filter === "needs_review" ? "Keine Incidents benötigen manuelle Prüfung." :
+             filter === "auto_healed" ? "Noch keine Auto-Reparaturen durchgeführt." :
+             filter === "billing" ? "Keine Billing-Incidents vorhanden." :
+             filter === "open" ? "Keine offenen Incidents — Plattform ist gesund." :
+             "Keine Incidents in dieser Kategorie."}
           </p>
           <p className="text-[10px] text-[#333] mt-1">
             Führe einen Health Check durch um die Plattform zu prüfen.
@@ -2214,13 +2371,16 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                 key={inc.id}
                 className={cn(
                   "rounded-xl border bg-white/2 overflow-hidden transition-all",
-                  inc.status === "resolved" ? "border-white/4 opacity-60" : "border-white/6"
+                  inc.auto_healed ? "border-emerald-500/15" :
+                  inc.status === "resolved" ? "border-white/4 opacity-60" :
+                  inc.status === "escalated" ? "border-rose-500/20" :
+                  "border-white/6"
                 )}
               >
                 {/* Incident header */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : inc.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/2 transition-colors"
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-white/2 transition-colors"
                 >
                   <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0", sev.bg, sev.text, sev.border)}>
                     {sev.label}
@@ -2239,7 +2399,17 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                       </span>
                     </div>
                   </div>
-                  {inc.needs_manual_review && inc.status === "open" && (
+                  {inc.auto_healed && (
+                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                      AUTO-FIX
+                    </span>
+                  )}
+                  {inc.retry_count > 0 && !inc.auto_healed && (
+                    <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full shrink-0">
+                      RETRY {inc.retry_count}/{inc.max_retries}
+                    </span>
+                  )}
+                  {inc.needs_manual_review && inc.status === "open" && !inc.auto_healed && (
                     <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">
                       REVIEW
                     </span>
@@ -2248,9 +2418,10 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                     "text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0",
                     inc.status === "open" ? "text-amber-400 bg-amber-500/8"
                     : inc.status === "resolved" ? "text-emerald-400 bg-emerald-500/8"
-                    : "text-rose-400 bg-rose-500/8"
+                    : inc.status === "escalated" ? "text-rose-400 bg-rose-500/8"
+                    : "text-[#444] bg-white/5"
                   )}>
-                    {inc.status === "open" ? "Offen" : inc.status === "resolved" ? "Gelöst" : inc.status}
+                    {inc.status === "open" ? "Offen" : inc.status === "resolved" ? "Gelöst" : inc.status === "escalated" ? "Eskaliert" : "Verworfen"}
                   </span>
                   <ChevronDown className={cn("w-3.5 h-3.5 text-[#444] transition-transform shrink-0", isExpanded && "rotate-180")} />
                 </button>
@@ -2287,13 +2458,13 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                       {inc.auto_action_taken && (
                         <div className="rounded-lg bg-white/3 px-3 py-2">
                           <p className="text-[9px] text-[#444] font-bold">Automatische Aktion</p>
-                          <p className="text-[10px] text-[#888] mt-0.5">{inc.auto_action_taken}</p>
+                          <p className={cn("text-[10px] mt-0.5", inc.auto_healed ? "text-emerald-400" : "text-[#888]")}>{inc.auto_action_taken}</p>
                         </div>
                       )}
                       {inc.recovery_result && (
                         <div className="rounded-lg bg-white/3 px-3 py-2">
                           <p className="text-[9px] text-[#444] font-bold">Recovery-Ergebnis</p>
-                          <p className="text-[10px] text-emerald-400 mt-0.5">{inc.recovery_result}</p>
+                          <p className={cn("text-[10px] mt-0.5", inc.auto_healed ? "text-emerald-400" : inc.recovery_result.includes("fehlgeschlagen") || inc.recovery_result.includes("FEHL") ? "text-rose-400" : "text-[#888]")}>{inc.recovery_result}</p>
                         </div>
                       )}
                       {inc.affected_entity && (
@@ -2302,18 +2473,45 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                           <p className="text-[10px] text-[#888] mt-0.5">{inc.affected_entity}</p>
                         </div>
                       )}
+                      {inc.healing_action_type && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Healing-Typ</p>
+                          <p className="text-[10px] text-emerald-400 mt-0.5">{HEALING_LABELS[inc.healing_action_type] ?? inc.healing_action_type}</p>
+                        </div>
+                      )}
+                      {inc.retry_count > 0 && (
+                        <div className="rounded-lg bg-white/3 px-3 py-2">
+                          <p className="text-[9px] text-[#444] font-bold">Retry-Status</p>
+                          <p className="text-[10px] text-blue-400 mt-0.5">
+                            {inc.retry_count}/{inc.max_retries} Versuche
+                            {inc.last_retry_at && <> · Letzter: {new Date(inc.last_retry_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</>}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Recommended action */}
+                    {/* Recommended action — enhanced guidance block */}
                     {inc.recommended_action && (
-                      <div className="rounded-lg bg-violet-500/5 border border-violet-500/15 px-3 py-2">
-                        <p className="text-[9px] text-violet-400 font-bold uppercase tracking-widest">Empfohlene Aktion</p>
+                      <div className={cn(
+                        "rounded-lg border px-3 py-2",
+                        inc.auto_healed
+                          ? "bg-emerald-500/5 border-emerald-500/15"
+                          : inc.needs_manual_review
+                          ? "bg-amber-500/5 border-amber-500/15"
+                          : "bg-violet-500/5 border-violet-500/15"
+                      )}>
+                        <p className={cn(
+                          "text-[9px] font-bold uppercase tracking-widest",
+                          inc.auto_healed ? "text-emerald-400" : inc.needs_manual_review ? "text-amber-400" : "text-violet-400"
+                        )}>
+                          {inc.auto_healed ? "Status: Auto-Reparatur erfolgreich" : inc.needs_manual_review ? "Founder-Aktion erforderlich" : "Empfohlene Aktion"}
+                        </p>
                         <p className="text-[11px] text-[#888] mt-1 leading-relaxed">{inc.recommended_action}</p>
                       </div>
                     )}
 
-                    {/* Action buttons */}
-                    {inc.status === "open" && (
+                    {/* Action buttons — only for non-auto-healed open incidents */}
+                    {inc.status === "open" && !inc.auto_healed && (
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateIncident.mutate({ id: inc.id, status: "resolved" })}
@@ -2343,14 +2541,21 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
         </div>
       )}
 
-      {/* Audit trail note */}
-      <div className="rounded-2xl border border-white/4 bg-white/1 px-5 py-4">
+      {/* Audit trail & system info */}
+      <div className="rounded-2xl border border-white/4 bg-white/1 px-5 py-4 space-y-2">
         <p className="text-[11px] text-[#444] leading-relaxed">
-          <span className="text-[#666] font-semibold">Self-Healing Ops Layer:</span>
-          {" "}Alle Incidents werden mit vollem Audit-Trail gespeichert: Erkennungszeit, Anomalie-Typ, betroffene Systeme, durchgeführte Aktionen und Ergebnis.
-          Das System erkennt Probleme, versucht sichere automatische Recovery und eskaliert unsichere Fälle an den Founder.
-          Keine destruktiven Aktionen ohne Review.
+          <span className="text-[#666] font-semibold">Self-Healing Ops Layer v2:</span>
+          {" "}Erkennung + sichere Auto-Reparatur + Billing-Abgleich + Auto-Retry + Founder-Aktionsführung.
+          Alle Aktionen werden mit vollem Audit-Trail protokolliert.
+          Keine destruktiven Aktionen ohne manuelle Prüfung.
         </p>
+        <div className="flex flex-wrap gap-3 text-[9px] text-[#333]">
+          <span>6 Check-Kategorien</span>
+          <span>5 Healing-Aktionstypen</span>
+          <span>Auto-Retry bis 3x</span>
+          <span>10-Min Intervall-Checks</span>
+          <span>Billing-Wahrheit vs Plattform-Wahrheit</span>
+        </div>
       </div>
     </div>
   );

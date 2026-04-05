@@ -2,597 +2,86 @@
 
 ## Overview
 
-RestoSmart is a premium restaurant management dashboard built as a full-stack SaaS web app. It targets restaurant owners who need a professional, information-dense operating system for managing their restaurant.
-
-## Stack
-
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **Frontend**: React + Vite + Tailwind CSS (dark theme for admin, warm/foodie for customer)
-- **UI Components**: Shadcn/ui (Radix UI), Lucide icons, Recharts
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild
-- **Routing**: Wouter
-
-## Artifacts
-
-- **`artifacts/restosmart`** — Owner dashboard (dark theme, Inter font, no emojis)
-- **`artifacts/customer`** — Customer marketplace (warm/foodie aesthetic)
-- **`artifacts/api-server`** — Express 5 backend API
-
-## Key Database Tables
-
-- `employees` — id, name, role, email, phone, status, hourly_rate
-- `shifts` — id, employee_id (FK), day_of_week, start_time, end_time
-- `shift_attendance` — per-shift daily attendance records (status: pending/confirmed/late/missed, reminder timestamps)
-- `reservations` — customer bookings with review_request_sent_at column
-- `reviews` — customer reviews with rating, comment, owner reply
-- `restaurants` — single restaurant with availability columns (table_capacity, seating_capacity, slot_duration_minutes, max_party_size, walk_ins_enabled, availability_paused, availability_paused_until)
-- `notification_logs` — all email/notification audit trail
-- `discounts`, `pos_sales`, `inventory`, `campaigns`, `loyalty_points` — core operations
-
-## Features
-
-### Owner Dashboard (`artifacts/restosmart`)
-
-1. **Overview Dashboard** — KPI stats, revenue chart, notifications
-2. **Staff Management** — Employee CRUD, weekly rota grid
-3. **Smart Staff Reminder & Attendance System** — Morning/pre-shift email reminders via Resend, attendance confirmation via token links, attendance status (confirmed/late/missed), daily tracking
-4. **Staff Performance & Payroll** (`/payroll`) — Hourly rate per employee (editable), projected vs actual monthly pay, attendance rate, reliability leaderboard
-5. **Table Availability & Walk-In Engine** (`/tables`) — Slot heatmap, weekly pattern, pause controls, capacity settings
-6. **Reviews & Reputation** (`/reviews`) — 4-tab filter (All/Needs Attention/Unreplied/Positive), insights KPIs, review request sender, rating sync, reply with urgent CTA for low-rated reviews
-7. **Inventory** — Stock management with low-stock alerts
-8. **Finances** — Revenue/profit analytics
-9. **Analytics** — Performance charts
-10. **Marketing / Campaigns** — Campaign management
-11. **Dead Hours / Growth Hub** — Insight suggestions and growth tools
-12. **POS**, **Menu**, **Billing** — Operations management
-
-### Customer Marketplace (`artifacts/customer`)
-
-1. **Home** — Hero section with flash deals carousel
-2. **Explore** — Restaurant listings with map view
-3. **Near You Now** — Hyper-local scoring with availability chips (Tables available / Limited / Almost full / Next slot)
-4. **Restaurant Detail** (`/restaurant/:id`) — Booking form with color-coded slot availability per date
-5. **Map View** — Leaflet/OpenStreetMap with availability popup chips
-6. **My Bookings** — Past reservations with inline "Leave a Review" form (star picker + comment, auto-awards 5 loyalty points)
-7. **Loyalty Points** — Tier tracking (Bronze/Silver/Gold)
-8. **Profile Hub** — Full account management with 4 tabs (Übersicht, Geschmack, Aktivität, Einstellungen), inline avatar upload, editable fields
-9. **Owner Premium Card** — Prominent card at top of profile; business-type-aware sales card for non-premium users (shows 8 features, €39,90 price, unified RestoSmart Business Premium package); becomes a direct dashboard gateway after activation. Activation state stored in localStorage (`restosmart_owner_premium`, `restosmart_owner_email`).
-10. **Premium Flow** — 3-step modal: (1) plan presentation with feature grid + €39,90 price, (2) demo activation (pilot mode, no real payment), (3) success screen with dashboard redirect to `/restosmart/`
-11. **Privacy & Security Section** — In Settings tab: data transparency card, notification toggle switches, active sessions list, data export, account deletion with confirmation flow
-12. **Mahlzeitenplan (Meal Plan)** (`/meal-plan`) — Smart weekly meal planner with personal + group dining modes:
-    - **Personal Plan**: 7-day tab selector (today highlighted), two slots per day (Mittagessen ☀️ / Abendessen 🌙), food type bubble grid (12 categories: Burger, Pizza, Fleisch, Fisch, Pasta, Sushi, Vegan, Desserts, Salat, Mexikanisch, Asiatisch, Orientalisch), weekly overview strip showing planned meals at a glance
-    - **Smart Matches**: "Heutige Matches" section auto-surfaces nearby restaurants that match today's planned food type using rule-based cuisine keyword scoring; shows open/closed status, flash deals, ratings
-    - **Group Plan Mode**: Full creation flow with title, date/time, meal slot, food theme bubble picker, participant list (name + phone), reminder timing (1 hour / 1 day / both); per-plan restaurant suggestions; organized into upcoming/past sections
-    - DB: `meal_plans` (unique per email+day+slot), `group_plans` (participants stored as JSON)
-    - API: `GET/PUT/DELETE /api/meal-plan/:email`, `GET /api/meal-plan/:email/suggestions`, `POST /api/meal-plan/group`, `GET /api/meal-plan/group/:email`, `GET/DELETE /api/meal-plan/group/:id/suggestions`
-
-## Premium Auto-Conversion Optimization Loop
-
-### DB Tables
-- `conversion_events` — raw funnel event log (event_type, business_type, session_id, cta_label, message_label, metadata)
-- `conversion_variants` — A/B variant registry (element_type, business_type, variant_key, copy_text, impressions, clicks, conversions, is_winner, is_retired)
-
-### API Endpoints
-- `POST /api/conversion/event` — fire-and-forget conversion event (no auth)
-- `GET /api/conversion/analytics` — founder funnel analytics (founder auth)
-- `GET /api/variants/active?businessType=X` — returns weighted-random active variant per element type (no auth)
-- `POST /api/variants/impression` — increment variant impression count (no auth)
-- `POST /api/variants/click` — increment click/conversion count, triggers auto-optimize (no auth)
-- `GET /api/variants/insights` — founder variant performance (founder auth)
-- `POST /api/variants/auto-optimize` — founder trigger auto-win selection (founder auth)
-
-### Variant Element Types (7 tested elements)
-- `gate_headline` — PremiumRequired paywall headline (3 variants incl. biz-specific C)
-- `gate_subheadline` — Paywall subheadline (3 variants incl. biz-specific)
-- `gate_cta` — PremiumRequired CTA button text (A/B/C)
-- `expired_headline` — TrialExpiredRequired headline (A/B/C per biz type)
-- `banner_headline` — TrialConversionBanner headline (A/B/C per biz type)
-- `trial_cta` — TrialConversionBanner CTA text (A/B/C)
-- `proof_focus` — Proof/ROI card copy (A/B/C per biz type)
-
-### Auto-Win Logic
-- Winner declared when: impressions ≥ 40 AND leading CTR ≥ 20% higher than runner-up
-- Winners always served; losers retired automatically
-- Fires on every click to stay current (no cron needed)
-
-### Client Library (`artifacts/restosmart/src/lib/`)
-- `conversion-tracking.ts` — `track(event, opts)` with session dedup, fires to POST /api/conversion/event
-- `variant-system.ts` — `useVariants()` hook, `getVariantCopy()`, `trackVariantImpression()`, `trackVariantClick()`; 5-min sessionStorage cache
-
-### Founder Panel (Conversion Intelligence tab in /founder)
-- `premium-conversion-panel.tsx` — full funnel analytics, biz-type split, CTA comparison, insights
-- `variant-optimization-panel.tsx` — per-element variant CTR breakdown, winner status, auto-optimize trigger button, "how it works" explanation
-
-## Business Self-Serve Growth Loop
-
-### Entry Point
-- **`/for-business` page** (customer app) — comprehensive self-serve landing for business owners
-  - Business type selector (Restaurant / Café / Bar) with type-specific copy, value props, and missed opportunity framing
-  - Live demand signals pulled from `/api/business-claims/growth-signals` (real DB data)
-  - Platform stats: 30 venues, real booking count, avg rating
-  - Premium vs Free tier comparison, boost explainer
-  - "Jetzt Betrieb eintragen" form (replaces old "contact in 24h" model)
-- **Footer CTA** in customer app navbar footer: "Restaurant, Café oder Bar?" banner always visible
-
-### Self-Serve Instant Activation Flow (No 24h Wait)
-When form submits (`POST /api/business-claims` with `source: "self_serve"`):
-1. API stores claim with `source = "self_serve"`, returns `{selfServe: true}`
-2. Client sets localStorage: `restosmart_owner_email`, `restosmart_owner_premium = "trial"`, `restosmart_owner_business_type`, `restosmart_trial_end` (now + 14 days), `restosmart_trial_started`
-3. Fires `self_serve_signup` event to conversion tracking API
-4. Shows "Dein Betrieb ist aktiviert!" success screen (NOT "contact in 24h")
-5. "Dashboard jetzt öffnen" CTA → `window.location.href = origin + "/restosmart/"`
-6. Trial is immediately active in the restosmart dashboard
-
-### Growth Activation Hub (restosmart overview)
-- **`artifacts/restosmart/src/components/growth-activation-hub.tsx`** — shown for trial users at top of overview
-- **4-step checklist** with localStorage-tracked completion:
-  - Profil aktiviert (auto-done)
-  - Profil vervollständigen → /settings
-  - Erstes Angebot erstellen → /discounts
-  - Premium freischalten → billing
-- **Value signals**: profile views, nearby users, demand signal (real-time, simulated realistic)
-- **Trial countdown**: days remaining, color-coded (amber <7d, rose <3d)
-- Progress bar showing % activation complete
-- Premium CTA inline when ≥50% complete
-- Collapsible and dismissible (sessionStorage)
-
-### Founder Visibility
-- Business Growth Engine section in founder panel (already existed) shows all claims
-- Self-serve signups tagged with green "SELF-SERVE" badge in claims list
-- `/api/founder/claims` returns `source` column — self-serve vs manual submissions are distinguishable
-
-### API Routes
-- `POST /api/business-claims` — now accepts `source` field, returns `selfServe: boolean`
-- `GET /api/business-claims/growth-signals` — real platform stats for value prop (30 venues, bookings, rating)
-
-## Business Competition Engine
-
-Real-time competitive intelligence layer that surfaces market pressure, demand signals, and visibility strength to owners and the founder.
-
-### Owner-Facing Widget (`competition-engine.tsx`)
-- **File**: `artifacts/restosmart/src/components/competition-engine.tsx`
-- **Wired into**: `overview.tsx` — shown below TrialConversionBanner (all logged-in users)
-- **4 panels**:
-  1. **Visibility Strength bar** — Standard / Premium / Boost / Top 3 / Top 1 tiers with animated fill and score 0–100
-  2. **Demand Signal** — Time+biztype aware (Mittag-Peak / Abend-Peak / Frühstücks-Peak / Nachtleben) with isActive indicator
-  3. **Competition Signal** — Live count of competing boosters, market pressure level (low/medium/high)
-  4. **Slot Availability** — Top-3 and Boost slots remaining + recommended action CTA
-- **Recommended action** drives urgency CTA: "Boost jetzt aktivieren" (rose, high urgency) or "Premium aktivieren" or "Boost aktiv" (green)
-- Queries `/api/competition/signals?restaurantId=1&businessType=X&hasPremium=bool`
-
-### Founder Competition Insights Tab
-- **File**: `artifacts/restosmart/src/pages/founder.tsx` — `FounderCompetitionInsights` component
-- **Tab**: "Wettbewerb" (rose, LIVE badge) — 4th tab in founder nav
-- **Shows**:
-  - KPI row: active boosts, total daily budget, total impressions, competition intensity (niedrig/mittel/hoch)
-  - By-business-type breakdown (Restaurant/Café/Bar) with relative intensity bar
-  - Full boost history table (name, type, status, impressions, clicks, budget/day, start date)
-  - Fairness guarantee note
-
-### API Routes
-- `GET /api/competition/signals` — owner widget data (no auth required)
-- `GET /api/competition/insights` — founder analytics (x-founder-key header required)
-- Registered: `artifacts/api-server/src/routes/competition.ts` → `routes/index.ts`
-
-## AI Self-Healing Ops Layer + Founder Alert System
-
-Internal platform guardian: anomaly detection, billing integrity, safe auto-recovery, and founder intelligence alerts.
-
-### Database
-- **Table**: `ops_incidents` — id, title, system_area, severity (low/medium/high/critical), detected_at, resolved_at, affected_entity, affected_city, technical_summary, anomaly_detected, billing_truth, platform_truth, auto_action_taken, recovery_result, recommended_action, needs_manual_review, status (open/resolved/escalated/dismissed), incident_type, metadata (JSONB)
-
-### Health Checks (5 automated check categories)
-1. **Premium/Billing Mismatch** — boosts with 0 impressions after 2h, duplicate active boosts (>3 per restaurant)
-2. **Budget Anomalies** — boost spend exceeding daily budget by >20%
-3. **Platform Consistency** — inactive restaurants with active boosts, rating anomalies (out of 1–5 range), high city inactivity rates (>50%)
-4. **Claims Abuse Detection** — duplicate emails (>3 claims in 7 days), unusual claim volume (>20/day)
-5. **Revenue Anomalies** — active campaigns with €0 spent today
-
-### API Routes
-- `POST /api/ops/health-check` — run all 5 check categories, deduplicate within 24h window (founder auth)
-- `GET /api/ops/incidents?status=open&severity=high` — list incidents sorted by severity (founder auth)
-- `GET /api/ops/summary` — KPI summary + health status (healthy/warning/degraded/critical) (founder auth)
-- `PATCH /api/ops/incidents/:id` — update status to resolved/escalated/dismissed (founder auth)
-- Registered: `artifacts/api-server/src/routes/ops.ts` → `routes/index.ts`
-
-### Founder "Ops" Tab
-- **Component**: `FounderOpsCenter` in `artifacts/restosmart/src/pages/founder.tsx`
-- **Tab**: "Ops" (emerald, Shield icon) — 6th tab in Founder Command Center
-- **Features**:
-  - Platform health indicator (Gesund/Warnung/Beeinträchtigt/Kritisch)
-  - "Health Check" button — runs all checks on demand
-  - KPI row: open incidents, critical, high, review needed, last 24h, resolved
-  - System area breakdown badges
-  - Filterable incident feed (Offen/Alle/Gelöst)
-  - Expandable incident cards with: technical summary, anomaly, billing truth, platform truth, auto action, recovery result, recommended action
-  - Per-incident actions: "Als gelöst markieren" / "Eskalieren" / "Verwerfen"
-  - Audit trail note
-
-### Design Principles
-- No destructive auto-actions without review
-- No blind deletions, aggressive bans, or permanent lockouts
-- System knows when to: auto-fix, auto-retry, alert only, or escalate to founder
-- Incidents deduplicated within 24h to prevent spam
-- Full audit trail for every detection, action, and resolution
-
-## City Expansion Engine
-
-Market domination system for growing city-by-city in a controlled, strategic way.
-
-### City Data (5 Austrian cities)
-- **Wien** — 30 businesses (Dominant stage, score ~85)
-- **Graz** — 4 businesses: 2 restaurants, 1 café, 1 bar (Early Stage → Growing)
-- **Salzburg** — 3 businesses: 1 restaurant, 1 café, 1 bar (Early Stage)
-- **Linz** — 2 businesses: 1 restaurant, 1 café (Early Stage)
-- **Innsbruck** — 2 businesses: 1 restaurant, 1 café (Early Stage)
-All non-Wien restaurants were added via raw SQL seed on 2026-04-05.
-
-### City Health Score Algorithm
-`score = bizCount×2.5 + premiumCount×6 + activeBoosts×4 + (avgRating−3.5)×8 + bookingPlans×0.3` (capped at 100)
-
-City stages: **Früh** (<4 biz, score<25) | **Wachstum** (4-10 biz) | **Stark** (10-20 biz) | **Dominant** (20+ biz)
-
-### API Routes
-- `GET /api/cities` — all cities with health scores (no auth)
-- `GET /api/cities/signals?city=Wien` — owner widget data: demand level, competition, opportunity, city-specific messaging
-- `GET /api/cities/dashboard` — founder analytics with expansion decision matrix (founder auth)
-- Registered in: `artifacts/api-server/src/routes/cities.ts` → `routes/index.ts`
-
-### Owner Widget (`city-expansion-engine.tsx`)
-- **File**: `artifacts/restosmart/src/components/city-expansion-engine.tsx`
-- **Wired into**: `overview.tsx` — below Competition Engine widget
-- Shows: city health score bar, demand/competition/opportunity triple signal, city stats
-- **Early city advantage banner** — shown for Früh/Wachstum cities: "Früh dabei = mehr Sichtbarkeit"
-- **CTA**: Boost or Premium depending on owner status
-
-### Founder City Dashboard ("Städte" tab)
-- **Component**: `FounderCitiesView` in `artifacts/restosmart/src/pages/founder.tsx`
-- **Tab**: "Städte" (violet, NEU badge) — 5th tab in Founder Command Center
-- **4 sections**:
-  1. Insights summary: total cities, total businesses, dominant city, next focus city
-  2. City cards: emoji, stage badge, health score bar, 8-column metrics (businesses, types, rating, premium, boosts, budget)
-  3. Expansion decision matrix: per-city strategic action, focus area, risk note
-  4. Scalable growth loop note
-
-### Expansion Decision Logic
-- **Dominant**: Retention & monetisation — grow premium rate
-- **Stark**: Premium conversion — move free businesses to premium
-- **Wachstum**: Supply activation — onboard more businesses
-- **Früh**: Market opening — attract early adopters with visibility advantage
-
-## Wien Market Focus (Growth Activation)
-
-### City Data (30 Wien venues — City Domination Update)
-- **IDs 1–6**: Original venues migrated to Wien (Stephansplatz, Mariahilfer Str., Naschmarkt, Rotenturmstraße, Schottenring, Neubau)
-- **IDs 7–12**: First batch — Café Prater, Kaffeepause Josefstadt, Rote Bar Wien, Heuriger Grinzing, Grünwald Bistro, Mochi Ramen Wien
-- **IDs 13–30**: City Domination batch — 18 new venues across 1st (Innere Stadt), 2nd (Leopoldstadt), 3rd (Landstraße), 4th (Wieden), 6th (Mariahilf), 7th (Neubau), 8th (Josefstadt), 9th (Alsergrund), 15th (Rudolfsheim)
-- All 30 venues tagged with district tags (innerestadt, leopoldstadt, neubau, alsergrund, rudolfsheim, mariahilf, etc.)
-- Map default center fixed: 48.2093, 16.3726 (Wien Innere Stadt) — was London (bug fix)
-
-### City Domination Features
-- **Wien Bezirke quick-nav** on homepage (between Business Type and CTA) — 5 districts → explore/?search=tag
-- **Wien Bezirke chips** in explore sidebar — instant district filter that toggles search state
-- **"Trending in Wien"** section on homepage — always shows top 3 rated restaurants, no geo required
-- **Explore header** updated: "Wien entdecken" + "30 Lokale · Restaurants, Cafés & Bars"
-- **Results count** localized: "X Lokale in Wien gefunden"
-
-### Hero Copy (Zeit-sensitiv, Wien-fokussiert)
-- `HEADLINE_MAP` in `home.tsx`: "Was geht heute Abend in Wien?", "Guten Morgen Wien — Ihr Kaffee wartet.", etc.
-- All sublines in `use-lifestyle-mode.ts` now mention Wien; fixed "London" bug in night mode
-- SEO title: "RestoSmart Wien — Restaurants, Cafés & Bars entdecken"
-
-### Hero Fallback Fix
-- No-deal fallback replaced: "Keine Blitzangebote" → "Beliebt in Wien" card showing top-rated restaurant (always has content)
-
-### Cuisine Lists (Wien-lokalisiert)
-- "Britisch" 🫖 → "Österreichisch" 🥩 in `home.tsx`, `explore.tsx`
-- "Thailändisch" → "Vegetarisch" in `home.tsx`
-- Smart-offers mapping extended with Austrian/Ramen to Japanese
-
-### Light Onboarding Vibe Picker
-- `artifacts/customer/src/components/vibe-onboarding.tsx` — first-visit modal, appears after 1.5s
-- 3 vibes: Café & Kaffee ☕ / Essen gehen 🍽️ / Bar & Nightlife 🍸
-- Stored in localStorage `restosmart_vibe`; done flag in `restosmart_vibe_done`
-- No blocker — user can skip; redirects to `/explore?businessType=...` on selection
-
-### Business Demand Signal Card (Owner Dashboard)
-- Wien-Nachfrage card in `overview.tsx` — shows bookings this week, impressions, venue count
-- CTA: "Boost aktivieren" → campaigns, "Statistiken" → insights
-- Uses real `localReach` and `summary` data already fetched on the overview page
-
-## Growth Loop & Habit Engine (Customer)
-
-### Habit Events (wired to real actions in `restaurant.tsx`)
-- `explore_visit` — fires on restaurant detail page load (useEffect)
-- `booking_complete` — fires on successful booking API response
-- `review_submit` — fires on successful review API response
-- Engine: `artifacts/customer/src/lib/habit-engine.ts`; data stored in localStorage `restosmart_habit_data`
-
-### Booking Success State
-- Toast shows loyalty points hint ("Punkte werden nach Ihrem Besuch gutgeschrieben")
-- Full success state renders a reward panel (amber ⭐ callout) + dual CTAs: "Meine Buchungen" + "Nochmal buchen"
-- Loyalty points are only awarded when owner marks guest as "arrived" — NOT at booking time (honest)
-
-### Smart Offers Section ("Für Sie ausgewählt")
-- `artifacts/customer/src/components/smart-offers-section.tsx`
-- Always shows ranked restaurants (score > 0) even with zero personalization (rating + availability always produce a score)
-- Each card has an explicit CTA: "Jetzt buchen" (flash deal) / "Details ansehen" (regular) + limited availability chip
-
-### Honest Social Signals (No Fake Urgency)
-- Group Suggestions section header: no live-pulse indicator; subtitle: "Basierend auf Freundesaktivitäten der letzten 6 Stunden"
-- Group suggestion urgency: `high → medium`, `medium → low` in `artifacts/api-server/src/routes/social.ts` — no misleading pulse animations
-- "Freunde sind hier" badge → "Freunde zuletzt aktiv" in `artifacts/customer/src/lib/live-activity.ts`
-- "Auto Plan" / ping animation → "Vorschlag für heute" + Zap icon in `auto-plan-card.tsx`
-
-## Availability System
-
-- Statuses: `available` | `limited` | `nearly_full` | `full` | `closed` | `paused`
-- Hyper-local score: `(1/(dist+0.1))*4 + openNow*3 + hasDeal*2 + (rating/5)*1.5 + weakHour*1.5 + availScore`
-- availScore: available→+2, limited→+1
-- Admin can pause availability with expiry time
-
-## API Routes (key new routes)
-
-- `GET /api/availability/settings` — Capacity and slot settings
-- `PUT /api/availability/settings` — Update settings
-- `POST /api/availability/pause` — Pause/resume availability
-- `GET /api/availability/overview` — Slot heatmap and weekly pattern
-- `GET /api/marketplace/slots` — Color-coded slot availability for a date
-- `GET /api/reviews/insights` — Rich analytics (trend, reply rate, needs attention)
-- `GET /api/reviews/pending-requests` — Completed visits without review requests
-- `POST /api/reviews/send-request` — Send review request email
-- `POST /api/reviews/rating-sync` — Sync avg rating back to restaurant record
-- `GET /api/performance/summary` — Employee payroll and attendance metrics
-- `GET /api/performance/leaderboard` — Reliability leaderboard
-- `POST /api/performance/set-rate` — Update employee hourly rate
-
-## Founder Command Center
-
-- **Route**: `/founder` in the admin (restosmart) app — bypasses PremiumGate entirely, has its own gate
-- **Auth**: Founder key stored in localStorage (`restosmart_founder_key`); default key: `rs_founder_2026`; server validates via `x-founder-key` header against env var `FOUNDER_KEY` (default: `rs_founder_2026`)
-- **API**: `GET /api/founder/metrics` (aggregated KPIs, rankings, alerts, breakdowns) + `GET /api/founder/businesses` (enriched business list)
-- **Dashboard sections**: Executive KPI strip (MRR, premium, churn, boosts, conversions), exec alerts, business type breakdown, city leaderboard, boost performance by type (with CTR + ROI), 4-column rankings (top boosted, top spenders, upsell candidates, churn risk), full business directory with inline founder notes/tags/flags stored in localStorage
-- **Data**: All computed from `restaurants`, `promotions`, `promotion_events` tables; reservation totals from `reservations` (no restaurant_id on that table, so per-restaurant booking count uses boost bookings as proxy)
-
-## Auth
-
-- Super-admin: `X-Super-Admin-Key` header, env var `SUPER_ADMIN_KEY` (default: `restosmart-super-2025`)
-- Founder: `x-founder-key` header, env var `FOUNDER_KEY` (default: `rs_founder_2026`); localStorage key `restosmart_founder_key`
-- Customer: email-based identity stored in localStorage (`restosmart_email`)
-- Owner Premium: localStorage (`restosmart_owner_premium` = `"active"`, `restosmart_owner_email` = the email that activated)
-- Geo: sessionStorage (`restosmart_geolocation`)
-
-## Email
-
-- Resend library, `FROM_EMAIL` env var, logs to notification_logs, never throws
-- Generic `sendEmail()` helper in `artifacts/api-server/src/lib/email.ts`
-
-## API URL Pattern (CRITICAL)
-
-All `fetch` calls in `artifacts/customer/src` **must** use:
-```ts
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-// Then: fetch(`${API_BASE}/api/some-route`)
-```
-`VITE_API_URL` is intentionally `""` (empty). The Replit proxy routes `/api/...` → the API server automatically.
-**Never** use path manipulation fallbacks like `BASE_URL.replace(...)` — they produce broken URLs like `/customer/api-server/api/...`.
-
-## File Uploads
-
-- API server serves uploads at both `/uploads/:file` (direct) and `/api/uploads/:file` (proxy-accessible)
-- `artifacts/api-server/src/routes/marketplace.ts` normalises all `heroImage`/`photos` paths from `/uploads/` → `/api/uploads/` so images load through the Replit proxy
-
-## Known Architectural Limitations (by design for now)
-
-- **Single-tenant**: restosmart dashboard always serves restaurant ID 1; billing, pilot, reviews, platform all hardcoded to restaurantId=1. Multi-tenancy requires a full auth/session overhaul.
-- **No real auth**: customer identity = localStorage email; business auth = localStorage premium flag; payment = mock Stripe session (no real checkout).
-- **Email disabled by default**: All emails silently skipped if `RESEND_API_KEY` env var not set. Set it in Replit Secrets to enable real delivery. The `/api/campaigns/status` endpoint exposes `{ emailEnabled: bool }` and the Campaigns page shows a warning banner when disabled.
-- **Flash deals are platform-wide**: `discounts` table has no `restaurant_id` column; one flash deal at a time applies globally across all restaurants.
-
-## Bug Fixes Applied (Phase 1 + Phase 2 Audit)
-
-- **B-1 Fixed**: `overview.ts` — removed random `|| Math.floor(Math.random() * 8) + 5` fallback from `tableOccupancy`; now returns real count (0 when no reservations).
-- **A-4 Fixed**: `restosmart/login.tsx` — replaced dead `window.location.replace("/customer/profile")` with proper in-app `useLocation` redirect to `/`.
-- **B-4 Fixed**: `meal-plan.ts` — `hasFlash = activeDeal && r.id === 1` replaced with proper expiry check.
-- **B-3 Fixed**: `meal-plan.ts` — added bare `GET /api/meal-plan` 400 guard (was 404).
-- **B-2 Fixed**: `marketplace.ts` — restaurants with active boosts now sort first in the `/restaurants` list (boosted → then by rating).
-- **B-5 Fixed**: Added `GET /api/campaigns/status` endpoint exposing `{ emailEnabled: bool }`.
-- **B-6 Fixed**: Campaigns page shows orange warning banner when email is not configured.
-- **B-7 Fixed**: Added `POST /api/promotions/restaurant/:restaurantId/impression` convenience endpoint; explore page fires impression events (once per session per restaurant) for boosted restaurants that appear in the list.
-
-## Critical Honesty Fixes (Phase 3 — Security / Ethics Audit)
-
-- **A-3 Fixed (CRITICAL)**: `customer/profile.tsx` — Removed the entire fake payment form from `PremiumModal`. The old step 1 collected real card numbers, showed fake "256-bit SSL" + "PCI DSS konform" trust badges, detected Apple Pay / Google Pay via browser APIs, then silently discarded all card data after a 2-second fake animation. Replaced with an honest "Demo-Modus" activation screen that clearly states no payment is required.
-- **A-2 Fixed**: `customer/profile.tsx` — Social login buttons ("Mit Apple fortfahren" / "Mit Google fortfahren") relabeled to "Als Apple-Gerät fortfahren (Demo)" / "Als Google-Konto fortfahren (Demo)" to make the demo-identity nature explicit.
-- **A-2a Fixed**: `customer/profile.tsx` — Login screen trust strip removed false "Ende-zu-Ende" (E2E encryption) and "DSGVO" (GDPR) claims. Replaced with honest "Gerätebezogene Demo-ID" label.
-- **A-3a Fixed**: `customer/profile.tsx` — `handleGoToDashboard()` redirect fixed from `window.location.origin + "/"` (customer homepage) to `window.location.origin + "/restosmart/"` (actual restosmart dashboard). Same fix applied to `OwnerPremiumCard` and the settings panel dashboard link (both previously redirected to `"/"`).
-- **B-8 Fixed**: `digital-twin.ts` — `getTwinInsightLabel` no longer uses `Math.random()` for label selection; uses deterministic index based on `bizAff` value (stable per-user, no UI flickering).
-
-## Product Polish Pass (Phase 4)
-
-- **P-1 Fixed**: `restaurant-card.tsx` — Removed redundant "Aktiv" badge (green chip that duplicated the "Geöffnet" status badge already on the image). Only truly meaningful live signals (Trending, Hot, Lunch-Rush, Happy Hour, etc.) now appear.
-- **P-2 Fixed**: `restaurant-card.tsx` — Removed `|| true` bug on line 195 that forced the live badge / social cue row to always render even when both were empty, adding invisible whitespace.
-- **P-3 Added**: `restaurant-card.tsx` — Added compact "Ansehen →" CTA in the tag row of each card for clearer click affordance.
-- **P-4 Fixed**: `restaurant-card.tsx` — Tags reduced from showing 2 + overflow to 1 + compact overflow count for less visual noise.
-- **P-5 Fixed**: `restaurant-card.tsx`, `restaurant.tsx`, `home.tsx` — Added `CUISINE_DE` translation map; cuisine labels now display in German ("Italienisch" not "Italian", "Französisch" not "French", etc.) everywhere in the customer UI (cards, detail page, hero flash deal card).
-- **P-6 Added**: `home.tsx` — Added "Restaurants" quick-filter button to the hero alongside "Cafés" and "Bars" so all 3 business types are represented.
-- **P-7 Fixed**: `home.tsx` — Improved the empty-state message in dynamic sections from plain "Derzeit keine Einträge gefunden." to a friendly emoji + two-line German message.
-- **P-8 Fixed**: `restaurant.tsx` — Opening days now rendered in German with smart range compression ("Täglich" for all 7 days, "Mo–Fr" for weekday ranges, etc.) instead of raw English day names from the DB.
-- **P-9 Fixed (data)**: DB — Cleared stale `/uploads/1775263577451-cdhspu5d5xt.png` hero image path from restaurant 1 ("Resto"), which was rendering a broken chat screenshot. Now falls back to the clean 🥐 croissant emoji gradient placeholder.
-
-## Business-Type Enforcement Policy
-
-**All features must support all three business types: `restaurant`, `cafe`, `bar`.** No logic, UI text, monetization tool, analytics view, or email copy should be hardcoded for "restaurant" only.
-
-### Shared Helper
-`artifacts/restosmart/src/lib/biz-copy.ts` — Central BizType helper. All frontend components read `getBizType()` from localStorage key `restosmart_owner_business_type` and use the exported label maps (BIZ_LABEL, BIZ_POSSESSIVE, BIZ_MENU_LABEL, BIZ_SETUP_TITLE, etc.). Import from here, never hardcode "Restaurant".
-
-### Fixes Applied (Business-Type Enforcement Pass)
-- **`billing.tsx`**: Plan card title, subtitle, module list (Reservierungsverwaltung, Tischplan, Speisekarten-Editor, cancellation text) now all adapt via `BIZ_*` maps.
-- **`overview.tsx`**: "Ihr Restaurant ist live" → `{bizPossessive} ist live` for the 24h no-booking alert.
-- **`onboarding.tsx`**: All steps now type-adaptive — step indicator labels, Step1 (title, name label, cuisine label, description placeholder, email placeholder), Step2 (menu title, subtitle, empty state, add hint, page link), Step4 (marketplace activation description), page title + subtitle, all toast messages.
-- **`api-server/src/routes/overview.ts`**: `AVG_SPEND_PER_COVER` is now type-specific (restaurant=€35, café=€12, bar=€18). `tableTotal` is now type-specific (restaurant=20, café=14, bar=16). Both are fetched from the `restaurants` table `businessType` field on every request.
-- **`api-server/src/services/email.ts`**: "direkt an das Restaurant" → "direkt an das Lokal"; "bei uns gespeist haben" → "bei uns zu Gast waren"; "Tisch buchen" CTA → "Jetzt entdecken"; "Danke, dass Sie bei uns gegessen haben" → "Danke für Ihren Besuch".
-
-### Already Type-Aware (no changes needed)
-- `monetization-engine.ts` — `BOOST_CONFIGS.bizTypes` gates, `PREMIUM_VALUE_BY_TYPE`
-- `premium-value-panel.tsx` — Type-specific headlines and benefit lists  
-- `layout.tsx` — "Café-Betreiber" / "Bar-Betreiber" / "Restaurantbesitzer" nav identity
-- `founder.tsx` — BIZ_ICONS, BIZ_COLORS, BIZ_LABELS for pipeline view
-- `digital-twin.ts` / `life-loop-engine.ts` — businessType drives affinity and mode
-
-## System Integration + Cross-System Behavior Pass
-
-Four targeted integration wires added — no new features, just existing systems actually talking to each other:
-
-- **I-1 (Life Loop → Homepage)**: `home.tsx` now imports `evaluateLifeLoop()` + `getTwin()` and computes a `lifeLoop` decision on every render. The `sectionOrder` array from the engine now drives whether social sections (ActivityFeed, GroupSuggestions) render **before** or **after** LiveSections. In the evening/night or when friends are active, social surfaces bubble up; at lunchtime, live activity leads. The `contextHint` string is now displayed in the hero as a subtle `<Sparkles />` insight strip when `confidence >= 0.65` (user has ≥ 10 interactions).
-- **I-2 (Social cues → SmartReminders)**: `smart-reminders.tsx` now fetches `/api/social/group-suggestions/:email` as a 4th trigger source. If friends are active at a venue right now, a "X & Y sind gerade aktiv — {RestaurantName}" card appears in the notification overlay, linking directly to that restaurant.
-- **I-3 (Friend cues → Hyper-local ranking)**: `hyper-local.ts` `computeHyperLocalScore()` now accepts a `friendCueCount` parameter. Friend activity at a venue adds up to +1.5 pts to the hyper-local score (capped). `rankHyperLocal()` now accepts the full `cues` record and maps cue counts to restaurant IDs before scoring. `NearYouNow` accepts a `cues` prop and passes it through; home.tsx passes the live `cues` from `useSocialCues()`. Cards now show a blue "N Freunde hier" badge when `friendCueCount > 0`.
-- **I-4 (Meal plan → Auto plans)**: `auto-plans-engine.ts` `evaluateAutoPlans()` accepts `hasTodayMealPlan?: boolean`. If the user has a meal plan for today AND the auto-plan mode is `lunch_plan`/`group_dinner` during the relevant time window (11–14 / 17–21), the auto-plan card is suppressed (`triggerReason: "meal_plan_active"`) — preventing the app from contradicting the user's own stated intent. Home.tsx fetches today's meal plan and passes the flag.
-
-## Behavior Priority Engine (Ranking Brain + Sponsored Boost System)
-
-The platform's unified discovery ranking system. All discovery surfaces use the same brain.
-
-### Architecture
-
-**Client-side (`artifacts/customer/src/lib/ranking-engine.ts`)** — The single source of truth for ranking:
-- `rankVenues(restaurants, ctx)` → `RankedVenue[]` — Full personalized ranking for Smart Offers / Near You Now / Search. Wraps `scoreRestaurant()` from smart-offers.ts, adds fairness gates, budget-aware boost scoring, and `isSponsored` flag.
-- `rankByContext(restaurants, mode, limit)` → `RankedVenue[]` — Context-free ranking for "Top in Wien" section. Uses time-matched business type + rating + budgeted boost. No user prefs needed.
-
-**Ranking formula:**
-```
-finalScore = relevanceScore * (closedMultiplier * distanceMultiplier) + boostScore
-```
-- `relevanceScore` = smart-offers score (prefs, location, lifestyle mode, allergens, rating, availability)
-- `closedMultiplier` = 0.4 if closed (strong penalty; venue stays visible in "allow closed" mode)
-- `distanceMultiplier` = 0.25 if >10km, 0.65 if >6km, 1.0 otherwise
-- `boostScore` = 0-12 pts, ONLY applied when: budget remaining > 0 AND time-window matches business type
-
-**Time-aware boost (Rule 6):** A bar's Nightlife Boost scores 1.0x at night, 0.2x in the morning.
-
-### Transparency (Rule 9)
-- `RankedVenue.isSponsored` = true only when boost is active AND budget not exhausted
-- Customer cards show "Gesponsert" chip when `isSponsored: true` — in `restaurant-card.tsx` and `smart-offers-section.tsx`
-- No hidden paid placement; every boosted result is labeled
-
-### Budget System
-- New columns on `promotions` table: `daily_budget NUMERIC(8,2)`, `spent_today NUMERIC(8,2)`, `budget_reset_date DATE`
-- `POST /api/promotions/restaurant/:id/impression` now deducts €0.01/impression, resets daily on new day, returns `budgetRemaining`
-- `GET /api/promotions/budget?restaurantId=:id` — returns budget state for all active promotions
-- `PUT /api/promotions/:id/budget` — set daily budget (0 = unlimited, no cap)
-- Budget-exhausted boosts: `isSponsored = false`, no boost score added, no "Gesponsert" label shown
-
-### Marketplace API Sort (Rule 4: Relevance First)
-- Old: naively sorted by `hasActiveBoost ? 1 : 0` then rating — boosted venues always ranked #1
-- New: `rating * 0.7 + (budgetedBoost ? 1.5 : 0)` — boost is a controlled uplift, not a rank override
-- API now returns `boostBudgetRemaining`, `boostDailyBudget`, `boostSpentToday` per restaurant
-
-### Compliance Fixes
-- **Fake labels (Rule 2)**: `live-activity.ts` — "Trending jetzt" → "Sehr beliebt", "Hot jetzt" → "Beliebt", "Gerade beliebt" → "Gefragt". `stableNoise()` function removed entirely.
-- **Trending section (Rule 2+3)**: "Trending in Wien" (pure rating sort) → "Top in Wien" (uses `rankByContext()` with time + type matching)
-- **Sponsored disclosure (Rule 9)**: "Gesponsert" chip added to all discovery card variants
-
-### Discovery Surfaces Wired
-- `home.tsx` — Top in Wien section uses `rankByContext()`; SmartOffersSection and NearYouNow receive `boostBudgetRemaining` from API; sponsored chips shown
-- `explore.tsx` — List cards show `isSponsored` from boost + budget data; server sort is now fair
-- `smart-offers-section.tsx` — SmartOfferCard shows "Gesponsert" chip inline with reason chip
-- `restaurant-card.tsx` — Accepts `isSponsored?: boolean` prop
-
-### Owner Dashboard Budget UI (`promotion-tools.tsx`)
-- "Tagesbudget" section appears when promotions are active
-- Per-boost budget card: progress bar (green/amber/red), daily budget vs spent, remaining
-- Budget picker: preset buttons (€5, €10, €20, €50/day) + custom input
-- Budget-exhausted indicator: red chip "Budget aufgebraucht"
-- Info note: explains "Gesponsert" label transparency to owners
-
-## Auto Revenue Optimization Engine (`/optimizer`)
-
-A smart monetization optimization layer built inside the RestoSmart dashboard. Analyzes real promotion data and generates actionable business-type-aware recommendations.
-
-### Backend (`GET /api/promotions/analysis`)
-Single-tenant endpoint (no query param needed — always reads the first active restaurant). Returns:
-- `metrics` — totalImpressions, totalClicks, totalBookings, avgCTR, avgBookingRate, activeBoostCount, budgetUtilization
-- `peakHours` — top 3 hours by impression count from `promotion_events` (last 7 days)
-- `recommendations[]` — typed, priority-sorted suggestions generated from real data patterns
-- `platformDemand` — activePlatformBoosts count across all restaurants → low/medium/high demand signal
-- `roiFeedback` — bestBoostType with CTR and insight text
-
-**Recommendation types:** `missing_boost`, `boost_time_window`, `low_ctr`, `low_conversion`, `budget_exhausted`, `budget_shift`, `demand_spike`, `winner_confirmation`
-
-**Business type intelligence:**
-- `cafe` → breakfast_boost (6–11 Uhr) as primary recommendation
-- `restaurant` → lunch_boost (11–14 Uhr) as primary recommendation
-- `bar` → nightlife_boost (19–24 Uhr) + weekend demand spike detection
-
-### Frontend (`artifacts/restosmart/src/pages/optimizer.tsx`)
-Dashboard page at route `/optimizer`, visible in sidebar as "Optimizer" (Zap icon). Sections:
-1. **Header + Auto-Optimize toggle** — localStorage key `restosmart_auto_optimize`; when ON, highlights high-priority recommendations with violet border and shows "Auto-Aktivieren" CTA
-2. **Platform Demand Banner** — shown when demand level is medium or high; displays active boost count
-3. **KPI Row** — 4 cards: Impressionen, CTR, Buchungsrate, Aktive Boosts
-4. **Smart Empfehlungen** — priority-sorted list; `boost_activate` action calls `POST /api/promotions` inline; `go_to_marketing` / `go_to_insights` navigate via Link
-5. **ROI Feedback** — best-performing boost by CTR, above-average indicator
-6. **Peak-Stunden** — bar chart of top 3 impression hours from real event data
-7. **Betriebstyp-Strategie** — 4 business-type-specific tips (restaurant / café / bar)
-8. **Quick Links** — shortcuts to Marketing, Tote Stunden, Analyse
-
-Auto-Optimize mode is advisory-only: it never calls the API autonomously. It highlights the best action with one-click "Auto-Aktivieren" that still requires the user to click.
-
-## Dynamic Pricing Engine
-
-Real-time impression cost computation for all boost types. Every impression deducts the live computed price (not a fixed €0.01). Fully transparent — all multipliers are returned to clients.
-
-### Backend
-
-- **`artifacts/api-server/src/lib/pricing-engine.ts`** — Core computation library
-  - `computeDynamicPrice(bizType)` — async function returning full `PricingResult` with price + all multipliers + human-readable signals
-  - `getPricingConfig()` / `savePricingConfig()` — reads/writes `platform_config` table (`pricing_config` key as JSONB)
-  - `getTimeMultiplier(bizType, hour)` — business-type-aware time windows (café=breakfast peak, bar=nightlife peak, restaurant=lunch+dinner peak)
-  - `getDemandMultiplier(activeBoosts, config)` — platform-wide boost count → 0.80–1.60× multiplier
-  - `getSlotMultiplier(sameTypeBoosts)` — same-category competition → 0.90–1.20× multiplier
-  - Weekend bonus: bars on Fri/Sat get 1.10×
-
-- **`artifacts/api-server/src/routes/pricing.ts`** — Pricing route (`/api/pricing`)
-  - `GET /api/pricing/current` — returns live price for the requesting restaurant's business type
-  - `GET /api/pricing/schedule` — returns 24-hour price forecast as hourly breakdown
-  - `GET /api/pricing/config` — returns current pricing config (founder-auth required)
-  - `PUT /api/pricing/config` — update pricing config (founder-auth required, `x-founder-key` header)
-
-- **Impression endpoint updated** — `POST /api/promotions/restaurant/:id/impression` now calls `computeDynamicPrice(bizType)` instead of hardcoded €0.01. Returns `impressionCost` + `demandLevel` in response.
-
-### Default Config
-- basePrice: €0.01 / impression
-- maxMultiplier: 2.5×
-- minPrice: €0.004 (floor)
-- demandSensitivity: 1.0×
-- demandThresholds: low≤3, normal≤8, high≤15, very_high≤25 active platform boosts
-
-### Frontend
-
-- **`promotion-tools.tsx`** — `DynamicPricingPanel` component added between boost grid and budget section. Shows:
-  - Current price per 1,000 impressions + demand chip
-  - Competitor count + best boost time window
-  - Pricing context + actionable suggestion
-  - Expandable multiplier breakdown (demand × time × slot × weekend)
-  - Auto-refreshes every 2 minutes
-
-- **`founder.tsx`** — `FounderPricingControls` section added to Dashboard (between Boost Performance and Rankings). Shows:
-  - Live pricing panel with real-time multiplier breakdown
-  - Config editor with sliders for base price, max multiplier, min price, demand sensitivity
-  - Demand threshold inputs for all 4 demand levels
-  - Save button → `PUT /api/pricing/config` with founder key
-  - Changes apply immediately to all new impressions
-
-## Key Commands
-
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+RestoSmart is a full-stack SaaS web application designed as a premium restaurant management dashboard. It provides restaurant owners with a professional, information-dense operating system to manage their operations efficiently. The platform aims to centralize various aspects of restaurant management, including staff, inventory, finances, marketing, and customer interactions, to drive growth and operational excellence. Key capabilities include smart staff management, dynamic table availability, comprehensive review management, and advanced analytics. The customer-facing marketplace offers features like hyper-local restaurant discovery, loyalty programs, and a smart weekly meal planner. The project also incorporates sophisticated growth loops, competitive intelligence, AI-driven self-healing operations, and a strategic city expansion engine to foster market domination.
+
+## User Preferences
+
+- The agent should work iteratively, seeking approval for major changes.
+- Provide detailed explanations for complex solutions.
+- Focus on high-level features and architectural decisions.
+- Do not make changes to files outside the specified `artifacts/` directories unless explicitly instructed.
+
+## System Architecture
+
+**Monorepo Structure:** Managed with `pnpm workspaces`.
+**Technology Stack:**
+    - **Backend:** Node.js 24, Express 5, PostgreSQL with Drizzle ORM, Zod for validation.
+    - **Frontend:** React, Vite, Tailwind CSS (dark theme for admin, warm/foodie for customer), Shadcn/ui, Lucide icons, Recharts.
+    - **API Tools:** Orval for API codegen from OpenAPI spec, esbuild for bundling, Wouter for routing.
+
+**Core Features & Design Patterns:**
+
+-   **Owner Dashboard (`artifacts/restosmart`):**
+    -   **UI/UX:** Dark theme, Inter font, professional aesthetic.
+    -   **Modules:** Overview KPIs, Staff Management (CRUD, rota, smart reminders, performance/payroll), Table Availability (slot heatmap, pause controls), Reviews & Reputation (4-tab filter, review request sender, rating sync), Inventory, Finances, Analytics, Marketing/Campaigns, Dead Hours/Growth Hub, POS, Menu, Billing.
+    -   **Design:** Focus on information density and actionable insights.
+-   **Customer Marketplace (`artifacts/customer`):**
+    -   **UI/UX:** Warm/foodie aesthetic.
+    -   **Modules:** Home (flash deals), Explore (listings, map view), Near You Now (hyper-local scoring, availability chips), Restaurant Detail (booking form, color-coded availability), My Bookings (reviews, loyalty points), Profile Hub (account management, avatar upload, privacy/security), Meal Plan (personal/group planning, smart matches), Owner Premium Card/Flow.
+    -   **Design:** Engaging, user-friendly interface with emphasis on discovery and personalization.
+-   **Premium Auto-Conversion Optimization Loop:**
+    -   **Architecture:** A/B testing framework (`conversion_variants` table, dedicated API endpoints) to optimize conversion elements (headlines, CTAs, proof points).
+    -   **Logic:** Auto-win logic for variants with significant performance leads (impressions ≥ 40, CTR ≥ 20% higher than runner-up).
+-   **Business Self-Serve Growth Loop:**
+    -   **Entry Point:** Dedicated `/for-business` landing page in customer app, footer CTA.
+    -   **Activation Flow:** Instant trial activation for self-serve sign-ups, eliminating 24h wait.
+    -   **Growth Activation Hub:** In-dashboard checklist for trial users, value signals, trial countdown.
+-   **Business Competition Engine:**
+    -   **Owner-Facing:** Widget in overview dashboard (Visibility Strength, Demand/Competition Signal, Slot Availability) with urgent CTAs.
+    -   **Founder-Facing:** Founder panel tab for competitive insights and boost history.
+-   **AI Self-Healing Ops Layer v2 + Founder Alert System:**
+    -   **Database:** `ops_incidents` table with healing fields: retry_count, max_retries (default 3), auto_healed, healing_action_type, last_retry_at.
+    -   **Health Checks:** 6 categories (premium/billing sync, boost delivery+auto-heal, billing reconciliation+auto-heal, platform consistency, claims abuse, revenue anomalies).
+    -   **Self-Healing Actions (5 types):** counter_reset, pause_boosts_inactive_restaurant, pause_overspend_campaign, rating_clamp, info_only.
+    -   **Auto-Retry Engine:** Retries retryable open incidents up to max_retries, escalates on exhaustion.
+    -   **Billing Reconciliation:** Compares payment truth vs platform truth, auto-repairs safe mismatches.
+    -   **Scheduled Checks:** Background health checks every 10 minutes (automatic, no manual trigger needed).
+    -   **API:** POST health-check, billing-reconcile, retry-open; GET incidents (with category filters: auto_healed, needs_review, billing), summary (with healing stats), audit-trail; PATCH incidents/:id.
+    -   **Founder Interface:** "Ops" tab with 3 action buttons, 8 KPIs, healing stats breakdown, 8 filter tabs (Kritisch/Review/Auto-Repariert/Billing/Offen/Eskaliert/Alle/Gelöst), enhanced incident cards (AUTO-FIX/RETRY/REVIEW badges, healing type, retry status).
+    -   **Safety:** No destructive auto-actions, honest failure reporting, full audit trail, deduplicated incidents.
+-   **City Expansion Engine:**
+    -   **City Data:** Health scores based on `bizCount`, `premiumCount`, `activeBoosts`, `avgRating`, `bookingPlans`.
+    -   **Owner-Facing:** Widget with city health score, demand/competition/opportunity signals.
+    -   **Founder-Facing:** "Städte" tab with city cards, expansion decision matrix.
+-   **Behavior Priority Engine (Ranking Brain + Sponsored Boost System):**
+    -   **Client-side Ranking (`ranking-engine.ts`):** Unified ranking system for all discovery surfaces based on `finalScore = relevanceScore * (closedMultiplier * distanceMultiplier) + boostScore`.
+    -   **Transparency:** `isSponsored` flag and "Gesponsert" chip for paid placements.
+    -   **Budget System:** Daily budget tracking for promotions, impression-based deductions.
+    -   **Compliance:** Fixes for fake labels and explicit sponsored disclosures.
+-   **Auto Revenue Optimization Engine (`/optimizer`):**
+    -   **Backend:** Analyzes promotion data, generates business-type-aware recommendations (`missing_boost`, `boost_time_window`, etc.).
+    -   **Frontend:** Dashboard page (`/optimizer`) with KPIs, smart recommendations, ROI feedback, peak hours, and strategy tips.
+-   **Dynamic Pricing Engine:**
+    -   **Backend:** Real-time impression cost computation (`pricing-engine.ts`) based on base price, demand, time, competition, and weekend multipliers. Configuration stored in `platform_config`.
+    -   **Frontend:** DynamicPricingPanel in promotion tools for owners, FounderPricingControls for configuration.
+    -   **Transparency:** All multipliers and cost breakdowns are visible.
+
+**Authentication:**
+-   **Super-admin:** `X-Super-Admin-Key` header.
+-   **Founder:** `x-founder-key` header, localStorage `restosmart_founder_key`.
+-   **Customer:** localStorage email (`restosmart_email`).
+-   **Owner Premium:** localStorage flag (`restosmart_owner_premium`).
+
+**API URL Pattern:** All frontend `fetch` calls *must* use `API_BASE` (empty string) to correctly route through the Replit proxy.
+**File Uploads:** Handled by API server, normalizing paths from `/uploads/` to `/api/uploads/`.
+**Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant auth, mock payments, email delivery disabled by default without `RESEND_API_KEY`.
+
+## External Dependencies
+
+-   **Database:** PostgreSQL
+-   **ORM:** Drizzle ORM
+-   **Email Service:** Resend (requires `RESEND_API_KEY` for activation)
+-   **UI Components:** Radix UI (via Shadcn/ui), Lucide icons
+-   **Charting:** Recharts
+-   **Mapping:** Leaflet/OpenStreetMap
+-   **Payment Gateway:** Mock Stripe (no real payment integration)
