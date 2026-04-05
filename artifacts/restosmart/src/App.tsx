@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { track } from "@/lib/conversion-tracking";
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -74,6 +75,7 @@ function PremiumGate({ children }: { children: React.ReactNode }) {
 }
 
 function TrialExpiredRequired() {
+  useEffect(() => { track("trial_expired_viewed"); }, []);
   const biz = typeof window !== "undefined"
     ? localStorage.getItem("restosmart_owner_business_type") ?? "restaurant"
     : "restaurant";
@@ -154,6 +156,7 @@ function TrialExpiredRequired() {
           <a
             href={CUSTOMER_PROFILE_URL}
             className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
+            onClick={() => track("upgrade_cta_clicked", { ctaLabel: "Jetzt für 39,90€ / Monat fortsetzen", dedup: false })}
           >
             Jetzt für 39,90€ / Monat fortsetzen
           </a>
@@ -167,6 +170,7 @@ function TrialExpiredRequired() {
 }
 
 function PremiumRequired() {
+  useEffect(() => { track("premium_gate_viewed"); }, []);
   const biz = typeof window !== "undefined"
     ? localStorage.getItem("restosmart_owner_business_type") ?? "restaurant"
     : "restaurant";
@@ -285,6 +289,7 @@ function PremiumRequired() {
           <a
             href={CUSTOMER_PROFILE_URL}
             className="flex items-center justify-center gap-2 w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
+            onClick={() => track("upgrade_cta_clicked", { ctaLabel: "Jetzt 14 Tage kostenlos starten", dedup: false })}
           >
             Jetzt 14 Tage kostenlos starten
           </a>

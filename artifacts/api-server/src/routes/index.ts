@@ -36,6 +36,7 @@ import promotionsRouter from "./promotions";
 import founderRouter from "./founder";
 import pricingRouter from "./pricing";
 import businessClaimsRouter from "./business-claims";
+import conversionRouter from "./conversion";
 
 const router: IRouter = Router();
 
@@ -76,5 +77,6 @@ router.use("/promotions", promotionsRouter);
 router.use("/founder", founderRouter);
 router.use("/pricing", pricingRouter);
 router.use("/business-claims", businessClaimsRouter);
+router.use("/conversion", conversionRouter);
 
 export default router;

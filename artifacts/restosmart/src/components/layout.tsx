@@ -6,7 +6,8 @@ import {
   Clock, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { track } from "@/lib/conversion-tracking";
 
 function getTrialState() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -98,6 +99,11 @@ function TrialBanner() {
 }
 
 export function TrialConversionBanner({ context }: { context: "overview" | "analytics" | "marketing" | "insights" | "billing" }) {
+  const isTrial = typeof window !== "undefined" && localStorage.getItem("restosmart_owner_premium") === "trial";
+  useEffect(() => {
+    if (isTrial) track("trial_conversion_banner_viewed", { messageLabel: context });
+  }, []);
+
   if (typeof window === "undefined") return null;
   const premium = localStorage.getItem("restosmart_owner_premium");
   const trialEndStr = localStorage.getItem("restosmart_trial_end");

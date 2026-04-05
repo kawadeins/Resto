@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { track } from "@/lib/conversion-tracking";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -68,6 +69,11 @@ function ActiveDiscountBanner() {
 }
 
 export default function Marketing() {
+  useEffect(() => {
+    if (localStorage.getItem("restosmart_owner_premium") === "trial") {
+      track("marketing_tools_viewed");
+    }
+  }, []);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showScheduledForm, setShowScheduledForm] = useState(false);

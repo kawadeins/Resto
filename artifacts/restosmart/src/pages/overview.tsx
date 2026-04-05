@@ -17,7 +17,8 @@ import {
   getGetInsightsDailySummaryQueryKey,
 } from "@workspace/api-client-react";
 import { PromotionTools } from "@/components/promotion-tools";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { track } from "@/lib/conversion-tracking";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame, UserCheck, UserX, ClipboardList, Send, RefreshCw } from "lucide-react";
@@ -53,6 +54,11 @@ const FEEDBACK_CATEGORIES = [
 ] as const;
 
 export default function Overview() {
+  useEffect(() => {
+    if (localStorage.getItem("restosmart_owner_premium") === "trial") {
+      track("dashboard_accessed");
+    }
+  }, []);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const bizPossessive = BIZ_POSSESSIVE[getBizType()];

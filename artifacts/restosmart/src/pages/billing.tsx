@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { track } from "@/lib/conversion-tracking";
 import { useCancelSubscription, useGetSubscription } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ function getTrialInfo() {
 }
 
 export default function Billing() {
+  useEffect(() => { track("premium_page_opened"); }, []);
   const { toast } = useToast();
   const cancelSubscription = useCancelSubscription();
   const { data: subscription } = useGetSubscription({});

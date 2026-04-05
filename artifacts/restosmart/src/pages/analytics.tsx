@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { track } from "@/lib/conversion-tracking";
 import { Link } from "wouter";
 import { useGetPerformanceAnalytics, getGetPerformanceAnalyticsQueryKey, useGetDailyAnalytics, getGetDailyAnalyticsQueryKey, useGetMenuAnalytics, getGetMenuAnalyticsQueryKey, useGetSubscription, getGetSubscriptionQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,6 +35,12 @@ export default function Analytics() {
   });
 
   const isTrial = subscription?.isActive === true && subscription?.status === "trial";
+
+  useEffect(() => {
+    if (!loadingSubscription && !isPro) {
+      track("analytics_locked_viewed");
+    }
+  }, [loadingSubscription, isPro]);
 
   if (!loadingSubscription && !isPro) {
     const customerProfileUrl = typeof window !== "undefined" ? window.location.origin + "/customer/profile" : "/customer/profile";

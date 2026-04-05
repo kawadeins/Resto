@@ -1,0 +1,267 @@
+MASTER RULES APPLY
+
+Build a "Premium Conversion Analytics Engine" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing functionality.
+Do NOT create fake analytics.
+All business-facing conversion-related text should remain in German where relevant.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Track, measure, and explain exactly how business owners move through the Premium conversion journey.
+
+The platform should clearly reveal:
+
+- what premium messages work best
+- what screens convert best
+- where business owners drop off
+- which business types convert better
+- which actions lead to paid Premium after the 14-day free trial
+
+This system is about real conversion intelligence.
+
+========================
+1. TRACK THE FULL PREMIUM CONVERSION FUNNEL
+========================
+
+Track the full journey from first premium exposure to paid conversion.
+
+Key funnel steps should include:
+
+- premium entry viewed
+- premium page opened
+- trial started
+- dashboard accessed during trial
+- key premium tools used
+- visibility / analytics cards viewed
+- trial nearing end viewed
+- upgrade CTA clicked
+- checkout started
+- payment completed
+- premium active after trial
+
+This funnel must show drop-off points clearly.
+
+========================
+2. MESSAGE PERFORMANCE TRACKING
+========================
+
+Track which Premium messages perform best.
+
+Examples:
+- which headline got more clicks
+- which CTA got more trial starts
+- which value card increased conversion
+- which ROI-style message improved upgrade rate
+
+The system should identify:
+- strongest German hook
+- strongest CTA
+- strongest upgrade moment
+
+========================
+3. BUSINESS-TYPE CONVERSION BREAKDOWN
+========================
+
+Break Premium conversion down by business type:
+
+- restaurant
+- café
+- bar
+
+Show:
+- page views
+- trial starts
+- paid conversions
+- conversion rate by type
+- best-performing messages by type
+
+This helps understand:
+- who converts easiest
+- which pitch works best for each type
+
+========================
+4. TRIAL PERFORMANCE ANALYTICS
+========================
+
+Track how businesses behave during the 14-day trial.
+
+Examples:
+- how often they open dashboard
+- which premium features they use
+- whether they see analytics
+- whether they view visibility results
+- whether they interact with boost tools
+
+This should help answer:
+- what behavior predicts paid conversion
+- what inactive trial users need to see
+- what active trial users respond to most
+
+========================
+5. CONVERSION MOMENT DETECTION
+========================
+
+Identify the strongest conversion moments.
+
+Examples:
+- after seeing profile views
+- after seeing visibility growth
+- after seeing missed opportunity
+- near trial end
+- after opening promotion tools
+
+The system should reveal:
+- which moment converts best
+- where to place stronger upgrade prompts
+
+========================
+6. DROPOFF ANALYSIS
+========================
+
+Show where users stop.
+
+Examples:
+- viewed premium but no trial
+- started trial but never used dashboard
+- used dashboard but never clicked upgrade
+- started checkout but did not pay
+
+This must help diagnose friction.
+
+========================
+7. CTA PERFORMANCE
+========================
+
+Track CTA behavior:
+
+Examples:
+- "Jetzt 14 Tage kostenlos starten"
+- "Premium aktivieren"
+- "Für 39,90€ / Monat fortsetzen"
+
+Show:
+- views
+- clicks
+- click-through rate
+- conversion after click
+
+========================
+8. GERMAN COPY PERFORMANCE
+========================
+
+Where multiple German persuasion blocks are used, track which ones perform better.
+
+Examples:
+- “Mehr Sichtbarkeit”
+- “Mehr Kunden”
+- “Mehr Reichweite”
+- “Verifizierter Business-Status”
+- “39,90€ im Monat für mehr lokale Sichtbarkeit”
+
+The founder should know what wording actually sells.
+
+========================
+9. PREMIUM VALUE PROOF ANALYTICS
+========================
+
+Track whether showing proof improves conversion.
+
+Examples:
+- profile views shown
+- exposure increase shown
+- local visibility stats shown
+- smart offer appearances shown
+
+Measure:
+- who converted after seeing proof
+- who did not
+
+========================
+10. CITY / REGION CONVERSION INSIGHT
+========================
+
+Track premium conversion by city/region.
+
+Examples:
+- Vienna
+- Graz
+- Linz
+- Salzburg
+- Innsbruck
+
+Show:
+- premium page views
+- trial starts
+- paid conversions
+- city conversion rate
+
+This helps geographic strategy later.
+
+========================
+11. FOUNDER DASHBOARD INTEGRATION
+========================
+
+Feed these analytics into the Founder Command Center.
+
+Add conversion panels such as:
+- Premium Funnel
+- Trial to Paid Conversion
+- Best CTA
+- Best Message
+- Best Business Type
+- Highest Drop-off Point
+
+This should become one of the most important founder intelligence panels.
+
+========================
+12. ACTIONABLE INSIGHT OUTPUT
+========================
+
+Do NOT just show charts.
+
+Also show direct insight statements such as:
+- “Cafés convert best after visibility proof”
+- “Bars drop off before checkout”
+- “Trial users who open analytics convert more often”
+- “This CTA performs better than others”
+
+Insights must be useful.
+
+========================
+13. DO NOT OVERCOMPLICATE
+========================
+
+- no enterprise analytics suite
+- no fake precision
+- no vanity dashboards only
+
+Focus on:
+- real funnel clarity
+- real message effectiveness
+- real conversion intelligence
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should know exactly how Premium converts.
+
+The founder should understand:
+
+- what sells
+- what doesn’t
+- where users hesitate
+- which business types convert best
+- which messages drive paid subscription
+
+This should turn Premium growth into a measurable system, not guesswork.

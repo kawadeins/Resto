@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import PremiumConversionPanel from "@/components/premium-conversion-panel";
 import {
   TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Info,
   RefreshCw, Shield, Lock, Eye, EyeOff, ArrowUpRight, ArrowDownRight,
@@ -1936,7 +1937,7 @@ export default function Founder() {
   const [authed, setAuthed] = useState<boolean>(() => {
     return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
   });
-  const [view, setView] = useState<"dashboard" | "pipeline">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion">("dashboard");
 
   if (!authed) {
     return <AuthGate onAuth={() => setAuthed(true)} />;
@@ -1972,11 +1973,31 @@ export default function Founder() {
             Wien Sales Pipeline
             <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">NEU</span>
           </button>
+          <button
+            onClick={() => setView("conversion")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+              view === "conversion"
+                ? "bg-violet-500/15 text-violet-400 border border-violet-500/25"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+            Conversion Intelligence
+            <span className="bg-violet-500/20 text-violet-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">NEU</span>
+          </button>
           <div className="ml-auto text-[10px] text-[#222]">Founder · Streng vertraulich</div>
         </div>
       </div>
       {view === "dashboard" && <Dashboard founderKey={CORRECT_KEY} />}
       {view === "pipeline" && <WienPipelineView founderKey={CORRECT_KEY} />}
+      {view === "conversion" && (
+        <div className="max-w-screen-xl mx-auto px-6 py-8">
+          <PremiumConversionPanel />
+        </div>
+      )}
     </div>
   );
 }
