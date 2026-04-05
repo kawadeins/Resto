@@ -26,6 +26,7 @@ import { getBizType, BIZ_POSSESSIVE } from "@/lib/biz-copy";
 import { TrialConversionBanner } from "@/components/layout";
 import { GrowthActivationHub } from "@/components/growth-activation-hub";
 import { CompetitionEngine } from "@/components/competition-engine";
+import { CityExpansionEngine } from "@/components/city-expansion-engine";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -213,6 +214,12 @@ export default function Overview() {
 
       {/* Competition Engine — visibility tier, demand signals, competition level */}
       <CompetitionEngine
+        onBoost={() => { window.location.href = "/promotions"; }}
+        onUpgrade={() => { window.location.href = "/billing"; }}
+      />
+
+      {/* City Expansion Engine — local market opportunity and city health */}
+      <CityExpansionEngine
         onBoost={() => { window.location.href = "/promotions"; }}
         onUpgrade={() => { window.location.href = "/billing"; }}
       />

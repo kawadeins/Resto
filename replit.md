@@ -181,6 +181,51 @@ Real-time competitive intelligence layer that surfaces market pressure, demand s
 - `GET /api/competition/insights` — founder analytics (x-founder-key header required)
 - Registered: `artifacts/api-server/src/routes/competition.ts` → `routes/index.ts`
 
+## City Expansion Engine
+
+Market domination system for growing city-by-city in a controlled, strategic way.
+
+### City Data (5 Austrian cities)
+- **Wien** — 30 businesses (Dominant stage, score ~85)
+- **Graz** — 4 businesses: 2 restaurants, 1 café, 1 bar (Early Stage → Growing)
+- **Salzburg** — 3 businesses: 1 restaurant, 1 café, 1 bar (Early Stage)
+- **Linz** — 2 businesses: 1 restaurant, 1 café (Early Stage)
+- **Innsbruck** — 2 businesses: 1 restaurant, 1 café (Early Stage)
+All non-Wien restaurants were added via raw SQL seed on 2026-04-05.
+
+### City Health Score Algorithm
+`score = bizCount×2.5 + premiumCount×6 + activeBoosts×4 + (avgRating−3.5)×8 + bookingPlans×0.3` (capped at 100)
+
+City stages: **Früh** (<4 biz, score<25) | **Wachstum** (4-10 biz) | **Stark** (10-20 biz) | **Dominant** (20+ biz)
+
+### API Routes
+- `GET /api/cities` — all cities with health scores (no auth)
+- `GET /api/cities/signals?city=Wien` — owner widget data: demand level, competition, opportunity, city-specific messaging
+- `GET /api/cities/dashboard` — founder analytics with expansion decision matrix (founder auth)
+- Registered in: `artifacts/api-server/src/routes/cities.ts` → `routes/index.ts`
+
+### Owner Widget (`city-expansion-engine.tsx`)
+- **File**: `artifacts/restosmart/src/components/city-expansion-engine.tsx`
+- **Wired into**: `overview.tsx` — below Competition Engine widget
+- Shows: city health score bar, demand/competition/opportunity triple signal, city stats
+- **Early city advantage banner** — shown for Früh/Wachstum cities: "Früh dabei = mehr Sichtbarkeit"
+- **CTA**: Boost or Premium depending on owner status
+
+### Founder City Dashboard ("Städte" tab)
+- **Component**: `FounderCitiesView` in `artifacts/restosmart/src/pages/founder.tsx`
+- **Tab**: "Städte" (violet, NEU badge) — 5th tab in Founder Command Center
+- **4 sections**:
+  1. Insights summary: total cities, total businesses, dominant city, next focus city
+  2. City cards: emoji, stage badge, health score bar, 8-column metrics (businesses, types, rating, premium, boosts, budget)
+  3. Expansion decision matrix: per-city strategic action, focus area, risk note
+  4. Scalable growth loop note
+
+### Expansion Decision Logic
+- **Dominant**: Retention & monetisation — grow premium rate
+- **Stark**: Premium conversion — move free businesses to premium
+- **Wachstum**: Supply activation — onboard more businesses
+- **Früh**: Market opening — attract early adopters with visibility advantage
+
 ## Wien Market Focus (Growth Activation)
 
 ### City Data (30 Wien venues — City Domination Update)

@@ -1,0 +1,261 @@
+MASTER RULES APPLY
+
+Build a "City Expansion Engine" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing functionality.
+Do NOT overcomplicate the system.
+All business-facing UI must remain in German.
+
+This system must work with:
+- Business Self-Serve Growth Loop
+- Premium System (39,90€ / month)
+- Boost / Competition Engine
+- Heat Map / Live Activity
+- Founder Command Center
+
+========================
+GOAL
+========================
+
+Enable RestoMaster to expand city-by-city in a controlled, strategic way.
+
+The platform should:
+- identify high-potential cities
+- activate local supply (businesses)
+- stimulate local demand (users)
+- grow density
+- convert businesses to Premium
+- repeat in next city
+
+This is a market domination system.
+
+========================
+1. CITY STRUCTURE (CORE)
+========================
+
+Define cities as core expansion units.
+
+Each city must have:
+- business count
+- premium penetration
+- activity level
+- user demand
+- conversion metrics
+
+Examples:
+- Vienna
+- Graz
+- Linz
+- Salzburg
+- Innsbruck
+
+========================
+2. CITY HEALTH SCORE
+========================
+
+Create a simple "City Health Score" based on:
+
+- number of active businesses
+- number of premium businesses
+- user activity
+- bookings / interactions
+- boost usage
+- conversion rate
+
+Classify cities:
+- Early Stage
+- Growing
+- Strong
+- Dominant
+
+========================
+3. SUPPLY ACTIVATION (BUSINESSES)
+========================
+
+In early-stage cities:
+
+- prioritize business onboarding
+- show strong value messaging
+- push trial (14 days)
+- simplify onboarding
+
+German messaging examples:
+- "Jetzt dein Geschäft eintragen"
+- "Werde in deiner Stadt sichtbar"
+
+========================
+4. DEMAND STIMULATION (USERS)
+========================
+
+Ensure users see value even with low supply:
+
+- show best available places
+- highlight early adopters
+- emphasize discovery
+- use smart offers where possible
+
+Goal:
+👉 users keep opening the app
+
+========================
+5. LOCAL DENSITY STRATEGY
+========================
+
+Focus on density, not spread.
+
+Instead of:
+❌ spreading thin across many cities
+
+Do:
+✅ dominate one city at a time
+
+Rules:
+- reach critical mass in city
+- then expand
+
+========================
+6. EARLY BUSINESS ADVANTAGE
+========================
+
+Reward early businesses in new cities.
+
+Examples:
+- higher visibility early
+- lower competition
+- stronger exposure
+
+German examples:
+- "Früh dabei = mehr Sichtbarkeit"
+- "Nutze den Vorteil in deiner Stadt"
+
+========================
+7. CITY-SPECIFIC SIGNALS
+========================
+
+Show local opportunity signals:
+
+- demand level
+- activity level
+- competition level
+
+German examples:
+- "Wachsende Nachfrage in deiner Stadt"
+- "Noch geringe Konkurrenz"
+- "Jetzt ist der beste Zeitpunkt einzusteigen"
+
+========================
+8. PREMIUM CONVERSION PER CITY
+========================
+
+Track:
+
+- premium adoption per city
+- trial-to-paid rate
+- business type conversion
+- boost usage
+
+Optimize messaging per city.
+
+========================
+9. LOCAL COMPETITION ACTIVATION
+========================
+
+Once density increases:
+
+- activate competition engine stronger
+- increase demand for top positions
+- increase boost usage
+
+This creates revenue acceleration.
+
+========================
+10. CITY DASHBOARD (FOUNDER)
+========================
+
+Inside Founder Command Center:
+
+Show per city:
+
+- total businesses
+- premium businesses
+- conversion rate
+- activity level
+- boost revenue
+- growth trend
+
+Also show:
+- fastest growing city
+- highest revenue city
+- highest competition city
+
+========================
+11. EXPANSION DECISION LOGIC
+========================
+
+Help founder decide:
+
+- which city to focus next
+- which city needs push
+- which city is saturated
+- which city has high opportunity
+
+========================
+12. LOCALIZED STRATEGY
+========================
+
+Allow slight adaptation per city:
+
+- nightlife-heavy cities → focus bars
+- business districts → focus lunch restaurants
+- student areas → focus cafés
+
+========================
+13. SCALABLE LOOP
+========================
+
+For each city:
+
+1. Enter city  
+2. Activate businesses  
+3. Build supply  
+4. Activate demand  
+5. Show value  
+6. Convert to Premium  
+7. Activate competition  
+8. Increase revenue  
+9. Repeat  
+
+========================
+14. DO NOT OVERCOMPLICATE
+========================
+
+- no complex geo systems
+- no heavy expansion tools
+- no enterprise planning system
+
+Focus on:
+- city-level clarity
+- growth loops
+- simple metrics
+- repeatable strategy
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should expand city-by-city and dominate local markets.
+
+Each city should become:
+
+- dense
+- active
+- monetized
+- competitive
+
+The platform should evolve into:
+
+👉 a city-based marketplace engine  
+👉 a scalable growth system  
+👉 a revenue-generating local network

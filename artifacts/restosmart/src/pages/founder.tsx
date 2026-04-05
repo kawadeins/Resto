@@ -1937,6 +1937,297 @@ function Dashboard({ founderKey }: { founderKey: string }) {
   );
 }
 
+// ─── Founder Cities Dashboard ─────────────────────────────────────────────────
+
+interface CityData {
+  city: string;
+  bizCount: number;
+  restaurantCount: number;
+  cafeCount: number;
+  barCount: number;
+  avgRating: number;
+  new30d: number;
+  claims30d: number;
+  activeBoosts: number;
+  totalBoosts: number;
+  activeBudgetPerDay: number;
+  totalImpressions: number;
+  totalClicks: number;
+  bookingCount: number;
+  premiumEstimate: number;
+  premiumRate: number;
+  boostRate: number;
+  conversionRate: number;
+  score: number;
+  stage: string;
+  stageColor: string;
+  stageEN: string;
+  expansionPriority: number;
+}
+
+interface CityDashboard {
+  cities: CityData[];
+  insights: {
+    dominantCity: string | null;
+    highestRevenueCity: string | null;
+    fastestGrowingCity: string | null;
+    highestCompCity: string | null;
+    nextFocusCity: string | null;
+    totalCities: number;
+    totalBizAcrossAll: number;
+  };
+}
+
+const CITY_STAGE_STYLES: Record<string, string> = {
+  Dominant: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  Stark:    "text-blue-400   bg-blue-500/10   border-blue-500/20",
+  Wachstum: "text-amber-400  bg-amber-500/10  border-amber-500/20",
+  Früh:     "text-rose-400   bg-rose-500/10   border-rose-500/20",
+};
+
+const CITY_SCORE_BAR: Record<string, string> = {
+  Dominant: "from-emerald-500 to-teal-500",
+  Stark:    "from-blue-500 to-indigo-500",
+  Wachstum: "from-amber-500 to-orange-500",
+  Früh:     "from-rose-500 to-pink-500",
+};
+
+const CITY_EMOJI: Record<string, string> = {
+  Wien:      "🇦🇹",
+  Graz:      "🏙️",
+  Salzburg:  "🎵",
+  Linz:      "🏭",
+  Innsbruck: "⛷️",
+};
+
+const EXPANSION_ACTION: Record<string, { label: string; color: string; sub: string }> = {
+  Dominant: { label: "Weiter dominieren",       color: "text-emerald-400", sub: "Premium & Boost-Adoption steigern" },
+  Stark:    { label: "Premium konvertieren",     color: "text-blue-400",   sub: "Freie Betriebe zu Premium bewegen" },
+  Wachstum: { label: "Supply aktivieren",        color: "text-amber-400",  sub: "Mehr Betriebe onboarden" },
+  Früh:     { label: "Markt erschließen",        color: "text-rose-400",   sub: "Früh einsteigen — hohe Sichtbarkeit" },
+};
+
+function FounderCitiesView({ founderKey }: { founderKey: string }) {
+  const headers = { "x-founder-key": founderKey };
+  const qc = useQueryClient();
+
+  const dashQuery = useQuery<CityDashboard>({
+    queryKey: ["founder-cities"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/cities/dashboard`, { headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    staleTime: 60_000,
+  });
+
+  const d = dashQuery.data;
+
+  return (
+    <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-8">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin className="w-4 h-4 text-violet-400" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">
+              City Expansion Engine — Founder Dashboard
+            </span>
+          </div>
+          <p className="text-[11px] text-[#333]">
+            Stadtweite Expansion: Health Score, Aktivierungsstand und nächste strategische Maßnahmen pro Stadt.
+          </p>
+        </div>
+        <button
+          onClick={() => qc.invalidateQueries({ queryKey: ["founder-cities"] })}
+          className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#888] transition-colors"
+        >
+          <RefreshCw className="w-3 h-3" /> Aktualisieren
+        </button>
+      </div>
+
+      {dashQuery.isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-20 rounded-2xl bg-white/3 animate-pulse" />
+          ))}
+        </div>
+      ) : !d ? (
+        <div className="rounded-2xl border border-white/6 p-8 text-center text-[#333] text-sm">
+          Keine Daten verfügbar
+        </div>
+      ) : (
+        <>
+          {/* ── Insights summary ─────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Plattform-Städte",      value: String(d.insights.totalCities),             color: "text-violet-400" },
+              { label: "Betriebe gesamt",        value: String(d.insights.totalBizAcrossAll),       color: "text-white" },
+              { label: "Stärkste Stadt",         value: d.insights.dominantCity ?? "—",            color: "text-emerald-400" },
+              { label: "Nächste Fokusstadt",     value: d.insights.nextFocusCity ?? "—",           color: "text-amber-400" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="rounded-2xl border border-white/6 bg-white/2 px-4 py-3 text-center">
+                <p className={`text-lg font-bold ${color}`}>{value}</p>
+                <p className="text-[10px] text-[#555] mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── City cards ───────────────────────────────────────────────── */}
+          <div className="space-y-3">
+            {d.cities.map((city) => {
+              const action = EXPANSION_ACTION[city.stage] ?? EXPANSION_ACTION.Früh;
+              return (
+                <div
+                  key={city.city}
+                  className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden"
+                >
+                  {/* City header */}
+                  <div className="flex items-center gap-4 px-5 py-3 border-b border-white/4">
+                    <div className="text-xl shrink-0">
+                      {CITY_EMOJI[city.city] ?? "🏙️"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-white">{city.city}</span>
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                          CITY_STAGE_STYLES[city.stage]
+                        )}>
+                          {city.stageEN}
+                        </span>
+                        {d.insights.fastestGrowingCity === city.city && (
+                          <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold">
+                            SCHNELLSTES WACHSTUM
+                          </span>
+                        )}
+                        {d.insights.highestRevenueCity === city.city && (
+                          <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold">
+                            HÖCHSTER UMSATZ
+                          </span>
+                        )}
+                        {d.insights.nextFocusCity === city.city && city.stage !== "Dominant" && (
+                          <span className="text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full font-bold">
+                            NÄCHSTE PRIORITÄT
+                          </span>
+                        )}
+                      </div>
+                      {/* Health score bar */}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <div className="flex-1 h-1 bg-white/6 rounded-full overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-full bg-gradient-to-r", CITY_SCORE_BAR[city.stage])}
+                            style={{ width: `${city.score}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-[#555] shrink-0">{city.score}/100</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className={cn("text-xs font-bold", action.color)}>{action.label}</p>
+                      <p className="text-[10px] text-[#333] mt-0.5 max-w-[140px]">{action.sub}</p>
+                    </div>
+                  </div>
+
+                  {/* City metrics row */}
+                  <div className="grid grid-cols-4 md:grid-cols-8 divide-x divide-white/4">
+                    {[
+                      { label: "Betriebe",       value: String(city.bizCount) },
+                      { label: "Restaurants",    value: String(city.restaurantCount) },
+                      { label: "Cafés",          value: String(city.cafeCount) },
+                      { label: "Bars",           value: String(city.barCount) },
+                      { label: "Ø Rating",       value: city.avgRating.toFixed(1) },
+                      { label: "Premium",        value: `${city.premiumEstimate} (${city.premiumRate}%)` },
+                      { label: "Aktive Boosts",  value: String(city.activeBoosts) },
+                      { label: "Budget/Tag",     value: `€${city.activeBudgetPerDay.toFixed(2)}` },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="px-3 py-2 text-center">
+                        <p className="text-xs font-semibold text-white">{value}</p>
+                        <p className="text-[9px] text-[#444] mt-0.5">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Expansion decision matrix ─────────────────────────────────── */}
+          <div className="rounded-2xl border border-white/6 bg-white/2 overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/6">
+              <span className="text-xs font-semibold text-[#888]">Expansions-Entscheidungsmatrix</span>
+            </div>
+            <div className="divide-y divide-white/4">
+              {[...d.cities]
+                .sort((a, b) => b.expansionPriority - a.expansionPriority)
+                .map((city) => {
+                  const DECISIONS: Record<string, { focus: string; action: string; risk: string }> = {
+                    Dominant: {
+                      focus:  "Retention & Monetisierung",
+                      action: "Premium-Rate und Boost-Adoption erhöhen",
+                      risk:   "Markt gesättigt — Wachstum durch Tiefe, nicht Breite",
+                    },
+                    Stark: {
+                      focus:  "Premium-Konversion",
+                      action: "Freie Betriebe zu Premium konvertieren",
+                      risk:   "Mittlere Konkurrenz — Boost-Motivation steigern",
+                    },
+                    Wachstum: {
+                      focus:  "Supply-Aktivierung",
+                      action: "Neue Betriebe onboarden + Self-Serve aktivieren",
+                      risk:   "Noch niedrige Nutzerdichte — Demand-Seite aufbauen",
+                    },
+                    Früh: {
+                      focus:  "Markteröffnung",
+                      action: "Früh-Adopter gewinnen + hohe Sichtbarkeit versprechen",
+                      risk:   "Niedrige Aktivität — Henne/Ei-Problem",
+                    },
+                  };
+                  const dec = DECISIONS[city.stage] ?? DECISIONS.Früh;
+                  return (
+                    <div key={city.city} className="flex items-start gap-4 px-4 py-3">
+                      <div className="w-6 text-center text-base shrink-0 mt-0.5">
+                        {CITY_EMOJI[city.city] ?? "🏙️"}
+                      </div>
+                      <div className="w-20 shrink-0">
+                        <p className="text-xs font-bold text-white">{city.city}</p>
+                        <span className={cn(
+                          "text-[9px] font-bold px-1.5 py-0.5 rounded-full border",
+                          CITY_STAGE_STYLES[city.stage]
+                        )}>
+                          {city.stage}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-semibold text-[#888]">{dec.focus}</p>
+                        <p className="text-[10px] text-[#555] mt-0.5">{dec.action}</p>
+                        <p className="text-[10px] text-[#333] mt-0.5 italic">{dec.risk}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] text-[#444]">{city.bizCount} Betriebe</p>
+                        <p className="text-[10px] text-[#333]">€{city.activeBudgetPerDay.toFixed(2)}/Tag</p>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+
+          {/* ── Scalable growth loop note ─────────────────────────────────── */}
+          <div className="rounded-2xl border border-white/4 bg-white/1 px-5 py-4">
+            <p className="text-[11px] text-[#444] leading-relaxed">
+              <span className="text-[#666] font-semibold">Expansions-Loop:</span>
+              {" "}Stadt erschließen → Supply aktivieren → Demand aufbauen → Premium konvertieren → Wettbewerb aktivieren → Umsatz steigern → Nächste Stadt.
+              Fokus auf Dichte, nicht auf Breite — eine Stadt dominieren, dann expandieren.
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Founder Competition Insights ─────────────────────────────────────────────
 
 interface CompetitionInsights {
@@ -2169,7 +2460,7 @@ export default function Founder() {
   const [authed, setAuthed] = useState<boolean>(() => {
     return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
   });
-  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion" | "competition">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "conversion" | "competition" | "cities">("dashboard");
 
   if (!authed) {
     return <AuthGate onAuth={() => setAuthed(true)} />;
@@ -2233,6 +2524,19 @@ export default function Founder() {
             Wettbewerb
             <span className="bg-rose-500/20 text-rose-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">LIVE</span>
           </button>
+          <button
+            onClick={() => setView("cities")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+              view === "cities"
+                ? "bg-violet-500/15 text-violet-400 border border-violet-500/25"
+                : "text-[#444] hover:text-[#888] hover:bg-white/4"
+            )}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            Städte
+            <span className="bg-violet-500/20 text-violet-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">NEU</span>
+          </button>
           <div className="ml-auto text-[10px] text-[#222]">Founder · Streng vertraulich</div>
         </div>
       </div>
@@ -2247,6 +2551,7 @@ export default function Founder() {
         </div>
       )}
       {view === "competition" && <FounderCompetitionInsights founderKey={CORRECT_KEY} />}
+      {view === "cities" && <FounderCitiesView founderKey={CORRECT_KEY} />}
     </div>
   );
 }

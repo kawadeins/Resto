@@ -39,6 +39,7 @@ import businessClaimsRouter from "./business-claims";
 import conversionRouter from "./conversion";
 import variantsRouter from "./variants";
 import competitionRouter from "./competition";
+import citiesRouter from "./cities";
 
 const router: IRouter = Router();
 
@@ -82,5 +83,6 @@ router.use("/business-claims", businessClaimsRouter);
 router.use("/conversion", conversionRouter);
 router.use("/variants", variantsRouter);
 router.use("/competition", competitionRouter);
+router.use("/cities", citiesRouter);
 
 export default router;
