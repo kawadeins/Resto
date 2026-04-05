@@ -97,6 +97,84 @@ function TrialBanner() {
   );
 }
 
+export function TrialConversionBanner({ context }: { context: "overview" | "analytics" | "marketing" | "insights" | "billing" }) {
+  if (typeof window === "undefined") return null;
+  const premium = localStorage.getItem("restosmart_owner_premium");
+  const trialEndStr = localStorage.getItem("restosmart_trial_end");
+  if (premium !== "trial" || !trialEndStr) return null;
+  const end = new Date(trialEndStr);
+  const now = new Date();
+  if (end <= now) return null;
+  const daysLeft = Math.ceil((end.getTime() - now.getTime()) / 86400000);
+  const biz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
+  const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
+
+  const contextual: Record<string, { headline: string; body: string; cta: string }> = {
+    overview: {
+      headline: "Deine Testphase läuft – nutze die volle Sichtbarkeit",
+      body: `Werde in deiner Nähe häufiger entdeckt. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
+      cta: "Sichtbarkeit sichern",
+    },
+    analytics: {
+      headline: "Dein Profil wurde 124× angesehen während der Testphase",
+      body: "Behalte diesen Sichtbarkeits-Vorteil dauerhaft. Schon ein zusätzlicher Gast rechtfertigt den Monatsbetrag.",
+      cta: "Für 39,90€ fortsetzen",
+    },
+    marketing: {
+      headline: "Boost-Tools aktiv – schalte alle frei mit Premium",
+      body: `Mehr Reichweite für dein ${bizLabel}. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
+      cta: "Premium aktivieren",
+    },
+    insights: {
+      headline: "Nutze dein lokales Potenzial besser",
+      body: "Erkenne Stoßzeiten und optimiere dein Angebot. Behalte alle Einblicke mit Premium.",
+      cta: "Jetzt sichern",
+    },
+    billing: {
+      headline: "Behalte deine Reichweite auch nach der Testphase",
+      body: "39,90€ im Monat für mehr lokale Sichtbarkeit – eine kleine Investition mit großer Wirkung.",
+      cta: "Für 39,90€ fortsetzen",
+    },
+  };
+
+  const { headline, body, cta } = contextual[context] ?? contextual.overview;
+  const customerProfileUrl = window.location.origin + "/customer/profile";
+  const isUrgent = daysLeft <= 3;
+
+  return (
+    <div className={cn(
+      "rounded-xl border p-4 flex items-center gap-4",
+      isUrgent
+        ? "border-red-700/40 bg-gradient-to-r from-red-950/50 to-pink-950/30"
+        : "border-violet-700/30 bg-gradient-to-r from-violet-950/60 to-pink-950/30"
+    )}>
+      <div className="flex-1 min-w-0">
+        <p className={cn("text-sm font-semibold", isUrgent ? "text-red-200" : "text-violet-200")}>{headline}</p>
+        <p className={cn("text-xs mt-0.5 leading-relaxed", isUrgent ? "text-red-300/60" : "text-violet-300/60")}>{body}</p>
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        {!isUrgent && (
+          <div className="hidden sm:block text-right">
+            <div className="text-[10px] text-violet-400/50 uppercase tracking-widest">Testphase</div>
+            <div className="text-sm font-bold text-violet-300">{daysLeft} Tage</div>
+          </div>
+        )}
+        <a
+          href={customerProfileUrl}
+          className={cn(
+            "text-xs font-bold px-3 py-2 rounded-xl text-white hover:opacity-90 transition-opacity whitespace-nowrap",
+            isUrgent
+              ? "bg-gradient-to-r from-red-600 to-pink-600"
+              : "bg-gradient-to-r from-violet-600 to-pink-600"
+          )}
+        >
+          {cta}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 const navigation = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
   { name: "Mein Profil", href: "/profile", icon: UserCircle },

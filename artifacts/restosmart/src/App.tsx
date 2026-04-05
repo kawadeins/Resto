@@ -198,31 +198,49 @@ function PremiumRequired() {
   return (
     <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full text-center space-y-5">
-        {/* Icon */}
-        <div className="relative mx-auto w-20 h-20">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-violet-500/30 text-4xl">
-            {bizEmoji}
-          </div>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center border-2 border-[#0d0d0d]">
-            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+
+        {/* STEP 1: PROBLEM — Loss avoidance at the very top */}
+        <div className="rounded-xl border border-red-900/50 bg-red-950/25 p-4 text-left flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-red-500/25 flex items-center justify-center shrink-0 mt-0.5">
+            <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
+          <div>
+            <p className="text-xs font-semibold text-red-300">
+              Ohne Premium bleibt dein {bizLabel} weniger sichtbar
+            </p>
+            <p className="text-[11px] text-red-400/70 mt-0.5">
+              Andere Betriebe werden häufiger entdeckt. Du verpasst potenzielle Reichweite in deiner Umgebung.
+            </p>
+          </div>
         </div>
 
-        {/* Headline */}
-        <div className="space-y-2">
-          <div className="text-[10px] font-bold tracking-widest uppercase text-violet-400">RestoSmart Business Premium</div>
-          <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
-            Mehr Sichtbarkeit.<br />Mehr Kunden. Mehr Wachstum.
-          </h1>
-          <p className="text-[10px] text-violet-400/70 font-semibold uppercase tracking-widest">{"Für Restaurants, Cafés & Bars"}</p>
-          <p className="text-[#777] text-sm leading-relaxed mt-2">
-            {"Mit RestoSmart Premium erreichst du mehr Kunden in deiner Nähe, wirst häufiger gefunden und stärkst die Präsenz deines "}{bizLabel}{"s im Alltag."}
-          </p>
+        {/* STEP 2: OPPORTUNITY — Icon + headline */}
+        <div className="space-y-4">
+          <div className="relative mx-auto w-20 h-20">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-violet-500/30 text-4xl">
+              {bizEmoji}
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center border-2 border-[#0d0d0d]">
+              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              </svg>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-[10px] font-bold tracking-widest uppercase text-violet-400">RestoSmart Business Premium</div>
+            <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
+              Mehr Sichtbarkeit.<br />Mehr Kunden. Mehr Wachstum.
+            </h1>
+            <p className="text-[10px] text-violet-400/70 font-semibold uppercase tracking-widest">{"Für Restaurants, Cafés & Bars"}</p>
+            <p className="text-[#666] text-sm leading-relaxed mt-2">
+              {bizTimeMsg} — {"werde in deiner Nähe häufiger entdeckt und stärke die Präsenz deines "}{bizLabel}{"s."}
+            </p>
+          </div>
         </div>
 
-        {/* Smart context signal */}
+        {/* STEP 3: SMART HOOK — contextual opportunity signal */}
         <div className="rounded-xl border border-violet-800/40 bg-violet-950/30 p-3 flex items-center gap-3 text-left">
           <div className="w-7 h-7 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
             <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
@@ -230,20 +248,7 @@ function PremiumRequired() {
           <span className="text-xs text-violet-300 font-medium">{smartMsg}</span>
         </div>
 
-        {/* Missed opportunity */}
-        <div className="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-left flex items-start gap-3">
-          <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
-            <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-red-300">Dein {bizLabel} ist aktuell weniger sichtbar in deiner Umgebung</p>
-            <p className="text-[11px] text-red-400/70 mt-0.5">Du verpasst potenzielle Kunden in deiner Nähe. Premium-Betriebe werden häufiger angezeigt.</p>
-          </div>
-        </div>
-
-        {/* Benefits */}
+        {/* STEP 4: VALUE — Benefits */}
         <div className="rounded-2xl border border-white/8 bg-white/4 p-5 text-left space-y-2.5">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-[#555] uppercase tracking-widest">Was du bekommst</p>
@@ -261,7 +266,17 @@ function PremiumRequired() {
           ))}
         </div>
 
-        {/* Price + CTA */}
+        {/* STEP 5: ROI FRAMING */}
+        <div className="rounded-xl border border-amber-900/30 bg-amber-950/15 px-4 py-3 text-left flex items-center gap-3">
+          <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-xs text-amber-300/80 leading-relaxed">
+            {"Schon ein zusätzlicher Gast kann den Monatsbetrag rechtfertigen. 39,90€ im Monat für mehr lokale Sichtbarkeit."}
+          </p>
+        </div>
+
+        {/* STEP 6: PRICE + CTA */}
         <div className="space-y-3">
           <div className="text-center">
             <span className="text-xs text-[#555]">14 Tage kostenlos testen, danach</span>

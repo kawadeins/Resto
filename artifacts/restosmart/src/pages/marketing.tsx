@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Clock, Calendar, Bell, Trash2, Plus, Send, CheckCircle2, Tag, Lock } from "lucide-react";
+import { TrialConversionBanner } from "@/components/layout";
 
 const DAYS_OF_WEEK = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
@@ -192,6 +193,9 @@ export default function Marketing() {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* Trial conversion prompt — only visible during active trial */}
+      <TrialConversionBanner context="marketing" />
+
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Marketing & Rabatte</h2>
@@ -207,15 +211,18 @@ export default function Marketing() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="lg:col-span-1 relative">
           {!isPro && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-background/60 backdrop-blur-sm rounded-xl border border-border">
-              <div className="bg-muted p-4 rounded-full mb-4">
-                <Lock className="h-8 w-8 text-muted-foreground" />
+              <div className="bg-violet-500/10 p-4 rounded-full mb-4">
+                <Zap className="h-8 w-8 text-violet-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Blitzangebote — Pro-Feature</h3>
-              <p className="text-sm text-muted-foreground text-center mb-4">
-                Upgraden Sie auf RestoSmart Business Premium, um Blitzangebote und Benachrichtigungen zu nutzen.
+              <h3 className="text-lg font-semibold mb-1">Blitzangebote freischalten</h3>
+              <p className="text-sm text-muted-foreground text-center mb-1">
+                Mehr Sichtbarkeit zur richtigen Zeit – erreiche Gäste genau dann, wenn sie suchen.
+              </p>
+              <p className="text-xs text-amber-400/70 text-center mb-4">
+                Schon ein zusätzlicher Gast rechtfertigt den Monatsbetrag.
               </p>
               <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                Auf Pro upgraden
+                Jetzt freischalten
               </Link>
             </div>
           )}
@@ -340,15 +347,18 @@ export default function Marketing() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="relative">
         {!isPro && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl border border-border">
-             <div className="bg-muted p-4 rounded-full mb-4">
-                <Lock className="h-8 w-8 text-muted-foreground" />
+             <div className="bg-violet-500/10 p-4 rounded-full mb-4">
+                <Bell className="h-8 w-8 text-violet-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Benachrichtigungen — Pro-Feature</h3>
-              <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
-                Upgraden Sie auf RestoSmart Business Premium, um Kunden direkt mit personalisierten Benachrichtigungen zu erreichen.
+              <h3 className="text-lg font-semibold mb-1">Mehr Reichweite freischalten</h3>
+              <p className="text-sm text-muted-foreground text-center mb-1 max-w-md">
+                Erreiche deine Kunden zur richtigen Zeit – mit personalisierten Benachrichtigungen und Angeboten.
+              </p>
+              <p className="text-xs text-amber-400/70 text-center mb-4 max-w-xs">
+                39,90€ im Monat – eine kleine Investition mit mehr Sichtbarkeit und Vertrauen.
               </p>
               <Link href="/billing" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                Auf Pro upgraden
+                Mehr Reichweite freischalten
               </Link>
           </div>
         )}
