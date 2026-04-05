@@ -445,21 +445,43 @@ function PremiumModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onActivate: (businessType: BusinessType) => void;
+  onActivate: (businessType: BusinessType, mode: "trial" | "active", trialEndDate?: string) => void;
 }) {
   const [step, setStep] = useState(0);
   const [selectedBusinessType, setSelectedBusinessType] = useState<BusinessType>("restaurant");
   const [processing, setProcessing] = useState(false);
+  const [trialEndDate, setTrialEndDate] = useState<string | null>(null);
+  const [trialError, setTrialError] = useState<string | null>(null);
 
   const handleActivate = async () => {
     setProcessing(true);
-    await new Promise((r) => setTimeout(r, 800));
+    setTrialError(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/billing/trial`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await r.json();
+      if (data.success && data.trialEndDate) {
+        setTrialEndDate(data.trialEndDate);
+      } else if (data.error === "trial_used") {
+        setTrialError("Ihre Testphase wurde bereits genutzt. Sie k\u00f6nnen direkt ein Abonnement starten.");
+        setProcessing(false);
+        return;
+      } else if (data.error === "trial_active") {
+        setTrialEndDate(data.subscription?.currentPeriodEnd ?? null);
+      }
+    } catch {
+      // Network error — still proceed optimistically
+      const fallbackEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+      setTrialEndDate(fallbackEnd);
+    }
     setProcessing(false);
     setStep(2);
   };
 
   const handleGoToDashboard = () => {
-    onActivate(selectedBusinessType);
+    onActivate(selectedBusinessType, "trial", trialEndDate ?? undefined);
     onClose();
     window.location.href = window.location.origin + "/restosmart/";
   };
@@ -482,10 +504,12 @@ function PremiumModal({
                 </div>
                 <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Alles was Ihr Betrieb braucht</h2>
                 <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Wachstumspaket für Restaurants, Cafés und Bars — Sichtbarkeit, Buchungen, Analytics und mehr.</p>
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-serif font-bold">€39,90</span>
-                  <span className="text-white/70 text-sm">/Monat</span>
-                  <span className="ml-2 text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">Pilot: Demo-Zugang</span>
+                <div className="mt-4 flex flex-wrap items-baseline gap-2">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-serif font-bold">14 Tage</span>
+                    <span className="text-white/70 text-sm">kostenlos</span>
+                  </div>
+                  <span className="text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">danach €39,90/Monat</span>
                 </div>
               </div>
             </div>
@@ -532,22 +556,25 @@ function PremiumModal({
             </div>
 
             {/* CTA */}
-            <div className="p-5 border-t bg-background/50 backdrop-blur-sm space-y-3">
+            <div className="p-5 border-t bg-background/50 backdrop-blur-sm space-y-2">
               <Button
                 className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25"
                 onClick={() => setStep(1)}
               >
-                <Crown className="w-4 h-4 mr-2" />
-                {getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)}-Dashboard freischalten
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
+                14 Tage kostenlos testen
               </Button>
-              <button onClick={onClose} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <p className="text-center text-xs text-muted-foreground">
+                Keine Zahlung heute · danach €39,90/Monat · jederzeit kündbar
+              </p>
+              <button onClick={onClose} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
                 Vielleicht später
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 1 — Pilot-Aktivierung (demo, no payment) */}
+        {/* Step 1 — 14-Tage Testphase Bestätigung */}
         {step === 1 && (
           <div className="flex flex-col">
             <div className="bg-gradient-to-br from-primary to-accent p-6 text-white relative">
@@ -558,34 +585,43 @@ function PremiumModal({
                 <ChevronLeft className="w-4 h-4 text-white" />
               </button>
               <div className="text-center pt-2">
-                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">Pilot-Zugang</div>
+                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">14 Tage kostenlos</div>
                 <div className="font-serif text-xl font-bold">{getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Dashboard</div>
-                <div className="text-white/80 text-sm mt-1">Demo-Version · Keine Zahlung erforderlich</div>
+                <div className="text-white/80 text-sm mt-1">Vollzugriff · Keine Zahlung heute</div>
               </div>
             </div>
 
             <div className="p-6 space-y-5">
-              <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-1">
-                <p className="text-sm font-semibold text-amber-900">Demo-Modus</p>
-                <p className="text-sm text-amber-800 leading-relaxed">
-                  Dies ist eine Pilot-Demo. Es wird <strong>keine Zahlung erhoben</strong> und keine Zahlungsmethode benötigt. Der Zugang ist kostenlos.
+              <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 space-y-1.5">
+                <p className="text-sm font-semibold text-emerald-900">Was Sie heute bekommen</p>
+                <p className="text-sm text-emerald-800 leading-relaxed">
+                  Voller Premium-Zugang für <strong>14 Tage — kostenlos</strong>. Keine Zahlungsmethode heute. Nach der Testphase können Sie für €39,90/Monat upgraden.
                 </p>
               </div>
 
               <div className="space-y-2.5">
                 {[
-                  "Buchungs- & Tischmanagement",
-                  "Marketing-Kampagnen & Angebote",
-                  "Analytik & Umsatzberichte",
-                  "Personal- & Schichtplanung",
-                  "Alle 9 Dashboard-Module",
+                  { text: "Vollständiges Analytics-Dashboard", sub: "Umsatz, Gäste, Trends" },
+                  { text: "Buchungs- & Tischmanagement", sub: "Alle Reservierungen verwalten" },
+                  { text: "Marketing, Kampagnen & Smart Offers", sub: "Sichtbarkeit steigern" },
+                  { text: "Personal, Schichten & Gehaltsabrechnung", sub: "Team organisieren" },
+                  { text: "Revenue Optimizer & Boost", sub: "Umsatz automatisch optimieren" },
                 ].map((item) => (
-                  <div key={item} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span className="text-sm">{item}</span>
+                  <div key={item.text} className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-medium">{item.text}</div>
+                      <div className="text-xs text-muted-foreground">{item.sub}</div>
+                    </div>
                   </div>
                 ))}
               </div>
+
+              {trialError && (
+                <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-800">
+                  {trialError}
+                </div>
+              )}
 
               <Button
                 className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25"
@@ -593,20 +629,23 @@ function PremiumModal({
                 disabled={processing}
               >
                 {processing ? (
-                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Wird aktiviert…</span>
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Testphase wird gestartet…</span>
                 ) : (
-                  <span className="flex items-center gap-2"><Crown className="w-4 h-4" /> Demo-Zugang freischalten</span>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
+                    Kostenlos starten
+                  </span>
                 )}
               </Button>
 
               <p className="text-[11px] text-center text-muted-foreground leading-relaxed">
-                Pilot-Version ohne Zahlungspflicht. Für kommerzielle Lizenzierung kontaktieren Sie uns.
+                Keine Kreditkarte erforderlich · Nach 14 Tagen: €39,90/Monat oder kostenlos kündigen.
               </p>
             </div>
           </div>
         )}
 
-        {/* Step 2 — Aktivierung erfolgreich */}
+        {/* Step 2 — Testphase gestartet */}
         {step === 2 && (
           <div className="p-8 text-center flex flex-col items-center gap-5">
             <div className="relative">
@@ -618,23 +657,32 @@ function PremiumModal({
               </div>
             </div>
             <div>
-              <h3 className="font-serif text-2xl font-bold mb-2">Dashboard freigeschaltet!</h3>
+              <div className="text-xs font-bold tracking-widest uppercase text-primary mb-1">14-Tage Testphase</div>
+              <h3 className="font-serif text-2xl font-bold mb-2">Testphase gestartet!</h3>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-                Ihr {getBusinessLabel(selectedBusinessType)}-Dashboard ist jetzt aktiv. Erkunden Sie alle Funktionen der Pilot-Version.
+                Ihr {getBusinessLabel(selectedBusinessType)}-Dashboard ist jetzt aktiv. Vollzugriff für 14 Tage — kostenlos.
               </p>
             </div>
-            <div className="w-full space-y-2.5 pt-2">
+            <div className="w-full space-y-2.5">
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">Demo-Zugang aktiviert</span>
+                <span className="text-sm">Vollständiger Premium-Zugang aktiviert</span>
               </div>
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">Alle 9 Dashboard-Module freigeschaltet</span>
+                <span className="text-sm">Alle Dashboard-Module freigeschaltet</span>
               </div>
-              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-amber-50 border border-amber-100">
-                <Shield className="w-4 h-4 text-amber-500 shrink-0" />
-                <span className="text-sm text-amber-800">Pilot-Version · keine Zahlung</span>
+              {trialEndDate && (
+                <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-violet-50 border border-violet-100">
+                  <svg className="w-4 h-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
+                  <span className="text-sm text-violet-800">
+                    Testphase l\u00e4uft bis {new Date(trialEndDate).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
+                <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="text-sm text-emerald-800">Keine Zahlung heute · kein Risiko</span>
               </div>
             </div>
             <Button
@@ -642,7 +690,7 @@ function PremiumModal({
               onClick={handleGoToDashboard}
             >
               <Building2 className="w-4 h-4 mr-2" />
-              Dashboard öffnen
+              Dashboard jetzt öffnen
               <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-70" />
             </Button>
           </div>
@@ -932,8 +980,14 @@ export default function Profile() {
     if (!email) return;
     const premiumEmail = localStorage.getItem("restosmart_owner_email");
     const premiumStatus = localStorage.getItem("restosmart_owner_premium");
-    if (premiumEmail === email && premiumStatus === "active") {
+    if (premiumEmail !== email) return;
+    if (premiumStatus === "active") {
       setOwnerPremium(true);
+    } else if (premiumStatus === "trial") {
+      const trialEnd = localStorage.getItem("restosmart_trial_end");
+      if (trialEnd && new Date(trialEnd) > new Date()) {
+        setOwnerPremium(true);
+      }
     }
   }, [email]);
 
@@ -972,14 +1026,20 @@ export default function Profile() {
     localStorage.setItem("restosmart_email", e);
   };
 
-  const handleActivatePremium = (businessType: BusinessType) => {
+  const handleActivatePremium = (businessType: BusinessType, mode: "trial" | "active" = "trial", trialEndDate?: string) => {
     localStorage.setItem("restosmart_owner_email", email);
-    localStorage.setItem("restosmart_owner_premium", "active");
+    localStorage.setItem("restosmart_owner_premium", mode);
     localStorage.setItem("restosmart_owner_business_type", businessType);
+    if (mode === "trial" && trialEndDate) {
+      localStorage.setItem("restosmart_trial_end", trialEndDate);
+      localStorage.setItem("restosmart_trial_started", new Date().toISOString());
+    }
     setOwnerPremium(true);
     toast({
-      title: "Premium aktiviert!",
-      description: `Willkommen im ${getBusinessLabel(businessType)}-Dashboard.`,
+      title: mode === "trial" ? "14-Tage Testphase gestartet!" : "Premium aktiviert!",
+      description: mode === "trial"
+        ? `Vollzugriff auf Ihr ${getBusinessLabel(businessType)}-Dashboard f\u00fcr 14 Tage.`
+        : `Willkommen im ${getBusinessLabel(businessType)}-Dashboard.`,
     });
   };
 

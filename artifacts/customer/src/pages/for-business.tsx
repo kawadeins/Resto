@@ -313,7 +313,7 @@ export default function ForBusiness() {
                   className={`h-13 px-8 rounded-2xl bg-gradient-to-r ${cfg.gradient} text-white border-0 shadow-lg font-bold text-base`}
                   onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
                 >
-                  Jetzt kostenlos registrieren
+                  14 Tage kostenlos testen
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 <Button
@@ -590,7 +590,7 @@ export default function ForBusiness() {
       <section id="claim-form" className="py-16 px-4">
         <div className="container mx-auto max-w-xl">
           <div className="text-center mb-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Jetzt starten</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">14 Tage kostenlos testen</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               Ihr Betrieb auf RestoSmart
             </h2>
@@ -730,7 +730,7 @@ export default function ForBusiness() {
                     {claimMutation.isPending ? (
                       <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Wird gesendet…</>
                     ) : (
-                      <>Jetzt kostenlos registrieren <ArrowRight className="w-4 h-4 ml-2" /></>
+                      <>14 Tage kostenlos testen <ArrowRight className="w-4 h-4 ml-2" /></>
                     )}
                   </Button>
 

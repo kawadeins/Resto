@@ -3,8 +3,75 @@ import {
   LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
   UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
   Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
+  Clock, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+
+function getTrialState() {
+  const premium = localStorage.getItem("restosmart_owner_premium");
+  const trialEnd = localStorage.getItem("restosmart_trial_end");
+  if (premium !== "trial" || !trialEnd) return null;
+  const end = new Date(trialEnd);
+  const now = new Date();
+  if (end <= now) return null;
+  const daysLeft = Math.ceil((end.getTime() - now.getTime()) / 86400000);
+  return { daysLeft, end };
+}
+
+function TrialBanner() {
+  const [dismissed, setDismissed] = useState(false);
+  const trial = getTrialState();
+  if (!trial || dismissed) return null;
+
+  const { daysLeft } = trial;
+  const isUrgent = daysLeft <= 3;
+  const isWarning = daysLeft <= 7 && daysLeft > 3;
+
+  let msg = `${daysLeft} Tage Testphase verbleibend`;
+  if (daysLeft === 1) msg = "Letzter Tag Ihrer Testphase";
+  else if (daysLeft === 0) msg = "Ihre Testphase l\u00e4uft heute ab";
+
+  const customerProfileUrl = window.location.origin + "/customer/profile";
+
+  return (
+    <div className={cn(
+      "flex items-center justify-between gap-3 px-4 py-2.5 text-sm font-medium",
+      isUrgent
+        ? "bg-red-950/60 border-b border-red-800/50 text-red-200"
+        : isWarning
+        ? "bg-amber-950/50 border-b border-amber-800/40 text-amber-200"
+        : "bg-violet-950/60 border-b border-violet-800/40 text-violet-200"
+    )}>
+      <div className="flex items-center gap-2 min-w-0">
+        <Clock className="w-4 h-4 shrink-0" />
+        <span className="truncate">{msg}</span>
+        {isUrgent && (
+          <span className="hidden sm:inline text-xs opacity-70">— Jetzt upgraden um Ihren Zugang zu behalten</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <a
+          href={customerProfileUrl}
+          className={cn(
+            "text-xs font-bold px-3 py-1 rounded-full transition-colors",
+            isUrgent
+              ? "bg-red-500 hover:bg-red-400 text-white"
+              : "bg-violet-600 hover:bg-violet-500 text-white"
+          )}
+        >
+          Jetzt upgraden
+        </a>
+        <button
+          onClick={() => setDismissed(true)}
+          className="opacity-50 hover:opacity-100 transition-opacity"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const navigation = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
@@ -131,8 +198,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Hauptinhalt */}
-      <main className="flex-1 md:pl-64 overflow-y-auto pb-16 md:pb-0">
-        <div className="min-h-full h-full p-8 relative">
+      <main className="flex-1 md:pl-64 overflow-y-auto pb-16 md:pb-0 flex flex-col">
+        <TrialBanner />
+        <div className="flex-1 p-8 relative">
           {children}
         </div>
       </main>

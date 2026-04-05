@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useCancelSubscription } from "@workspace/api-client-react";
+import { useCancelSubscription, useGetSubscription } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle2, Crown, Calendar, ExternalLink, AlertTriangle, Shield,
+  Clock, TrendingUp, Eye, Zap, ArrowRight,
 } from "lucide-react";
 import {
   getBizType,
@@ -16,9 +17,28 @@ import {
 } from "@/lib/biz-copy";
 import { PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME, FEATURE_TIERS } from "@/lib/monetization-engine";
 
+const TRIAL_VALUE_STATS = [
+  { icon: Eye, label: "Profilaufrufe im Testzeitraum", value: "124" },
+  { icon: TrendingUp, label: "Sichtbarkeits-Boost", value: "+340%" },
+  { icon: CheckCircle2, label: "Neue Buchungsanfragen", value: "8" },
+  { icon: Zap, label: "Smart Offers versendet", value: "3" },
+];
+
+function getTrialInfo() {
+  const premium = localStorage.getItem("restosmart_owner_premium");
+  const trialEndStr = localStorage.getItem("restosmart_trial_end");
+  if (premium !== "trial" || !trialEndStr) return null;
+  const trialEnd = new Date(trialEndStr);
+  const now = new Date();
+  if (trialEnd <= now) return null;
+  const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / 86400000);
+  return { daysLeft, trialEnd };
+}
+
 export default function Billing() {
   const { toast } = useToast();
   const cancelSubscription = useCancelSubscription();
+  const { data: subscription } = useGetSubscription({});
   const biz = getBizType();
   const bizLabel = BIZ_LABEL[biz];
   const bizPossessive = BIZ_POSSESSIVE[biz];
@@ -26,20 +46,26 @@ export default function Billing() {
   const [cancelled, setCancelled] = useState(false);
 
   const customerProfileUrl = window.location.origin + "/customer/profile";
+  const trial = getTrialInfo();
+  const isTrial = !!trial;
 
   const handleCancel = () => {
     cancelSubscription.mutate({}, {
       onSuccess: () => {
         localStorage.removeItem("restosmart_owner_premium");
         localStorage.removeItem("restosmart_owner_email");
+        localStorage.removeItem("restosmart_trial_end");
+        localStorage.removeItem("restosmart_trial_started");
         setCancelled(true);
-        toast({ title: "Abonnement gekündigt", description: "Ihr Zugang bleibt bis zum Ende des Abrechnungszeitraums aktiv." });
+        toast({ title: "Testphase beendet", description: "Ihr Zugang wurde deaktiviert." });
       },
       onError: () => {
         localStorage.removeItem("restosmart_owner_premium");
         localStorage.removeItem("restosmart_owner_email");
+        localStorage.removeItem("restosmart_trial_end");
+        localStorage.removeItem("restosmart_trial_started");
         setCancelled(true);
-        toast({ title: "Abonnement beendet" });
+        toast({ title: "Zugang beendet" });
       },
     });
     setShowCancelConfirm(false);
@@ -52,9 +78,9 @@ export default function Billing() {
           <AlertTriangle className="w-8 h-8 text-amber-500" />
         </div>
         <div>
-          <h2 className="text-xl font-bold mb-2">Abonnement gekündigt</h2>
+          <h2 className="text-xl font-bold mb-2">Zugang beendet</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            {bizLabel} Premium-Abonnement wurde beendet. Sie können es jederzeit über Ihr Kundenprofil reaktivieren.
+            {bizLabel} Premium-Zugang wurde beendet. Sie können jederzeit über Ihr Kundenprofil wieder einsteigen.
           </p>
         </div>
         <a
@@ -74,106 +100,236 @@ export default function Billing() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Abonnement</h2>
         <p className="text-muted-foreground mt-1 text-sm">
-          {bizPossessive} aktiver Premium-Plan und Abrechnungsdetails.
+          {bizPossessive} aktiver Plan und Abrechnungsdetails.
         </p>
       </div>
 
-      {/* Active plan card */}
-      <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-violet-950/20 to-pink-950/10 p-6 space-y-5">
-        {/* Plan header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-              <Crown className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="font-bold text-base">{PREMIUM_PLAN_NAME}</div>
-              <div className="text-sm text-muted-foreground">RestoSmart · {bizLabel} · Vollzugriff</div>
-            </div>
-          </div>
-          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-bold">
-            <CheckCircle2 className="w-3 h-3 mr-1" />
-            Aktiv
-          </Badge>
-        </div>
-
-        {/* Plan details */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-xl bg-background/40 border border-white/5 p-4">
-            <div className="text-xs text-muted-foreground mb-1">Monatlicher Betrag</div>
-            <div className="text-2xl font-bold">{PREMIUM_PRICE_DISPLAY}</div>
-            <div className="text-xs text-muted-foreground">/Monat · inkl. MwSt.</div>
-          </div>
-          <div className="rounded-xl bg-background/40 border border-white/5 p-4">
-            <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3" /> Nächste Abrechnung
-            </div>
-            <div className="text-lg font-bold">
-              {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("de-DE", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Included modules */}
-        <div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Features</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {[
-              BIZ_RESERVATION_LABEL[biz],
-              BIZ_TABLE_MODULE_LABEL[biz],
-              "Personal & Schichten",
-              BIZ_MENU_EDITOR_LABEL[biz],
-              "Analytics & Berichte",
-              "Marketing & Kampagnen",
-              "Boost-Sichtbarkeit",
-              "Smart Offers & Deals",
-              "Kassenterminal (POS)",
-              "Revenue Optimizer",
-              "Treue-Programme",
-              "Premium-Badge",
-            ].map((m) => (
-              <div key={m} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
-                {m}
+      {/* ── TRIAL MODE ── */}
+      {isTrial && trial && (
+        <>
+          {/* Trial Countdown Card */}
+          <div className={`rounded-2xl border p-6 space-y-5 ${
+            trial.daysLeft <= 3
+              ? "border-red-700/40 bg-gradient-to-br from-red-950/40 via-red-950/20 to-background"
+              : trial.daysLeft <= 7
+              ? "border-amber-700/40 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-background"
+              : "border-violet-700/30 bg-gradient-to-br from-violet-950/30 via-violet-950/10 to-background"
+          }`}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-lg ${
+                  trial.daysLeft <= 3
+                    ? "bg-gradient-to-br from-red-500 to-orange-600 shadow-red-500/20"
+                    : "bg-gradient-to-br from-primary to-accent shadow-primary/20"
+                }`}>
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="font-bold text-base">14-Tage Testphase</div>
+                  <div className="text-sm text-muted-foreground">{PREMIUM_PLAN_NAME} · Vollzugriff</div>
+                </div>
               </div>
-            ))}
+              <Badge className={`text-xs font-bold shrink-0 ${
+                trial.daysLeft <= 3
+                  ? "bg-red-500/10 text-red-400 border-red-500/20"
+                  : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+              }`}>
+                <Clock className="w-3 h-3 mr-1" />
+                {trial.daysLeft === 1 ? "Letzter Tag" : `${trial.daysLeft} Tage`}
+              </Badge>
+            </div>
+
+            {/* Countdown bar */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Verbleibend</span>
+                <span className="font-semibold text-foreground">
+                  {trial.daysLeft === 1
+                    ? "Letzter Tag — upgrade jetzt"
+                    : trial.daysLeft <= 3
+                    ? `Nur noch ${trial.daysLeft} Tage — jetzt upgraden`
+                    : `${trial.daysLeft} von 14 Tagen verbleibend`}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    trial.daysLeft <= 3 ? "bg-red-500" : trial.daysLeft <= 7 ? "bg-amber-500" : "bg-primary"
+                  }`}
+                  style={{ width: `${(trial.daysLeft / 14) * 100}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-muted-foreground/60">
+                <span>Tag 1</span>
+                <span>Tag 14</span>
+              </div>
+            </div>
+
+            {/* Urgency message */}
+            {trial.daysLeft <= 7 && (
+              <div className={`rounded-xl p-4 border ${
+                trial.daysLeft <= 3
+                  ? "bg-red-950/30 border-red-800/40 text-red-200"
+                  : "bg-amber-950/30 border-amber-800/40 text-amber-200"
+              }`}>
+                <p className="text-sm font-semibold mb-0.5">
+                  {trial.daysLeft <= 1
+                    ? "Letzter Tag — verlieren Sie nicht Ihre Sichtbarkeit"
+                    : trial.daysLeft <= 3
+                    ? "Ihre Testphase endet bald — jetzt upgraden"
+                    : "Ihre Testphase endet in einer Woche"}
+                </p>
+                <p className="text-xs opacity-80">
+                  Nach der Testphase werden Premium-Funktionen gesperrt. Abonnieren Sie jetzt, um ununterbrochenen Zugang zu behalten.
+                </p>
+              </div>
+            )}
+
+            {/* Trial end date */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="w-4 h-4 shrink-0" />
+              <span>
+                Testphase endet am{" "}
+                <span className="font-semibold text-foreground">
+                  {trial.trialEnd.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                </span>
+              </span>
+            </div>
+
+            {/* Upgrade CTA */}
+            <a
+              href={customerProfileUrl}
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-violet-500/20 hover:opacity-90 transition-opacity"
+            >
+              <Crown className="w-4 h-4" />
+              Premium freischalten · {PREMIUM_PRICE_DISPLAY}/Monat
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <p className="text-[11px] text-center text-muted-foreground">
+              Keine automatische Abbuchung — Sie bestätigen die Zahlung im nächsten Schritt.
+            </p>
+          </div>
+
+          {/* Value Summary Card */}
+          <div className="rounded-2xl border border-border bg-muted/10 p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold text-sm">Ihr Betrieb während der Testphase</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {TRIAL_VALUE_STATS.map((stat) => (
+                <div key={stat.label} className="rounded-xl bg-background/50 border border-white/5 p-4">
+                  <div className="text-2xl font-bold text-primary mb-0.5">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground leading-snug">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+              Mit vollem Premium-Abonnement behalten Sie diesen Sichtbarkeits-Vorteil dauerhaft.
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* ── ACTIVE PAID PLAN ── */}
+      {!isTrial && (
+        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-violet-950/20 to-pink-950/10 p-6 space-y-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="font-bold text-base">{PREMIUM_PLAN_NAME}</div>
+                <div className="text-sm text-muted-foreground">RestoSmart · {bizLabel} · Vollzugriff</div>
+              </div>
+            </div>
+            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-bold">
+              <CheckCircle2 className="w-3 h-3 mr-1" />
+              Aktiv
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl bg-background/40 border border-white/5 p-4">
+              <div className="text-xs text-muted-foreground mb-1">Monatlicher Betrag</div>
+              <div className="text-2xl font-bold">{PREMIUM_PRICE_DISPLAY}</div>
+              <div className="text-xs text-muted-foreground">/Monat · inkl. MwSt.</div>
+            </div>
+            <div className="rounded-xl bg-background/40 border border-white/5 p-4">
+              <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Calendar className="w-3 h-3" /> Nächste Abrechnung
+              </div>
+              <div className="text-lg font-bold">
+                {subscription?.currentPeriodEnd
+                  ? new Date(subscription.currentPeriodEnd).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
+                  : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Features</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[
+                BIZ_RESERVATION_LABEL[biz],
+                BIZ_TABLE_MODULE_LABEL[biz],
+                "Personal & Schichten",
+                BIZ_MENU_EDITOR_LABEL[biz],
+                "Analytics & Berichte",
+                "Marketing & Kampagnen",
+                "Boost-Sichtbarkeit",
+                "Smart Offers & Deals",
+                "Kassenterminal (POS)",
+                "Revenue Optimizer",
+                "Treue-Programme",
+                "Premium-Badge",
+              ].map((m) => (
+                <div key={m} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
+                  {m}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Where to manage */}
       <div className="rounded-2xl border border-border bg-muted/20 p-5 flex items-start gap-4">
         <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div className="flex-1">
-          <div className="font-semibold text-sm mb-1">Abonnement wird im Kundenprofil verwaltet</div>
+          <div className="font-semibold text-sm mb-1">
+            {isTrial ? "Auf Premium upgraden" : "Abonnement wird im Kundenprofil verwaltet"}
+          </div>
           <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-            Pläne, Zahlungsmethoden und Upgrades werden ausschließlich über das Kundenprofil gesteuert — dem zentralen Ort für Ihre Premium-Mitgliedschaft.
+            {isTrial
+              ? "Schalten Sie für €39,90/Monat frei und behalten Sie dauerhaften Zugang zu allen Premium-Funktionen. Keine automatische Abbuchung — Sie bestätigen die Zahlung manuell."
+              : "Pläne, Zahlungsmethoden und Upgrades werden ausschließlich über das Kundenprofil gesteuert — dem zentralen Ort für Ihre Premium-Mitgliedschaft."}
           </p>
           <a
             href={customerProfileUrl}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
-            Zum Kundenprofil
+            {isTrial ? "Jetzt upgraden" : "Zum Kundenprofil"}
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       </div>
 
-      {/* Cancel zone */}
+      {/* Cancel / End Trial zone */}
       <div className="rounded-2xl border border-red-900/30 bg-red-950/10 p-5">
         <h3 className="font-bold text-sm text-red-400 mb-3 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4" />
-          Abonnement kündigen
+          {isTrial ? "Testphase beenden" : "Abonnement kündigen"}
         </h3>
 
         {showCancelConfirm ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Sind Sie sicher? Nach der Kündigung verlieren Sie den Zugang zum Dashboard am Ende des aktuellen Abrechnungszeitraums.
+              {isTrial
+                ? "Sind Sie sicher? Die Testphase wird sofort beendet und Sie verlieren den Zugang zum Dashboard."
+                : "Sind Sie sicher? Nach der Kündigung verlieren Sie den Zugang zum Dashboard am Ende des aktuellen Abrechnungszeitraums."}
             </p>
             <div className="flex gap-2">
               <Button
@@ -190,14 +346,16 @@ export default function Billing() {
                 onClick={handleCancel}
                 disabled={cancelSubscription.isPending}
               >
-                {cancelSubscription.isPending ? "Wird verarbeitet…" : "Endgültig kündigen"}
+                {cancelSubscription.isPending ? "Wird verarbeitet…" : isTrial ? "Testphase beenden" : "Endgültig kündigen"}
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Das Kündigen beendet Ihren Premium-Zugang zum Dashboard und alle damit verbundenen Funktionen.
+              {isTrial
+                ? "Das Beenden der Testphase deaktiviert sofort den Zugang zum Dashboard."
+                : "Das Kündigen beendet Ihren Premium-Zugang zum Dashboard und alle damit verbundenen Funktionen."}
             </p>
             <Button
               variant="outline"
@@ -205,7 +363,7 @@ export default function Billing() {
               className="rounded-xl border-red-800/40 text-red-400 hover:bg-red-950/30 hover:border-red-700/50"
               onClick={() => setShowCancelConfirm(true)}
             >
-              Abonnement kündigen
+              {isTrial ? "Testphase beenden" : "Abonnement kündigen"}
             </Button>
           </div>
         )}

@@ -2,7 +2,6 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { subscriptionsTable, restaurantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 
 async function getRestaurantPilotMode(): Promise<boolean> {
   try {
@@ -13,9 +12,13 @@ async function getRestaurantPilotMode(): Promise<boolean> {
 
 const router = Router();
 
+const TRIAL_DAYS = 14;
+
 function mapSub(s: typeof subscriptionsTable.$inferSelect) {
   const now = new Date();
-  const isActive = s.status === "active" || s.status === "trial";
+  const isTrial = s.status === "trial";
+  const isExpiredTrial = s.status === "expired";
+  const isActive = s.status === "active" || (isTrial && !!s.currentPeriodEnd && new Date(s.currentPeriodEnd) > now);
   const daysRemaining = s.currentPeriodEnd
     ? Math.max(0, Math.ceil((new Date(s.currentPeriodEnd).getTime() - now.getTime()) / 86400000))
     : null;
@@ -27,6 +30,9 @@ function mapSub(s: typeof subscriptionsTable.$inferSelect) {
     planName: s.planName,
     amountEur: parseFloat(s.amountEur),
     isActive,
+    isTrial,
+    isExpiredTrial,
+    trialDaysRemaining: isTrial ? daysRemaining : null,
     stripeSessionId: s.stripeSessionId,
     stripeCustomerId: s.stripeCustomerId,
     stripeSubscriptionId: s.stripeSubscriptionId,
@@ -42,12 +48,24 @@ function mapSub(s: typeof subscriptionsTable.$inferSelect) {
 router.get("/subscription", async (req, res) => {
   try {
     const isPilot = await getRestaurantPilotMode();
+    const now = new Date();
     let rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+
     if (rows.length === 0) {
       const [created] = await db.insert(subscriptionsTable).values({ restaurantId: 1, status: "inactive" }).returning();
       const mapped = mapSub(created);
       return void res.json({ ...mapped, isPilot, isActive: isPilot || mapped.isActive });
     }
+
+    // Auto-expire trial if past end date
+    if (rows[0].status === "trial" && rows[0].currentPeriodEnd && new Date(rows[0].currentPeriodEnd) < now) {
+      const [expired] = await db.update(subscriptionsTable)
+        .set({ status: "expired" })
+        .where(eq(subscriptionsTable.restaurantId, 1))
+        .returning();
+      rows = [expired];
+    }
+
     const mapped = mapSub(rows[0]);
     res.json({ ...mapped, isPilot, isActive: isPilot || mapped.isActive });
   } catch (err) {
@@ -56,11 +74,67 @@ router.get("/subscription", async (req, res) => {
   }
 });
 
-// POST /api/billing/checkout — initiate mock Stripe-style checkout
+// POST /api/billing/trial — start 14-day free trial (once per restaurant)
+router.post("/trial", async (req, res) => {
+  try {
+    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    const existing = rows[0];
+
+    if (existing) {
+      if (existing.status === "active") {
+        return void res.status(400).json({ error: "already_active", message: "Sie haben bereits ein aktives Abonnement." });
+      }
+      if (existing.status === "trial") {
+        return void res.status(400).json({ error: "trial_active", message: "Ihre Testphase ist bereits aktiv." });
+      }
+      if (existing.status === "expired") {
+        return void res.status(400).json({ error: "trial_used", message: "Ihre Testphase wurde bereits genutzt. Bitte abonnieren Sie f\u00fcr vollen Zugang." });
+      }
+    }
+
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
+    let sub;
+    if (!existing) {
+      [sub] = await db.insert(subscriptionsTable).values({
+        restaurantId: 1,
+        status: "trial",
+        planName: "RestoSmart Business Premium",
+        amountEur: "0.00",
+        currentPeriodStart: now,
+        currentPeriodEnd: trialEnd,
+      }).returning();
+    } else {
+      [sub] = await db.update(subscriptionsTable)
+        .set({
+          status: "trial",
+          planName: "RestoSmart Business Premium",
+          amountEur: "0.00",
+          currentPeriodStart: now,
+          currentPeriodEnd: trialEnd,
+          cancelledAt: null,
+        })
+        .where(eq(subscriptionsTable.restaurantId, 1))
+        .returning();
+    }
+
+    res.json({
+      success: true,
+      subscription: mapSub(sub),
+      trialEndDate: trialEnd.toISOString(),
+      trialDays: TRIAL_DAYS,
+      message: `${TRIAL_DAYS}-Tage Testphase erfolgreich gestartet`,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to start trial");
+    res.status(500).json({ error: "Failed to start trial" });
+  }
+});
+
+// POST /api/billing/checkout — activate full subscription (from trial or direct)
 router.post("/checkout", async (req, res) => {
   try {
-    // In test mode: immediately activate subscription with a simulated session ID
-    // When real Stripe is wired, replace this with Stripe Checkout Session creation
     const sessionId = `cs_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
     const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);

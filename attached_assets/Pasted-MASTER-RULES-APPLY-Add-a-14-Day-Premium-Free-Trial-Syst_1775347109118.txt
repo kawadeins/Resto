@@ -1,0 +1,143 @@
+MASTER RULES APPLY
+
+Add a "14-Day Premium Free Trial System" to the RestoMaster Business Premium.
+
+IMPORTANT:
+- Do NOT break existing premium logic
+- Do NOT create multiple trial durations
+- Do NOT allow unlimited free usage
+- Trial must be strictly limited to 14 days only
+
+========================
+GOAL
+========================
+
+Allow business owners (restaurants, cafés, bars) to try Premium for 14 days, then convert to paid subscription.
+
+The trial should:
+- feel valuable
+- create urgency
+- lead to conversion
+
+========================
+1. TRIAL DURATION (CRITICAL)
+========================
+
+Set trial duration to:
+
+👉 14 days ONLY
+
+Rules:
+- no 30-day trial
+- no flexible duration
+- no extension by default
+
+After 14 days:
+- premium features are locked
+- user must subscribe (39.90€) to continue
+
+========================
+2. TRIAL ACTIVATION
+========================
+
+Allow business owner to start trial once.
+
+Conditions:
+- only one trial per business account
+- no repeated trials
+- no abuse
+
+========================
+3. FULL ACCESS DURING TRIAL
+========================
+
+During the 14-day trial, the business gets:
+
+- full premium access
+- dashboard access
+- visibility features
+- trust badge
+- boost tool access (budget still separate if needed)
+
+User must experience full value.
+
+========================
+4. TRIAL STATUS DISPLAY
+========================
+
+Always show trial status clearly:
+
+Examples:
+- “12 days left”
+- “5 days remaining”
+- “Last day of your trial”
+
+This should be visible in:
+- dashboard
+- profile
+- premium section
+
+========================
+5. URGENCY MECHANISM
+========================
+
+As trial nears end:
+
+- show stronger messages:
+  - “Your trial is ending soon”
+  - “Don’t lose your visibility”
+  - “Keep your business active”
+
+No fake urgency — only real countdown.
+
+========================
+6. CONVERSION FLOW
+========================
+
+When trial ends:
+
+- lock premium features
+- show clear upgrade screen:
+  👉 “Continue Premium for 39.90€ / month”
+
+Make upgrade simple:
+- one clear CTA
+- no confusion
+
+========================
+7. NO HIDDEN TRICKS
+========================
+
+- no automatic charges without clarity
+- no hidden subscription activation
+- user must clearly confirm payment
+
+Trust is critical.
+
+========================
+8. OPTIONAL (STRONG 🔥)
+========================
+
+Before trial ends:
+
+- show value summary:
+  - views gained
+  - visibility increase
+  - interactions
+
+Example:
+👉 “Your business was seen 120 times during trial”
+
+This increases conversion.
+
+========================
+FINAL GOAL
+========================
+
+The 14-day trial should:
+
+- show real value quickly
+- create urgency
+- convert users into paying premium customers (39.90€)
+
+Simple. Clear. Effective.
