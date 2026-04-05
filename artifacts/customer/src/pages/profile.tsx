@@ -465,7 +465,7 @@ function PremiumModal({
       if (data.success && data.trialEndDate) {
         setTrialEndDate(data.trialEndDate);
       } else if (data.error === "trial_used") {
-        setTrialError("Ihre Testphase wurde bereits genutzt. Sie k\u00f6nnen direkt ein Abonnement starten.");
+        setTrialError("Ihre Testphase wurde bereits genutzt. Sie können direkt ein Abonnement starten.");
         setProcessing(false);
         return;
       } else if (data.error === "trial_active") {
@@ -502,14 +502,12 @@ function PremiumModal({
                   </div>
                   <span className="text-xs font-bold tracking-widest uppercase text-white/80">RestoSmart Business Premium</span>
                 </div>
-                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Alles was Ihr Betrieb braucht</h2>
-                <p className="text-white/75 text-sm leading-relaxed">Ein vollständiges Wachstumspaket für Restaurants, Cafés und Bars — Sichtbarkeit, Buchungen, Analytics und mehr.</p>
-                <div className="mt-4 flex flex-wrap items-baseline gap-2">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-serif font-bold">14 Tage</span>
-                    <span className="text-white/70 text-sm">kostenlos</span>
-                  </div>
-                  <span className="text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">danach €39,90/Monat</span>
+                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Mehr Sichtbarkeit. Mehr Kunden. Mehr Wachstum.</h2>
+                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2">Für Restaurants, Cafés &amp; Bars</p>
+                <p className="text-white/75 text-sm leading-relaxed">Mit RestoSmart Premium erreichst du mehr Kunden in deiner Nähe, wirst häufiger gefunden und stärkst die Präsenz deines Betriebs im Alltag.</p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="text-2xl font-serif font-bold">14 Tage kostenlos</span>
+                  <span className="text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">danach 39,90€ / Monat</span>
                 </div>
               </div>
             </div>
@@ -555,19 +553,33 @@ function PremiumModal({
               </div>
             </div>
 
+            {/* Missed opportunity nudge */}
+            <div className="px-6 pb-3">
+              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 flex items-start gap-2.5">
+                <div className="w-4 h-4 rounded-full bg-destructive/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg className="w-2.5 h-2.5 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                </div>
+                <p className="text-xs text-destructive/80 leading-relaxed">
+                  <span className="font-semibold text-destructive">Dein Betrieb ist aktuell weniger sichtbar.</span> Du verpasst potenzielle Kunden in deiner Nähe. Premium-Betriebe werden häufiger angezeigt.
+                </p>
+              </div>
+            </div>
+
             {/* CTA */}
             <div className="p-5 border-t bg-background/50 backdrop-blur-sm space-y-2">
               <Button
-                className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25"
+                className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/25"
                 onClick={() => setStep(1)}
               >
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
-                14 Tage kostenlos testen
+                Jetzt 14 Tage kostenlos starten
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                Keine Zahlung heute · danach €39,90/Monat · jederzeit kündbar
+                Keine Zahlung heute · danach 39,90€ / Monat
               </p>
-              <button onClick={onClose} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+              <p className="text-center text-[11px] text-muted-foreground/60">
+                Jederzeit kündbar. Keine langfristige Verpflichtung.
+              </p>
+              <button onClick={onClose} className="w-full text-xs text-muted-foreground/50 hover:text-foreground transition-colors py-1">
                 Vielleicht später
               </button>
             </div>
@@ -676,7 +688,7 @@ function PremiumModal({
                 <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-violet-50 border border-violet-100">
                   <svg className="w-4 h-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
                   <span className="text-sm text-violet-800">
-                    Testphase l\u00e4uft bis {new Date(trialEndDate).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                    Testphase läuft bis {new Date(trialEndDate).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
                   </span>
                 </div>
               )}
@@ -1038,7 +1050,7 @@ export default function Profile() {
     toast({
       title: mode === "trial" ? "14-Tage Testphase gestartet!" : "Premium aktiviert!",
       description: mode === "trial"
-        ? `Vollzugriff auf Ihr ${getBusinessLabel(businessType)}-Dashboard f\u00fcr 14 Tage.`
+        ? `Vollzugriff auf Ihr ${getBusinessLabel(businessType)}-Dashboard für 14 Tage.`
         : `Willkommen im ${getBusinessLabel(businessType)}-Dashboard.`,
     });
   };

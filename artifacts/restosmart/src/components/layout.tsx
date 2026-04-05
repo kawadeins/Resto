@@ -28,9 +28,31 @@ function TrialBanner() {
   const isUrgent = daysLeft <= 3;
   const isWarning = daysLeft <= 7 && daysLeft > 3;
 
-  let msg = `${daysLeft} Tage Testphase verbleibend`;
-  if (daysLeft === 1) msg = "Letzter Tag Ihrer Testphase";
-  else if (daysLeft === 0) msg = "Ihre Testphase l\u00e4uft heute ab";
+  let mainMsg: string;
+  let subMsg: string | null = null;
+  let ctaLabel: string;
+
+  if (daysLeft <= 0) {
+    mainMsg = "Deine Testphase läuft heute ab";
+    subMsg = "Aktiviere Premium, um sichtbar zu bleiben";
+    ctaLabel = "Premium aktivieren";
+  } else if (daysLeft === 1) {
+    mainMsg = "Letzter Tag deiner Testphase";
+    subMsg = "Danach verlierst du deine Sichtbarkeit";
+    ctaLabel = "Jetzt für 39,90€ sichern";
+  } else if (isUrgent) {
+    mainMsg = `Testphase endet in ${daysLeft} Tagen`;
+    subMsg = "Premium jetzt aktivieren — Sichtbarkeit behalten";
+    ctaLabel = "Premium aktivieren";
+  } else if (isWarning) {
+    mainMsg = `Noch ${daysLeft} Tage Testzugang`;
+    subMsg = "Deine Testphase endet bald — Sichtbarkeit sichern";
+    ctaLabel = "Sichtbarkeit sichern";
+  } else {
+    mainMsg = `Noch ${daysLeft} Tage kostenloser Testzugang`;
+    subMsg = null;
+    ctaLabel = "Jetzt upgraden";
+  }
 
   const customerProfileUrl = window.location.origin + "/customer/profile";
 
@@ -45,26 +67,28 @@ function TrialBanner() {
     )}>
       <div className="flex items-center gap-2 min-w-0">
         <Clock className="w-4 h-4 shrink-0" />
-        <span className="truncate">{msg}</span>
-        {isUrgent && (
-          <span className="hidden sm:inline text-xs opacity-70">— Jetzt upgraden um Ihren Zugang zu behalten</span>
+        <span className="truncate font-semibold">{mainMsg}</span>
+        {subMsg && (
+          <span className="hidden sm:inline text-xs opacity-60 font-normal">— {subMsg}</span>
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <a
           href={customerProfileUrl}
           className={cn(
-            "text-xs font-bold px-3 py-1 rounded-full transition-colors",
+            "text-xs font-bold px-3 py-1.5 rounded-full transition-colors",
             isUrgent
               ? "bg-red-500 hover:bg-red-400 text-white"
+              : isWarning
+              ? "bg-amber-500 hover:bg-amber-400 text-black"
               : "bg-violet-600 hover:bg-violet-500 text-white"
           )}
         >
-          Jetzt upgraden
+          {ctaLabel}
         </a>
         <button
           onClick={() => setDismissed(true)}
-          className="opacity-50 hover:opacity-100 transition-opacity"
+          className="opacity-40 hover:opacity-80 transition-opacity"
         >
           <X className="w-3.5 h-3.5" />
         </button>

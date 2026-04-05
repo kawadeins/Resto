@@ -79,15 +79,16 @@ function TrialExpiredRequired() {
     : "restaurant";
   const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
 
-  const stats = [
-    { label: "Aufrufe Ihres Profils", value: "124" },
+  const proofStats = [
+    { label: "Dein Profil wurde angesehen", value: "124×" },
     { label: "Neue Buchungsanfragen", value: "8" },
-    { label: "Sichtbarkeits-Boost", value: "+340%" },
+    { label: "Sichtbarkeits-Boost während Testphase", value: "+340%" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center space-y-6">
+    <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4 py-8">
+      <div className="max-w-md w-full text-center space-y-5">
+        {/* Icon */}
         <div className="relative mx-auto w-20 h-20">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-2xl shadow-amber-500/30 text-4xl">
             ⏰
@@ -99,31 +100,50 @@ function TrialExpiredRequired() {
           </div>
         </div>
 
+        {/* Headline */}
         <div className="space-y-2">
-          <div className="text-[10px] font-bold tracking-widest uppercase text-amber-400 mb-1">Testphase abgelaufen</div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Ihre 14-Tage-Testphase ist beendet
+          <div className="text-[10px] font-bold tracking-widest uppercase text-amber-400">Deine Testphase ist beendet</div>
+          <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
+            Aktiviere Premium, um<br />sichtbar zu bleiben
           </h1>
           <p className="text-[#888] text-sm leading-relaxed">
-            Schalten Sie {bizLabel} Premium frei, um weiterhin alle Funktionen zu nutzen.
+            Premium-Betriebe werden häufiger angezeigt. Du verpasst gerade potenzielle Kunden in deiner Nähe.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/8 bg-white/4 p-5 text-left space-y-3">
-          <p className="text-xs font-bold text-[#666] uppercase tracking-widest mb-3">Ihre Testphase in Zahlen</p>
-          {stats.map((s) => (
+        {/* Value proof from trial */}
+        <div className="rounded-2xl border border-amber-800/30 bg-amber-950/20 p-5 text-left space-y-3">
+          <p className="text-xs font-bold text-amber-400/80 uppercase tracking-widest">Was deine Testphase gebracht hat</p>
+          {proofStats.map((s) => (
             <div key={s.label} className="flex items-center justify-between">
               <span className="text-sm text-[#aaa]">{s.label}</span>
               <span className="text-sm font-bold text-amber-400">{s.value}</span>
             </div>
           ))}
+          <p className="text-xs text-[#666] border-t border-white/5 pt-3 leading-relaxed">
+            Mit aktivem Premium behältst du diese Sichtbarkeit dauerhaft.
+          </p>
         </div>
 
+        {/* Missed opportunity */}
+        <div className="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-left flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+            <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-red-300">Dein {bizLabel} ist aktuell weniger sichtbar</p>
+            <p className="text-[11px] text-red-400/70 mt-0.5 leading-relaxed">Erhöhe deine Sichtbarkeit jetzt und bleib präsent für Kunden in deiner Nähe.</p>
+          </div>
+        </div>
+
+        {/* Price + CTA */}
         <div className="space-y-3">
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-between">
             <div className="text-left">
-              <div className="text-xs text-[#666] uppercase tracking-widest">RestoSmart Business Premium</div>
-              <div className="text-2xl font-bold text-white mt-0.5">€39,90<span className="text-[#666] text-sm font-normal">/Monat</span></div>
+              <div className="text-[10px] text-[#555] uppercase tracking-widest">Business Premium</div>
+              <div className="text-2xl font-bold text-white mt-0.5">39,90€<span className="text-[#666] text-sm font-normal"> / Monat</span></div>
             </div>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -133,15 +153,12 @@ function TrialExpiredRequired() {
           </div>
           <a
             href={CUSTOMER_PROFILE_URL}
-            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Jetzt Premium freischalten · €39,90/Monat
+            Jetzt für 39,90€ / Monat fortsetzen
           </a>
-          <p className="text-[11px] text-[#555]">
-            Keine automatische Abbuchung — Sie best\u00e4tigen die Zahlung im n\u00e4chsten Schritt.
+          <p className="text-[11px] text-[#444]">
+            Jederzeit kündbar. Keine langfristige Verpflichtung.
           </p>
         </div>
       </div>
@@ -155,22 +172,32 @@ function PremiumRequired() {
     : "restaurant";
 
   const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
-  const bizEmoji = biz === "cafe" ? "☕" : biz === "bar" ? "🍸" : "🍽️";
+  const bizEmoji = biz === "cafe" ? "\u2615" : biz === "bar" ? "\uD83C\uDF78" : "\uD83C\uDF7D\uFE0F";
 
-  const features = [
-    "Prioritätsplatzierung im Entdecken-Feed",
-    "Premium-Vertrauens-Badge",
-    "Vollständiges Analytics-Dashboard",
-    "Buchungs- & Gästemanagement",
-    "Personal, Schichten & Gehaltsabrechnung",
-    "Marketing, Kampagnen & Smart Offers",
-    "Kassenterminal (POS) & Menü-Editor",
-    "Revenue Optimizer & Boost-Sichtbarkeit",
+  const bizTimeMsg = biz === "cafe"
+    ? "Mehr Kunden am Morgen und während der Kaffeezeiten"
+    : biz === "bar"
+    ? "Mehr Aufmerksamkeit am Abend und im Nachtleben"
+    : "Mehr Sichtbarkeit zur Mittags- und Abendzeit";
+
+  const smartMsg = biz === "cafe"
+    ? "Jetzt ist eine gute Zeit für mehr Sichtbarkeit am Morgen"
+    : biz === "bar"
+    ? "Hohe Nachfrage am Abend in deiner Umgebung"
+    : "Mehr Reichweite zur Mittagszeit möglich";
+
+  const benefits = [
+    "Mehr Sichtbarkeit in der Suche und auf der Startseite",
+    "Höhere Platzierung bei 'In deiner Nähe'",
+    "Verifizierter Business-Status — mehr Vertrauen",
+    "Zugriff auf Promotion- und Boost-Tools",
+    "Mehr Reichweite bei lokalen Kunden",
+    "Bessere Präsenz auf der Karte",
   ];
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center space-y-6">
+    <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4 py-8">
+      <div className="max-w-md w-full text-center space-y-5">
         {/* Icon */}
         <div className="relative mx-auto w-20 h-20">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-violet-500/30 text-4xl">
@@ -183,25 +210,46 @@ function PremiumRequired() {
           </div>
         </div>
 
-        {/* Text */}
+        {/* Headline */}
         <div className="space-y-2">
-          <div className="text-[10px] font-bold tracking-widest uppercase text-violet-400 mb-1">RestoSmart Business Premium</div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            {bizLabel}-Dashboard freischalten
+          <div className="text-[10px] font-bold tracking-widest uppercase text-violet-400">RestoSmart Business Premium</div>
+          <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
+            Mehr Sichtbarkeit.<br />Mehr Kunden. Mehr Wachstum.
           </h1>
-          <p className="text-[#888] text-sm leading-relaxed">
-            Das vollständige Wachstumspaket für {bizLabel}s — Sichtbarkeit, Buchungen, Analytics und mehr.
+          <p className="text-[10px] text-violet-400/70 font-semibold uppercase tracking-widest">{"Für Restaurants, Cafés & Bars"}</p>
+          <p className="text-[#777] text-sm leading-relaxed mt-2">
+            {"Mit RestoSmart Premium erreichst du mehr Kunden in deiner Nähe, wirst häufiger gefunden und stärkst die Präsenz deines "}{bizLabel}{"s im Alltag."}
           </p>
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <span className="text-2xl font-bold text-white">14 Tage kostenlos</span>
-            <span className="text-[#666] text-sm">danach €39,90/Monat</span>
+        </div>
+
+        {/* Smart context signal */}
+        <div className="rounded-xl border border-violet-800/40 bg-violet-950/30 p-3 flex items-center gap-3 text-left">
+          <div className="w-7 h-7 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
+            <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
+          </div>
+          <span className="text-xs text-violet-300 font-medium">{smartMsg}</span>
+        </div>
+
+        {/* Missed opportunity */}
+        <div className="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-left flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+            <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-red-300">Dein {bizLabel} ist aktuell weniger sichtbar in deiner Umgebung</p>
+            <p className="text-[11px] text-red-400/70 mt-0.5">Du verpasst potenzielle Kunden in deiner Nähe. Premium-Betriebe werden häufiger angezeigt.</p>
           </div>
         </div>
 
-        {/* What you get */}
-        <div className="rounded-2xl border border-white/8 bg-white/4 p-5 text-left space-y-2">
-          <p className="text-xs font-bold text-[#666] uppercase tracking-widest mb-3">Im Paket enthalten</p>
-          {features.map((item) => (
+        {/* Benefits */}
+        <div className="rounded-2xl border border-white/8 bg-white/4 p-5 text-left space-y-2.5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-[#555] uppercase tracking-widest">Was du bekommst</p>
+            <span className="text-[10px] text-violet-400 font-semibold bg-violet-950/60 px-2 py-0.5 rounded-full">{bizTimeMsg.split(" ").slice(0, 4).join(" ")}…</span>
+          </div>
+          {benefits.map((item) => (
             <div key={item} className="flex items-center gap-2.5">
               <div className="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
                 <svg className="w-2.5 h-2.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -213,19 +261,20 @@ function PremiumRequired() {
           ))}
         </div>
 
-        {/* CTA */}
+        {/* Price + CTA */}
         <div className="space-y-3">
+          <div className="text-center">
+            <span className="text-xs text-[#555]">14 Tage kostenlos testen, danach</span>
+            <div className="text-2xl font-bold text-white mt-0.5">39,90€ <span className="text-[#555] text-base font-normal">/ Monat</span></div>
+          </div>
           <a
             href={CUSTOMER_PROFILE_URL}
-            className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-2 w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-            </svg>
-            14 Tage kostenlos testen
+            Jetzt 14 Tage kostenlos starten
           </a>
-          <p className="text-[11px] text-[#555]">
-            Keine Zahlung heute · nach der Testphase €39,90/Monat · Aktivierung im Kundenprofil.
+          <p className="text-[11px] text-[#444] leading-relaxed">
+            Jederzeit kündbar. Keine langfristige Verpflichtung.
           </p>
         </div>
       </div>

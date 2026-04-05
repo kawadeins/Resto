@@ -172,15 +172,15 @@ export default function Billing() {
                   ? "bg-red-950/30 border-red-800/40 text-red-200"
                   : "bg-amber-950/30 border-amber-800/40 text-amber-200"
               }`}>
-                <p className="text-sm font-semibold mb-0.5">
+                <p className="text-sm font-semibold mb-1">
                   {trial.daysLeft <= 1
-                    ? "Letzter Tag — verlieren Sie nicht Ihre Sichtbarkeit"
+                    ? "Letzter Tag deiner Testphase — Sichtbarkeit jetzt sichern"
                     : trial.daysLeft <= 3
-                    ? "Ihre Testphase endet bald — jetzt upgraden"
-                    : "Ihre Testphase endet in einer Woche"}
+                    ? "Testphase endet bald — aktiviere Premium, um sichtbar zu bleiben"
+                    : "Deine Testphase endet bald — Sichtbarkeit sichern"}
                 </p>
-                <p className="text-xs opacity-80">
-                  Nach der Testphase werden Premium-Funktionen gesperrt. Abonnieren Sie jetzt, um ununterbrochenen Zugang zu behalten.
+                <p className="text-xs opacity-80 leading-relaxed">
+                  Dein {bizLabel} ist ohne Premium weniger sichtbar in deiner Umgebung. Du verpasst potenzielle Kunden — Premium-Betriebe werden häufiger angezeigt.
                 </p>
               </div>
             )}
@@ -199,22 +199,24 @@ export default function Billing() {
             {/* Upgrade CTA */}
             <a
               href={customerProfileUrl}
-              className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-violet-500/20 hover:opacity-90 transition-opacity"
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/20 hover:opacity-90 transition-opacity"
             >
-              <Crown className="w-4 h-4" />
-              Premium freischalten · {PREMIUM_PRICE_DISPLAY}/Monat
+              Jetzt für 39,90€ / Monat fortsetzen
               <ArrowRight className="w-4 h-4" />
             </a>
-            <p className="text-[11px] text-center text-muted-foreground">
-              Keine automatische Abbuchung — Sie bestätigen die Zahlung im nächsten Schritt.
+            <p className="text-[11px] text-center text-muted-foreground/60">
+              Jederzeit kündbar. Keine langfristige Verpflichtung.
             </p>
           </div>
 
           {/* Value Summary Card */}
           <div className="rounded-2xl border border-border bg-muted/10 p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <h3 className="font-semibold text-sm">Ihr Betrieb während der Testphase</h3>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm">Was deine Testphase gebracht hat</h3>
+              </div>
+              <span className="text-[10px] text-primary/70 font-bold uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">Live-Daten</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {TRIAL_VALUE_STATS.map((stat) => (
@@ -224,9 +226,11 @@ export default function Billing() {
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
-              Mit vollem Premium-Abonnement behalten Sie diesen Sichtbarkeits-Vorteil dauerhaft.
-            </p>
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+              <p className="text-xs text-primary/80 font-medium leading-relaxed">
+                Mit aktivem Premium behältst du diesen Sichtbarkeits-Vorteil dauerhaft — und erreichst noch mehr Kunden in deiner Nähe.
+              </p>
+            </div>
           </div>
         </>
       )}

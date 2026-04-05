@@ -1,0 +1,181 @@
+MASTER RULES APPLY
+
+Build a "Premium Conversion Booster System" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the whole app completely.
+Do NOT break existing functionality.
+
+CRITICAL:
+All user-facing premium content MUST be in German language only.
+All premium copy, benefits, CTA buttons, and conversion messaging must be written in professional, clear German.
+
+This system must work for:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Maximize Premium conversion using German-language business-focused messaging.
+
+The business owner must clearly understand in German:
+- why Premium is valuable
+- what they gain
+- what they lose without it
+- why 39.90€ is worth it
+
+========================
+1. 14-DAY TRIAL FLOW
+========================
+
+Use a 14-day free trial as the main entry.
+
+All trial messaging must be in German.
+
+Examples:
+- "14 Tage kostenlos testen"
+- "Noch 5 Tage verbleibend"
+- "Deine Testphase endet bald"
+
+========================
+2. MAIN PREMIUM TITLE (GERMAN)
+========================
+
+Use:
+
+👉 "Business Premium — Mehr Sichtbarkeit. Mehr Kunden. Mehr Wachstum."
+
+Subline:
+
+👉 "Für Restaurants, Cafés & Bars"
+
+========================
+3. CORE PREMIUM DESCRIPTION (GERMAN)
+========================
+
+Use:
+
+"Mit RestoMaster Premium erreichst du mehr Kunden in deiner Nähe, wirst häufiger gefunden und stärkst die Präsenz deines Geschäfts im Alltag."
+
+========================
+4. PRICE DISPLAY
+========================
+
+Always show clearly:
+
+👉 "39,90€ / Monat"
+
+Optional:
+👉 "14 Tage kostenlos testen, danach 39,90€ / Monat"
+
+========================
+5. PREMIUM BENEFITS (GERMAN)
+========================
+
+Use clear German bullet points:
+
+- Mehr Sichtbarkeit in der Suche und auf der Startseite  
+- Höhere Platzierung bei „In deiner Nähe“  
+- Verifizierter Business-Status (mehr Vertrauen)  
+- Zugriff auf Promotion- und Boost-Tools  
+- Mehr Reichweite bei lokalen Kunden  
+- Bessere Präsenz auf der Karte  
+
+========================
+6. BUSINESS TYPE ADAPTATION (GERMAN)
+========================
+
+Restaurants:
+👉 "Mehr Sichtbarkeit zur Mittags- und Abendzeit"
+
+Cafés:
+👉 "Mehr Kunden am Morgen und während der Kaffeezeiten"
+
+Bars:
+👉 "Mehr Aufmerksamkeit am Abend und im Nachtleben"
+
+========================
+7. MISSED OPPORTUNITY MESSAGES (GERMAN)
+========================
+
+Show real motivation:
+
+- "Dein Geschäft ist aktuell weniger sichtbar in deiner Umgebung"
+- "Du verpasst potenzielle Kunden in deiner Nähe"
+- "Premium-Betriebe werden häufiger angezeigt"
+- "Erhöhe deine Sichtbarkeit jetzt"
+
+========================
+8. LIVE VALUE PROOF (GERMAN)
+========================
+
+Examples:
+
+- "Dein Profil wurde 124 Mal angesehen"
+- "Deine Sichtbarkeit hat sich während der Testphase erhöht"
+- "Mehr Nutzer haben dein Geschäft entdeckt"
+
+========================
+9. STRONG CTA BUTTON (GERMAN)
+========================
+
+Use:
+
+👉 "Premium aktivieren — 39,90€ / Monat"
+
+Or:
+
+👉 "Jetzt 14 Tage kostenlos starten"
+
+========================
+10. TRUST LINE (GERMAN)
+========================
+
+👉 "Jederzeit kündbar. Keine langfristige Verpflichtung."
+
+========================
+11. TRIAL END CONVERSION (GERMAN)
+========================
+
+When trial ends:
+
+- "Deine Testphase ist beendet"
+- "Aktiviere Premium, um sichtbar zu bleiben"
+- "Jetzt für 39,90€ / Monat fortsetzen"
+
+========================
+12. AI-LIKE SMART MESSAGES (GERMAN)
+========================
+
+Examples:
+
+- "Jetzt ist eine gute Zeit für mehr Sichtbarkeit"
+- "Hohe Nachfrage in deiner Umgebung"
+- "Mehr Reichweite am Abend möglich"
+- "Nutze die aktuelle Aktivität in deiner Nähe"
+
+========================
+13. CONSISTENCY
+========================
+
+Ensure:
+- ALL premium content is in German
+- no English remains in premium UI
+- no mixed language
+- no translation errors
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should present a fully German, professional, high-converting Premium experience.
+
+Business owners must feel:
+
+- "Das bringt mir Kunden"
+- "Das ist sinnvoll"
+- "39,90€ ist es wert"
+- "Ich sollte das jetzt aktivieren"

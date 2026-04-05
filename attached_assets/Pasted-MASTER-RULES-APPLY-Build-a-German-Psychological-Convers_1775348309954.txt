@@ -1,0 +1,228 @@
+MASTER RULES APPLY
+
+Build a "German Psychological Conversion Layer" for the Premium Business system inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the whole app.
+Do NOT break existing functionality.
+Do NOT use manipulative dark patterns.
+Do NOT use fake urgency.
+All user-facing conversion copy must be in German only.
+
+This system must support:
+- Restaurants
+- Cafés
+- Bars / Nightlife venues
+
+========================
+GOAL
+========================
+
+Increase Premium conversion by improving the psychological structure of the premium experience.
+
+The business owner should feel in a natural, professional, German-speaking way:
+
+- Premium is valuable
+- I am missing visibility without it
+- This is made for my business
+- 39,90€ is a small investment compared to potential return
+- I should activate it now
+
+This system is not about fake pressure.
+It is about:
+- clarity
+- emotional business motivation
+- local relevance
+- intelligent persuasion
+
+========================
+1. PREMIUM PAGE PSYCHOLOGY
+========================
+
+Rework the Premium section so the business owner sees the information in the right order:
+
+1. Problem
+2. Opportunity
+3. Value
+4. Proof
+5. Price
+6. Action
+
+Do NOT just show feature bullets.
+
+The page should first make the owner feel:
+- "Oh, I am missing visibility"
+- "This could help me grow"
+
+========================
+2. GERMAN HOOKS (VERY IMPORTANT)
+========================
+
+Use strong but professional German hooks such as:
+
+- "Mehr Sichtbarkeit für dein Geschäft"
+- "Werde in deiner Nähe häufiger entdeckt"
+- "Erreiche mehr Kunden genau dann, wenn sie suchen"
+- "Nutze deine lokale Sichtbarkeit besser"
+
+These hooks should appear in:
+- premium page
+- dashboard prompts
+- trial messages
+- upgrade states
+
+========================
+3. LOSS AVOIDANCE MESSAGING
+========================
+
+Use professional German messaging that highlights missed opportunity.
+
+Examples:
+- "Ohne Premium bleibt dein Geschäft weniger sichtbar"
+- "Du verpasst potenzielle Reichweite in deiner Umgebung"
+- "Andere Betriebe werden häufiger entdeckt"
+- "Nutze dein lokales Potenzial besser"
+
+Do NOT sound cheap or aggressive.
+
+========================
+4. ROI-STYLE PERSUASION
+========================
+
+Use German messages that frame Premium as business value:
+
+Examples:
+- "Schon ein zusätzlicher Kunde kann den Monatsbetrag rechtfertigen"
+- "39,90€ im Monat für mehr lokale Sichtbarkeit"
+- "Eine kleine Investition für mehr Reichweite und Vertrauen"
+
+Keep it simple and believable.
+
+========================
+5. TRIAL CONVERSION LANGUAGE
+========================
+
+During the 14-day trial, use stronger progressive German conversion language:
+
+Examples:
+- "Deine Testphase läuft – nutze die volle Sichtbarkeit"
+- "Noch 5 Tage kostenlos"
+- "Behalte deine Reichweite auch nach der Testphase"
+- "Jetzt Premium weiterführen für 39,90€ / Monat"
+
+At trial end:
+- "Deine Testphase ist beendet"
+- "Aktiviere Premium, um sichtbar zu bleiben"
+
+========================
+6. BUSINESS-TYPE PERSONALIZATION
+========================
+
+Adapt copy by business type:
+
+Restaurants:
+- "Mehr Sichtbarkeit zur Mittags- und Abendzeit"
+- "Erreiche Gäste zur richtigen Zeit"
+
+Cafés:
+- "Mehr Präsenz am Morgen und zur Kaffeezeit"
+- "Werde für Frühstück und Coffee Breaks entdeckt"
+
+Bars:
+- "Mehr Sichtbarkeit am Abend und im Nachtleben"
+- "Nutze die Aufmerksamkeit rund um Happy Hour und Nightlife"
+
+========================
+7. TRUST + STATUS LANGUAGE
+========================
+
+Make Premium feel prestigious in German:
+
+Examples:
+- "Verifizierter Business-Status"
+- "Mehr Vertrauen bei neuen Kunden"
+- "Professioneller Auftritt auf RestoMaster"
+
+This should create emotional value, not only functional value.
+
+========================
+8. SMART MICROCOPY
+========================
+
+Improve small German texts around buttons, cards, and upgrade prompts.
+
+Examples:
+- "Jetzt sichtbar werden"
+- "Mehr Reichweite freischalten"
+- "Premium starten"
+- "14 Tage kostenlos testen"
+- "Sichtbarkeit erhöhen"
+
+Avoid weak generic text.
+
+========================
+9. HIGH-INTENT UPGRADE MOMENTS
+========================
+
+Use stronger psychological copy at the best conversion moments:
+
+- when trial is close to ending
+- when owner sees analytics
+- when owner sees missed visibility
+- when owner opens boost tools
+- when owner sees profile views or discovery metrics
+
+Each moment should use short, relevant German persuasion.
+
+========================
+10. PROOF + PERFORMANCE LANGUAGE
+========================
+
+Show proof in German:
+
+Examples:
+- "Dein Profil wurde 124 Mal angesehen"
+- "Mehr Nutzer haben dein Geschäft entdeckt"
+- "Deine Sichtbarkeit ist während der Testphase gestiegen"
+
+These messages should support payment decisions.
+
+========================
+11. CLEAN CTA STRUCTURE
+========================
+
+Use one strong primary CTA per screen.
+
+Examples:
+- "Jetzt 14 Tage kostenlos starten"
+- "Premium aktivieren"
+- "Für 39,90€ / Monat fortsetzen"
+
+Do NOT overload with too many buttons.
+
+========================
+12. CONSISTENCY
+========================
+
+Ensure all Premium persuasion copy across the app is:
+- in German only
+- consistent
+- professional
+- psychologically strong
+- adapted to business value
+
+No mixed English.
+No awkward translation.
+
+========================
+FINAL GOAL
+========================
+
+The Premium experience should make business owners feel in a natural German-speaking way:
+
+- "Das bringt mir wirklich etwas"
+- "Ich verliere Sichtbarkeit ohne Premium"
+- "39,90€ ist sinnvoll"
+- "Ich sollte das aktivieren"
+
+The result should significantly improve Premium conversion while keeping the product professional and trustworthy.
