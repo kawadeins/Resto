@@ -10,7 +10,7 @@ import {
   Store, Coffee, Wine, UtensilsCrossed, Tag, Flag, Search, ChevronUp,
   ChevronDown, Activity, Flame, Crown, Award, AlertCircle, X,
   Phone, MessageSquare, Mail, ChevronRight, Filter, LayoutList,
-  PhoneCall, CheckSquare, ClipboardList, Euro, Ban,
+  PhoneCall, CheckSquare, ClipboardList, Euro, Ban, Clock, Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -1937,7 +1937,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
   );
 }
 
-// ─── Founder Ops Center ───────────────────────────────────────────────────────
+// ─── Founder Ops Center (Hardened Mission Control) ───────────────────────────
 
 interface OpsIncident {
   id: number;
@@ -1994,18 +1994,18 @@ interface OpsSummary {
   };
 }
 
-const SEVERITY_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
-  critical: { bg: "bg-red-500/10",   text: "text-red-400",    border: "border-red-500/25",    label: "KRITISCH" },
-  high:     { bg: "bg-rose-500/10",  text: "text-rose-400",   border: "border-rose-500/25",   label: "HOCH" },
-  medium:   { bg: "bg-amber-500/10", text: "text-amber-400",  border: "border-amber-500/25",  label: "MITTEL" },
-  low:      { bg: "bg-blue-500/10",  text: "text-blue-400",   border: "border-blue-500/25",   label: "NIEDRIG" },
+const SEVERITY_STYLES: Record<string, { bg: string; text: string; border: string; label: string; order: number }> = {
+  critical: { bg: "bg-red-500/10",   text: "text-red-400",    border: "border-red-500/25",    label: "KRITISCH", order: 0 },
+  high:     { bg: "bg-rose-500/10",  text: "text-rose-400",   border: "border-rose-500/25",   label: "HOCH",     order: 1 },
+  medium:   { bg: "bg-amber-500/10", text: "text-amber-400",  border: "border-amber-500/25",  label: "MITTEL",   order: 2 },
+  low:      { bg: "bg-blue-500/10",  text: "text-blue-400",   border: "border-blue-500/25",   label: "NIEDRIG",  order: 3 },
 };
 
-const HEALTH_STYLES: Record<string, { color: string; label: string; icon: string }> = {
-  healthy:  { color: "text-emerald-400", label: "Gesund",    icon: "bg-emerald-500" },
-  warning:  { color: "text-amber-400",   label: "Warnung",   icon: "bg-amber-500" },
-  degraded: { color: "text-rose-400",    label: "Beeinträchtigt", icon: "bg-rose-500" },
-  critical: { color: "text-red-400",     label: "Kritisch",  icon: "bg-red-500" },
+const HEALTH_STYLES: Record<string, { color: string; label: string; icon: string; pulse: string }> = {
+  healthy:  { color: "text-emerald-400", label: "Gesund",         icon: "bg-emerald-500", pulse: "shadow-emerald-500/40" },
+  warning:  { color: "text-amber-400",   label: "Warnung",        icon: "bg-amber-500",   pulse: "shadow-amber-500/40" },
+  degraded: { color: "text-rose-400",    label: "Beeinträchtigt", icon: "bg-rose-500",    pulse: "shadow-rose-500/40" },
+  critical: { color: "text-red-400",     label: "Kritisch",       icon: "bg-red-500",     pulse: "shadow-red-500/40" },
 };
 
 const AREA_LABELS: Record<string, string> = {
@@ -2021,16 +2021,63 @@ const AREA_LABELS: Record<string, string> = {
   revenue_monitoring: "Umsatz-Monitoring",
 };
 
+const REVENUE_AREAS = new Set([
+  "billing_integrity", "billing_reconciliation", "boost_delivery",
+  "boost_integrity", "revenue_monitoring",
+]);
+
+const OPS_GROUP_CONFIG: { key: string; label: string; icon: typeof Shield; areas: string[] }[] = [
+  { key: "billing", label: "Billing / Zahlungen", icon: Banknote, areas: ["billing_integrity", "billing_reconciliation"] },
+  { key: "boost",   label: "Boost / Monetarisierung", icon: Zap, areas: ["boost_delivery", "boost_integrity"] },
+  { key: "platform", label: "Plattform-Integrität", icon: Shield, areas: ["platform_consistency", "data_integrity"] },
+  { key: "abuse",   label: "Missbrauch / Betrugsrisiko", icon: AlertTriangle, areas: ["abuse_detection"] },
+  { key: "growth",  label: "Wachstum / Städte", icon: TrendingUp, areas: ["growth_anomaly", "city_health", "revenue_monitoring"] },
+];
+
+const HEALING_LABELS: Record<string, string> = {
+  counter_reset: "Counter-Reset",
+  pause_boosts_inactive_restaurant: "Boost-Pause (inaktiv)",
+  pause_overspend_campaign: "Budget-Schutz-Pause",
+  rating_clamp: "Rating-Korrektur",
+  info_only: "Nur Info",
+};
+
+function isRevenueImpact(inc: OpsIncident): boolean {
+  return REVENUE_AREAS.has(inc.system_area) || inc.system_area.includes("billing") || inc.system_area.includes("boost");
+}
+
+function getImpactStatement(inc: OpsIncident): string {
+  if (inc.system_area === "billing_integrity") return "Direkte Auswirkung auf Umsatz und Abrechnung";
+  if (inc.system_area === "billing_reconciliation") return "Abrechnungsstatus stimmt nicht mit Plattform überein";
+  if (inc.system_area === "boost_delivery") return "Bezahlte Kampagne liefert nicht — Kundenzufriedenheit gefährdet";
+  if (inc.system_area === "boost_integrity") return "Boost-System-Fehler — Monetarisierung betroffen";
+  if (inc.system_area === "abuse_detection") return "Möglicher Missbrauch — Plattformintegrität gefährdet";
+  if (inc.system_area === "data_integrity") return "Dateninkonsistenz — Vertrauenswürdigkeit betroffen";
+  if (inc.system_area === "revenue_monitoring") return "Umsatzanomalie erkannt — Monitoring erforderlich";
+  return "Plattformstabilität betroffen";
+}
+
+function sortIncidents(list: OpsIncident[]): OpsIncident[] {
+  return [...list].sort((a, b) => {
+    const sevA = SEVERITY_STYLES[a.severity]?.order ?? 4;
+    const sevB = SEVERITY_STYLES[b.severity]?.order ?? 4;
+    if (sevA !== sevB) return sevA - sevB;
+    return new Date(b.detected_at).getTime() - new Date(a.detected_at).getTime();
+  });
+}
+
 function FounderOpsCenter({ founderKey }: { founderKey: string }) {
   const headers: Record<string, string> = { "x-founder-key": founderKey, "Content-Type": "application/json" };
   const qc = useQueryClient();
-  type OpsFilter = "critical_now" | "needs_review" | "auto_healed" | "billing" | "open" | "all" | "resolved" | "escalated";
-  const [filter, setFilter] = useState<OpsFilter>("critical_now");
+  type OpsFilter = "attention" | "needs_review" | "auto_healed" | "billing" | "open" | "all" | "resolved" | "escalated";
+  const [filter, setFilter] = useState<OpsFilter>("attention");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [collapsedLow, setCollapsedLow] = useState(true);
 
   const invalidateOps = () => {
     qc.invalidateQueries({ queryKey: ["ops-summary"] });
     qc.invalidateQueries({ queryKey: ["ops-incidents"] });
+    qc.invalidateQueries({ queryKey: ["ops-all-incidents"] });
   };
 
   const summaryQuery = useQuery<OpsSummary>({
@@ -2047,7 +2094,7 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
     queryKey: ["ops-incidents", filter],
     queryFn: async () => {
       let url = `${API}/ops/incidents`;
-      if (filter === "critical_now") url += "?status=open&severity=critical";
+      if (filter === "attention") url += "?status=open";
       else if (filter === "needs_review") url += "?category=needs_review";
       else if (filter === "auto_healed") url += "?category=auto_healed";
       else if (filter === "billing") url += "?category=billing";
@@ -2055,6 +2102,16 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
       else if (filter === "resolved") url += "?status=resolved";
       else if (filter === "escalated") url += "?status=escalated";
       const r = await fetch(url, { headers });
+      if (!r.ok) throw new Error("Failed");
+      return r.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const allIncidentsQuery = useQuery<{ incidents: OpsIncident[] }>({
+    queryKey: ["ops-all-incidents"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/ops/incidents`, { headers });
       if (!r.ok) throw new Error("Failed");
       return r.json();
     },
@@ -2102,63 +2159,314 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
   });
 
   const s = summaryQuery.data;
-  const incidents = incidentsQuery.data?.incidents ?? [];
+  const rawIncidents = incidentsQuery.data?.incidents ?? [];
+  const incidents = sortIncidents(rawIncidents);
+  const allIncidents = allIncidentsQuery.data?.incidents ?? [];
   const healthStyle = HEALTH_STYLES[s?.health ?? "healthy"];
 
-  const HEALING_LABELS: Record<string, string> = {
-    counter_reset: "Counter-Reset",
-    pause_boosts_inactive_restaurant: "Boost-Pause (inaktiv)",
-    pause_overspend_campaign: "Budget-Schutz-Pause",
-    rating_clamp: "Rating-Korrektur",
-    info_only: "Nur Info",
-  };
+  const attentionItems = allIncidents.filter(
+    i => (i.status === "open" && (i.severity === "critical" || i.severity === "high" || i.needs_manual_review)) ||
+         i.status === "escalated"
+  );
+  const sortedAttention = sortIncidents(attentionItems);
+
+  const highPrioIncidents = incidents.filter(i => i.severity !== "low");
+  const lowPrioIncidents = incidents.filter(i => i.severity === "low");
+
+  const groupedCounts = OPS_GROUP_CONFIG.map(g => {
+    const matching = allIncidents.filter(i => g.areas.includes(i.system_area));
+    const open = matching.filter(i => i.status === "open").length;
+    const critical = matching.filter(i => i.severity === "critical" && i.status === "open").length;
+    const high = matching.filter(i => i.severity === "high" && i.status === "open").length;
+    const healed = matching.filter(i => i.auto_healed).length;
+    return { ...g, total: matching.length, open, critical, high, healed };
+  }).filter(g => g.total > 0);
+
+  function buildSmartSummary(): string[] {
+    if (!s) return [];
+    const lines: string[] = [];
+    if (s.counts.criticalOpen > 0) lines.push(`${s.counts.criticalOpen} kritische${s.counts.criticalOpen > 1 ? " Probleme brauchen" : "s Problem braucht"} sofortige Aufmerksamkeit`);
+    else if (s.counts.highOpen > 0) lines.push(`${s.counts.highOpen} Problem${s.counts.highOpen > 1 ? "e" : ""} mit hoher Priorität offen`);
+    if (s.counts.pendingReview > 0) lines.push(`${s.counts.pendingReview} Incident${s.counts.pendingReview > 1 ? "s" : ""} warten auf manuelle Prüfung`);
+    if (s.counts.autoHealed24h > 0) lines.push(`${s.counts.autoHealed24h} Problem${s.counts.autoHealed24h > 1 ? "e" : ""} heute automatisch repariert`);
+    if (s.counts.escalated > 0) lines.push(`${s.counts.escalated} eskaliert${s.counts.escalated > 1 ? "e Incidents" : "er Incident"} — Retry ausgeschöpft`);
+    const billingOpen = allIncidents.filter(i => (i.system_area.includes("billing") || i.system_area.includes("boost")) && i.status === "open").length;
+    if (billingOpen > 0) lines.push(`${billingOpen} offene${billingOpen > 1 ? " Billing-Probleme" : "s Billing-Problem"} erkannt`);
+    if (lines.length === 0) lines.push("System ist stabil — keine Probleme erkannt");
+    return lines;
+  }
 
   const filterTabs: { key: OpsFilter; label: string; count?: number; color?: string }[] = [
-    { key: "critical_now", label: "Kritisch", count: s?.counts.criticalOpen, color: s?.counts.criticalOpen ? "text-red-400" : undefined },
-    { key: "needs_review", label: "Review nötig", count: s?.counts.pendingReview, color: s?.counts.pendingReview ? "text-amber-400" : undefined },
-    { key: "auto_healed", label: "Auto-Repariert", count: s?.counts.autoHealedTotal, color: "text-emerald-400" },
-    { key: "billing", label: "Billing" },
-    { key: "open", label: "Offen", count: s?.counts.open },
-    { key: "escalated", label: "Eskaliert", count: s?.counts.escalated, color: s?.counts.escalated ? "text-rose-400" : undefined },
-    { key: "all", label: "Alle" },
-    { key: "resolved", label: "Gelöst" },
+    { key: "attention",    label: "Aufmerksamkeit",  count: sortedAttention.length, color: sortedAttention.length ? "text-red-400" : undefined },
+    { key: "needs_review", label: "Review nötig",    count: s?.counts.pendingReview, color: s?.counts.pendingReview ? "text-amber-400" : undefined },
+    { key: "auto_healed",  label: "Auto-Repariert",  count: s?.counts.autoHealedTotal, color: "text-emerald-400" },
+    { key: "billing",      label: "Billing" },
+    { key: "open",         label: "Offen",           count: s?.counts.open },
+    { key: "escalated",    label: "Eskaliert",       count: s?.counts.escalated, color: s?.counts.escalated ? "text-rose-400" : undefined },
+    { key: "all",          label: "Alle" },
+    { key: "resolved",     label: "Gelöst" },
   ];
 
-  return (
-    <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-6">
+  const renderIncidentCard = (inc: OpsIncident) => {
+    const sev = SEVERITY_STYLES[inc.severity] ?? SEVERITY_STYLES.low;
+    const isExpanded = expandedId === inc.id;
+    const revenueTag = isRevenueImpact(inc);
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs font-bold uppercase tracking-widest text-[#555]">
-              Self-Healing Ops Center
-            </span>
-            {s && (
-              <span className={cn(
-                "flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border",
-                s.health === "healthy"  ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" :
-                s.health === "warning"  ? "text-amber-400 bg-amber-500/10 border-amber-500/20" :
-                s.health === "degraded" ? "text-rose-400 bg-rose-500/10 border-rose-500/20" :
-                "text-red-400 bg-red-500/10 border-red-500/20"
-              )}>
-                <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", healthStyle?.icon)} />
-                {healthStyle?.label}
+    return (
+      <div
+        key={inc.id}
+        className={cn(
+          "rounded-xl border bg-white/2 overflow-hidden transition-all",
+          inc.severity === "critical" && inc.status === "open" ? "border-red-500/30 ring-1 ring-red-500/10" :
+          inc.severity === "high" && inc.status === "open" ? "border-rose-500/25" :
+          inc.auto_healed ? "border-emerald-500/15" :
+          inc.status === "resolved" ? "border-white/4 opacity-60" :
+          inc.status === "escalated" ? "border-rose-500/20" :
+          "border-white/6"
+        )}
+      >
+        <button
+          onClick={() => setExpandedId(isExpanded ? null : inc.id)}
+          className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-white/2 transition-colors"
+        >
+          <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0", sev.bg, sev.text, sev.border)}>
+            {sev.label}
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs font-semibold text-white truncate">{inc.title}</p>
+              {revenueTag && inc.status === "open" && (
+                <span className="text-[8px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-px rounded shrink-0 uppercase tracking-wider">
+                  Umsatz
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[10px] text-[#444]">
+                {AREA_LABELS[inc.system_area] ?? inc.system_area}
+              </span>
+              {inc.affected_entity && (
+                <span className="text-[10px] text-[#555] truncate max-w-[140px]">{inc.affected_entity}</span>
+              )}
+              {inc.affected_city && (
+                <span className="text-[10px] text-[#333]">{inc.affected_city}</span>
+              )}
+              <span className="text-[10px] text-[#333]">
+                {new Date(inc.detected_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {inc.auto_healed && (
+              <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                AUTO-FIX
               </span>
             )}
-            {s?.scheduledChecks?.enabled && (
-              <span className="text-[9px] text-emerald-400/60 font-medium">
-                Auto-Check alle {s.scheduledChecks.intervalMinutes} Min
-                {s.scheduledChecks.lastRun && (
-                  <> · Letzter: {new Date(s.scheduledChecks.lastRun).toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })}</>
-                )}
+            {inc.retry_count > 0 && !inc.auto_healed && (
+              <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                RETRY {inc.retry_count}/{inc.max_retries}
               </span>
+            )}
+            {inc.needs_manual_review && inc.status === "open" && !inc.auto_healed && (
+              <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                REVIEW
+              </span>
+            )}
+            <span className={cn(
+              "text-[9px] font-bold px-2 py-0.5 rounded-full",
+              inc.status === "open" ? "text-amber-400 bg-amber-500/8"
+              : inc.status === "resolved" ? "text-emerald-400 bg-emerald-500/8"
+              : inc.status === "escalated" ? "text-rose-400 bg-rose-500/8"
+              : "text-[#444] bg-white/5"
+            )}>
+              {inc.status === "open" ? "Offen" : inc.status === "resolved" ? "Gelöst" : inc.status === "escalated" ? "Eskaliert" : "Verworfen"}
+            </span>
+          </div>
+          <ChevronDown className={cn("w-3.5 h-3.5 text-[#444] transition-transform shrink-0", isExpanded && "rotate-180")} />
+        </button>
+
+        {isExpanded && (
+          <div className="px-4 pb-4 pt-1 border-t border-white/4 space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Was ist passiert</p>
+                <p className="text-[11px] text-[#888] leading-relaxed">{inc.technical_summary}</p>
+              </div>
+              <div>
+                <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Warum es wichtig ist</p>
+                <p className="text-[11px] text-[#888] leading-relaxed">{getImpactStatement(inc)}</p>
+              </div>
+              <div>
+                <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">System-Reaktion</p>
+                <p className={cn("text-[11px] leading-relaxed", inc.auto_healed ? "text-emerald-400" : "text-[#888]")}>
+                  {inc.auto_action_taken ?? "Keine automatische Aktion"}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {inc.anomaly_detected && (
+                <div className="rounded-lg bg-white/3 px-3 py-2">
+                  <p className="text-[9px] text-[#444] font-bold">Anomalie</p>
+                  <p className="text-[10px] text-rose-400 mt-0.5">{inc.anomaly_detected}</p>
+                </div>
+              )}
+              {inc.billing_truth && (
+                <div className="rounded-lg bg-white/3 px-3 py-2">
+                  <p className="text-[9px] text-[#444] font-bold">Billing-Wahrheit</p>
+                  <p className="text-[10px] text-[#888] mt-0.5">{inc.billing_truth}</p>
+                </div>
+              )}
+              {inc.platform_truth && (
+                <div className="rounded-lg bg-white/3 px-3 py-2">
+                  <p className="text-[9px] text-[#444] font-bold">Plattform-Wahrheit</p>
+                  <p className="text-[10px] text-[#888] mt-0.5">{inc.platform_truth}</p>
+                </div>
+              )}
+              {inc.recovery_result && (
+                <div className="rounded-lg bg-white/3 px-3 py-2">
+                  <p className="text-[9px] text-[#444] font-bold">Ergebnis</p>
+                  <p className={cn("text-[10px] mt-0.5", inc.auto_healed ? "text-emerald-400" : inc.recovery_result.includes("fehlgeschlagen") || inc.recovery_result.includes("FEHL") || inc.recovery_result.includes("Eskaliert") ? "text-rose-400" : "text-[#888]")}>{inc.recovery_result}</p>
+                </div>
+              )}
+              {inc.healing_action_type && (
+                <div className="rounded-lg bg-white/3 px-3 py-2">
+                  <p className="text-[9px] text-[#444] font-bold">Healing-Typ</p>
+                  <p className="text-[10px] text-emerald-400 mt-0.5">{HEALING_LABELS[inc.healing_action_type] ?? inc.healing_action_type}</p>
+                </div>
+              )}
+              {inc.retry_count > 0 && (
+                <div className="rounded-lg bg-white/3 px-3 py-2">
+                  <p className="text-[9px] text-[#444] font-bold">Retry-Status</p>
+                  <p className="text-[10px] text-blue-400 mt-0.5">
+                    {inc.retry_count}/{inc.max_retries} Versuche
+                    {inc.last_retry_at && <> · {new Date(inc.last_retry_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</>}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-lg bg-white/2 border border-white/5 px-3 py-2">
+              <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1.5 flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" /> Zeitverlauf
+              </p>
+              <div className="flex items-center gap-3 text-[10px]">
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                  <span className="text-[#555]">Erkannt:</span>
+                  <span className="text-[#888]">{new Date(inc.detected_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+                </div>
+                {inc.auto_action_taken && inc.auto_action_taken !== "Keine" && (
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    <span className="text-[#555]">Aktion:</span>
+                    <span className="text-[#888]">{inc.auto_healed ? "Auto-repariert" : inc.retry_count > 0 ? `Retry ${inc.retry_count}x` : "Versucht"}</span>
+                  </div>
+                )}
+                {inc.resolved_at && (
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[#555]">Gelöst:</span>
+                    <span className="text-[#888]">{new Date(inc.resolved_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  <span className={cn("w-1.5 h-1.5 rounded-full", inc.status === "open" ? "bg-amber-400" : inc.status === "resolved" ? "bg-emerald-400" : "bg-rose-400")} />
+                  <span className="text-[#555]">Status:</span>
+                  <span className={cn(inc.status === "resolved" ? "text-emerald-400" : inc.status === "escalated" ? "text-rose-400" : "text-amber-400")}>
+                    {inc.status === "open" ? "Offen" : inc.status === "resolved" ? "Gelöst" : inc.status === "escalated" ? "Eskaliert" : "Verworfen"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {inc.recommended_action && (
+              <div className={cn(
+                "rounded-lg border px-3 py-2.5",
+                inc.auto_healed
+                  ? "bg-emerald-500/5 border-emerald-500/15"
+                  : inc.needs_manual_review || inc.status === "escalated"
+                  ? "bg-amber-500/5 border-amber-500/15"
+                  : "bg-violet-500/5 border-violet-500/15"
+              )}>
+                <p className={cn(
+                  "text-[9px] font-bold uppercase tracking-widest mb-0.5",
+                  inc.auto_healed ? "text-emerald-400" : inc.needs_manual_review || inc.status === "escalated" ? "text-amber-400" : "text-violet-400"
+                )}>
+                  {inc.auto_healed ? "Keine Aktion erforderlich" :
+                   inc.status === "escalated" ? "Eskalation — manuelle Prüfung erforderlich" :
+                   inc.needs_manual_review ? "Founder-Aktion erforderlich" : "Empfehlung"}
+                </p>
+                <p className="text-[11px] text-[#888] leading-relaxed">{inc.recommended_action}</p>
+              </div>
+            )}
+
+            {(inc.status === "open" || inc.status === "escalated") && !inc.auto_healed && (
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={() => updateIncident.mutate({ id: inc.id, status: "resolved" })}
+                  className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/15 transition-colors"
+                >
+                  <CheckCircle className="w-3 h-3" /> Als gelöst markieren
+                </button>
+                {inc.status !== "escalated" && (
+                  <button
+                    onClick={() => updateIncident.mutate({ id: inc.id, status: "escalated" })}
+                    className="flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/8 border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/15 transition-colors"
+                  >
+                    <AlertTriangle className="w-3 h-3" /> Eskalieren
+                  </button>
+                )}
+                <button
+                  onClick={() => updateIncident.mutate({ id: inc.id, status: "dismissed" })}
+                  className="flex items-center gap-1 text-[10px] text-[#444] hover:text-[#888] px-2 py-1.5 transition-colors"
+                >
+                  <X className="w-3 h-3" /> Verwerfen
+                </button>
+              </div>
             )}
           </div>
-          <p className="text-[11px] text-[#333]">
-            Erkennung · Selbstheilung · Billing-Abgleich · Auto-Retry · Founder-Aktionsführung
-          </p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-screen-xl mx-auto px-6 py-8 space-y-5">
+
+      {/* ── Health Bar ─────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", healthStyle?.icon ?? "bg-emerald-500")}>
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <span className={cn("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0a0a0f] animate-pulse", healthStyle?.icon ?? "bg-emerald-500", healthStyle?.pulse)} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-white">Mission Control</h2>
+              {s && (
+                <span className={cn(
+                  "flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full border",
+                  s.health === "healthy"  ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" :
+                  s.health === "warning"  ? "text-amber-400 bg-amber-500/10 border-amber-500/20" :
+                  s.health === "degraded" ? "text-rose-400 bg-rose-500/10 border-rose-500/20" :
+                  "text-red-400 bg-red-500/10 border-red-500/20"
+                )}>
+                  {healthStyle?.label}
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-[#444] mt-0.5 flex items-center gap-2">
+              Erkennung · Selbstheilung · Billing-Schutz · Revenue Protection
+              {s?.scheduledChecks?.enabled && (
+                <span className="text-emerald-400/60 flex items-center gap-1">
+                  <Activity className="w-2.5 h-2.5" /> Auto-Check {s.scheduledChecks.intervalMinutes}m
+                </span>
+              )}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -2184,7 +2492,7 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
                 : "text-violet-400 border-violet-500/20 bg-violet-500/8 hover:bg-violet-500/15"
             )}
           >
-            <Shield className="w-3 h-3" />
+            <Banknote className="w-3 h-3" />
             {runBillingReconcile.isPending ? "Abgleiche..." : "Billing-Abgleich"}
           </button>
           <button
@@ -2202,129 +2510,198 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
           </button>
           <button
             onClick={invalidateOps}
-            className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#888] transition-colors"
+            className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#888] transition-colors p-1.5"
           >
             <RefreshCw className="w-3 h-3" />
           </button>
         </div>
       </div>
 
-      {/* Health check result banner */}
+      {/* ── Smart Summary Block ───────────────────────────────────────── */}
+      {s && (
+        <div className={cn(
+          "rounded-xl border px-4 py-3",
+          s.health === "healthy"  ? "border-emerald-500/15 bg-emerald-500/3" :
+          s.health === "critical" ? "border-red-500/20 bg-red-500/5" :
+          "border-white/6 bg-white/2"
+        )}>
+          <div className="flex items-start gap-3">
+            <div className="flex-1 space-y-1">
+              {buildSmartSummary().map((line, i) => (
+                <p key={i} className={cn(
+                  "text-[11px] font-medium leading-relaxed flex items-center gap-1.5",
+                  i === 0 && s.counts.criticalOpen > 0 ? "text-red-400" :
+                  i === 0 && s.counts.highOpen > 0 ? "text-rose-400" :
+                  line.includes("repariert") ? "text-emerald-400" :
+                  line.includes("stabil") ? "text-emerald-400" :
+                  "text-[#888]"
+                )}>
+                  <span className={cn(
+                    "w-1 h-1 rounded-full shrink-0",
+                    line.includes("kritisch") ? "bg-red-400" :
+                    line.includes("repariert") || line.includes("stabil") ? "bg-emerald-400" :
+                    line.includes("eskaliert") ? "bg-rose-400" :
+                    "bg-amber-400"
+                  )} />
+                  {line}
+                </p>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 text-center shrink-0">
+              <div>
+                <p className={cn("text-lg font-bold", s.counts.open > 0 ? "text-amber-400" : "text-emerald-400")}>{s.counts.open}</p>
+                <p className="text-[8px] text-[#444] uppercase">Offen</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-emerald-400">{s.counts.autoHealedTotal}</p>
+                <p className="text-[8px] text-[#444] uppercase">Auto-Fix</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-emerald-400">{s.counts.resolved}</p>
+                <p className="text-[8px] text-[#444] uppercase">Gelöst</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Health Check / Billing / Retry result banners ─────────────── */}
       {runHealthCheck.data && (
-        <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-3">
+        <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-2.5">
           <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-semibold">
             <CheckCircle className="w-3.5 h-3.5" />
-            Health Check + Self-Healing abgeschlossen
-          </div>
-          <div className="flex flex-wrap gap-3 text-[10px] text-[#555] mt-1">
-            <span>{runHealthCheck.data.checksRun} Checks</span>
-            <span>{runHealthCheck.data.issuesDetected} erkannt</span>
-            <span>{runHealthCheck.data.newIncidentsCreated} neue Incidents</span>
-            <span className="text-emerald-400 font-bold">{runHealthCheck.data.autoHealed} auto-repariert</span>
-            {runHealthCheck.data.retryResult && (
-              <>
-                <span>{runHealthCheck.data.retryResult.retried} Retries</span>
-                <span className="text-emerald-400">{runHealthCheck.data.retryResult.succeeded} Retry-Erfolge</span>
-                {runHealthCheck.data.retryResult.escalated > 0 && (
-                  <span className="text-rose-400">{runHealthCheck.data.retryResult.escalated} eskaliert</span>
-                )}
-              </>
+            Health Check abgeschlossen:
+            <span className="text-[#888] font-normal">{runHealthCheck.data.checksRun} Checks · {runHealthCheck.data.issuesDetected} erkannt · </span>
+            <span className="text-emerald-400">{runHealthCheck.data.autoHealed} auto-repariert</span>
+            {runHealthCheck.data.retryResult?.escalated > 0 && (
+              <span className="text-rose-400"> · {runHealthCheck.data.retryResult.escalated} eskaliert</span>
             )}
           </div>
         </div>
       )}
-
-      {/* Billing reconcile result */}
       {runBillingReconcile.data && (
-        <div className="rounded-xl border border-violet-500/15 bg-violet-500/5 px-4 py-3">
+        <div className="rounded-xl border border-violet-500/15 bg-violet-500/5 px-4 py-2.5">
           <div className="flex items-center gap-2 text-[11px] text-violet-400 font-semibold">
-            <Shield className="w-3.5 h-3.5" />
-            Billing-Abgleich abgeschlossen
+            <Banknote className="w-3.5 h-3.5" />
+            Billing-Abgleich:
+            <span className="text-[#888] font-normal">{runBillingReconcile.data.issuesFound} Probleme · {runBillingReconcile.data.autoHealed} auto-repariert</span>
           </div>
-          <p className="text-[10px] text-[#555] mt-1">
-            {runBillingReconcile.data.issuesFound} Probleme · {runBillingReconcile.data.autoHealed} auto-repariert · {runBillingReconcile.data.newIncidents} neue Incidents
-          </p>
         </div>
       )}
-
-      {/* Retry result */}
       {runRetry.data && (
-        <div className="rounded-xl border border-blue-500/15 bg-blue-500/5 px-4 py-3">
+        <div className="rounded-xl border border-blue-500/15 bg-blue-500/5 px-4 py-2.5">
           <div className="flex items-center gap-2 text-[11px] text-blue-400 font-semibold">
             <RefreshCw className="w-3.5 h-3.5" />
-            Auto-Retry abgeschlossen
+            Retry:
+            <span className="text-[#888] font-normal">{runRetry.data.retried} versucht · {runRetry.data.succeeded} erfolgreich · {runRetry.data.escalated} eskaliert</span>
           </div>
-          <p className="text-[10px] text-[#555] mt-1">
-            {runRetry.data.retried} versucht · {runRetry.data.succeeded} erfolgreich · {runRetry.data.escalated} eskaliert
-          </p>
         </div>
       )}
 
-      {/* KPI row — 2 rows */}
-      {s && (
-        <div className="space-y-2">
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-            {[
-              { label: "Offen",           value: s.counts.open,            color: s.counts.open > 0 ? "text-amber-400" : "text-emerald-400" },
-              { label: "Kritisch",        value: s.counts.criticalOpen,    color: s.counts.criticalOpen > 0 ? "text-red-400" : "text-emerald-400" },
-              { label: "Hoch",            value: s.counts.highOpen,        color: s.counts.highOpen > 0 ? "text-rose-400" : "text-[#555]" },
-              { label: "Review nötig",    value: s.counts.pendingReview,   color: s.counts.pendingReview > 0 ? "text-amber-400" : "text-[#555]" },
-              { label: "Auto-Repariert",  value: s.counts.autoHealedTotal, color: "text-emerald-400" },
-              { label: "Healed 24h",      value: s.counts.autoHealed24h,   color: "text-emerald-400" },
-              { label: "Retried",         value: s.counts.retriedTotal,    color: "text-blue-400" },
-              { label: "Gelöst",          value: s.counts.resolved,        color: "text-emerald-400" },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="rounded-xl border border-white/6 bg-white/2 px-3 py-2 text-center">
-                <p className={cn("text-base font-bold", color)}>{value ?? 0}</p>
-                <p className="text-[9px] text-[#444]">{label}</p>
+      {/* ── Attention Panel (Top Priority) ────────────────────────────── */}
+      {sortedAttention.length > 0 && filter === "attention" && (
+        <div className="rounded-xl border border-red-500/15 bg-red-500/3 px-4 py-3">
+          <div className="flex items-center gap-2 mb-2.5">
+            <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+            <p className="text-[11px] font-bold text-red-400 uppercase tracking-widest">
+              Sofortige Aufmerksamkeit ({sortedAttention.length})
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            {sortedAttention.slice(0, 5).map(inc => {
+              const sev = SEVERITY_STYLES[inc.severity] ?? SEVERITY_STYLES.low;
+              return (
+                <button
+                  key={inc.id}
+                  onClick={() => setExpandedId(expandedId === inc.id ? null : inc.id)}
+                  className="w-full flex items-center gap-2 rounded-lg bg-white/3 hover:bg-white/5 px-3 py-2 text-left transition-colors"
+                >
+                  <span className={cn("text-[8px] font-bold px-1.5 py-px rounded border shrink-0", sev.bg, sev.text, sev.border)}>
+                    {sev.label}
+                  </span>
+                  <p className="text-[11px] text-white font-medium truncate flex-1">{inc.title}</p>
+                  {isRevenueImpact(inc) && (
+                    <span className="text-[8px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-px rounded shrink-0">Umsatz</span>
+                  )}
+                  {inc.status === "escalated" && (
+                    <span className="text-[8px] font-bold text-rose-400 bg-rose-500/10 px-1.5 py-px rounded shrink-0">ESKALIERT</span>
+                  )}
+                  {inc.needs_manual_review && inc.status === "open" && (
+                    <span className="text-[8px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-px rounded shrink-0">REVIEW</span>
+                  )}
+                  <ChevronRight className="w-3 h-3 text-[#444] shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Incident Grouping by Category ─────────────────────────────── */}
+      {groupedCounts.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          {groupedCounts.map(g => {
+            const Icon = g.icon;
+            return (
+              <div key={g.key} className={cn(
+                "rounded-xl border px-3 py-2.5",
+                g.critical > 0 ? "border-red-500/20 bg-red-500/3" :
+                g.open > 0 ? "border-amber-500/15 bg-amber-500/3" :
+                "border-white/6 bg-white/2"
+              )}>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Icon className={cn("w-3 h-3", g.open > 0 ? "text-amber-400" : "text-[#555]")} />
+                  <p className="text-[10px] font-bold text-[#888] truncate">{g.label}</p>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className={cn("text-base font-bold", g.open > 0 ? "text-amber-400" : "text-emerald-400")}>{g.open}</span>
+                  <span className="text-[9px] text-[#444]">offen</span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 text-[9px]">
+                  {g.critical > 0 && <span className="text-red-400 font-bold">{g.critical} krit.</span>}
+                  {g.high > 0 && <span className="text-rose-400 font-bold">{g.high} hoch</span>}
+                  {g.healed > 0 && <span className="text-emerald-400">{g.healed} geheilt</span>}
+                  {g.open === 0 && g.healed === 0 && <span className="text-[#333]">{g.total} gesamt</span>}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Healing stats breakdown */}
-      {s && s.healingStats && s.healingStats.length > 0 && (
-        <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3">
-          <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-2">Healing-Aktionen Übersicht</p>
-          <div className="flex flex-wrap gap-2">
-            {(s.healingStats as any[]).map((hs: any) => (
-              <div key={hs.healing_action_type} className="flex items-center gap-1.5 text-[10px]">
-                <span className="text-[#666] font-medium">{HEALING_LABELS[hs.healing_action_type] ?? hs.healing_action_type}:</span>
-                <span className="text-emerald-400 font-bold">{hs.succeeded} OK</span>
-                {parseInt(hs.failed) > 0 && <span className="text-rose-400 font-bold">{hs.failed} fehlg.</span>}
+      {/* ── Auto-Fix Visibility ───────────────────────────────────────── */}
+      {s && (s.counts.autoHealedTotal > 0 || s.counts.retryExhausted > 0) && (
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-emerald-500/12 bg-emerald-500/3 px-3 py-2.5 text-center">
+            <p className="text-sm font-bold text-emerald-400">{s.counts.autoHealedTotal}</p>
+            <p className="text-[9px] text-[#555] font-medium mt-0.5">Auto-Repariert</p>
+            {s.healingStats && s.healingStats.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-1 mt-1.5">
+                {(s.healingStats as any[]).filter((h: any) => parseInt(h.succeeded) > 0).map((h: any) => (
+                  <span key={h.healing_action_type} className="text-[8px] text-emerald-400/70">
+                    {HEALING_LABELS[h.healing_action_type] ?? h.healing_action_type} ({h.succeeded})
+                  </span>
+                ))}
               </div>
-            ))}
+            )}
+          </div>
+          <div className="rounded-xl border border-amber-500/12 bg-amber-500/3 px-3 py-2.5 text-center">
+            <p className="text-sm font-bold text-amber-400">{s.counts.pendingReview}</p>
+            <p className="text-[9px] text-[#555] font-medium mt-0.5">Fix versucht — Review nötig</p>
+          </div>
+          <div className="rounded-xl border border-rose-500/12 bg-rose-500/3 px-3 py-2.5 text-center">
+            <p className="text-sm font-bold text-rose-400">{s.counts.escalated + s.counts.retryExhausted}</p>
+            <p className="text-[9px] text-[#555] font-medium mt-0.5">Nicht lösbar — Eskaliert</p>
           </div>
         </div>
       )}
 
-      {/* System areas breakdown */}
-      {s && s.systemAreas.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {(s.systemAreas as any[]).map((area: any) => (
-            <span
-              key={area.system_area}
-              className={cn(
-                "text-[10px] px-2 py-0.5 rounded-full border font-medium",
-                parseInt(area.open_count) > 0
-                  ? "text-amber-400 bg-amber-500/8 border-amber-500/15"
-                  : "text-[#444] bg-white/3 border-white/6"
-              )}
-            >
-              {AREA_LABELS[area.system_area] ?? area.system_area}: {area.open_count} offen
-              {parseInt(area.healed_count) > 0 && <> · <span className="text-emerald-400">{area.healed_count} geheilt</span></>}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Command center filter tabs */}
-      <div className="flex flex-wrap gap-1">
+      {/* ── Filter Tabs ───────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-1 border-b border-white/5 pb-2">
         {filterTabs.map(({ key, label, count, color }) => (
           <button
             key={key}
-            onClick={() => setFilter(key)}
+            onClick={() => { setFilter(key); setExpandedId(null); }}
             className={cn(
               "flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all",
               filter === key
@@ -2340,7 +2717,7 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
         ))}
       </div>
 
-      {/* Incident feed */}
+      {/* ── Incident Feed ─────────────────────────────────────────────── */}
       {incidentsQuery.isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl bg-white/3 animate-pulse" />)}
@@ -2349,212 +2726,55 @@ function FounderOpsCenter({ founderKey }: { founderKey: string }) {
         <div className="rounded-2xl border border-white/6 bg-white/2 p-8 text-center">
           <Shield className="w-8 h-8 text-emerald-400/30 mx-auto mb-3" />
           <p className="text-sm text-[#555]">
-            {filter === "critical_now" ? "Keine kritischen Incidents — Plattform ist stabil." :
+            {filter === "attention" ? "Keine Probleme erfordern Aufmerksamkeit — Plattform ist stabil." :
              filter === "needs_review" ? "Keine Incidents benötigen manuelle Prüfung." :
              filter === "auto_healed" ? "Noch keine Auto-Reparaturen durchgeführt." :
              filter === "billing" ? "Keine Billing-Incidents vorhanden." :
              filter === "open" ? "Keine offenen Incidents — Plattform ist gesund." :
+             filter === "escalated" ? "Keine eskalierten Incidents." :
              "Keine Incidents in dieser Kategorie."}
           </p>
           <p className="text-[10px] text-[#333] mt-1">
-            Führe einen Health Check durch um die Plattform zu prüfen.
+            Health Check durchführen um die Plattform zu prüfen.
           </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {incidents.map((inc) => {
-            const sev = SEVERITY_STYLES[inc.severity] ?? SEVERITY_STYLES.low;
-            const isExpanded = expandedId === inc.id;
-
-            return (
-              <div
-                key={inc.id}
-                className={cn(
-                  "rounded-xl border bg-white/2 overflow-hidden transition-all",
-                  inc.auto_healed ? "border-emerald-500/15" :
-                  inc.status === "resolved" ? "border-white/4 opacity-60" :
-                  inc.status === "escalated" ? "border-rose-500/20" :
-                  "border-white/6"
-                )}
+          {highPrioIncidents.map(renderIncidentCard)}
+          {lowPrioIncidents.length > 0 && (
+            <>
+              <button
+                onClick={() => setCollapsedLow(!collapsedLow)}
+                className="w-full flex items-center gap-2 text-[10px] text-[#444] hover:text-[#888] py-1.5 transition-colors"
               >
-                {/* Incident header */}
-                <button
-                  onClick={() => setExpandedId(isExpanded ? null : inc.id)}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-white/2 transition-colors"
-                >
-                  <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0", sev.bg, sev.text, sev.border)}>
-                    {sev.label}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-white truncate">{inc.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-[#444]">
-                        {AREA_LABELS[inc.system_area] ?? inc.system_area}
-                      </span>
-                      {inc.affected_city && (
-                        <span className="text-[10px] text-[#333]">{inc.affected_city}</span>
-                      )}
-                      <span className="text-[10px] text-[#333]">
-                        {new Date(inc.detected_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </div>
-                  </div>
-                  {inc.auto_healed && (
-                    <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
-                      AUTO-FIX
-                    </span>
-                  )}
-                  {inc.retry_count > 0 && !inc.auto_healed && (
-                    <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full shrink-0">
-                      RETRY {inc.retry_count}/{inc.max_retries}
-                    </span>
-                  )}
-                  {inc.needs_manual_review && inc.status === "open" && !inc.auto_healed && (
-                    <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">
-                      REVIEW
-                    </span>
-                  )}
-                  <span className={cn(
-                    "text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0",
-                    inc.status === "open" ? "text-amber-400 bg-amber-500/8"
-                    : inc.status === "resolved" ? "text-emerald-400 bg-emerald-500/8"
-                    : inc.status === "escalated" ? "text-rose-400 bg-rose-500/8"
-                    : "text-[#444] bg-white/5"
-                  )}>
-                    {inc.status === "open" ? "Offen" : inc.status === "resolved" ? "Gelöst" : inc.status === "escalated" ? "Eskaliert" : "Verworfen"}
-                  </span>
-                  <ChevronDown className={cn("w-3.5 h-3.5 text-[#444] transition-transform shrink-0", isExpanded && "rotate-180")} />
-                </button>
-
-                {/* Expanded details */}
-                {isExpanded && (
-                  <div className="px-4 pb-4 pt-1 border-t border-white/4 space-y-3">
-                    {/* Technical summary */}
-                    <div>
-                      <p className="text-[9px] text-[#444] uppercase tracking-widest font-bold mb-1">Technische Zusammenfassung</p>
-                      <p className="text-[11px] text-[#888] leading-relaxed">{inc.technical_summary}</p>
-                    </div>
-
-                    {/* Detail grid */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {inc.anomaly_detected && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Anomalie erkannt</p>
-                          <p className="text-[10px] text-rose-400 mt-0.5">{inc.anomaly_detected}</p>
-                        </div>
-                      )}
-                      {inc.billing_truth && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Billing-Wahrheit</p>
-                          <p className="text-[10px] text-[#888] mt-0.5">{inc.billing_truth}</p>
-                        </div>
-                      )}
-                      {inc.platform_truth && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Plattform-Wahrheit</p>
-                          <p className="text-[10px] text-[#888] mt-0.5">{inc.platform_truth}</p>
-                        </div>
-                      )}
-                      {inc.auto_action_taken && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Automatische Aktion</p>
-                          <p className={cn("text-[10px] mt-0.5", inc.auto_healed ? "text-emerald-400" : "text-[#888]")}>{inc.auto_action_taken}</p>
-                        </div>
-                      )}
-                      {inc.recovery_result && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Recovery-Ergebnis</p>
-                          <p className={cn("text-[10px] mt-0.5", inc.auto_healed ? "text-emerald-400" : inc.recovery_result.includes("fehlgeschlagen") || inc.recovery_result.includes("FEHL") ? "text-rose-400" : "text-[#888]")}>{inc.recovery_result}</p>
-                        </div>
-                      )}
-                      {inc.affected_entity && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Betroffene Entität</p>
-                          <p className="text-[10px] text-[#888] mt-0.5">{inc.affected_entity}</p>
-                        </div>
-                      )}
-                      {inc.healing_action_type && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Healing-Typ</p>
-                          <p className="text-[10px] text-emerald-400 mt-0.5">{HEALING_LABELS[inc.healing_action_type] ?? inc.healing_action_type}</p>
-                        </div>
-                      )}
-                      {inc.retry_count > 0 && (
-                        <div className="rounded-lg bg-white/3 px-3 py-2">
-                          <p className="text-[9px] text-[#444] font-bold">Retry-Status</p>
-                          <p className="text-[10px] text-blue-400 mt-0.5">
-                            {inc.retry_count}/{inc.max_retries} Versuche
-                            {inc.last_retry_at && <> · Letzter: {new Date(inc.last_retry_at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</>}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Recommended action — enhanced guidance block */}
-                    {inc.recommended_action && (
-                      <div className={cn(
-                        "rounded-lg border px-3 py-2",
-                        inc.auto_healed
-                          ? "bg-emerald-500/5 border-emerald-500/15"
-                          : inc.needs_manual_review
-                          ? "bg-amber-500/5 border-amber-500/15"
-                          : "bg-violet-500/5 border-violet-500/15"
-                      )}>
-                        <p className={cn(
-                          "text-[9px] font-bold uppercase tracking-widest",
-                          inc.auto_healed ? "text-emerald-400" : inc.needs_manual_review ? "text-amber-400" : "text-violet-400"
-                        )}>
-                          {inc.auto_healed ? "Status: Auto-Reparatur erfolgreich" : inc.needs_manual_review ? "Founder-Aktion erforderlich" : "Empfohlene Aktion"}
-                        </p>
-                        <p className="text-[11px] text-[#888] mt-1 leading-relaxed">{inc.recommended_action}</p>
-                      </div>
-                    )}
-
-                    {/* Action buttons — only for non-auto-healed open incidents */}
-                    {inc.status === "open" && !inc.auto_healed && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => updateIncident.mutate({ id: inc.id, status: "resolved" })}
-                          className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/15 transition-colors"
-                        >
-                          <CheckCircle className="w-3 h-3" /> Als gelöst markieren
-                        </button>
-                        <button
-                          onClick={() => updateIncident.mutate({ id: inc.id, status: "escalated" })}
-                          className="flex items-center gap-1 text-[10px] font-bold text-rose-400 bg-rose-500/8 border border-rose-500/20 px-3 py-1.5 rounded-lg hover:bg-rose-500/15 transition-colors"
-                        >
-                          <AlertTriangle className="w-3 h-3" /> Eskalieren
-                        </button>
-                        <button
-                          onClick={() => updateIncident.mutate({ id: inc.id, status: "dismissed" })}
-                          className="flex items-center gap-1 text-[10px] text-[#444] hover:text-[#888] px-2 py-1.5 transition-colors"
-                        >
-                          <X className="w-3 h-3" /> Verwerfen
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                <div className="flex-1 h-px bg-white/5" />
+                <span className="font-medium shrink-0">
+                  {lowPrioIncidents.length} niedrige Priorität {collapsedLow ? "anzeigen" : "ausblenden"}
+                </span>
+                <ChevronDown className={cn("w-3 h-3 transition-transform shrink-0", !collapsedLow && "rotate-180")} />
+                <div className="flex-1 h-px bg-white/5" />
+              </button>
+              {!collapsedLow && lowPrioIncidents.map(renderIncidentCard)}
+            </>
+          )}
         </div>
       )}
 
-      {/* Audit trail & system info */}
-      <div className="rounded-2xl border border-white/4 bg-white/1 px-5 py-4 space-y-2">
-        <p className="text-[11px] text-[#444] leading-relaxed">
-          <span className="text-[#666] font-semibold">Self-Healing Ops Layer v2:</span>
-          {" "}Erkennung + sichere Auto-Reparatur + Billing-Abgleich + Auto-Retry + Founder-Aktionsführung.
-          Alle Aktionen werden mit vollem Audit-Trail protokolliert.
-          Keine destruktiven Aktionen ohne manuelle Prüfung.
-        </p>
-        <div className="flex flex-wrap gap-3 text-[9px] text-[#333]">
-          <span>6 Check-Kategorien</span>
-          <span>5 Healing-Aktionstypen</span>
-          <span>Auto-Retry bis 3x</span>
-          <span>10-Min Intervall-Checks</span>
-          <span>Billing-Wahrheit vs Plattform-Wahrheit</span>
+      {/* ── System Footer ─────────────────────────────────────────────── */}
+      <div className="rounded-xl border border-white/4 bg-white/1 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-3 h-3 text-[#333]" />
+            <span className="text-[10px] text-[#444] font-semibold">Self-Healing Ops Layer v2</span>
+          </div>
+          <div className="flex flex-wrap gap-3 text-[9px] text-[#333]">
+            <span>6 Check-Kategorien</span>
+            <span>5 Healing-Aktionstypen</span>
+            <span>Auto-Retry bis 3x</span>
+            <span>10-Min Auto-Checks</span>
+            <span>Billing vs Plattform Wahrheit</span>
+            <span>Keine destruktiven Auto-Aktionen</span>
+          </div>
         </div>
       </div>
     </div>

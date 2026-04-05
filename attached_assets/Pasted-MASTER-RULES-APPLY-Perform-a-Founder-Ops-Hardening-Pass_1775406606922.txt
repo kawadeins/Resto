@@ -1,0 +1,294 @@
+MASTER RULES APPLY
+
+Perform a "Founder Ops Hardening Pass" on the existing Founder Ops / Watchdog / Self-Healing system inside RestoMaster.
+
+IMPORTANT:
+Do NOT rebuild the system.
+Do NOT redesign the entire founder dashboard.
+Do NOT remove existing functionality.
+
+This is a refinement and hardening pass to transform the Founder Ops tab into a true operational command center.
+
+========================
+GOAL
+========================
+
+Upgrade the Founder Ops system so the founder can instantly understand:
+
+- what is happening
+- what is broken
+- what is fixed
+- what needs attention now
+- what affects revenue
+- what requires action
+
+The system should feel like:
+
+👉 Mission Control  
+👉 Revenue Protection Center  
+👉 Platform Brain Interface  
+
+========================
+1. INCIDENT PRIORITY SYSTEM (CRITICAL)
+========================
+
+Ensure incidents are clearly prioritized:
+
+- Critical
+- High
+- Medium
+- Low
+
+Sort by:
+- severity first
+- then recency
+
+Add visual clarity:
+- color coding
+- clear labels
+- top priority section
+
+Founder must see critical issues immediately.
+
+========================
+2. INCIDENT GROUPING
+========================
+
+Group incidents into clear sections:
+
+- Billing / Payments
+- Premium / Subscriptions
+- Boost / Monetization
+- Platform Integrity
+- Abuse / Fraud Risk
+- System Health
+
+Each group should show:
+- count
+- severity distribution
+
+This helps scanning.
+
+========================
+3. ACTION-FOCUSED INCIDENT CARDS
+========================
+
+Upgrade each incident card to clearly show:
+
+- what happened (simple language)
+- why it matters (impact)
+- what system did (auto-repair or not)
+- current status
+- recommended action (clear and short)
+
+Example format:
+
+- Issue: Premium not activated after valid payment  
+- Impact: business visibility affected  
+- Auto-action: attempted sync → success  
+- Status: resolved  
+- Action: no action required  
+
+OR
+
+- Action: review billing webhook configuration  
+
+========================
+4. FOUNDER ACTION PANEL (VERY IMPORTANT)
+========================
+
+Add a top-level "What needs your attention" panel.
+
+Show:
+
+- critical incidents requiring action
+- high-risk unresolved issues
+- manual review queue (top items)
+
+Each item should be clickable and actionable.
+
+This is the founder’s entry point.
+
+========================
+5. AUTO-FIX VISIBILITY
+========================
+
+Clearly show:
+
+- what the system auto-fixed
+- what it attempted but failed
+- what is still unresolved
+
+Add sections:
+
+- Auto-Fixed
+- Attempted Fix (Needs Review)
+- Unresolved Critical
+
+Founder must trust the system.
+
+========================
+6. REVENUE IMPACT HIGHLIGHT
+========================
+
+Mark incidents that impact money:
+
+Examples:
+- billing mismatch
+- failed payments
+- boost not delivered
+- premium not activated
+
+Add tag:
+
+👉 "Revenue Impact"
+
+These should be highlighted strongly.
+
+========================
+7. REAL-TIME PLATFORM HEALTH BAR
+========================
+
+Add a clear top-level health indicator:
+
+- Gesund (Healthy)
+- Warnung (Warning)
+- Beeinträchtigt (Degraded)
+- Kritisch (Critical)
+
+Base this on:
+- incident severity
+- active critical issues
+- billing integrity
+- system stability
+
+Add subtle live pulse indicator.
+
+========================
+8. QUICK ACTION CONTROLS
+========================
+
+Allow founder to quickly:
+
+- mark resolved
+- escalate
+- send to manual review
+- re-run check for specific incident
+- trigger re-sync (safe)
+
+Keep actions simple and safe.
+
+========================
+9. INCIDENT TIMELINE VIEW
+========================
+
+Add a simple timeline view:
+
+- when issue started
+- what system did
+- what changed
+- current status
+
+This helps debugging and trust.
+
+========================
+10. SMART SUMMARY BLOCK
+========================
+
+At top of Ops tab, show a summary:
+
+Examples:
+
+- "3 critical issues need attention"
+- "5 issues auto-resolved"
+- "2 billing mismatches detected"
+- "System is stable"
+
+Keep it short and clear.
+
+========================
+11. SIGNAL vs NOISE CONTROL
+========================
+
+Reduce noise:
+
+- collapse low-priority incidents
+- highlight important ones
+- avoid overwhelming lists
+
+Founder must not feel lost.
+
+========================
+12. MANUAL REVIEW QUEUE HARDENING
+========================
+
+Improve manual review section:
+
+- show priority
+- show reason
+- show risk level
+- show recommended action
+
+Make it easy to act.
+
+========================
+13. TRUST & TRANSPARENCY
+========================
+
+The system must clearly communicate:
+
+- what it knows
+- what it fixed
+- what it is unsure about
+
+No fake confidence.
+No hidden actions.
+
+========================
+14. PERFORMANCE & CLARITY
+========================
+
+Ensure:
+
+- fast load
+- clean UI
+- no clutter
+- no lag
+
+Founder dashboard must feel responsive.
+
+========================
+15. DO NOT OVERCOMPLICATE
+========================
+
+Do NOT:
+- build enterprise monitoring suite
+- add too many charts
+- overload with data
+
+Focus on:
+- clarity
+- actionability
+- trust
+- speed
+- priority
+
+========================
+FINAL GOAL
+========================
+
+The Founder Ops tab should become a real mission control where:
+
+- problems are clear
+- actions are obvious
+- risks are visible
+- revenue is protected
+- system health is understood instantly
+
+The founder should feel:
+
+👉 “I understand my system in seconds”  
+👉 “I know what to fix”  
+👉 “Nothing critical is hidden”  
+
+This is the final hardening layer of the Ops system.
