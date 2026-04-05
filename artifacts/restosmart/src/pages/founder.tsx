@@ -2012,6 +2012,7 @@ function Dashboard({ founderKey }: { founderKey: string }) {
     discovery: Search, map: MapPin, smart_offers: Tag, user_profiles: Users,
     reservations: Clock, loyalty: Award, conversion: BarChart3, notifications: Mail,
     auth: Lock, founder_dashboard: Crown,
+    launch_control: Rocket, heat_map: Flame, auto_plans: ClipboardList,
   };
 
   function FounderBrainCenter({ founderKey }: { founderKey: string }) {

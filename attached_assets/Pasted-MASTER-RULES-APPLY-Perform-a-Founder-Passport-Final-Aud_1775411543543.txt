@@ -1,0 +1,281 @@
+MASTER RULES APPLY
+
+Perform a "Founder Passport Final Audit + Full System Binding Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+This pass MUST focus ONLY on the Founder Secret Dashboard (Founder Passport / Super Admin layer).
+
+Do NOT:
+- modify user dashboard
+- modify business/restaurant dashboard
+- add features outside founder system
+- redesign UI
+
+This is a final validation + binding + readiness pass ONLY for the founder-level control system.
+
+========================
+GOAL
+========================
+
+Ensure that the Founder Passport (secret dashboard) is:
+
+- fully connected to all critical systems
+- receiving real data (not placeholders)
+- showing truthful system states
+- correctly reflecting platform health
+- able to act as the central control brain
+
+After validation:
+- fix missing connections
+- finalize system bindings
+- confirm real operational readiness
+
+========================
+1. FOUNDER PASSPORT EXISTENCE CHECK
+========================
+
+Verify:
+
+- founder route exists (e.g. /founder or secure equivalent)
+- access is properly protected
+- only authorized founder can access
+- dashboard loads reliably
+- no broken components
+
+========================
+2. MASTER BRAIN PRESENCE CHECK
+========================
+
+Inside Founder Dashboard verify:
+
+- Master Brain section exists
+- system overview is visible
+- systems list is populated
+- no empty placeholders
+- real-time or refreshed data is shown
+
+========================
+3. SYSTEM CONNECTION AUDIT (CRITICAL)
+========================
+
+For EACH core system, verify real connection to Founder Passport:
+
+Systems:
+
+- Premium
+- Billing / Payments
+- Boost / Ads
+- Monetization
+- Competition
+- Growth
+- Self-Serve
+- Ops / Watchdog
+- Self-Healing
+- Launch Control
+- Auth
+- Discovery
+- Map
+- Smart Offers
+- Social
+- Heat Map
+- Instant Plans
+- Auto Plans
+
+For each system, classify:
+
+- Fully Connected
+- Partially Connected
+- Not Connected
+- Connected but no data
+
+========================
+4. FORCE FINAL BINDING
+========================
+
+For any system that is:
+
+- partially connected
+- not connected
+- missing signals
+
+Perform FINAL binding by:
+
+- connecting its status output to Master Brain
+- connecting its incidents to Ops feed
+- connecting its health to system status
+- connecting its risk to priority logic
+
+Do NOT fake connections.
+Only bind real signals.
+
+========================
+5. SYSTEM STATUS VALIDATION
+========================
+
+Verify each system card shows real:
+
+- name
+- role
+- health color (green/yellow/red)
+- speed/performance
+- current state
+- last checked
+
+Reject:
+- static values
+- hardcoded "healthy"
+- missing indicators
+
+========================
+6. AUTO DECISION ENGINE CHECK
+========================
+
+Verify:
+
+- priority panel exists
+- shows top issues
+- prioritization is logical
+- billing/premium issues rank higher
+- system importance is respected
+
+If missing or weak:
+- fix priority scoring logic
+
+========================
+7. AUTO EXECUTION CHECK
+========================
+
+Verify:
+
+- safe auto-actions exist
+- actions are triggered when needed
+- actions are logged
+- results are visible
+
+Examples:
+- retry sync
+- fix premium mismatch
+- re-activate boost
+- reconcile billing
+
+If not active:
+- enable safe execution hooks
+
+========================
+8. OPS + INCIDENT INTEGRATION
+========================
+
+Verify:
+
+- incidents appear in founder dashboard
+- severity is correct
+- auto-healing results visible
+- unresolved issues visible
+- manual review queue exists
+
+========================
+9. BILLING TRUTH CHECK (CRITICAL)
+========================
+
+Verify:
+
+- payment state matches premium state
+- trial state is correct (14 days)
+- boost payments match delivery
+- no hidden mismatch
+
+If mismatch:
+- fix via reconciliation
+
+========================
+10. SPEED / HEALTH REALITY CHECK
+========================
+
+Ensure:
+
+- speed indicators are meaningful
+- health colors reflect reality
+- no fake green status
+
+========================
+11. FOUNDER CONTROL CAPABILITY
+========================
+
+Verify founder can:
+
+- view all systems
+- inspect issues
+- see priority
+- see auto-actions
+- understand what to do
+
+========================
+12. NO FAKE INTELLIGENCE
+========================
+
+Ensure:
+
+- no fake AI explanations
+- no fake analytics
+- no fake system health
+- no fake automation claims
+
+Everything must be real.
+
+========================
+13. FINAL CONSOLIDATION
+========================
+
+After audit:
+
+- bind all missing system outputs
+- remove broken or duplicate signals
+- ensure Master Brain receives all critical inputs
+- ensure Founder Passport reflects full platform truth
+
+========================
+14. FINAL REPORT (STRICT)
+========================
+
+Produce a final report:
+
+A. Fully connected systems  
+B. Systems fixed during binding  
+C. Systems still partial  
+D. Critical issues found  
+E. Auto-healing capabilities status  
+F. Billing integrity status  
+G. Founder dashboard quality  
+H. Any remaining risks  
+
+========================
+15. FINAL VERDICT
+========================
+
+Give one of:
+
+- ✅ READY FOR LAUNCH  
+- ⚠️ READY WITH MINOR RISKS  
+- ❌ NOT READY  
+
+NO overstatement allowed.
+
+========================
+FINAL GOAL
+========================
+
+Founder Passport becomes:
+
+- the real brain of the platform  
+- fully connected to all critical systems  
+- truthful and reliable  
+- operational and decision-ready  
+
+The founder should be able to:
+
+👉 open dashboard  
+👉 see everything  
+👉 trust everything  
+👉 act instantly  
+
+This is the final step before leaving build phase.

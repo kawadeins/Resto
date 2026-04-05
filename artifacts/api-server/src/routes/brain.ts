@@ -212,10 +212,12 @@ async function checkGrowthSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const newClaims = parseInt(r.new_claims) || 0;
   const claims7d = parseInt(r.claims_7d) || 0;
-  const conn = buildConnection(true, false, true, true, true);
+  const opsGrowth = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area IN ('growth','onboarding') OR title ILIKE '%claim%'`);
+    const opsG = (opsGrowth.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "growth", name: "Growth / Self-Serve",
+    return {
+      id: "growth", name: "Growth / Self-Serve",
     role: "Business-Onboarding, Self-Serve-Pipeline und Wachstumsmotor",
     health: claims7d === 0 ? "yellow" as SystemHealth : "green",
     speed: speedFromMs(speed), errorLevel: 0, riskLevel: claims7d === 0 ? 1 : 0,
@@ -225,8 +227,8 @@ async function checkGrowthSystem(): Promise<SystemSignal> {
     analysis: claims7d === 0 ? "Keine neuen Claims in 7 Tagen — Wachstum stagniert" : newClaims > 10 ? "Viele offene Claims — Pipeline-Kapazität prüfen" : "Wachstumspipeline aktiv",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: (parseInt(r.total_claims) || 0) > 0 ? Math.round((parseInt(r.onboarded) || 0) / parseInt(r.total_claims) * 100) : 0, errorRate: 0, activityLevel: claims7d, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { totalClaims: parseInt(r.total_claims) || 0, newClaims, onboarded: parseInt(r.onboarded) || 0, rejected: parseInt(r.rejected) || 0, claims7d },
+    incidents: { open: parseInt(opsG.open) || 0, healed: parseInt(opsG.healed) || 0, escalated: parseInt(opsG.escalated) || 0 },
+      details: { totalClaims: parseInt(r.total_claims) || 0, newClaims, onboarded: parseInt(r.onboarded) || 0, rejected: parseInt(r.rejected) || 0, claims7d },
     recommendedAction: newClaims > 5 ? "Offene Claims bearbeiten — Pipeline-Kapazität sicherstellen" : claims7d === 0 ? "Wachstumsstrategie evaluieren" : "Keine Aktion erforderlich",
   };
 }
@@ -238,10 +240,12 @@ async function checkCompetitionEngine(): Promise<SystemSignal> {
   `);
   const speed = Date.now() - t0;
   const r = (result.rows[0] as any) ?? {};
-  const conn = buildConnection(true, false, true, false, true);
+  const opsComp = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'competition'`);
+    const opsC = (opsComp.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "competition", name: "Competition Engine",
+    return {
+      id: "competition", name: "Competition Engine",
     role: "Wettbewerbsanalyse, Sichtbarkeit und Marktpositionierung",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -249,8 +253,8 @@ async function checkCompetitionEngine(): Promise<SystemSignal> {
     analysis: "Wettbewerbsdaten aktuell",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: parseInt(r.active) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total: parseInt(r.total) || 0, active: parseInt(r.active) || 0, avgRating: parseFloat(r.avg_rating) || 0 },
+    incidents: { open: parseInt(opsC.open) || 0, healed: parseInt(opsC.healed) || 0, escalated: parseInt(opsC.escalated) || 0 },
+      details: { total: parseInt(r.total) || 0, active: parseInt(r.active) || 0, avgRating: parseFloat(r.avg_rating) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -302,10 +306,12 @@ async function checkCityExpansion(): Promise<SystemSignal> {
   const rows = result.rows as any[];
   const totalCities = rows.length;
   const totalBiz = rows.reduce((s: number, r: any) => s + parseInt(r.count), 0);
-  const conn = buildConnection(true, false, true, false, true);
+  const opsCities = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'city_expansion'`);
+    const opsCi = (opsCities.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "cities", name: "City Expansion",
+    return {
+      id: "cities", name: "City Expansion",
     role: "Städte-Expansion, Markterschließung und regionale Penetration",
     health: totalCities >= 3 ? "green" : "yellow",
     speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
@@ -314,8 +320,8 @@ async function checkCityExpansion(): Promise<SystemSignal> {
     analysis: totalCities >= 5 ? "Multi-City-Expansion läuft erfolgreich" : totalCities >= 3 ? "Gute Stadtabdeckung — weitere Expansion möglich" : "Wenige Städte aktiv — Expansionspotenzial",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: totalCities, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { totalCities, totalBiz, breakdown: rows.map((r: any) => ({ city: r.city, count: parseInt(r.count) })) },
+    incidents: { open: parseInt(opsCi.open) || 0, healed: parseInt(opsCi.healed) || 0, escalated: parseInt(opsCi.escalated) || 0 },
+      details: { totalCities, totalBiz, breakdown: rows.map((r: any) => ({ city: r.city, count: parseInt(r.count) })) },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -330,10 +336,12 @@ async function checkSocialSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const fr = (friendRes.rows[0] as any) ?? {};
   const activities24h = parseInt(r.activities_24h) || 0;
-  const conn = buildConnection(true, false, true, false, true);
+  const opsSocial = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'social'`);
+    const opsSo = (opsSocial.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "social", name: "Social / Freunde",
+    return {
+      id: "social", name: "Social / Freunde",
     role: "Soziales Netzwerk, Freundschaften und Gruppen-Features",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -341,8 +349,8 @@ async function checkSocialSystem(): Promise<SystemSignal> {
     analysis: activities24h === 0 ? "Keine soziale Aktivität in 24h — Engagement niedrig" : "Social-System aktiv",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: activities24h, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { totalActivities: parseInt(r.total_activities) || 0, activities24h, totalFriendships: parseInt(fr.total) || 0 },
+    incidents: { open: parseInt(opsSo.open) || 0, healed: parseInt(opsSo.healed) || 0, escalated: parseInt(opsSo.escalated) || 0 },
+      details: { totalActivities: parseInt(r.total_activities) || 0, activities24h, totalFriendships: parseInt(fr.total) || 0 },
     recommendedAction: activities24h === 0 ? "Engagement-Strategie prüfen — Social-Aktivierung fördern" : "Keine Aktion erforderlich",
   };
 }
@@ -357,10 +365,12 @@ async function checkInstantPlansSystem(): Promise<SystemSignal> {
   `);
   const speed = Date.now() - t0;
   const r = (result.rows[0] as any) ?? {};
-  const conn = buildConnection(true, false, true, false, true);
+  const opsPlans = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'instant_plans'`);
+    const opsPl = (opsPlans.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "instant_plans", name: "Instant / Auto-Pläne",
+    return {
+      id: "instant_plans", name: "Instant / Auto-Pläne",
     role: "Spontane Treffpunkt-Planung und Gruppen-Koordination",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -368,8 +378,8 @@ async function checkInstantPlansSystem(): Promise<SystemSignal> {
     analysis: "Instant-Plan-System aktiv",
     importanceWeight: "low", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: parseInt(r.plans_24h) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total: parseInt(r.total) || 0, openPlans: parseInt(r.open_plans) || 0, joined: parseInt(r.joined) || 0, plans24h: parseInt(r.plans_24h) || 0 },
+    incidents: { open: parseInt(opsPl.open) || 0, healed: parseInt(opsPl.healed) || 0, escalated: parseInt(opsPl.escalated) || 0 },
+      details: { total: parseInt(r.total) || 0, openPlans: parseInt(r.open_plans) || 0, joined: parseInt(r.joined) || 0, plans24h: parseInt(r.plans_24h) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -385,10 +395,12 @@ async function checkReviewsSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const negative = parseInt(r.negative) || 0;
   const total = parseInt(r.total) || 0;
-  const conn = buildConnection(true, false, true, true, true);
+  const opsReviews = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'reviews'`);
+    const opsRv = (opsReviews.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "reviews", name: "Reviews / Reputation",
+    return {
+      id: "reviews", name: "Reviews / Reputation",
     role: "Kundenbewertungen, Reputationsmanagement und Feedback",
     health: negative > total * 0.3 ? "red" : negative > total * 0.1 ? "yellow" : "green",
     speed: speedFromMs(speed), errorLevel: 0, riskLevel: negative > total * 0.2 ? 2 : 0,
@@ -397,8 +409,8 @@ async function checkReviewsSystem(): Promise<SystemSignal> {
     analysis: negative > total * 0.2 ? "Hohe Rate negativer Bewertungen — Reputationsrisiko" : "Bewertungsprofil gesund",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: total > 0 ? Math.round(((total - negative) / total) * 100) : 100, errorRate: 0, activityLevel: parseInt(r.recent) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total, avgRating: parseFloat(r.avg_rating) || 0, negative, recent: parseInt(r.recent) || 0 },
+    incidents: { open: parseInt(opsRv.open) || 0, healed: parseInt(opsRv.healed) || 0, escalated: parseInt(opsRv.escalated) || 0 },
+      details: { total, avgRating: parseFloat(r.avg_rating) || 0, negative, recent: parseInt(r.recent) || 0 },
     recommendedAction: negative > total * 0.2 ? "Negative Bewertungen prüfen — Qualitätsmanagement verbessern" : "Keine Aktion erforderlich",
   };
 }
@@ -415,7 +427,7 @@ async function checkDataIntegrity(): Promise<SystemSignal> {
   const bad = parseInt((badRatings.rows[0] as any)?.count) || 0;
   const ops = (opsRes.rows[0] as any) ?? {};
   const openOps = parseInt(ops.open) || 0;
-  const conn = buildConnection(true, true, true, false, true);
+  const conn = buildConnection(true, true, true, true, true);
 
   return {
     id: "data_integrity", name: "Datenintegrität",
@@ -480,20 +492,22 @@ async function checkMonetizationEngine(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const s = (subsRes.rows[0] as any) ?? {};
   const revenue = parseFloat(r.revenue_today) || 0;
-  const conn = buildConnection(true, false, true, true, true);
+  const opsMon = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area IN ('monetization','billing_integrity','billing_reconciliation')`);
+    const opsM = (opsMon.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "monetization", name: "Monetarisierung",
+    return {
+      id: "monetization", name: "Monetarisierung",
     role: "Umsatzsteuerung, Subscription-Einnahmen und Kampagnen-Revenue",
-    health: revenue === 0 && (parseInt(r.active) || 0) > 0 ? "yellow" : "green",
-    speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
+    health: (parseInt(opsM.open) || 0) > 0 ? "yellow" : revenue === 0 && (parseInt(r.active) || 0) > 0 ? "yellow" : "green",
+    speed: speedFromMs(speed), errorLevel: parseInt(opsM.open) || 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
     summary: `€${revenue.toFixed(2)} Einnahmen heute, ${parseInt(s.total) || 0} aktive Abos`,
     analysis: revenue > 0 ? "Monetarisierung aktiv — Einnahmen fließen" : "Keine Einnahmen heute — prüfen ob korrekt",
     importanceWeight: "high", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: parseInt(r.active) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { revenueToday: revenue, budgetTotal: parseFloat(r.budget_total) || 0, activeSubs: parseInt(s.total) || 0 },
+    incidents: { open: parseInt(opsM.open) || 0, healed: parseInt(opsM.healed) || 0, escalated: parseInt(opsM.escalated) || 0 },
+      details: { revenueToday: revenue, budgetTotal: parseFloat(r.budget_total) || 0, activeSubs: parseInt(s.total) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -513,10 +527,12 @@ async function checkDiscoverySystem(): Promise<SystemSignal> {
   const visible = parseInt(r.visible) || 0;
   const discoverable = parseInt(r.discoverable) || 0;
   const withMenu = parseInt(m.with_menu) || 0;
-  const conn = buildConnection(true, false, true, false, true);
+  const opsDisc = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'discovery'`);
+    const opsDi = (opsDisc.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "discovery", name: "Discovery / Homepage",
+    return {
+      id: "discovery", name: "Discovery / Homepage",
     role: "Restaurant-Entdeckung, Suchranking und Homepage-Ergebnisse",
     health: discoverable < visible * 0.5 ? "yellow" : "green",
     speed: speedFromMs(speed), errorLevel: 0, riskLevel: visible - discoverable,
@@ -526,8 +542,8 @@ async function checkDiscoverySystem(): Promise<SystemSignal> {
     analysis: discoverable < visible * 0.5 ? "Viele Restaurants nicht auffindbar — Daten unvollständig" : "Discovery-System funktional",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: visible > 0 ? Math.round((discoverable / visible) * 100) : 100, errorRate: 0, activityLevel: visible, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total, visible, discoverable, withMenu },
+    incidents: { open: parseInt(opsDi.open) || 0, healed: parseInt(opsDi.healed) || 0, escalated: parseInt(opsDi.escalated) || 0 },
+      details: { total, visible, discoverable, withMenu },
     recommendedAction: discoverable < visible * 0.7 ? "Unvollständige Restaurant-Daten ergänzen" : "Keine Aktion erforderlich",
   };
 }
@@ -544,10 +560,12 @@ async function checkMapLocationSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const total = parseInt(r.total) || 0;
   const missing = parseInt(r.missing_coords) || 0;
-  const conn = buildConnection(true, false, true, false, true);
+  const opsMap = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area IN ('map','geolocation')`);
+    const opsMp = (opsMap.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "map", name: "Map / Geolocation",
+    return {
+      id: "map", name: "Map / Geolocation",
     role: "Kartenansicht, Standort-Genauigkeit und Nearby-Ergebnisse",
     health: missing > total * 0.3 ? "red" : missing > 0 ? "yellow" : "green",
     speed: speedFromMs(speed), errorLevel: missing, riskLevel: missing > total * 0.2 ? 2 : 0,
@@ -557,8 +575,8 @@ async function checkMapLocationSystem(): Promise<SystemSignal> {
     analysis: missing > 0 ? `${missing} Restaurant(s) ohne Geo-Daten — Kartenansicht unvollständig` : "Alle Standorte vollständig",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: total > 0 ? Math.round(((total - missing) / total) * 100) : 100, errorRate: missing, activityLevel: total, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total, withCoords: parseInt(r.with_coords) || 0, missingCoords: missing },
+    incidents: { open: parseInt(opsMp.open) || 0, healed: parseInt(opsMp.healed) || 0, escalated: parseInt(opsMp.escalated) || 0 },
+      details: { total, withCoords: parseInt(r.with_coords) || 0, missingCoords: missing },
     recommendedAction: missing > 0 ? "Fehlende Geo-Daten ergänzen" : "Keine Aktion erforderlich",
   };
 }
@@ -574,10 +592,12 @@ async function checkSmartOffersSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const active = parseInt(r.active) || 0;
   const expired = parseInt(r.expired) || 0;
-  const conn = buildConnection(true, false, true, false, true);
+  const opsOffers = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'smart_offers'`);
+    const opsOf = (opsOffers.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "smart_offers", name: "Smart Offers",
+    return {
+      id: "smart_offers", name: "Smart Offers",
     role: "Intelligente Angebote, Rabatte und Empfehlungen",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -585,8 +605,8 @@ async function checkSmartOffersSystem(): Promise<SystemSignal> {
     analysis: active > 0 ? "Angebotssystem aktiv" : "Keine aktiven Angebote — Angebotserstellung prüfen",
     importanceWeight: "low", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: active, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total: parseInt(r.total) || 0, active, expired },
+    incidents: { open: parseInt(opsOf.open) || 0, healed: parseInt(opsOf.healed) || 0, escalated: parseInt(opsOf.escalated) || 0 },
+      details: { total: parseInt(r.total) || 0, active, expired },
     recommendedAction: active === 0 ? "Angebotsstrategie aktivieren" : "Keine Aktion erforderlich",
   };
 }
@@ -603,10 +623,12 @@ async function checkUserProfileSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const total = parseInt(r.total) || 0;
   const new7d = parseInt(r.new_7d) || 0;
-  const conn = buildConnection(true, false, true, false, true);
+  const opsProf = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'user_profiles'`);
+    const opsPr = (opsProf.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "user_profiles", name: "User-Profile",
+    return {
+      id: "user_profiles", name: "User-Profile",
     role: "Kundenprofile, Registrierungen und Benutzerdaten",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -614,8 +636,8 @@ async function checkUserProfileSystem(): Promise<SystemSignal> {
     analysis: new7d > 0 ? "Nutzer-Registrierungen aktiv" : "Keine neuen Registrierungen in 7 Tagen",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: new7d, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total, new7d, withPhoto: parseInt(r.with_photo) || 0 },
+    incidents: { open: parseInt(opsPr.open) || 0, healed: parseInt(opsPr.healed) || 0, escalated: parseInt(opsPr.escalated) || 0 },
+      details: { total, new7d, withPhoto: parseInt(r.with_photo) || 0 },
     recommendedAction: new7d === 0 ? "Registrierungskanäle prüfen" : "Keine Aktion erforderlich",
   };
 }
@@ -633,10 +655,12 @@ async function checkReservationSystem(): Promise<SystemSignal> {
   const r = (result.rows[0] as any) ?? {};
   const cancelled = parseInt(r.cancelled) || 0;
   const total = parseInt(r.total) || 0;
-  const conn = buildConnection(true, false, true, false, true);
+  const opsRes2 = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'reservations'`);
+    const opsRe = (opsRes2.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "reservations", name: "Reservierungen",
+    return {
+      id: "reservations", name: "Reservierungen",
     role: "Buchungssystem, Verfügbarkeit und Tischplanung",
     health: cancelled > total * 0.3 ? "yellow" : "green",
     speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
@@ -645,8 +669,8 @@ async function checkReservationSystem(): Promise<SystemSignal> {
     analysis: cancelled > total * 0.3 ? "Hohe Stornierungsrate — prüfen" : "Buchungssystem normal",
     importanceWeight: "low", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: total > 0 ? Math.round(((total - cancelled) / total) * 100) : 100, errorRate: 0, activityLevel: parseInt(r.today) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total, confirmed: parseInt(r.confirmed) || 0, cancelled, today: parseInt(r.today) || 0 },
+    incidents: { open: parseInt(opsRe.open) || 0, healed: parseInt(opsRe.healed) || 0, escalated: parseInt(opsRe.escalated) || 0 },
+      details: { total, confirmed: parseInt(r.confirmed) || 0, cancelled, today: parseInt(r.today) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -660,10 +684,12 @@ async function checkLoyaltySystem(): Promise<SystemSignal> {
   `);
   const speed = Date.now() - t0;
   const r = (result.rows[0] as any) ?? {};
-  const conn = buildConnection(true, false, true, false, true);
+  const opsLoy = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'loyalty'`);
+    const opsLo = (opsLoy.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "loyalty", name: "Treueprogramm",
+    return {
+      id: "loyalty", name: "Treueprogramm",
     role: "Punkte-System, Kundenbindung und Belohnungen",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -671,8 +697,8 @@ async function checkLoyaltySystem(): Promise<SystemSignal> {
     analysis: (parseInt(r.active_7d) || 0) > 0 ? "Treueprogramm aktiv" : "Keine aktive Punkte-Vergabe",
     importanceWeight: "low", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: parseInt(r.active_7d) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total: parseInt(r.total) || 0, totalPoints: parseInt(r.total_points) || 0, active7d: parseInt(r.active_7d) || 0 },
+    incidents: { open: parseInt(opsLo.open) || 0, healed: parseInt(opsLo.healed) || 0, escalated: parseInt(opsLo.escalated) || 0 },
+      details: { total: parseInt(r.total) || 0, totalPoints: parseInt(r.total_points) || 0, active7d: parseInt(r.active_7d) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -691,10 +717,12 @@ async function checkConversionSystem(): Promise<SystemSignal> {
   const speed = Date.now() - t0;
   const r = (result.rows[0] as any) ?? {};
   const e = (eventsRes.rows[0] as any) ?? {};
-  const conn = buildConnection(true, false, true, false, true);
+  const opsConv = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'conversion'`);
+    const opsCv = (opsConv.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "conversion", name: "Conversion Intelligence",
+    return {
+      id: "conversion", name: "Conversion Intelligence",
     role: "A/B-Tests, Varianten-Optimierung und Auto-Win-Logik",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -702,8 +730,8 @@ async function checkConversionSystem(): Promise<SystemSignal> {
     analysis: (parseInt(r.mature) || 0) > 0 ? "A/B-Tests laufen — Daten werden gesammelt" : "Conversion-Tracking aktiv",
     importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: parseInt(e.total) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { totalVariants: parseInt(r.total_variants) || 0, winners: parseInt(r.winners) || 0, mature: parseInt(r.mature) || 0, events24h: parseInt(e.total) || 0 },
+    incidents: { open: parseInt(opsCv.open) || 0, healed: parseInt(opsCv.healed) || 0, escalated: parseInt(opsCv.escalated) || 0 },
+      details: { totalVariants: parseInt(r.total_variants) || 0, winners: parseInt(r.winners) || 0, mature: parseInt(r.mature) || 0, events24h: parseInt(e.total) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -718,10 +746,12 @@ async function checkNotificationSystem(): Promise<SystemSignal> {
   `);
   const speed = Date.now() - t0;
   const r = (result.rows[0] as any) ?? {};
-  const conn = buildConnection(true, false, true, false, true);
+  const opsNotif = await db.execute(sql`SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed, COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'notifications'`);
+    const opsNo = (opsNotif.rows[0] as any) ?? {};
+    const conn = buildConnection(true, true, true, true, true);
 
-  return {
-    id: "notifications", name: "Benachrichtigungen",
+    return {
+      id: "notifications", name: "Benachrichtigungen",
     role: "Push-Nachrichten, E-Mail-Benachrichtigungen und Alerts",
     health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
@@ -729,8 +759,8 @@ async function checkNotificationSystem(): Promise<SystemSignal> {
     analysis: "Benachrichtigungssystem funktional",
     importanceWeight: "low", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: parseInt(r.sent_24h) || 0, responseSpeed: speed },
-    incidents: { open: 0, healed: 0, escalated: 0 },
-    details: { total: parseInt(r.total) || 0, sent24h: parseInt(r.sent_24h) || 0, totalTargets: parseInt(r.total_targets) || 0 },
+    incidents: { open: parseInt(opsNo.open) || 0, healed: parseInt(opsNo.healed) || 0, escalated: parseInt(opsNo.escalated) || 0 },
+      details: { total: parseInt(r.total) || 0, sent24h: parseInt(r.sent_24h) || 0, totalTargets: parseInt(r.total_targets) || 0 },
     recommendedAction: "Keine Aktion erforderlich",
   };
 }
@@ -744,7 +774,7 @@ function checkAuthSystem(): SystemSignal {
     lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
     summary: "Founder-Key + localStorage aktiv",
     analysis: "Auth über Founder-Key und localStorage-basierte Zugangssteuerung — funktional, aber nicht produktionsreif",
-    importanceWeight: "critical", connectionStatus: "partially_connected", connectionDetails: conn,
+    importanceWeight: "critical", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
     metrics: { successRate: 100, errorRate: 0, activityLevel: 0, responseSpeed: 1 },
     incidents: { open: 0, healed: 0, escalated: 0 },
     details: { method: "founder_key_localStorage", productionReady: false },
@@ -769,7 +799,138 @@ function checkFounderDashboard(): SystemSignal {
   };
 }
 
-function calculatePriorityScore(system: SystemSignal): number {
+
+  async function checkLaunchControl(): Promise<SystemSignal> {
+    const t0 = Date.now();
+    const restaurantsRes = await db.execute(sql`
+      SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE is_active = true) as active,
+             COUNT(*) FILTER (WHERE city IS NOT NULL AND lat IS NOT NULL AND lng IS NOT NULL) as complete
+      FROM restaurants
+    `);
+    const claimsRes = await db.execute(sql`
+      SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE status = 'onboarded') as onboarded,
+             COUNT(*) FILTER (WHERE status = 'new') as pending
+      FROM business_claims
+    `);
+    const menuRes = await db.execute(sql`SELECT COUNT(*) as with_menu FROM menu_items`);
+    const opsRes = await db.execute(sql`
+      SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed,
+             COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents
+    `);
+    const speed = Date.now() - t0;
+    const r = (restaurantsRes.rows[0] as any) ?? {};
+    const c = (claimsRes.rows[0] as any) ?? {};
+    const m = (menuRes.rows[0] as any) ?? {};
+    const ops = (opsRes.rows[0] as any) ?? {};
+    const total = parseInt(r.total) || 0;
+    const active = parseInt(r.active) || 0;
+    const complete = parseInt(r.complete) || 0;
+    const withMenu = parseInt(m.with_menu) || 0;
+    const pending = parseInt(c.pending) || 0;
+    const openOps = parseInt(ops.open) || 0;
+    const completeness = total > 0 ? complete / total : 0;
+    const hasMenuItems = withMenu > 0 ? 1 : 0;
+    const launchScore = Math.round(((completeness * 0.6) + (hasMenuItems * 0.2) + (active > 0 ? 0.2 : 0)) * 100);
+    const conn = buildConnection(true, true, true, true, true);
+
+    return {
+      id: "launch_control", name: "Launch Control",
+      role: "Startbereitschaft, Onboarding-Vollständigkeit und Go-Live-Prüfung",
+      health: openOps > 2 ? "red" : openOps > 0 || launchScore < 40 ? "yellow" : launchScore >= 70 ? "green" : "yellow",
+      speed: speedFromMs(speed), errorLevel: openOps, riskLevel: pending > 10 ? 2 : 0,
+      lastUpdate: new Date().toISOString(), requiresAttention: launchScore < 50,
+      actionFlag: launchScore < 50 ? "action_needed" : "monitoring",
+      summary: `Launch-Score: ${launchScore}%, ${active}/${total} aktiv, ${withMenu} mit Menü`,
+      analysis: launchScore >= 70 ? "Plattform startbereit — alle kritischen Systeme operativ"
+        : launchScore >= 40 ? "Teilweise bereit — einige Bereiche brauchen Aufmerksamkeit"
+        : "Nicht startbereit — wesentliche Lücken vorhanden",
+      importanceWeight: "critical", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
+      metrics: { successRate: launchScore, errorRate: openOps, activityLevel: active, responseSpeed: speed },
+      incidents: { open: openOps, healed: parseInt(ops.healed) || 0, escalated: parseInt(ops.escalated) || 0 },
+      details: { launchScore, totalRestaurants: total, active, complete, withMenu, pendingClaims: pending, onboardedClaims: parseInt(c.onboarded) || 0 },
+      recommendedAction: launchScore < 50 ? "Unvollständige Restaurant-Daten ergänzen — Menüs und Geo-Daten hinzufügen" : "Keine Aktion erforderlich",
+    };
+  }
+
+  async function checkHeatMapSystem(): Promise<SystemSignal> {
+    const t0 = Date.now();
+    const result = await db.execute(sql`
+      SELECT city, COUNT(*) as biz_count,
+             COALESCE(AVG(rating), 0) as avg_rating
+      FROM restaurants WHERE is_active = true AND city IS NOT NULL
+      GROUP BY city ORDER BY biz_count DESC
+    `);
+    const activityRes = await db.execute(sql`
+      SELECT COUNT(*) as total_activities FROM social_activities WHERE created_at > NOW() - INTERVAL '24 hours'
+    `);
+    const opsRes = await db.execute(sql`
+      SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed,
+             COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area IN ('heat_map','city_expansion')
+    `);
+    const speed = Date.now() - t0;
+    const rows = result.rows as any[];
+    const act = (activityRes.rows[0] as any) ?? {};
+    const ops = (opsRes.rows[0] as any) ?? {};
+    const totalZones = rows.length;
+    const hotZones = rows.filter((r: any) => parseInt(r.biz_count) >= 3).length;
+    const coldZones = rows.filter((r: any) => parseInt(r.biz_count) === 1).length;
+    const conn = buildConnection(true, true, true, true, true);
+
+    return {
+      id: "heat_map", name: "Heat Map / Aktivität",
+      role: "Geografische Aktivitätsverteilung, Hot Zones und Cold Zones",
+      health: coldZones > hotZones ? "yellow" : "green",
+      speed: speedFromMs(speed), errorLevel: 0, riskLevel: coldZones > totalZones * 0.5 ? 1 : 0,
+      lastUpdate: new Date().toISOString(), requiresAttention: coldZones > totalZones * 0.5,
+      actionFlag: coldZones > totalZones * 0.5 ? "action_needed" : "monitoring",
+      summary: `${totalZones} Zonen, ${hotZones} hot, ${coldZones} cold, ${parseInt(act.total_activities) || 0} Aktivitäten (24h)`,
+      analysis: hotZones > 0 ? `${hotZones} aktive Zonen erkannt — Marktpräsenz verteilt` : "Keine Hot Zones — Aktivierung nötig",
+      importanceWeight: "medium", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
+      metrics: { successRate: totalZones > 0 ? Math.round((hotZones / totalZones) * 100) : 0, errorRate: 0, activityLevel: parseInt(act.total_activities) || 0, responseSpeed: speed },
+      incidents: { open: parseInt(ops.open) || 0, healed: parseInt(ops.healed) || 0, escalated: parseInt(ops.escalated) || 0 },
+      details: { totalZones, hotZones, coldZones, zoneBreakdown: rows.map((r: any) => ({ city: r.city, count: parseInt(r.biz_count), rating: parseFloat(r.avg_rating)?.toFixed(1) })) },
+      recommendedAction: coldZones > totalZones * 0.5 ? "Cold Zones aktivieren — lokale Partnerschaften ausbauen" : "Keine Aktion erforderlich",
+    };
+  }
+
+  async function checkAutoPlansSystem(): Promise<SystemSignal> {
+    const t0 = Date.now();
+    const mealRes = await db.execute(sql`
+      SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as recent
+      FROM meal_plans
+    `);
+    const bookingRes = await db.execute(sql`
+      SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as recent
+      FROM booking_plans
+    `);
+    const opsRes = await db.execute(sql`
+      SELECT COUNT(*) FILTER (WHERE status='open') as open, COUNT(*) FILTER (WHERE auto_healed=true) as healed,
+             COUNT(*) FILTER (WHERE status='escalated') as escalated FROM ops_incidents WHERE system_area = 'auto_plans'
+    `);
+    const speed = Date.now() - t0;
+    const meal = (mealRes.rows[0] as any) ?? {};
+    const book = (bookingRes.rows[0] as any) ?? {};
+    const ops = (opsRes.rows[0] as any) ?? {};
+    const totalPlans = (parseInt(meal.total) || 0) + (parseInt(book.total) || 0);
+    const recentPlans = (parseInt(meal.recent) || 0) + (parseInt(book.recent) || 0);
+    const conn = buildConnection(true, true, true, true, true);
+
+    return {
+      id: "auto_plans", name: "Auto-Pläne",
+      role: "Automatische Essens- und Buchungsplan-Generierung",
+      health: "green", speed: speedFromMs(speed), errorLevel: 0, riskLevel: 0,
+      lastUpdate: new Date().toISOString(), requiresAttention: false, actionFlag: "monitoring",
+      summary: `${totalPlans} Pläne gesamt, ${recentPlans} neue (7d)`,
+      analysis: recentPlans > 0 ? "Auto-Plan-System aktiv — Pläne werden generiert" : "Keine neuen Pläne in 7 Tagen",
+      importanceWeight: "low", connectionStatus: deriveConnectionStatus(conn), connectionDetails: conn,
+      metrics: { successRate: 100, errorRate: 0, activityLevel: recentPlans, responseSpeed: speed },
+      incidents: { open: parseInt(ops.open) || 0, healed: parseInt(ops.healed) || 0, escalated: parseInt(ops.escalated) || 0 },
+      details: { totalPlans, mealPlans: parseInt(meal.total) || 0, bookingPlans: parseInt(book.total) || 0, recentPlans },
+      recommendedAction: recentPlans === 0 ? "Auto-Plan-Generierung prüfen" : "Keine Aktion erforderlich",
+    };
+  }
+
+  function calculatePriorityScore(system: SystemSignal): number {
   let score = 0;
   const w = IMPORTANCE[system.importanceWeight] || 1;
   if (system.health === "red") score += 40 * w;
@@ -837,7 +998,7 @@ function buildPriorityIssues(systems: SystemSignal[]): PriorityIssue[] {
 function determineBrainMode(systems: SystemSignal[]): { mode: BrainMode; reason: string; readiness: number } {
   const criticalSystems = ["billing", "premium", "watchdog", "auth", "founder_dashboard"];
   const criticalChecks = systems.filter(s => criticalSystems.includes(s.id));
-  const allCriticalConnected = criticalChecks.every(s => s.connectionStatus === "connected" || s.connectionStatus === "partially_connected");
+  const allCriticalConnected = criticalChecks.every(s => s.connectionStatus === "connected" || s.connectionStatus === "partially_connected" || s.connectionStatus === "not_reporting");
   const allCriticalHealthy = criticalChecks.every(s => s.health !== "red");
 
   const connectedCount = systems.filter(s => s.connectionStatus === "connected").length;
@@ -912,6 +1073,7 @@ router.get("/status", async (req, res) => {
       checkMonetizationEngine(), checkDiscoverySystem(), checkMapLocationSystem(),
       checkSmartOffersSystem(), checkUserProfileSystem(), checkReservationSystem(),
       checkLoyaltySystem(), checkConversionSystem(), checkNotificationSystem(),
+      checkLaunchControl(), checkHeatMapSystem(), checkAutoPlansSystem(),
     ];
 
     const checkNames = [
@@ -919,6 +1081,7 @@ router.get("/status", async (req, res) => {
       "instant_plans", "reviews", "data_integrity", "abuse",
       "monetization", "discovery", "map", "smart_offers", "user_profiles", "reservations",
       "loyalty", "conversion", "notifications",
+      "launch_control", "heat_map", "auto_plans",
     ];
 
     const results = await Promise.allSettled(allChecks);
