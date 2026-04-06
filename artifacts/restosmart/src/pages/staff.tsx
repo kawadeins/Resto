@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Plus, Pencil, Trash2, Clock, Users, Bell, TreePalm, Coffee, CalendarDays, X,
   Copy, Share2, MessageCircle, Mail, Send, ChevronRight, UserCircle2,
-  ClipboardList, AlertCircle,
+  ClipboardList, AlertCircle, FileDown, Printer, Sparkles, Loader2, ChevronDown,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
@@ -188,6 +188,163 @@ async function shareViaNative(text: string, title: string): Promise<boolean> {
   }
 }
 
+// ── AI Schedule ────────────────────────────────────────────────────────────────
+
+type BusinessType = "restaurant" | "cafe" | "bar";
+
+const BUSINESS_TIMES: Record<BusinessType, { start: string; end: string }> = {
+  restaurant: { start: "11:00", end: "22:00" },
+  cafe:       { start: "07:30", end: "15:30" },
+  bar:        { start: "18:00", end: "00:00" },
+};
+
+function generateAISchedule(
+  employees: Employee[],
+  businessType: BusinessType
+): Array<{ employeeId: number; dayOfWeek: Day; startTime: string; endTime: string }> {
+  const active = employees.filter((e) => e.status === "active");
+  const times = BUSINESS_TIMES[businessType];
+  const result: Array<{ employeeId: number; dayOfWeek: Day; startTime: string; endTime: string }> = [];
+  active.forEach((emp, idx) => {
+    const offA = idx % 7;
+    const offB = (idx + 3) % 7;
+    DAYS.forEach((day, di) => {
+      if (di !== offA && di !== offB) {
+        result.push({ employeeId: emp.id, dayOfWeek: day, startTime: times.start, endTime: times.end });
+      }
+    });
+  });
+  return result;
+}
+
+// ── PDF Export ─────────────────────────────────────────────────────────────────
+
+async function exportTeamPDF(
+  employees: Employee[],
+  shifts: Shift[],
+  offDays: OffDay[],
+  vacations: Vacation[],
+  weekDates: Record<string, string>
+) {
+  const { jsPDF } = await import("jspdf");
+  const { default: autoTable } = await import("jspdf-autotable");
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const weekRange = getWeekRange(weekDates);
+
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("RestoMaster \u2013 Dienstplan", 14, 18);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(120, 120, 120);
+  doc.text(`Woche: ${weekRange}`, 14, 26);
+  doc.setTextColor(0, 0, 0);
+
+  const active = employees.filter((e) => e.status === "active");
+  const head = [["Mitarbeiter", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]];
+  const body = active.map((emp) => {
+    const cells: string[] = [emp.name];
+    DAYS.forEach((day) => {
+      const dateStr = weekDates[day];
+      const isVac = vacations.some(
+        (v) => v.employeeId === emp.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
+      );
+      const isOff = offDays.some((d) => d.employeeId === emp.id && d.dayOfWeek === day);
+      const empShifts = shifts.filter((s) => s.employeeId === emp.id && s.dayOfWeek === day);
+      if (isVac) cells.push("Urlaub");
+      else if (isOff) cells.push("Frei");
+      else if (empShifts.length > 0) cells.push(`${empShifts[0].startTime}\u2013${empShifts[0].endTime}`);
+      else cells.push("\u2013");
+    });
+    return cells;
+  });
+
+  autoTable(doc, {
+    head,
+    body,
+    startY: 32,
+    styles: { fontSize: 9, cellPadding: 4, halign: "center" },
+    headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: "bold" },
+    columnStyles: { 0: { halign: "left", fontStyle: "bold", minCellWidth: 40 } },
+    alternateRowStyles: { fillColor: [248, 248, 252] },
+  });
+
+  const ph = doc.internal.pageSize.getHeight();
+  doc.setFontSize(8);
+  doc.setTextColor(160, 160, 160);
+  doc.text("Erstellt mit RestoMaster", 14, ph - 8);
+  doc.text(new Date().toLocaleDateString("de-AT"), 283, ph - 8, { align: "right" });
+
+  doc.save(`Dienstplan-${weekRange.replace(" \u2013 ", "_")}.pdf`);
+}
+
+// ── Print ──────────────────────────────────────────────────────────────────────
+
+function printSchedule(
+  employees: Employee[],
+  shifts: Shift[],
+  offDays: OffDay[],
+  vacations: Vacation[],
+  weekDates: Record<string, string>
+) {
+  const weekRange = getWeekRange(weekDates);
+  const active = employees.filter((e) => e.status === "active");
+
+  const rows = active.map((emp) => {
+    const cells = DAYS.map((day) => {
+      const dateStr = weekDates[day];
+      const isVac = vacations.some(
+        (v) => v.employeeId === emp.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
+      );
+      const isOff = offDays.some((d) => d.employeeId === emp.id && d.dayOfWeek === day);
+      const empShifts = shifts.filter((s) => s.employeeId === emp.id && s.dayOfWeek === day);
+      if (isVac) return `<td class="free">Urlaub</td>`;
+      if (isOff) return `<td class="free">Frei</td>`;
+      if (empShifts.length > 0) return `<td>${empShifts[0].startTime}&ndash;${empShifts[0].endTime}</td>`;
+      return `<td class="free">&ndash;</td>`;
+    }).join("");
+    return `<tr><td class="name">${emp.name}<br/><span class="role">${emp.role}</span></td>${cells}</tr>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+<title>Dienstplan \u2013 ${weekRange}</title>
+<style>
+  @page{size:A4 landscape;margin:15mm}
+  body{font-family:Arial,sans-serif;font-size:10px;color:#111}
+  h1{font-size:16px;margin:0 0 4px}
+  .sub{color:#666;font-size:11px;margin:0 0 14px}
+  table{width:100%;border-collapse:collapse}
+  th{background:#4f46e5;color:#fff;padding:6px 8px;text-align:center;font-size:10px}
+  th:first-child{text-align:left}
+  td{border:1px solid #e0e0e0;padding:6px 8px;text-align:center}
+  td.name{text-align:left;font-weight:bold;background:#fafafa;min-width:90px}
+  td.free{color:#bbb}
+  .role{font-weight:normal;color:#aaa;font-size:8px}
+  tr:nth-child(even){background:#f8f8fc}
+  .footer{margin-top:14px;font-size:8px;color:#bbb;text-align:center}
+</style></head><body>
+<h1>RestoMaster &ndash; Dienstplan</h1>
+<p class="sub">Woche: ${weekRange}</p>
+<table>
+  <thead><tr>
+    <th>Mitarbeiter</th>
+    <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div class="footer">Erstellt mit RestoMaster &middot; ${new Date().toLocaleDateString("de-AT")}</div>
+</body></html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 400);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
   return (
     <div>
@@ -250,6 +407,12 @@ export default function Staff() {
   const [vacationStart, setVacationStart] = useState("");
   const [vacationEnd, setVacationEnd] = useState("");
   const [vacationNotes, setVacationNotes] = useState("");
+
+  const [aiDialog, setAiDialog] = useState<{ open: boolean; businessType: BusinessType }>({
+    open: false, businessType: "restaurant",
+  });
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [pdfExporting, setPdfExporting] = useState(false);
 
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
 
@@ -557,6 +720,54 @@ export default function Staff() {
     return buildScheduleText(shareDialog.employee, shifts as Shift[], offDays, vacations, weekDates);
   };
 
+  const handleAIGenerate = async () => {
+    if (!employees || employees.length === 0) {
+      toast({ title: "Keine aktiven Mitarbeiter gefunden", variant: "destructive" });
+      return;
+    }
+    setAiGenerating(true);
+    const planned = generateAISchedule(employees, aiDialog.businessType);
+    const existing = (shifts ?? []) as Shift[];
+    const toCreate = planned.filter(
+      (p) => !existing.some((s) => s.employeeId === p.employeeId && s.dayOfWeek === p.dayOfWeek)
+    );
+    let created = 0;
+    for (const s of toCreate) {
+      try {
+        const r = await fetch(`${API_BASE}/api/shifts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
+          },
+          body: JSON.stringify(s),
+        });
+        if (r.ok) created++;
+      } catch { /* skip */ }
+    }
+    await queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
+    setAiGenerating(false);
+    setAiDialog((d) => ({ ...d, open: false }));
+    toast({ title: `Dienstplan erstellt — ${created} Schichten hinzugefügt` });
+  };
+
+  const handleExportPDF = async () => {
+    if (!employees || !shifts) return;
+    setPdfExporting(true);
+    try {
+      await exportTeamPDF(employees, shifts as Shift[], offDays, vacations, weekDates);
+    } catch {
+      toast({ title: "PDF-Export fehlgeschlagen", variant: "destructive" });
+    } finally {
+      setPdfExporting(false);
+    }
+  };
+
+  const handlePrint = () => {
+    if (!employees || !shifts) return;
+    printSchedule(employees, shifts as Shift[], offDays, vacations, weekDates);
+  };
+
   const activeEmployees = employees?.filter((e) => e.status === "active") ?? [];
   const inactiveEmployees = employees?.filter((e) => e.status === "inactive") ?? [];
 
@@ -570,9 +781,33 @@ export default function Staff() {
             Team und Wochendienstplan verwalten — Woche {getWeekRange(weekDates)}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 border-violet-500/40 text-violet-600 hover:bg-violet-500/10 hover:border-violet-500/60 hover:text-violet-600"
+            onClick={() => setAiDialog((d) => ({ ...d, open: true }))}
+          >
+            <Sparkles className="h-4 w-4" /> KI-Dienstplan
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <FileDown className="h-4 w-4" /> Exportieren <ChevronDown className="h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportPDF} disabled={pdfExporting}>
+                {pdfExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
+                Als PDF exportieren
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" /> Drucken
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" size="sm" onClick={openTeamShareDialog}>
-            <Share2 className="h-4 w-4 mr-2" /> Dienstplan teilen
+            <Share2 className="h-4 w-4 mr-2" /> Teilen
           </Button>
           <Button onClick={() => {
             setEditingEmployee(null);
@@ -1352,6 +1587,82 @@ export default function Staff() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Auto Schedule Dialog */}
+      <Dialog open={aiDialog.open} onOpenChange={(open) => !open && setAiDialog((d) => ({ ...d, open: false }))}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-violet-500" />
+              Dienstplan automatisch erstellen
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-1">
+            <p className="text-sm text-muted-foreground">
+              Erstellt einen vollständigen Wochenplan für alle aktiven Mitarbeiter — basierend auf Betriebstyp und typischen Stoßzeiten.
+            </p>
+
+            {/* Business type selector */}
+            <div>
+              <p className="text-sm font-medium mb-2">Betriebstyp</p>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { key: "restaurant", label: "Restaurant", icon: "🍽️" },
+                    { key: "cafe",       label: "Café",       icon: "☕" },
+                    { key: "bar",        label: "Bar",        icon: "🍺" },
+                  ] as const
+                ).map(({ key, label, icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setAiDialog((d) => ({ ...d, businessType: key }))}
+                    className={`py-3 rounded-lg border text-sm font-medium transition-all ${
+                      aiDialog.businessType === key
+                        ? "bg-violet-500/15 border-violet-500 text-violet-600"
+                        : "border-border hover:border-violet-500/40 text-muted-foreground"
+                    }`}
+                  >
+                    <div className="text-xl mb-1">{icon}</div>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Times preview */}
+            <div className="bg-muted/40 rounded-lg p-3 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Geplante Schichtzeiten:</p>
+              <p className="text-sm font-mono font-semibold">
+                {BUSINESS_TIMES[aiDialog.businessType].start} – {BUSINESS_TIMES[aiDialog.businessType].end}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                5 Arbeitstage + 2 Freitage pro Mitarbeiter, gleichmäßig verteilt
+              </p>
+            </div>
+
+            <div className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5">
+              Bestehende Schichten bleiben erhalten — nur fehlende Tage werden ergänzt.
+            </div>
+
+            <div className="flex gap-2 justify-end pt-1">
+              <Button variant="outline" onClick={() => setAiDialog((d) => ({ ...d, open: false }))}>
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleAIGenerate}
+                disabled={aiGenerating}
+                className="gap-2 bg-violet-600 hover:bg-violet-700"
+              >
+                {aiGenerating
+                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Wird erstellt…</>
+                  : <><Sparkles className="h-4 w-4" /> Dienstplan erstellen</>
+                }
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

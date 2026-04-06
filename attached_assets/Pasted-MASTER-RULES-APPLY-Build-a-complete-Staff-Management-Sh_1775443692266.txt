@@ -1,0 +1,228 @@
+MASTER RULES APPLY
+
+Build a complete "Staff Management + Shift Planning + Sharing + PDF + AI Auto Scheduling System" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing functionality.
+Keep everything clean, fast, and production-ready.
+
+This system must work for:
+- restaurants
+- cafés
+- bars
+
+========================
+GOAL
+========================
+
+Create a full professional staff system where a manager can:
+
+- manage employees
+- build schedules manually
+- auto-generate schedules using AI
+- use 30-minute time slots
+- share schedules instantly
+- export PDF
+- print schedules
+
+All in a simple and fast workflow.
+
+========================
+1. STAFF MANAGEMENT
+========================
+
+Ensure staff section includes:
+
+- employee list
+- role (Service, Küche, Bar, Manager)
+- contact info
+- status
+
+Simple, clean, operational.
+
+========================
+2. SHIFT PLANNING (MANUAL)
+========================
+
+Allow manager to:
+
+- add/edit/remove shifts
+- mark "Frei"
+- copy shifts
+- weekly view
+
+========================
+3. TIME SYSTEM (CRITICAL)
+========================
+
+Support:
+
+- full hours
+- 30-minute increments
+
+Examples:
+- 09:00
+- 09:30
+- 14:30
+
+========================
+4. SHARE SYSTEM
+========================
+
+Add "Teilen" button.
+
+Options:
+- WhatsApp
+- Email
+
+Message (German):
+
+"Dein Dienstplan für diese Woche:
+
+Mo: 09:00–17:00  
+Di: Frei  
+Mi: 10:00–14:30  
+Do: 09:30–17:30  
+Fr: Frei  
+Sa: 09:00–17:00  
+So: Frei
+
+RestoMaster Dienstplan"
+
+========================
+5. PDF EXPORT
+========================
+
+Add "Als PDF exportieren".
+
+Clean A4 layout:
+
+- employee name
+- week range
+- schedule table
+
+Footer:
+"Erstellt mit RestoMaster"
+
+========================
+6. PRINT SYSTEM
+========================
+
+Add "Drucken":
+
+- print preview
+- clean layout
+- no UI clutter
+- A4 optimized
+
+========================
+7. AI AUTO SHIFT GENERATION (NEW 🔥)
+========================
+
+Add button:
+
+👉 "Dienstplan automatisch erstellen"
+
+When clicked:
+
+AI generates weekly schedule based on:
+
+- number of employees
+- business type (restaurant / café / bar)
+- typical peak times:
+  - cafés → morning
+  - restaurants → lunch/dinner
+  - bars → evening/night
+- distribute shifts fairly
+
+Rules:
+
+- no overlapping shifts per employee
+- respect reasonable working hours
+- include "Frei" days
+- balance workload
+
+Output:
+- full weekly schedule generated instantly
+
+========================
+8. AI BEHAVIOR RULES
+========================
+
+AI must:
+
+- be simple (no complex ML needed)
+- use smart logic (rules-based is OK)
+- not overcomplicate UI
+- allow manual edits after generation
+
+========================
+9. TEAM PDF (OPTIONAL)
+========================
+
+Allow exporting full team schedule.
+
+========================
+10. EMPTY STATES
+========================
+
+If no schedule:
+
+"Keine Schichten geplant"
+
+========================
+11. GERMAN UI
+========================
+
+All labels in German:
+
+- "Dienstplan"
+- "Teilen"
+- "Als PDF exportieren"
+- "Drucken"
+- "Dienstplan automatisch erstellen"
+- "Frei"
+
+========================
+12. PERFORMANCE
+========================
+
+All actions must be:
+
+- fast
+- responsive
+- no fake loading
+
+========================
+13. NO FAKE FEATURES
+========================
+
+Everything must:
+
+- actually work
+- generate real data
+- not simulate actions
+
+========================
+FINAL GOAL
+========================
+
+Manager can:
+
+- manage staff
+- create schedule manually
+- auto-generate schedule with AI
+- edit easily
+- share via WhatsApp/email
+- export PDF
+- print
+
+All within seconds.
+
+The system must feel:
+
+👉 powerful  
+👉 simple  
+👉 professional  
+👉 ready for real businesses
