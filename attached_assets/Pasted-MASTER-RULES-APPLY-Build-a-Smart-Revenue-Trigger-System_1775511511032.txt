@@ -1,0 +1,186 @@
+MASTER RULES APPLY
+
+Build a "Smart Revenue Trigger System (AI + Dynamic Pricing + Real-Time Suggestions)" inside the Promotion Tools section of the RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the entire app.
+Do NOT manipulate users unfairly.
+Do NOT create fake urgency or fake data.
+
+All insights must be based on real signals.
+
+========================
+GOAL
+========================
+
+Create a system that:
+
+- detects high-opportunity moments
+- suggests when to activate boosts
+- increases conversion
+- maximizes revenue
+
+User should feel:
+
+👉 "Now is the right time to activate"
+👉 "This will bring customers"
+
+========================
+1. REAL-TIME OPPORTUNITY DETECTION
+========================
+
+Analyze:
+
+- user traffic
+- search activity
+- local demand
+- time of day
+- active boosts in area
+- business type (restaurant / café / bar)
+
+Detect:
+
+- high demand periods
+- low competition windows
+- peak traffic times
+
+========================
+2. SMART SUGGESTION CARDS
+========================
+
+Inside Promotion Tools, show:
+
+👉 "Empfohlene Aktion"
+
+Example:
+
+"Hohe Nachfrage jetzt in deiner Umgebung  
+→ Jetzt boosten für maximale Sichtbarkeit"
+
+OR
+
+"Wenig Konkurrenz aktuell  
+→ Günstiger Zeitpunkt für Boost"
+
+========================
+3. LIVE BADGE (🔥)
+========================
+
+On boost cards:
+
+Add badge:
+
+- "Jetzt ideale Zeit"
+- "Hohe Nachfrage"
+- "Top Sichtbarkeit jetzt"
+
+Only when true.
+
+========================
+4. DYNAMIC PRICE DISPLAY
+========================
+
+Show:
+
+- current price
+- demand level
+
+Example:
+
+"Preis: 6€ (hoch wegen Nachfrage)"
+"Preis: 3€ (geringe Konkurrenz)"
+
+Keep transparent.
+
+========================
+5. CTA BOOST (CONVERSION)
+========================
+
+When high opportunity:
+
+- highlight CTA button
+- slight glow
+- subtle animation
+
+Text examples:
+
+- "Jetzt nutzen"
+- "Jetzt sichtbar werden"
+- "Empfohlen: Jetzt aktivieren"
+
+========================
+6. AI TIMING SUGGESTIONS
+========================
+
+Show insights like:
+
+- "Beste Zeit heute: 18:00–21:00"
+- "Mehr Nutzer aktiv in den nächsten 2 Stunden"
+- "Happy Hour hat erhöhtes Interesse"
+
+========================
+7. AUTO MODE (OPTIONAL)
+========================
+
+Allow:
+
+👉 "Automatisch optimieren"
+
+If enabled:
+
+- system activates boost at best times
+- adjusts budget
+- stops when low performance
+
+User must set limits.
+
+========================
+8. FAIRNESS RULES
+========================
+
+System must:
+
+- not fake urgency
+- not lie
+- not manipulate
+
+Everything must be explainable.
+
+========================
+9. VISUAL INTEGRATION
+========================
+
+Integrate with UI:
+
+- subtle highlight
+- clean badge
+- no visual spam
+
+Keep premium feel.
+
+========================
+10. FOUNDER CONTROL
+========================
+
+Allow internal control:
+
+- thresholds
+- sensitivity
+- min/max pricing
+- trigger frequency
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster becomes:
+
+👉 not just a tool  
+👉 but a smart revenue engine
+
+The system should:
+
+- guide business owners
+- increase boost activation
+- increase revenue
+- feel intelligent and trustworthy
