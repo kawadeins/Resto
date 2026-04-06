@@ -107,16 +107,13 @@ function buildScheduleText(
   vacations: Vacation[],
   weekDates: Record<string, string>
 ): string {
-  const weekRange = getWeekRange(weekDates);
   const lines: string[] = [
-    `📋 Dienstplan – ${employee.name}`,
-    `🗓 Woche: ${weekRange}`,
-    `💼 Rolle: ${employee.role}`,
+    `Dein Dienstplan für diese Woche:`,
     "",
   ];
   DAYS.forEach((day) => {
     const dateStr = weekDates[day];
-    const dayLabel = `${DAY_LABELS[day]} ${formatDateDE(dateStr)}`;
+    const label = DAY_LABELS[day];
     const isVacation = vacations.some(
       (v) => v.employeeId === employee.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
     );
@@ -124,16 +121,16 @@ function buildScheduleText(
     const empShifts = shifts.filter((s) => s.employeeId === employee.id && s.dayOfWeek === day);
 
     if (isVacation) {
-      lines.push(`${dayLabel}: 🏖 Urlaub`);
+      lines.push(`${label}: Urlaub`);
     } else if (isOff) {
-      lines.push(`${dayLabel}: ☕ Frei`);
+      lines.push(`${label}: Frei`);
     } else if (empShifts.length > 0) {
-      empShifts.forEach((s) => lines.push(`${dayLabel}: ⏰ ${s.startTime} – ${s.endTime}`));
+      empShifts.forEach((s) => lines.push(`${label}: ${s.startTime}–${s.endTime}`));
     } else {
-      lines.push(`${dayLabel}: –`);
+      lines.push(`${label}: Frei`);
     }
   });
-  lines.push("", "– Gesendet via RestoSmart");
+  lines.push("", "RestoMaster Dienstplan");
   return lines.join("\n");
 }
 
@@ -163,20 +160,20 @@ function buildTeamScheduleText(
     });
     lines.push("");
   });
-  lines.push("– Gesendet via RestoSmart");
+  lines.push("RestoMaster Dienstplan");
   return lines.join("\n");
 }
 
 function shareViaWhatsApp(text: string, phone?: string) {
   const encoded = encodeURIComponent(text);
   const url = phone
-    ? `https://api.whatsapp.com/send?phone=${phone.replace(/[^0-9]/g, "")}&text=${encoded}`
-    : `https://api.whatsapp.com/send?text=${encoded}`;
+    ? `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${encoded}`
+    : `https://wa.me/?text=${encoded}`;
   window.open(url, "_blank");
 }
 
-function shareViaEmail(text: string, email?: string, name?: string) {
-  const subject = encodeURIComponent(`Dienstplan – ${name ?? "Team"}`);
+function shareViaEmail(text: string, email?: string) {
+  const subject = encodeURIComponent("Dienstplan für diese Woche");
   const body = encodeURIComponent(text);
   window.open(`mailto:${email ?? ""}?subject=${subject}&body=${body}`, "_blank");
 }
@@ -722,17 +719,14 @@ export default function Staff() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          title="Dienstplan teilen"
-                          onClick={() => openShareDialog(emp)}
-                        >
-                          <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-xs gap-1.5 shrink-0"
+                        onClick={() => openShareDialog(emp)}
+                      >
+                        <Share2 className="h-3 w-3" /> Teilen
+                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -1226,7 +1220,7 @@ export default function Staff() {
               <Button
                 variant="outline"
                 className="justify-start gap-3 h-auto py-3 border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-500/60"
-                onClick={() => shareViaEmail(getShareText(), shareDialog.employee?.email, shareDialog.employee?.name)}
+                onClick={() => shareViaEmail(getShareText(), shareDialog.employee?.email)}
               >
                 <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
                   <Mail className="h-4 w-4 text-white" />
