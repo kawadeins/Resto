@@ -1,0 +1,175 @@
+MASTER RULES APPLY
+
+Build a "Business Staff Management System" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing systems.
+Do NOT modify Founder dashboard.
+
+This system is for business owners (restaurants, cafés, bars) to manage team members and access control.
+
+========================
+GOAL
+========================
+
+Allow business owners to:
+
+- add staff members
+- assign roles (owner / manager / staff)
+- control permissions
+- share dashboard access safely
+
+This must be simple, secure, and production-ready.
+
+========================
+1. STAFF INVITE SYSTEM
+========================
+
+Allow owner to:
+
+- invite staff via email (or simple identifier)
+- send invitation
+- accept invitation
+
+After acceptance:
+- staff gets access to business dashboard
+
+========================
+2. ROLES SYSTEM (CRITICAL)
+========================
+
+Define roles:
+
+1. Owner:
+- full control
+- billing access
+- can add/remove staff
+- can change roles
+
+2. Manager:
+- can manage content
+- can use boost tools
+- can view analytics
+- cannot access billing or owner settings
+
+3. Staff:
+- limited access
+- view dashboard
+- limited interaction
+- no sensitive controls
+
+========================
+3. PERMISSION CONTROL
+========================
+
+Ensure:
+
+- billing only visible to owner
+- premium control only owner/manager
+- critical systems protected
+- no unauthorized access
+
+========================
+4. DASHBOARD SECTION
+========================
+
+Add section:
+
+👉 "Team" or "Mitarbeiter"
+
+Inside:
+
+- list of staff
+- role of each
+- status (active / pending)
+- invite button
+- remove user
+- change role
+
+========================
+5. SIMPLE UI (IMPORTANT)
+========================
+
+Keep it simple:
+
+- name
+- role
+- status
+- action buttons
+
+No complex management system.
+
+========================
+6. SECURITY RULES
+========================
+
+- validate access server-side
+- do NOT trust client role
+- prevent privilege escalation
+- ensure safe role updates
+
+========================
+7. ONBOARDING FLOW
+========================
+
+After business setup:
+
+- show hint:
+"Team hinzufügen und Zugriff teilen"
+
+Encourage owner to add staff.
+
+========================
+8. GERMAN LANGUAGE
+========================
+
+All UI must be in German:
+
+Examples:
+- "Mitarbeiter hinzufügen"
+- "Rolle ändern"
+- "Einladung senden"
+- "Manager"
+- "Mitarbeiter"
+
+========================
+9. EDGE CASES
+========================
+
+Handle:
+
+- duplicate invites
+- removed users
+- pending invites
+- invalid access attempts
+
+========================
+10. DO NOT OVERCOMPLICATE
+========================
+
+No:
+- HR system
+- scheduling
+- payroll
+
+Keep:
+- simple access control
+- team management only
+
+========================
+FINAL GOAL
+========================
+
+Business owners can:
+
+- share dashboard access
+- manage team easily
+- control permissions safely
+
+The system must feel:
+
+👉 simple  
+👉 secure  
+👉 professional  
+👉 ready for real business use

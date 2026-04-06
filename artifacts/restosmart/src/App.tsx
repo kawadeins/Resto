@@ -30,6 +30,7 @@ import Profile from "@/pages/profile";
 import Founder from "@/pages/founder";
 import Optimizer from "@/pages/optimizer";
 import Boost from "@/pages/boost";
+import Team from "@/pages/team";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -411,6 +412,7 @@ function App() {
                     <Route path="/profile" component={Profile} />
                     <Route path="/optimizer" component={Optimizer} />
                     <Route path="/boost" component={Boost} />
+                    <Route path="/team" component={Team} />
                     <Route component={NotFound} />
                   </Switch>
                 </Layout>

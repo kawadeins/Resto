@@ -42,6 +42,7 @@ import competitionRouter from "./competition";
 import citiesRouter from "./cities";
 import opsRouter from "./ops";
 import brainRouter from "./brain";
+import teamRouter from "./team";
 
 const router: IRouter = Router();
 
@@ -88,5 +89,6 @@ router.use("/competition", competitionRouter);
 router.use("/cities", citiesRouter);
 router.use("/ops", opsRouter);
 router.use("/brain", brainRouter);
+router.use("/team", teamRouter);
 
 export default router;

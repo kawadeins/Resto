@@ -26,3 +26,4 @@ export * from "./app_feedback";
 export * from "./friendships";
 export * from "./social_activities";
 export * from "./instant_plans";
+export * from "./team_members";
