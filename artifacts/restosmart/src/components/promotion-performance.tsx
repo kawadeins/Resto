@@ -6,7 +6,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Eye, MousePointer, CalendarCheck, Flame, Users, ArrowRight, BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
@@ -32,34 +31,61 @@ interface MyPromotionsData {
   promotions: Promotion[];
 }
 
-function ConversionFunnel({ impressions, clicks, bookings }: { impressions: number; clicks: number; bookings: number }) {
-  const clickRate  = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : "0.0";
-  const bookRate   = clicks > 0 ? ((bookings / clicks) * 100).toFixed(1) : "0.0";
+// ── Conversion Funnel ──────────────────────────────────────────────────────────
+
+function ConversionFunnel({ impressions, clicks, bookings }: {
+  impressions: number; clicks: number; bookings: number;
+}) {
+  const clickRate = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : "0.0";
+  const bookRate  = clicks > 0 ? ((bookings / clicks) * 100).toFixed(1) : "0.0";
 
   return (
     <div className="flex items-center w-full">
       {[
-        { label: "Einblendungen", value: impressions.toLocaleString("de"), meta: null },
-        { label: `CTR ${clickRate}%`, value: null, arrow: true },
-        { label: "Klicks",        value: clicks.toLocaleString("de"),    meta: null },
-        { label: `Conv. ${bookRate}%`, value: null, arrow: true },
-        { label: "Buchungen",     value: bookings.toLocaleString("de"),  meta: null },
+        { label: "Einblendungen", value: impressions.toLocaleString("de"), arrow: false },
+        { label: `CTR ${clickRate}%`,  value: null,                         arrow: true  },
+        { label: "Klicks",        value: clicks.toLocaleString("de"),    arrow: false },
+        { label: `Conv. ${bookRate}%`, value: null,                         arrow: true  },
+        { label: "Buchungen",     value: bookings.toLocaleString("de"),  arrow: false },
       ].map((item, i) =>
         item.arrow ? (
-          <div key={i} className="flex flex-col items-center gap-0.5 px-2 text-center shrink-0">
-            <ArrowRight className="w-4 h-4 text-muted-foreground/40" />
-            <span className="text-[10px] font-semibold text-primary">{item.label}</span>
+          <div key={i} className="flex flex-col items-center gap-1 px-2 shrink-0">
+            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40" />
+            <span className="text-[10px] font-semibold text-indigo-400">{item.label}</span>
           </div>
         ) : (
-          <div key={i} className="flex flex-col items-center gap-1 flex-1 text-center">
-            <div className="text-2xl font-extrabold text-foreground">{item.value}</div>
-            <div className="text-[11px] text-muted-foreground">{item.label}</div>
+          <div key={i} className="flex flex-col items-center gap-1.5 flex-1 text-center min-w-0">
+            <div className="text-2xl font-extrabold tabular-nums leading-none">{item.value}</div>
+            <div className="text-[11px] text-muted-foreground leading-none">{item.label}</div>
           </div>
         )
       )}
     </div>
   );
 }
+
+// ── Status pill ────────────────────────────────────────────────────────────────
+
+function StatusPill({ status }: { status: string }) {
+  if (status === "active") return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
+      <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+      Aktiv
+    </span>
+  );
+  if (status === "paused") return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+      Pausiert
+    </span>
+  );
+  return (
+    <span className="text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+      Beendet
+    </span>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 export function PromotionPerformance() {
   const { data, isLoading } = useQuery<MyPromotionsData>({
@@ -74,13 +100,19 @@ export function PromotionPerformance() {
 
   const promotions = data?.promotions ?? [];
 
+  // Loading state
   if (isLoading) {
     return (
-      <Card className="border-border">
+      <Card className="border-white/8">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary" />Performance-Übersicht</CardTitle>
+          <CardTitle className="flex items-center gap-2.5">
+            <BarChart3 className="w-5 h-5 text-indigo-400" />
+            {"Performance-\u00DCbersicht"}
+          </CardTitle>
         </CardHeader>
-        <CardContent><div className="h-48 bg-muted animate-pulse rounded-xl" /></CardContent>
+        <CardContent>
+          <div className="h-48 bg-muted/30 animate-pulse rounded-2xl" />
+        </CardContent>
       </Card>
     );
   }
@@ -101,109 +133,154 @@ export function PromotionPerformance() {
   const chartData = promotions.map(p => {
     const cfg = BOOST_CONFIGS.find(b => b.type === p.type);
     return {
-      name: cfg?.label?.replace("-Boost", "") ?? p.type,
-      Einbl: Number(p.impressions) || 0,
+      name:   cfg?.label?.replace("-Boost", "") ?? p.type,
+      Einbl:  Number(p.impressions) || 0,
       Klicks: Number(p.clicks) || 0,
-      Buch: Number(p.bookings_attributed) || 0,
+      Buch:   Number(p.bookings_attributed) || 0,
     };
   });
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-border shadow-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Performance-Übersicht
+      <Card className="border-white/8 shadow-sm">
+
+        {/* ── Header ── */}
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="flex items-center gap-2.5 text-lg">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                <TrendingUp className="w-4 h-4 text-white" />
+              </div>
+              {"Performance-\u00DCbersicht"}
             </CardTitle>
             <div className="flex gap-2">
-              <Badge variant="outline" className="text-[11px]">CTR {overallCTR}%</Badge>
-              <Badge variant="outline" className="text-[11px]">Conv. {overallConv}%</Badge>
+              <span className="inline-flex items-center text-[11px] font-semibold text-indigo-400 bg-indigo-400/10 px-2.5 py-1 rounded-full border border-indigo-400/20">
+                CTR {overallCTR}%
+              </span>
+              <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
+                Conv. {overallConv}%
+              </span>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-5">
-          {/* Funnel */}
-          <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
-            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Conversion-Funnel (alle Boosts)</div>
-            <ConversionFunnel impressions={totals.impressions} clicks={totals.clicks} bookings={totals.bookings} />
+        <CardContent className="space-y-5 pt-4">
+
+          {/* ── Conversion Funnel ── */}
+          <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">
+              Conversion-Funnel — alle Boosts
+            </p>
+            <ConversionFunnel
+              impressions={totals.impressions}
+              clicks={totals.clicks}
+              bookings={totals.bookings}
+            />
           </div>
 
-          {/* Extra metrics */}
+          {/* ── Extra metrics ── */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card">
-              <Flame className="w-8 h-8 text-orange-500 shrink-0" />
+            <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/8 bg-white/[0.02]">
+              <div className="h-10 w-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                <Flame className="w-5 h-5 text-orange-400" />
+              </div>
               <div>
-                <div className="text-xl font-bold">{totals.heat.toLocaleString("de")}</div>
-                <div className="text-xs text-muted-foreground">Heat-Map Sichtbarkeit</div>
+                <div className="text-xl font-extrabold tabular-nums">{totals.heat.toLocaleString("de")}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Heat-Map Sichtbarkeit</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card">
-              <Users className="w-8 h-8 text-violet-500 shrink-0" />
+            <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/8 bg-white/[0.02]">
+              <div className="h-10 w-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-violet-400" />
+              </div>
               <div>
-                <div className="text-xl font-bold">{totals.group.toLocaleString("de")}</div>
-                <div className="text-xs text-muted-foreground">Gruppen-Vorschläge</div>
+                <div className="text-xl font-extrabold tabular-nums">{totals.group.toLocaleString("de")}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{"Gruppen-Vorschl\u00E4ge"}</div>
               </div>
             </div>
           </div>
 
-          {/* Bar chart */}
+          {/* ── Bar Chart ── */}
           {chartData.length > 1 && (
             <div>
-              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Boost-Vergleich</div>
-              <div className="h-44">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                Boost-Vergleich
+              </p>
+              <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }}
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                      axisLine={false}
                     />
-                    <Bar dataKey="Einbl"  name="Einblendungen" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="Klicks" name="Klicks"        fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="Buch"   name="Buchungen"     fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 12,
+                        fontSize: 12,
+                        color: "hsl(var(--foreground))",
+                      }}
+                      cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                    />
+                    <Bar dataKey="Einbl"  name="Einblendungen" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={24} opacity={0.85} />
+                    <Bar dataKey="Klicks" name="Klicks"        fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={24} opacity={0.85} />
+                    <Bar dataKey="Buch"   name="Buchungen"     fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={24} opacity={0.85} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
           )}
 
-          {/* Table */}
-          <div className="overflow-auto rounded-xl border border-border/50">
+          {/* ── Data Table ── */}
+          <div className="rounded-2xl border border-white/8 overflow-hidden">
             <table className="w-full text-xs">
-              <thead className="bg-muted/40">
-                <tr>
+              <thead>
+                <tr className="border-b border-white/8 bg-white/[0.02]">
                   {["Boost", "Status", "Einbl.", "Klicks", "Buch.", "Heat"].map(h => (
-                    <th key={h} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-2.5 text-left font-semibold text-muted-foreground whitespace-nowrap">
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {promotions.map(p => {
+                {promotions.map((p, i) => {
                   const cfg = BOOST_CONFIGS.find(b => b.type === p.type);
                   return (
-                    <tr key={p.id} className="border-t border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="px-3 py-2 font-medium whitespace-nowrap">{cfg?.emoji} {cfg?.label ?? p.type}</td>
-                      <td className="px-3 py-2">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          p.status === "active"  ? "bg-emerald-100 text-emerald-700"
-                          : p.status === "paused" ? "bg-amber-100 text-amber-700"
-                          : "bg-muted text-muted-foreground"
-                        }`}>{p.status === "active" ? "Aktiv" : p.status === "paused" ? "Pausiert" : "Beendet"}</span>
+                    <tr
+                      key={p.id}
+                      className={`border-t border-white/5 transition-colors hover:bg-white/[0.02] ${
+                        i % 2 === 0 ? "" : "bg-white/[0.01]"
+                      }`}
+                    >
+                      <td className="px-4 py-3 font-medium whitespace-nowrap">
+                        {cfg?.emoji} {cfg?.label ?? p.type}
                       </td>
-                      <td className="px-3 py-2">{(Number(p.impressions)||0).toLocaleString("de")}</td>
-                      <td className="px-3 py-2">{(Number(p.clicks)||0).toLocaleString("de")}</td>
-                      <td className="px-3 py-2 font-semibold text-emerald-700">{(Number(p.bookings_attributed)||0).toLocaleString("de")}</td>
-                      <td className="px-3 py-2">{(Number(p.heat_exposure)||0).toLocaleString("de")}</td>
+                      <td className="px-4 py-3">
+                        <StatusPill status={p.status} />
+                      </td>
+                      <td className="px-4 py-3 tabular-nums">{(Number(p.impressions) || 0).toLocaleString("de")}</td>
+                      <td className="px-4 py-3 tabular-nums">{(Number(p.clicks) || 0).toLocaleString("de")}</td>
+                      <td className="px-4 py-3 tabular-nums font-semibold text-emerald-400">
+                        {(Number(p.bookings_attributed) || 0).toLocaleString("de")}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums">{(Number(p.heat_exposure) || 0).toLocaleString("de")}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
+
         </CardContent>
       </Card>
     </motion.div>

@@ -8,11 +8,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck,
-  Flame, Wallet, Info, Activity, Clock, Users, Sparkles, Shield, ArrowUpRight,
-  BarChart3, MapPin, Lightbulb, ToggleLeft, ToggleRight,
+  Flame, Wallet, Info, Activity, Clock, Users, Sparkles, Shield, BarChart3,
+  MapPin, Lightbulb, ToggleLeft, ToggleRight, ArrowUpRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BOOST_CONFIGS, type BoostConfig, isBoostCurrentlyActive } from "@/lib/monetization-engine";
@@ -50,23 +49,39 @@ interface BudgetState {
   budgetExhausted: boolean;
 }
 
+// ── Premium Status Badge ────────────────────────────────────────────────────────
+
 function BoostStatusBadge({ status }: { status: string }) {
-  if (status === "active")  return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[11px]">Aktiv</Badge>;
-  if (status === "paused")  return <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[11px]">Pausiert</Badge>;
-  return <Badge variant="secondary" className="text-[11px]">Beendet</Badge>;
+  if (status === "active") return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/25">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+      Aktiv
+    </span>
+  );
+  if (status === "paused") return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/25">
+      Pausiert
+    </span>
+  );
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+      Beendet
+    </span>
+  );
 }
 
-function MiniStat({ icon: Icon, value, label, cls = "" }: {
-  icon: React.ElementType; value: number; label: string; cls?: string;
-}) {
+// ── Clean Metric Tile ──────────────────────────────────────────────────────────
+
+function MiniStat({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 text-center">
-      <Icon className={`w-4 h-4 ${cls || "text-muted-foreground"}`} />
-      <span className="text-sm font-bold">{value.toLocaleString("de")}</span>
-      <span className="text-[10px] text-muted-foreground leading-none">{label}</span>
+    <div className="text-center">
+      <div className="text-base font-bold tabular-nums leading-none">{value.toLocaleString("de")}</div>
+      <div className="text-[10px] text-muted-foreground mt-1 leading-none">{label}</div>
     </div>
   );
 }
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 export function PromotionTools() {
   const { toast } = useToast();
@@ -164,15 +179,21 @@ export function PromotionTools() {
     promotions.find(p => p.type === type && (p.status === "active" || p.status === "paused"));
   const activeCount = promotions.filter(p => p.status === "active").length;
 
+  // ── Loading skeleton ────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <Card className="border-border">
+      <Card className="border-white/8">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" />Promotion Tools</CardTitle>
+          <CardTitle className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            Promotion Tools
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[1, 2, 3].map(i => <div key={i} className="h-44 rounded-xl bg-muted animate-pulse" />)}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => <div key={i} className="h-52 rounded-2xl bg-muted/40 animate-pulse" />)}
           </div>
         </CardContent>
       </Card>
@@ -180,111 +201,143 @@ export function PromotionTools() {
   }
 
   return (
-    <Card className="border-border shadow-sm">
-      <CardHeader className="pb-3">
+    <Card className="border-white/8 shadow-sm">
+      {/* ── Header ── */}
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Zap className="w-5 h-5 text-amber-500" />
+            <CardTitle className="flex items-center gap-2.5 text-lg">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
               Promotion Tools
             </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
               {"Erh\u00F6hen Sie Ihre Sichtbarkeit zu bestimmten Zeiten \u2014 pr\u00E4zise und messbar."}
             </p>
           </div>
           {activeCount > 0 && (
-            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 shrink-0">
-              {activeCount} Aktiv
-            </Badge>
+            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/25 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              {activeCount} {activeCount === 1 ? "Boost" : "Boosts"} aktiv
+            </div>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <CardContent className="space-y-5 pt-4">
+
+        {/* ── Boost Cards Grid ── */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {relevantBoosts.map((cfg) => {
             const promo = getActivePromo(cfg.type);
-            const isLive    = promo?.status === "active";
-            const isPaused  = promo?.status === "paused";
+            const isLive   = promo?.status === "active";
+            const isPaused = promo?.status === "paused";
             const nowActive = isBoostCurrentlyActive(cfg.type);
 
             return (
               <motion.div
                 key={cfg.type}
                 layout
-                className={`rounded-xl border p-4 flex flex-col gap-3 transition-colors ${
-                  isLive   ? "border-emerald-200 bg-emerald-50/50 shadow-sm shadow-emerald-100"
-                  : isPaused ? "border-amber-200 bg-amber-50/50"
-                  : "border-border bg-card hover:border-primary/30"
+                className={`rounded-2xl border flex flex-col gap-4 p-5 transition-all duration-200 ${
+                  isLive
+                    ? "border-emerald-500/25 bg-gradient-to-b from-emerald-500/[0.06] to-transparent shadow-[0_0_32px_rgba(16,185,129,0.07)]"
+                    : isPaused
+                    ? "border-amber-500/20 bg-amber-500/[0.04]"
+                    : "border-white/8 bg-card hover:border-white/15 hover:shadow-md"
                 }`}
               >
+                {/* Card header */}
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{cfg.emoji}</span>
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl leading-none mt-0.5 select-none">{cfg.emoji}</span>
                     <div>
-                      <div className="font-semibold text-sm leading-tight">{cfg.label}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {cfg.hours[0]}–{cfg.hours[1] < cfg.hours[0] ? `0${cfg.hours[1]}` : cfg.hours[1]} Uhr
+                      <div className="font-semibold text-sm leading-snug">{cfg.label}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                        {cfg.hours[0]}:00 – {cfg.hours[1] < cfg.hours[0] ? "0" : ""}{cfg.hours[1]}:00 Uhr
                       </div>
                     </div>
                   </div>
                   {promo && <BoostStatusBadge status={promo.status} />}
                 </div>
 
+                {/* Description */}
                 <p className="text-xs text-muted-foreground leading-relaxed flex-1">
                   {cfg.businessCopy[businessType] ?? cfg.description}
                 </p>
 
+                {/* Live pulse indicators */}
                 {nowActive && !isLive && (
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 w-fit">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-full px-3 py-1.5 w-fit">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                     Jetzt aktive Zeit
                   </div>
                 )}
                 {nowActive && isLive && (
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 w-fit">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    {"Live & aktiv"}
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-3 py-1.5 w-fit">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    {"Live \u0026 aktiv"}
                   </div>
                 )}
 
+                {/* Metrics row */}
                 {promo && (
-                  <div className="grid grid-cols-4 gap-1 py-2 border-t border-border/50">
-                    <MiniStat icon={Eye}          value={promo.impressions}           label="Einbl."  cls="text-violet-500" />
-                    <MiniStat icon={MousePointer} value={promo.clicks}                label="Klicks"  cls="text-blue-500" />
-                    <MiniStat icon={CalendarCheck} value={promo.bookings_attributed}  label="Buch."   cls="text-emerald-500" />
-                    <MiniStat icon={Flame}         value={promo.heat_exposure}         label="Heat"    cls="text-orange-500" />
+                  <div className="grid grid-cols-4 gap-2 pt-3 border-t border-white/8">
+                    <MiniStat value={promo.impressions}          label="Einbl." />
+                    <MiniStat value={promo.clicks}               label="Klicks" />
+                    <MiniStat value={promo.bookings_attributed}  label="Buch." />
+                    <MiniStat value={promo.heat_exposure}        label="Heat" />
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                {/* Action buttons */}
+                <div className="flex gap-2 mt-auto">
                   {!promo && (
                     <Button
                       size="sm"
-                      className="w-full bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 font-semibold"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-0 font-semibold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all"
                       disabled={launching === cfg.type || !restaurantId}
                       onClick={() => { setLaunching(cfg.type); launchMutation.mutate(cfg.type); }}
                     >
                       <Zap className="w-3.5 h-3.5 mr-1.5" />
-                      {launching === cfg.type ? "Startet\u2026" : "Aktivieren"}
+                      {launching === cfg.type ? "Startet\u2026" : "Jetzt aktivieren"}
                     </Button>
                   )}
                   {isLive && (
                     <>
-                      <Button size="sm" variant="outline" className="flex-1 border-amber-300 text-amber-700 hover:bg-amber-50" onClick={() => pauseMutation.mutate(promo!.id)}>
-                        <Pause className="w-3 h-3 mr-1" /> Pause
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 border-white/10 text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                        onClick={() => pauseMutation.mutate(promo!.id)}
+                      >
+                        <Pause className="w-3 h-3 mr-1.5" /> Pause
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50" onClick={() => stopMutation.mutate(promo!.id)}>
-                        <Square className="w-3 h-3 mr-1" /> Stopp
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="px-3 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
+                        onClick={() => stopMutation.mutate(promo!.id)}
+                      >
+                        <Square className="w-3 h-3" />
                       </Button>
                     </>
                   )}
                   {isPaused && (
                     <>
-                      <Button size="sm" className="flex-1 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90" onClick={() => resumeMutation.mutate(promo!.id)}>
-                        <Play className="w-3.5 h-3.5 mr-1" /> Fortsetzen
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-0 font-semibold"
+                        onClick={() => resumeMutation.mutate(promo!.id)}
+                      >
+                        <Play className="w-3.5 h-3.5 mr-1.5" /> Fortsetzen
                       </Button>
-                      <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50" onClick={() => stopMutation.mutate(promo!.id)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="px-3 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
+                        onClick={() => stopMutation.mutate(promo!.id)}
+                      >
                         <Square className="w-3.5 h-3.5" />
                       </Button>
                     </>
@@ -295,38 +348,41 @@ export function PromotionTools() {
           })}
         </div>
 
+        {/* ── Smart Pricing ── */}
         <SmartPricingDashboard businessType={businessType} restaurantId={restaurantId} />
 
+        {/* ── Daily Budget ── */}
         {budgets.length > 0 && (
-          <div className="border border-border/50 rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Wallet className="w-4 h-4 text-primary" />
+          <div className="rounded-2xl border border-white/8 bg-muted/20 p-5 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <Wallet className="w-4 h-4 text-indigo-400" />
               <span className="font-semibold text-sm">Tagesbudget</span>
               <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1">
                 <Info className="w-3 h-3" />
-                Boost stoppt automatisch wenn Budget erreicht
+                Boost stoppt automatisch bei Budgetlimit
               </span>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               {budgets.map((b) => {
                 const cfg = BOOST_CONFIGS.find(c => c.type === b.type);
                 const spentPct = b.dailyBudget > 0 ? Math.min(100, (b.spentToday / b.dailyBudget) * 100) : 0;
                 const isEditing = editingBudget === b.id;
 
                 return (
-                  <div key={b.id} className="rounded-lg border border-border/40 bg-muted/30 p-3 space-y-2">
+                  <div key={b.id} className="rounded-xl border border-white/8 bg-white/[0.02] p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium flex items-center gap-1.5">
-                        <span>{cfg?.emoji}</span> {cfg?.label ?? b.type}
+                      <span className="text-sm font-medium flex items-center gap-2">
+                        <span>{cfg?.emoji}</span>
+                        {cfg?.label ?? b.type}
                         {b.budgetExhausted && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-200">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
                             Budget aufgebraucht
                           </span>
                         )}
                       </span>
                       <button
-                        className="text-[11px] text-primary font-semibold hover:underline"
+                        className="text-[11px] text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
                         onClick={() => {
                           setEditingBudget(isEditing ? null : b.id);
                           setBudgetInput(prev => ({ ...prev, [b.id]: String(b.dailyBudget) }));
@@ -337,12 +393,12 @@ export function PromotionTools() {
                     </div>
 
                     {b.dailyBudget > 0 && (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex justify-between text-[11px] text-muted-foreground">
-                          <span>{"Heute: \u20AC"}{b.spentToday.toFixed(2)} ausgegeben</span>
-                          <span>{"Budget: \u20AC"}{b.dailyBudget.toFixed(2)}/Tag</span>
+                          <span>{"\u20AC"}{b.spentToday.toFixed(2)} ausgegeben</span>
+                          <span>{"\u20AC"}{b.dailyBudget.toFixed(2)}/Tag</span>
                         </div>
-                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${
                               spentPct >= 100 ? "bg-red-500" : spentPct > 70 ? "bg-amber-500" : "bg-emerald-500"
@@ -357,17 +413,17 @@ export function PromotionTools() {
                     )}
 
                     {isEditing && (
-                      <div className="pt-2 border-t border-border/40 space-y-2">
+                      <div className="pt-3 border-t border-white/8 space-y-3">
                         <p className="text-[11px] text-muted-foreground">Tagesbudget festlegen (0 = unbegrenzt)</p>
                         <div className="flex gap-2 flex-wrap">
                           {[0, 5, 10, 20, 50].map(amount => (
                             <button
                               key={amount}
                               onClick={() => setBudgetInput(prev => ({ ...prev, [b.id]: String(amount) }))}
-                              className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+                              className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
                                 budgetInput[b.id] === String(amount)
-                                  ? "bg-primary text-white border-primary"
-                                  : "border-border bg-card hover:border-primary/40"
+                                  ? "bg-indigo-600 text-white border-indigo-600"
+                                  : "border-white/10 bg-white/5 hover:border-white/20 text-muted-foreground hover:text-foreground"
                               }`}
                             >
                               {amount === 0 ? "Unbegrenzt" : `\u20AC${amount}/Tag`}
@@ -381,12 +437,12 @@ export function PromotionTools() {
                             max={500}
                             value={budgetInput[b.id] ?? ""}
                             onChange={e => setBudgetInput(prev => ({ ...prev, [b.id]: e.target.value }))}
-                            className="flex-1 text-sm border border-border rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
-                            placeholder="Eigener Betrag"
+                            className="flex-1 text-sm border border-white/10 rounded-xl px-3 py-2 bg-white/5 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 placeholder:text-muted-foreground"
+                            placeholder="Eigener Betrag (€)"
                           />
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90"
+                            className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-0"
                             onClick={() => {
                               const val = parseFloat(budgetInput[b.id] ?? "0") || 0;
                               budgetMutation.mutate({ promoId: b.id, dailyBudget: val });
@@ -403,8 +459,8 @@ export function PromotionTools() {
               })}
             </div>
 
-            <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
-              <span className="text-base">{"\u2139\uFE0F"}</span>
+            <div className="flex items-start gap-2.5 text-[11px] text-muted-foreground bg-indigo-500/8 border border-indigo-500/15 rounded-xl px-3 py-2.5">
+              <span className="text-sm mt-0.5">{"\u2139\uFE0F"}</span>
               <span>
                 {"Boosted Lokale erhalten das Label "}
                 <strong className="text-foreground">{"\u201EGesponsert\u201C"}</strong>
@@ -414,24 +470,26 @@ export function PromotionTools() {
           </div>
         )}
 
+        {/* ── Total Performance ── */}
         {promotions.length > 0 && (
-          <div className="pt-4 border-t border-border/50">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-primary" /> Gesamtperformance
+          <div className="pt-2 border-t border-white/8">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-indigo-400" />
+                Gesamtperformance
               </span>
               <span className="text-xs text-muted-foreground">Alle Boosts kombiniert</span>
             </div>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { icon: Eye,          label: "Einblendungen", val: promotions.reduce((s, p) => s + (p.impressions || 0), 0),          cls: "text-violet-500" },
-                { icon: MousePointer, label: "Klicks",        val: promotions.reduce((s, p) => s + (p.clicks || 0), 0),               cls: "text-blue-500" },
-                { icon: CalendarCheck,label: "Buchungen",     val: promotions.reduce((s, p) => s + (p.bookings_attributed || 0), 0),   cls: "text-emerald-500" },
-                { icon: Flame,         label: "Heat-Expo.",   val: promotions.reduce((s, p) => s + (p.heat_exposure || 0), 0),         cls: "text-orange-500" },
-              ].map(({ icon: Ic, label, val, cls }) => (
-                <div key={label} className="text-center space-y-1">
-                  <Ic className={`w-5 h-5 mx-auto ${cls}`} />
-                  <div className="text-xl font-bold">{val.toLocaleString("de")}</div>
+                { icon: Eye,           label: "Einblendungen", val: promotions.reduce((s, p) => s + (p.impressions || 0), 0) },
+                { icon: MousePointer,  label: "Klicks",        val: promotions.reduce((s, p) => s + (p.clicks || 0), 0) },
+                { icon: CalendarCheck, label: "Buchungen",     val: promotions.reduce((s, p) => s + (p.bookings_attributed || 0), 0) },
+                { icon: Flame,         label: "Heat-Expo.",    val: promotions.reduce((s, p) => s + (p.heat_exposure || 0), 0) },
+              ].map(({ icon: Ic, label, val }) => (
+                <div key={label} className="rounded-xl border border-white/8 bg-white/[0.02] p-4 text-center space-y-1">
+                  <Ic className="w-4 h-4 mx-auto text-indigo-400 mb-2" />
+                  <div className="text-xl font-extrabold tabular-nums">{val.toLocaleString("de")}</div>
                   <div className="text-xs text-muted-foreground">{label}</div>
                 </div>
               ))}
@@ -443,7 +501,7 @@ export function PromotionTools() {
   );
 }
 
-// ─── Smart Pricing Dashboard (replaces old DynamicPricingPanel) ─────────────
+// ─── Smart Pricing Dashboard ────────────────────────────────────────────────────
 
 interface PricingData {
   pricePerImpression: number;
@@ -484,24 +542,28 @@ interface SmartSuggestion {
 
 function DemandChip({ level }: { level: PricingData["demandLevel"] }) {
   const map: Record<PricingData["demandLevel"], { label: string; cls: string }> = {
-    low:       { label: "Niedrig",        cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-    normal:    { label: "Normal",         cls: "bg-blue-100 text-blue-700 border-blue-200" },
-    high:      { label: "Hoch",           cls: "bg-amber-100 text-amber-700 border-amber-200" },
-    very_high: { label: "Sehr hoch",      cls: "bg-red-100 text-red-700 border-red-200" },
+    low:       { label: "Niedrig",   cls: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" },
+    normal:    { label: "Normal",    cls: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20" },
+    high:      { label: "Hoch",      cls: "text-amber-400 bg-amber-400/10 border-amber-400/20" },
+    very_high: { label: "Sehr hoch", cls: "text-red-400 bg-red-400/10 border-red-400/20" },
   };
   const { label, cls } = map[level] ?? map.normal;
-  return <Badge className={`text-[10px] font-semibold ${cls}`}>{label}</Badge>;
+  return (
+    <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 function SuggestionIcon({ type }: { type: string }) {
   const iconMap: Record<string, React.ElementType> = {
-    timing: Clock,
-    budget: BarChart3,
+    timing:      Clock,
+    budget:      BarChart3,
     opportunity: Sparkles,
-    savings: Shield,
+    savings:     Shield,
   };
   const Icon = iconMap[type] ?? Lightbulb;
-  return <Icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />;
+  return <Icon className="w-3.5 h-3.5 shrink-0 mt-0.5 text-indigo-400" />;
 }
 
 function SmartPricingDashboard({ businessType, restaurantId }: { businessType: string; restaurantId: number | null }) {
@@ -561,12 +623,10 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
 
   if (pricingLoading) {
     return (
-      <div className="border border-border/50 rounded-xl p-4 animate-pulse">
-        <div className="h-4 w-48 bg-muted rounded mb-3" />
-        <div className="grid grid-cols-3 gap-3">
-          <div className="h-16 bg-muted rounded-lg" />
-          <div className="h-16 bg-muted rounded-lg" />
-          <div className="h-16 bg-muted rounded-lg" />
+      <div className="rounded-2xl border border-white/8 p-5 animate-pulse space-y-3">
+        <div className="h-4 w-40 bg-muted/60 rounded" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <div key={i} className="h-16 bg-muted/40 rounded-xl" />)}
         </div>
       </div>
     );
@@ -574,113 +634,120 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
 
   if (!pricing) return null;
 
-  const bd = pricing.breakdown;
-
   return (
-    <div className="border border-border/50 rounded-xl overflow-hidden">
-      <div className="p-4 space-y-4">
+    <div className="rounded-2xl border border-white/8 bg-white/[0.01] overflow-hidden">
+      <div className="p-5 space-y-5">
+
+        {/* Header */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-violet-500" />
+          <div className="flex items-center gap-2.5">
+            <Activity className="w-4 h-4 text-indigo-400" />
             <span className="font-semibold text-sm">Smart Pricing</span>
             <DemandChip level={pricing.demandLevel} />
           </div>
-          <span className="text-xs text-muted-foreground">{"Echtzeit \u00B7 aktualisiert alle 2 Min."}</span>
+          <span className="text-xs text-muted-foreground">{"Echtzeit \u00B7 alle 2 Min."}</span>
         </div>
 
+        {/* Pricing grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-            <p className="text-[10px] text-muted-foreground mb-1">Aktueller Preis</p>
-            <p className="text-lg font-bold text-foreground">{"\u20AC"}{pricing.pricePer1000.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">pro 1.000 Einbl.</p>
+          <div className="rounded-xl bg-white/[0.03] border border-white/8 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1.5">Aktueller Preis</p>
+            <p className="text-lg font-bold">{"\u20AC"}{pricing.pricePer1000.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">pro 1.000 Einbl.</p>
           </div>
-          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-            <p className="text-[10px] text-muted-foreground mb-1">Nachfrage</p>
+          <div className="rounded-xl bg-white/[0.03] border border-white/8 p-3 text-center flex flex-col items-center gap-1.5">
+            <p className="text-[10px] text-muted-foreground">Nachfrage</p>
             <DemandChip level={pricing.demandLevel} />
-            <p className="text-[10px] text-muted-foreground mt-1">{pricing.totalActivePlatformBoosts} Boosts aktiv</p>
+            <p className="text-[10px] text-muted-foreground">{pricing.totalActivePlatformBoosts} Boosts aktiv</p>
           </div>
-          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-            <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
+          <div className="rounded-xl bg-white/[0.03] border border-white/8 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1.5 flex items-center justify-center gap-1">
               <Users className="w-2.5 h-2.5" /> Konkurrenz
             </p>
-            <p className="text-base font-bold text-foreground">{pricing.competingBoosts}</p>
-            <p className="text-[10px] text-muted-foreground">Mitbewerber</p>
+            <p className="text-lg font-bold">{pricing.competingBoosts}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Mitbewerber</p>
           </div>
-          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-            <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
+          <div className="rounded-xl bg-white/[0.03] border border-white/8 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1.5 flex items-center justify-center gap-1">
               <Clock className="w-2.5 h-2.5" /> {"G\u00FCnstigste Zeit"}
             </p>
-            <p className="text-sm font-bold text-foreground leading-tight">{pricing.bestBoostWindow}</p>
+            <p className="text-sm font-bold leading-snug">{pricing.bestBoostWindow}</p>
           </div>
         </div>
 
-        <div className="rounded-lg bg-muted/20 border border-border/30 px-3 py-2.5 space-y-1">
-          <p className="text-xs text-foreground font-medium">{pricing.pricingContext}</p>
+        {/* Context info */}
+        <div className="rounded-xl bg-white/[0.03] border border-white/8 px-4 py-3 space-y-1.5">
+          <p className="text-xs font-medium">{pricing.pricingContext}</p>
           <p className="text-[11px] text-muted-foreground">{pricing.timeSignal}</p>
           {pricing.locationSignal && (
             <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> {pricing.locationSignal}
+              <MapPin className="w-3 h-3 shrink-0" /> {pricing.locationSignal}
             </p>
           )}
         </div>
 
-        <div className="flex items-start gap-2 rounded-lg bg-violet-500/8 border border-violet-500/20 px-3 py-2">
-          <Zap className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-violet-300">{pricing.suggestion}</p>
+        {/* AI suggestion highlight */}
+        <div className="flex items-start gap-2.5 rounded-xl bg-indigo-500/8 border border-indigo-500/20 px-4 py-3">
+          <Zap className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-indigo-300 leading-relaxed">{pricing.suggestion}</p>
         </div>
 
+        {/* Slot tiers */}
         {pricing.slotTiers && pricing.slotTiers.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5" /> Slot-Preise
             </p>
             <div className="grid grid-cols-3 gap-2">
-              {pricing.slotTiers.map((slot) => (
+              {pricing.slotTiers.map((slot, idx) => (
                 <div
                   key={slot.tier}
-                  className={`rounded-lg border p-2.5 text-center transition-colors ${
-                    slot.tier === "top1"
-                      ? "border-amber-300 bg-amber-50/50"
-                      : slot.tier === "top3"
-                      ? "border-blue-200 bg-blue-50/30"
-                      : "border-border bg-card"
+                  className={`rounded-xl border p-3 text-center transition-colors ${
+                    idx === 0
+                      ? "border-amber-400/30 bg-amber-400/[0.06]"
+                      : idx === 1
+                      ? "border-indigo-400/25 bg-indigo-400/[0.04]"
+                      : "border-white/8 bg-white/[0.02]"
                   }`}
                 >
-                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">{slot.label.split(" — ")[0]}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium mb-1">{slot.label.split(" — ")[0]}</p>
                   <p className={`text-sm font-bold ${
-                    slot.tier === "top1" ? "text-amber-700" : slot.tier === "top3" ? "text-blue-700" : "text-foreground"
+                    idx === 0 ? "text-amber-400" : idx === 1 ? "text-indigo-400" : "text-foreground"
                   }`}>{"\u20AC"}{slot.pricePer1000.toFixed(2)}</p>
-                  <p className="text-[9px] text-muted-foreground">{slot.label.split(" — ")[1]}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">{slot.label.split(" — ")[1]}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* AI recommendations */}
         {suggestions.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> KI-Empfehlungen
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> KI-Empfehlungen
             </p>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {suggestions.slice(0, 3).map((s, i) => (
                 <div
                   key={i}
-                  className={`rounded-lg border px-3 py-2 flex items-start gap-2 ${
+                  className={`rounded-xl border px-3.5 py-2.5 flex items-start gap-2.5 ${
                     s.priority === "high"
-                      ? "border-amber-200 bg-amber-50/40"
+                      ? "border-amber-400/25 bg-amber-400/[0.05]"
                       : s.priority === "medium"
-                      ? "border-blue-200/50 bg-blue-50/20"
-                      : "border-border bg-card"
+                      ? "border-indigo-400/20 bg-indigo-400/[0.04]"
+                      : "border-white/8 bg-white/[0.02]"
                   }`}
                 >
                   <SuggestionIcon type={s.type} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground">{s.title}</p>
-                    <p className="text-[11px] text-muted-foreground leading-snug">{s.description}</p>
+                    <p className="text-xs font-semibold">{s.title}</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">{s.description}</p>
                   </div>
                   {s.priority === "high" && (
-                    <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] shrink-0">Empfohlen</Badge>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-400 border border-amber-400/20 shrink-0 mt-0.5">
+                      Top
+                    </span>
                   )}
                 </div>
               ))}
@@ -688,15 +755,16 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
           </div>
         )}
 
-        <div className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        {/* Auto-optimize toggle */}
+        <div className="rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
             {autoOptEnabled
-              ? <ToggleRight className="w-5 h-5 text-emerald-500" />
-              : <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+              ? <ToggleRight className="w-5 h-5 text-emerald-400 shrink-0" />
+              : <ToggleLeft className="w-5 h-5 text-muted-foreground shrink-0" />
             }
             <div>
-              <p className="text-xs font-semibold text-foreground">Automatisch optimieren</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs font-semibold">Automatisch optimieren</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
                 {autoOptEnabled
                   ? "System optimiert Timing & Budget automatisch"
                   : "System passt Ausgaben und Timing automatisch an"
@@ -704,52 +772,19 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
               </p>
             </div>
           </div>
-          <button
+          <Button
+            size="sm"
+            variant={autoOptEnabled ? "outline" : "default"}
+            className={autoOptEnabled
+              ? "border-white/10 text-muted-foreground hover:bg-white/5 text-xs"
+              : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-0 text-xs"
+            }
             onClick={() => autoOptMutation.mutate(!autoOptEnabled)}
             disabled={autoOptMutation.isPending}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
-              autoOptEnabled
-                ? "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200"
-                : "bg-card text-foreground border-border hover:border-primary/40"
-            }`}
           >
-            {autoOptMutation.isPending ? "..." : autoOptEnabled ? "Aktiv" : "Aktivieren"}
-          </button>
+            {autoOptEnabled ? "Deaktivieren" : "Aktivieren"}
+          </Button>
         </div>
-
-        <div className="flex items-start gap-2 text-[10px] text-muted-foreground bg-muted/20 rounded-lg px-3 py-2 border border-border/20">
-          <Shield className="w-3 h-3 shrink-0 mt-0.5" />
-          <span>
-            {"Preise \u00E4ndern sich maximal um "}{pricing.config.maxChangePercent}{"% pro Zyklus. "}
-            {"Max. \u20AC"}{(pricing.config.maxPrice * 1000).toFixed(1)}{"/1.000 Einbl. "}
-            {"Keine versteckten Kosten."}
-          </span>
-        </div>
-
-        <details className="group">
-          <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
-            {"Preisberechnung anzeigen \u25B8"}
-          </summary>
-          <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-            {[
-              { label: "Basispreis",       value: `\u20AC${bd.basePrice.toFixed(3)}` },
-              { label: "Nachfrage \u00D7",      value: `${bd.demandMultiplier.toFixed(2)}\u00D7` },
-              { label: "Tageszeit \u00D7",      value: `${bd.timeMultiplier.toFixed(2)}\u00D7` },
-              { label: "Wettbewerb \u00D7",     value: `${bd.slotMultiplier.toFixed(2)}\u00D7` },
-              { label: "Standort \u00D7",       value: `${bd.locationMultiplier.toFixed(2)}\u00D7` },
-              { label: "Wochenend-Bonus",  value: `${bd.weekendBonus.toFixed(2)}\u00D7` },
-              { label: "Gesamtfaktor",     value: `${bd.totalMultiplier.toFixed(2)}\u00D7` },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex justify-between rounded bg-muted/30 px-2 py-1">
-                <span className="text-muted-foreground">{label}</span>
-                <span className="font-mono font-semibold text-foreground">{value}</span>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 text-[10px] text-muted-foreground">
-            {"Maximaler Faktor: "}{pricing.config.maxMultiplier}{"\u00D7 \u2014 Preis wird nie dar\u00FCber steigen."}
-          </p>
-        </details>
       </div>
     </div>
   );

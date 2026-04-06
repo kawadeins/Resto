@@ -1,0 +1,239 @@
+MASTER RULES APPLY
+
+Perform a full "Promotion Tools UI/UX Redesign (High Conversion + Premium Feel)" inside the RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT break functionality.
+Do NOT change core logic.
+Focus ONLY on visual design, usability, and conversion optimization.
+
+This section is a revenue-critical area.
+
+========================
+GOAL
+========================
+
+Transform the Promotion / Boost section into:
+
+- visually premium
+- easy to understand
+- comfortable for the eyes
+- highly conversion-focused
+- encouraging users to spend money
+
+Users should feel:
+👉 "This is powerful"
+👉 "This will bring me customers"
+👉 "I want to activate this"
+
+========================
+1. REMOVE COLOR CHAOS
+========================
+
+Current issue:
+- too many random colors (blue, green, red, purple)
+- visually noisy
+- not premium
+
+Fix:
+
+Use a clean color system:
+
+Primary:
+- deep dark background (#0B0F1A or similar)
+
+Accent (main action):
+- modern gradient (blue → purple or blue → cyan)
+
+Success:
+- soft green (only for active states)
+
+Warning:
+- soft orange (not aggressive)
+
+Danger:
+- minimal red (only for stop button)
+
+Do NOT mix too many colors in one card.
+
+========================
+2. CARD DESIGN UPGRADE
+========================
+
+Redesign each boost card:
+
+Make it:
+
+- cleaner
+- more spaced
+- less cluttered
+- more premium
+
+Remove:
+- heavy borders
+- random color highlights
+
+Add:
+- soft shadow
+- subtle glow on active cards
+- rounded corners
+- consistent spacing
+
+========================
+3. TYPOGRAPHY IMPROVEMENT
+========================
+
+Fix text hierarchy:
+
+Title:
+- bold, clear
+
+Subtitle:
+- softer gray
+
+Description:
+- smaller, readable
+
+Metrics:
+- clean, minimal
+
+Avoid:
+- faded unreadable text
+- low contrast
+
+========================
+4. METRICS CLEANUP
+========================
+
+Current:
+- icons + numbers messy
+
+Fix:
+
+Show:
+
+- Einblendungen
+- Klicks
+- Buchungen
+- Aktivität
+
+Design:
+
+- same color style
+- consistent spacing
+- no rainbow colors
+
+========================
+5. CTA BUTTON REDESIGN (CRITICAL)
+========================
+
+Buttons must feel strong.
+
+Replace:
+
+- boring buttons
+
+With:
+
+👉 Primary button (gradient):
+"Jetzt aktivieren"
+"Fortsetzen"
+
+👉 Secondary:
+"Pause"
+"Stoppen"
+
+Rules:
+
+- one clear main action per card
+- no confusion
+
+========================
+6. ACTIVE STATE DESIGN
+========================
+
+Active boost should feel:
+
+- alive
+- important
+- running
+
+Add:
+
+- soft green badge "Aktiv"
+- subtle glow or highlight
+
+Paused:
+
+- neutral yellow/orange
+
+Inactive:
+
+- clean, calm, not dead
+
+========================
+7. REMOVE VISUAL FATIGUE
+========================
+
+Fix:
+
+- too many borders
+- too many colors
+- too many small elements
+
+Goal:
+
+👉 eyes should relax, not struggle
+
+========================
+8. SIMPLIFY USER FLOW
+========================
+
+User should understand instantly:
+
+- what this boost does
+- when it runs
+- what results it gives
+- how to activate
+
+No confusion.
+
+========================
+9. PREMIUM FEEL
+========================
+
+Make it feel like:
+
+👉 paid advertising dashboard
+👉 not a cheap UI
+
+Use:
+
+- gradients
+- spacing
+- clean typography
+- minimalism
+
+========================
+10. FINAL POLISH
+========================
+
+After redesign:
+
+- everything aligned
+- consistent spacing
+- smooth feel
+- no visual bugs
+
+========================
+FINAL GOAL
+========================
+
+User opens Promotion Tools and feels:
+
+👉 "This looks powerful"
+👉 "I understand it instantly"
+👉 "I trust it"
+👉 "I want to spend money here"
+
+This section must directly increase revenue.

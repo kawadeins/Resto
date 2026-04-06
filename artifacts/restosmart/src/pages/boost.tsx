@@ -8,7 +8,7 @@ import { track } from "@/lib/conversion-tracking";
 import { PromotionTools } from "@/components/promotion-tools";
 import { PromotionPerformance } from "@/components/promotion-performance";
 import { TrialConversionBanner } from "@/components/layout";
-import { getBizType, BIZ_LABEL } from "@/lib/biz-copy";
+import { getBizType } from "@/lib/biz-copy";
 import { Zap } from "lucide-react";
 
 export default function Boost() {
@@ -27,14 +27,19 @@ export default function Boost() {
     <div className="space-y-8 pb-10">
       {isTrial && <TrialConversionBanner context="marketing" />}
 
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-          <Zap className="w-7 h-7 text-amber-500" />
-          Sichtbarkeit & Boost
-        </h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {subline[biz] ?? subline.restaurant}
-        </p>
+      {/* ── Page header ── */}
+      <div className="flex items-start gap-4">
+        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-500/20 shrink-0 mt-0.5">
+          <Zap className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Sichtbarkeit & Boost
+          </h2>
+          <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
+            {subline[biz] ?? subline.restaurant}
+          </p>
+        </div>
       </div>
 
       <PromotionTools />
