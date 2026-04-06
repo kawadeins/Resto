@@ -8,6 +8,7 @@ import {
   discountsTable,
 } from "@workspace/db";
 import { eq, gte, sql, and } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 import { z } from "zod";
 import { EMAIL_ENABLED } from "../services/email";
 
@@ -314,7 +315,7 @@ const CreateCampaignBody = z.object({
   offerDetails: z.string().optional(),
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateCampaignBody.parse(req.body);
     const [campaign] = await db
@@ -329,7 +330,7 @@ router.post("/", async (req, res) => {
 });
 
 // ─── POST /api/campaigns/:id/launch ──────────────────────────────────────────
-router.post("/:id/launch", async (req, res) => {
+router.post("/:id/launch", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
 

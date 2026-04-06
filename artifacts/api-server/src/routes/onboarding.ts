@@ -8,6 +8,7 @@ import {
 } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -111,7 +112,7 @@ router.get("/status", async (req, res) => {
 });
 
 // ─── PATCH /api/onboarding/step ──────────────────────────────────────────────
-router.patch("/step", async (req, res) => {
+router.patch("/step", requireManagerOrAbove(), async (req, res) => {
   try {
     const { step } = z.object({ step: z.number().int().min(0).max(6) }).parse(req.body);
 
@@ -146,7 +147,7 @@ router.patch("/step", async (req, res) => {
 });
 
 // ─── POST /api/onboarding/enable-bookings ────────────────────────────────────
-router.post("/enable-bookings", async (req, res) => {
+router.post("/enable-bookings", requireManagerOrAbove(), async (req, res) => {
   try {
     await db
       .update(restaurantsTable)
@@ -172,7 +173,7 @@ router.post("/enable-bookings", async (req, res) => {
 });
 
 // ─── POST /api/onboarding/complete ───────────────────────────────────────────
-router.post("/complete", async (req, res) => {
+router.post("/complete", requireManagerOrAbove(), async (req, res) => {
   try {
     await db
       .update(restaurantsTable)
@@ -249,7 +250,7 @@ const UpdateRestaurantBody = z.object({
   closeTime: z.string().optional(),
 });
 
-router.patch("/restaurant", async (req, res) => {
+router.patch("/restaurant", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = UpdateRestaurantBody.parse(req.body);
 

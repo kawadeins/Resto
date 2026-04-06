@@ -1,0 +1,286 @@
+MASTER RULES APPLY
+
+Perform a full "Business Team System Final Build + Role Locking + End-to-End Validation Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT modify Founder dashboard.
+Do NOT add unrelated features.
+
+This pass is ONLY for completing and hardening the business-side team system.
+
+It must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+This includes:
+- Staff management
+- Role-based access control
+- Full system validation
+
+========================
+GOAL
+========================
+
+Deliver a complete, secure, and production-ready team system where business owners can:
+
+- invite staff
+- assign roles
+- control access
+- share dashboard safely
+
+And ensure the system works end-to-end with real permission enforcement.
+
+========================
+1. STAFF MANAGEMENT SYSTEM (BUILD + FIX)
+========================
+
+Ensure a complete "Team / Mitarbeiter" section exists in the business dashboard.
+
+Owner must be able to:
+
+- invite staff via email
+- assign role:
+  - Owner
+  - Manager
+  - Staff
+- view team list
+- see status (pending / active)
+- change roles
+- remove users
+
+Fix any:
+- missing actions
+- broken invite logic
+- incorrect role assignments
+
+========================
+2. ROLE SYSTEM (STRICT)
+========================
+
+Define and enforce roles:
+
+Owner:
+- full access
+- billing
+- premium
+- team management
+- all systems
+
+Manager:
+- operations
+- boost tools
+- analytics
+- profile editing
+- NO billing
+- NO owner controls
+
+Staff:
+- limited dashboard
+- basic access
+- NO billing
+- NO premium
+- NO team controls
+
+========================
+3. UI LOCKING (CLEAN)
+========================
+
+Ensure dashboard UI adapts per role:
+
+Owner:
+- sees everything
+
+Manager:
+- sees operational tools only
+
+Staff:
+- sees limited safe interface
+
+Rules:
+- hide restricted sections completely
+- do NOT rely only on disabled buttons
+- avoid confusing UI
+
+========================
+4. ROUTE PROTECTION
+========================
+
+Protect routes by role:
+
+Examples:
+- /billing → owner only
+- /team → owner only
+- /premium → owner only
+- /boost → owner/manager
+- /analytics → owner/manager
+
+If unauthorized:
+- block access
+- show clean German message:
+  "Du hast keinen Zugriff auf diesen Bereich."
+
+========================
+5. BACKEND SECURITY (CRITICAL)
+========================
+
+Enforce all permissions server-side.
+
+For every sensitive action:
+- verify user role
+- verify business ownership
+- reject unauthorized actions
+
+Protect:
+- billing
+- premium
+- team changes
+- role updates
+- boost activation
+- critical settings
+
+NEVER trust frontend only.
+
+========================
+6. INVITE + ACCEPT FLOW (END-TO-END)
+========================
+
+Simulate full flow:
+
+Owner:
+- sends invite
+
+User:
+- receives invite
+- accepts invite
+
+Verify:
+- user attached to correct business
+- correct role assigned
+- dashboard access granted
+- team list updates correctly
+
+========================
+7. ROLE EXPERIENCE VALIDATION
+========================
+
+Test each role:
+
+Owner:
+- full control works
+
+Manager:
+- allowed tools work
+- restricted areas blocked
+
+Staff:
+- only safe access
+- no sensitive controls
+
+Ensure:
+- no access leaks
+- no hidden access via URL
+
+========================
+8. ROLE CHANGE + REMOVAL
+========================
+
+Test:
+
+- change role (Manager ↔ Staff)
+- remove user
+
+Verify:
+- UI updates instantly
+- permissions update instantly
+- no stale access
+- removed users lose access fully
+
+========================
+9. EDGE CASES
+========================
+
+Handle:
+
+- duplicate invites
+- invalid email
+- pending invites
+- removed users still logged in
+- role changed mid-session
+- direct URL access attempts
+
+System must remain secure.
+
+========================
+10. GERMAN UI CONSISTENCY
+========================
+
+Ensure all team-related UI is in German:
+
+- "Mitarbeiter hinzufügen"
+- "Einladung senden"
+- "Rolle ändern"
+- "Kein Zugriff"
+- "Nur für Inhaber"
+
+No mixed language.
+
+========================
+11. REALITY CHECK
+========================
+
+For each part classify:
+
+- Fully Working
+- Working but Weak
+- UI Only
+- Broken
+
+Fix everything not fully working.
+
+========================
+12. FINAL HARDENING
+========================
+
+After fixes:
+
+- ensure all systems are connected
+- remove any fake/demo behavior
+- ensure real permission enforcement
+- ensure clean UX per role
+
+========================
+13. FINAL REPORT
+========================
+
+Output:
+
+A. Staff system status  
+B. Invite flow status  
+C. Role enforcement status  
+D. UI locking status  
+E. Backend security status  
+F. Route protection status  
+G. Edge cases handled  
+H. Remaining risks (if any)  
+I. Final readiness level  
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must have a complete business team system where:
+
+- owners manage teams easily  
+- roles are enforced correctly  
+- access is secure  
+- UI is clean and role-based  
+- system is production-ready  
+
+The business dashboard should feel:
+
+👉 real  
+👉 secure  
+👉 professional  
+👉 ready for real companies

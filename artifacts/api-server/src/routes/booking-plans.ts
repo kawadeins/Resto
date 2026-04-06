@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { bookingPlansTable } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { z } from "zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -75,7 +76,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/booking-plans
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = PlanBody.parse(req.body);
     const [plan] = await db
@@ -105,7 +106,7 @@ router.post("/", async (req, res) => {
 });
 
 // PATCH /api/booking-plans/:id
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const body = PlanBody.partial().parse(req.body);
@@ -138,7 +139,7 @@ router.patch("/:id", async (req, res) => {
 });
 
 // POST /api/booking-plans/:id/duplicate
-router.post("/:id/duplicate", async (req, res) => {
+router.post("/:id/duplicate", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const [original] = await db.select().from(bookingPlansTable).where(eq(bookingPlansTable.id, id));
@@ -171,7 +172,7 @@ router.post("/:id/duplicate", async (req, res) => {
 });
 
 // DELETE /api/booking-plans/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(bookingPlansTable).where(eq(bookingPlansTable.id, id));

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { employeeOffDaysTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -17,7 +18,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /api/employee-days — toggle an off day (creates if not exists, deletes if exists)
-router.post("/toggle", async (req, res) => {
+router.post("/toggle", requireManagerOrAbove(), async (req, res) => {
   try {
     const { employeeId, dayOfWeek } = req.body as { employeeId: number; dayOfWeek: string };
     if (!employeeId || !dayOfWeek) return res.status(400).json({ error: "employeeId and dayOfWeek required" });
@@ -44,7 +45,7 @@ router.post("/toggle", async (req, res) => {
 });
 
 // DELETE /api/employee-days/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(employeeOffDaysTable).where(eq(employeeOffDaysTable.id, id));

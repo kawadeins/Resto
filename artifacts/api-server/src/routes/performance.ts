@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { employeesTable, shiftsTable, shiftAttendanceTable } from "@workspace/db";
 import { eq, and, desc, gte, sql } from "drizzle-orm";
 import { z } from "zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -104,7 +105,7 @@ const SetRateBody = z.object({
 
 // POST /api/performance/set-rate
 // Update the hourly rate of an employee
-router.post("/set-rate", async (req, res) => {
+router.post("/set-rate", requireManagerOrAbove(), async (req, res) => {
   try {
     const { employeeId, hourlyRate } = SetRateBody.parse(req.body);
 

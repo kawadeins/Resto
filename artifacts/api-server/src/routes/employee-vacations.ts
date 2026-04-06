@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { employeeVacationsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -17,7 +18,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /api/employee-vacations — create a vacation period
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const { employeeId, startDate, endDate, notes } = req.body as {
       employeeId: number;
@@ -43,7 +44,7 @@ router.post("/", async (req, res) => {
 });
 
 // DELETE /api/employee-vacations/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(employeeVacationsTable).where(eq(employeeVacationsTable.id, id));

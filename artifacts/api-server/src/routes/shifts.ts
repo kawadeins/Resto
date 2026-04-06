@@ -4,6 +4,7 @@ import { shiftsTable, employeesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateShiftBody, DeleteShiftParams } from "@workspace/api-zod";
 import { getUnavailableEmployeeIds } from "../lib/staff-availability";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -141,7 +142,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateShiftBody.parse(req.body);
     const [shift] = await db.insert(shiftsTable).values({
@@ -167,7 +168,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = DeleteShiftParams.parse({ id: parseInt(req.params.id) });
     await db.delete(shiftsTable).where(eq(shiftsTable.id, id));

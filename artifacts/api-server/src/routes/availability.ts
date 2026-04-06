@@ -4,6 +4,7 @@ import { restaurantsTable, reservationsTable } from "@workspace/db";
 import { eq, gte, lte, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { buildSlots } from "../lib/availability";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -38,7 +39,7 @@ const SettingsBody = z.object({
 });
 
 // PUT /api/availability/settings
-router.put("/settings", async (req, res) => {
+router.put("/settings", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = parseInt((req.query.restaurantId as string) ?? "1") || 1;
     const body = SettingsBody.parse(req.body);
@@ -65,7 +66,7 @@ const PauseBody = z.object({
 });
 
 // POST /api/availability/pause
-router.post("/pause", async (req, res) => {
+router.post("/pause", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = parseInt((req.query.restaurantId as string) ?? "1") || 1;
     const { paused, durationMinutes } = PauseBody.parse(req.body);

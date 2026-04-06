@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { menuItemsTable, menuIngredientsTable, inventoryTable, posSalesTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -131,7 +132,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateMenuItemBody.parse(req.body);
     const [item] = await db.insert(menuItemsTable).values({
@@ -160,7 +161,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const body = UpdateMenuItemBody.parse(req.body);
@@ -179,7 +180,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(menuItemsTable).where(eq(menuItemsTable.id, id));
@@ -227,7 +228,7 @@ router.get("/:id/ingredients", async (req, res) => {
   }
 });
 
-router.put("/:id/ingredients", async (req, res) => {
+router.put("/:id/ingredients", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { ingredients } = SetIngredientsBody.parse(req.body);
