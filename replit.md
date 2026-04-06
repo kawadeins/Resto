@@ -23,7 +23,7 @@ RestoSmart is a full-stack SaaS web application designed as a premium restaurant
 
 -   **Owner Dashboard (`artifacts/restosmart`):**
     -   **UI/UX:** Dark theme, Inter font, professional aesthetic.
-    -   **Modules:** Overview KPIs, Staff Management (CRUD, rota, smart reminders, performance/payroll), Table Availability (slot heatmap, pause controls), Reviews & Reputation (4-tab filter, review request sender, rating sync), Inventory, Finances, Analytics (trial users get full access + TrialConversionBanner), Sichtbarkeit & Boost (/boost — dedicated boost/promotion page with business-type-aware filtering), Marketing/Campaigns, Dead Hours/Growth Hub, POS (local-timezone date filtering), Menu, Billing (real stats from /api/promotions/my, Echtdaten badge), Profile (Vienna/AT placeholders).
+    -   **Modules:** Overview KPIs, Staff Management (CRUD, rota, smart reminders, performance/payroll), Table Availability (slot heatmap, pause controls), Reviews & Reputation (4-tab filter, review request sender, rating sync), Inventory, Finances, Analytics (trial users get full access + TrialConversionBanner), Sichtbarkeit & Boost (/boost — Smart Dynamic Pricing with slot tiers, AI suggestions, auto-optimize, location factor), Marketing/Campaigns, Dead Hours/Growth Hub, POS (local-timezone date filtering), Menu, Billing (real stats from /api/promotions/my, Echtdaten badge), Profile (Vienna/AT placeholders).
     -   **Premium System:** `restosmart_owner_premium` = "active"|"trial"|null. Trial users see full analytics. Expired trial shows real promotion stats (not fake numbers). `/boost` route with Flame icon in nav between Analyse and Marketing. All upgrade CTAs are in-app (localStorage + reload), zero external redirects.
     -   **Data Truthfulness:** All fake/demo data removed. GrowthActivationHub shows honest status signals (not random numbers). Wien-Nachfrage uses real API data with dash fallback. Revenue estimates labeled honestly. POS uses local-timezone date filtering. Analytics label says "Echtdaten aus Ihrem Betrieb".
     -   **Design:** Focus on information density and actionable insights.
@@ -35,6 +35,15 @@ RestoSmart is a full-stack SaaS web application designed as a premium restaurant
     -   **Architecture:** A/B testing framework (`conversion_variants` table with `rollout_pct` + `rollout_stage_impressions` columns, dedicated API endpoints) to optimize conversion elements (headlines, CTAs, proof points).
     -   **Logic:** Auto-win logic for variants with significant performance leads (impressions ≥ 40, CTR ≥ 20% higher than runner-up). Winners start at 70% rollout, escalating +10% after every 20 new impressions until 100%.
     -   **Conversion Tracking:** All trial start and paid upgrade CTAs track `isConversion=true` via `trackVariantClick()`. 38 active variants across 7 element types; 5 fake proof_focus variants retired; Variant D high-impact copy seeded.
+-   **Smart Dynamic Pricing System:**
+    -   **Engine:** `artifacts/api-server/src/lib/pricing-engine.ts` — computes real-time boost prices using demand × time × slot × location × weekend multipliers. Safe price limits: `maxPrice`, `maxChangePercent` (25% cap per cycle), `minPrice`. Price smoothing scoped per business type.
+    -   **Demand Signals:** Active platform boosts count, business-type-aware time windows (cafe=morning, restaurant=lunch/dinner, bar=evening/night), same-category competition density.
+    -   **Slot Tiers:** Top #1 (1.30×), Top #2–3 (1.15×), Standard (1.0×) — always displayed to owners.
+    -   **Location Factor:** Vienna district-based: 1. Bezirk (Zentrum) = 1.25×, 2.–9. (Innen) = 1.15×, 10.+ (Außen) = 0.90×. Loaded from `restaurants.district` column.
+    -   **AI Suggestions:** `GET /api/pricing/suggestions` — analyzes historical boost performance, finds cheapest time windows, detects low-competition opportunities, recommends best boost types by ROI.
+    -   **Auto-Optimize Mode:** `POST /api/pricing/auto-optimize` — per-restaurant toggle stored in `platform_config`. When enabled, system can auto-adjust timing and budget.
+    -   **Transparency:** All multipliers shown in collapsible breakdown. Safety note with max price caps and "Keine versteckten Kosten" visible.
+    -   **API Routes:** `/api/pricing/current`, `/api/pricing/schedule`, `/api/pricing/suggestions`, `/api/pricing/auto-optimize`, `/api/pricing/config` (founder-only).
 -   **Business Self-Serve Growth Loop:**
     -   **Entry Point:** Dedicated `/for-business` landing page in customer app, footer CTA.
     -   **Activation Flow:** Instant trial activation for self-serve sign-ups, eliminating 24h wait.

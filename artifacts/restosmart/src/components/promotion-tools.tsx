@@ -9,7 +9,11 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck, Flame, Wallet, Info, Activity, Clock, Users } from "lucide-react";
+import {
+  Zap, Pause, Play, Square, TrendingUp, Eye, MousePointer, CalendarCheck,
+  Flame, Wallet, Info, Activity, Clock, Users, Sparkles, Shield, ArrowUpRight,
+  BarChart3, MapPin, Lightbulb, ToggleLeft, ToggleRight,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BOOST_CONFIGS, type BoostConfig, isBoostCurrentlyActive } from "@/lib/monetization-engine";
 
@@ -110,7 +114,7 @@ export function PromotionTools() {
       return res.json();
     },
     onSuccess: (_, { dailyBudget }) => {
-      const label = dailyBudget === 0 ? "unbegrenzt" : `€${dailyBudget}/Tag`;
+      const label = dailyBudget === 0 ? "unbegrenzt" : `\u20AC${dailyBudget}/Tag`;
       toast({ title: `Tagesbudget gesetzt: ${label}` });
       setEditingBudget(null);
       queryClient.invalidateQueries({ queryKey: ["promotions-budget"] });
@@ -133,7 +137,7 @@ export function PromotionTools() {
     },
     onSuccess: (_, type) => {
       const cfg = BOOST_CONFIGS.find(b => b.type === type);
-      toast({ title: `${cfg?.emoji ?? "🚀"} ${cfg?.label ?? type} gestartet!`, description: "Ihre Sichtbarkeit steigt ab sofort." });
+      toast({ title: `${cfg?.emoji ?? "\uD83D\uDE80"} ${cfg?.label ?? type} gestartet!`, description: "Ihre Sichtbarkeit steigt ab sofort." });
       setLaunching(null);
       invalidate();
     },
@@ -185,7 +189,7 @@ export function PromotionTools() {
               Promotion Tools
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Erhöhen Sie Ihre Sichtbarkeit zu bestimmten Zeiten — präzise und messbar.
+              {"Erh\u00F6hen Sie Ihre Sichtbarkeit zu bestimmten Zeiten \u2014 pr\u00E4zise und messbar."}
             </p>
           </div>
           {activeCount > 0 && (
@@ -214,7 +218,6 @@ export function PromotionTools() {
                   : "border-border bg-card hover:border-primary/30"
                 }`}
               >
-                {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{cfg.emoji}</span>
@@ -228,12 +231,10 @@ export function PromotionTools() {
                   {promo && <BoostStatusBadge status={promo.status} />}
                 </div>
 
-                {/* Value prop */}
                 <p className="text-xs text-muted-foreground leading-relaxed flex-1">
                   {cfg.businessCopy[businessType] ?? cfg.description}
                 </p>
 
-                {/* "Active time" indicator */}
                 {nowActive && !isLive && (
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 w-fit">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -243,11 +244,10 @@ export function PromotionTools() {
                 {nowActive && isLive && (
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 w-fit">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Live & aktiv
+                    {"Live & aktiv"}
                   </div>
                 )}
 
-                {/* Stats */}
                 {promo && (
                   <div className="grid grid-cols-4 gap-1 py-2 border-t border-border/50">
                     <MiniStat icon={Eye}          value={promo.impressions}           label="Einbl."  cls="text-violet-500" />
@@ -257,7 +257,6 @@ export function PromotionTools() {
                   </div>
                 )}
 
-                {/* Actions */}
                 <div className="flex gap-2">
                   {!promo && (
                     <Button
@@ -267,7 +266,7 @@ export function PromotionTools() {
                       onClick={() => { setLaunching(cfg.type); launchMutation.mutate(cfg.type); }}
                     >
                       <Zap className="w-3.5 h-3.5 mr-1.5" />
-                      {launching === cfg.type ? "Startet…" : "Aktivieren"}
+                      {launching === cfg.type ? "Startet\u2026" : "Aktivieren"}
                     </Button>
                   )}
                   {isLive && (
@@ -296,10 +295,8 @@ export function PromotionTools() {
           })}
         </div>
 
-        {/* ── Dynamic Pricing Panel ─────────────────────────────────────────── */}
-        <DynamicPricingPanel businessType={businessType} />
+        <SmartPricingDashboard businessType={businessType} restaurantId={restaurantId} />
 
-        {/* ── Budget Management ─────────────────────────────────────────────── */}
         {budgets.length > 0 && (
           <div className="border border-border/50 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
@@ -339,12 +336,11 @@ export function PromotionTools() {
                       </button>
                     </div>
 
-                    {/* Budget bar */}
                     {b.dailyBudget > 0 && (
                       <div className="space-y-1">
                         <div className="flex justify-between text-[11px] text-muted-foreground">
-                          <span>Heute: €{b.spentToday.toFixed(2)} ausgegeben</span>
-                          <span>Budget: €{b.dailyBudget.toFixed(2)}/Tag</span>
+                          <span>{"Heute: \u20AC"}{b.spentToday.toFixed(2)} ausgegeben</span>
+                          <span>{"Budget: \u20AC"}{b.dailyBudget.toFixed(2)}/Tag</span>
                         </div>
                         <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                           <div
@@ -357,10 +353,9 @@ export function PromotionTools() {
                       </div>
                     )}
                     {b.dailyBudget === 0 && (
-                      <p className="text-[11px] text-muted-foreground">Kein Tagesbudget — Boost läuft unbegrenzt</p>
+                      <p className="text-[11px] text-muted-foreground">{"Kein Tagesbudget \u2014 Boost l\u00E4uft unbegrenzt"}</p>
                     )}
 
-                    {/* Budget editor */}
                     {isEditing && (
                       <div className="pt-2 border-t border-border/40 space-y-2">
                         <p className="text-[11px] text-muted-foreground">Tagesbudget festlegen (0 = unbegrenzt)</p>
@@ -375,7 +370,7 @@ export function PromotionTools() {
                                   : "border-border bg-card hover:border-primary/40"
                               }`}
                             >
-                              {amount === 0 ? "Unbegrenzt" : `€${amount}/Tag`}
+                              {amount === 0 ? "Unbegrenzt" : `\u20AC${amount}/Tag`}
                             </button>
                           ))}
                         </div>
@@ -409,15 +404,16 @@ export function PromotionTools() {
             </div>
 
             <div className="flex items-start gap-2 text-[11px] text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
-              <span className="text-base">ℹ️</span>
+              <span className="text-base">{"\u2139\uFE0F"}</span>
               <span>
-                Boosted Lokale erhalten das Label <strong className="text-foreground">„Gesponsert"</strong> in der Kunden-App — transparent und vertrauenswürdig.
+                {"Boosted Lokale erhalten das Label "}
+                <strong className="text-foreground">{"\u201EGesponsert\u201C"}</strong>
+                {" in der Kunden-App \u2014 transparent und vertrauensw\u00FCrdig."}
               </span>
             </div>
           </div>
         )}
 
-        {/* ── Performance Total ──────────────────────────────────────────────── */}
         {promotions.length > 0 && (
           <div className="pt-4 border-t border-border/50">
             <div className="flex items-center justify-between mb-3">
@@ -447,7 +443,7 @@ export function PromotionTools() {
   );
 }
 
-// ─── Dynamic Pricing Panel ────────────────────────────────────────────────────
+// ─── Smart Pricing Dashboard (replaces old DynamicPricingPanel) ─────────────
 
 interface PricingData {
   pricePerImpression: number;
@@ -456,36 +452,63 @@ interface PricingData {
   totalActivePlatformBoosts: number;
   competingBoosts: number;
   slotPosition: number;
+  locationTier: string;
   demandSignal: string;
   timeSignal: string;
   competitionSignal: string;
+  locationSignal: string;
   pricingContext: string;
   suggestion: string;
   bestBoostWindow: string;
+  slotTiers: { tier: string; label: string; multiplier: number; pricePer1000: number }[];
   breakdown: {
     basePrice: number;
     demandMultiplier: number;
     timeMultiplier: number;
     slotMultiplier: number;
+    locationMultiplier: number;
     weekendBonus: number;
     finalPrice: number;
     totalMultiplier: number;
   };
+  config: { basePrice: number; maxMultiplier: number; maxPrice: number; maxChangePercent: number };
+}
+
+interface SmartSuggestion {
+  type: "timing" | "budget" | "opportunity" | "savings";
+  priority: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  actionLabel?: string;
 }
 
 function DemandChip({ level }: { level: PricingData["demandLevel"] }) {
   const map: Record<PricingData["demandLevel"], { label: string; cls: string }> = {
-    low:       { label: "Niedrige Nachfrage",      cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-    normal:    { label: "Normale Nachfrage",        cls: "bg-blue-100 text-blue-700 border-blue-200" },
-    high:      { label: "Hohe Nachfrage",           cls: "bg-amber-100 text-amber-700 border-amber-200" },
-    very_high: { label: "Sehr hohe Nachfrage",      cls: "bg-red-100 text-red-700 border-red-200" },
+    low:       { label: "Niedrig",        cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+    normal:    { label: "Normal",         cls: "bg-blue-100 text-blue-700 border-blue-200" },
+    high:      { label: "Hoch",           cls: "bg-amber-100 text-amber-700 border-amber-200" },
+    very_high: { label: "Sehr hoch",      cls: "bg-red-100 text-red-700 border-red-200" },
   };
   const { label, cls } = map[level] ?? map.normal;
   return <Badge className={`text-[10px] font-semibold ${cls}`}>{label}</Badge>;
 }
 
-function DynamicPricingPanel({ businessType }: { businessType: string }) {
-  const { data, isLoading } = useQuery<PricingData>({
+function SuggestionIcon({ type }: { type: string }) {
+  const iconMap: Record<string, React.ElementType> = {
+    timing: Clock,
+    budget: BarChart3,
+    opportunity: Sparkles,
+    savings: Shield,
+  };
+  const Icon = iconMap[type] ?? Lightbulb;
+  return <Icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />;
+}
+
+function SmartPricingDashboard({ businessType, restaurantId }: { businessType: string; restaurantId: number | null }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: pricing, isLoading: pricingLoading } = useQuery<PricingData>({
     queryKey: ["pricing-current", businessType],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/pricing/current`);
@@ -496,7 +519,47 @@ function DynamicPricingPanel({ businessType }: { businessType: string }) {
     staleTime: 60_000,
   });
 
-  if (isLoading) {
+  const { data: suggestionsData } = useQuery<{ suggestions: SmartSuggestion[] }>({
+    queryKey: ["pricing-suggestions", businessType],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/pricing/suggestions`);
+      if (!res.ok) return { suggestions: [] };
+      return res.json();
+    },
+    refetchInterval: 300_000,
+    staleTime: 120_000,
+  });
+
+  const { data: autoOptData } = useQuery<{ enabled: boolean }>({
+    queryKey: ["auto-optimize", restaurantId],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/pricing/auto-optimize?restaurantId=${restaurantId ?? 1}`);
+      if (!res.ok) return { enabled: false };
+      return res.json();
+    },
+    enabled: !!restaurantId,
+  });
+
+  const autoOptMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const res = await fetch(`${API_BASE}/api/pricing/auto-optimize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restaurantId: restaurantId ?? 1, enabled }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({ title: data.enabled ? "Automatische Optimierung aktiviert" : "Automatische Optimierung deaktiviert" });
+      queryClient.invalidateQueries({ queryKey: ["auto-optimize"] });
+    },
+  });
+
+  const suggestions = suggestionsData?.suggestions ?? [];
+  const autoOptEnabled = autoOptData?.enabled ?? false;
+
+  if (pricingLoading) {
     return (
       <div className="border border-border/50 rounded-xl p-4 animate-pulse">
         <div className="h-4 w-48 bg-muted rounded mb-3" />
@@ -509,80 +572,185 @@ function DynamicPricingPanel({ businessType }: { businessType: string }) {
     );
   }
 
-  if (!data) return null;
+  if (!pricing) return null;
 
-  const bd = data.breakdown;
+  const bd = pricing.breakdown;
 
   return (
-    <div className="border border-border/50 rounded-xl p-4 space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-violet-500" />
-          <span className="font-semibold text-sm">Preise & Nachfrage</span>
-          <DemandChip level={data.demandLevel} />
+    <div className="border border-border/50 rounded-xl overflow-hidden">
+      <div className="p-4 space-y-4">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-violet-500" />
+            <span className="font-semibold text-sm">Smart Pricing</span>
+            <DemandChip level={pricing.demandLevel} />
+          </div>
+          <span className="text-xs text-muted-foreground">{"Echtzeit \u00B7 aktualisiert alle 2 Min."}</span>
         </div>
-        <span className="text-xs text-muted-foreground">Echtzeit · aktualisiert alle 2 Min.</span>
-      </div>
 
-      {/* Price + signals row */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground mb-1">Preis / 1.000 Einbl.</p>
-          <p className="text-lg font-bold text-foreground">€{data.pricePer1000.toFixed(2)}</p>
-          <p className="text-[10px] text-muted-foreground">({bd.totalMultiplier.toFixed(2)}× Basis)</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1">Aktueller Preis</p>
+            <p className="text-lg font-bold text-foreground">{"\u20AC"}{pricing.pricePer1000.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground">pro 1.000 Einbl.</p>
+          </div>
+          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1">Nachfrage</p>
+            <DemandChip level={pricing.demandLevel} />
+            <p className="text-[10px] text-muted-foreground mt-1">{pricing.totalActivePlatformBoosts} Boosts aktiv</p>
+          </div>
+          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
+              <Users className="w-2.5 h-2.5" /> Konkurrenz
+            </p>
+            <p className="text-base font-bold text-foreground">{pricing.competingBoosts}</p>
+            <p className="text-[10px] text-muted-foreground">Mitbewerber</p>
+          </div>
+          <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
+            <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
+              <Clock className="w-2.5 h-2.5" /> {"G\u00FCnstigste Zeit"}
+            </p>
+            <p className="text-sm font-bold text-foreground leading-tight">{pricing.bestBoostWindow}</p>
+          </div>
         </div>
-        <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
-            <Users className="w-2.5 h-2.5" /> Wettbewerb
-          </p>
-          <p className="text-base font-bold text-foreground">{data.competingBoosts}</p>
-          <p className="text-[10px] text-muted-foreground">Konkurrenten aktiv</p>
+
+        <div className="rounded-lg bg-muted/20 border border-border/30 px-3 py-2.5 space-y-1">
+          <p className="text-xs text-foreground font-medium">{pricing.pricingContext}</p>
+          <p className="text-[11px] text-muted-foreground">{pricing.timeSignal}</p>
+          {pricing.locationSignal && (
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+              <MapPin className="w-3 h-3" /> {pricing.locationSignal}
+            </p>
+          )}
         </div>
-        <div className="rounded-lg bg-muted/30 border border-border/40 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground mb-1 flex items-center justify-center gap-0.5">
-            <Clock className="w-2.5 h-2.5" /> Günstigste Zeit
-          </p>
-          <p className="text-sm font-bold text-foreground leading-tight">{data.bestBoostWindow}</p>
+
+        <div className="flex items-start gap-2 rounded-lg bg-violet-500/8 border border-violet-500/20 px-3 py-2">
+          <Zap className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-violet-300">{pricing.suggestion}</p>
         </div>
-      </div>
 
-      {/* Pricing context */}
-      <div className="rounded-lg bg-muted/20 border border-border/30 px-3 py-2 space-y-1.5">
-        <p className="text-xs text-foreground font-medium">{data.pricingContext}</p>
-        <p className="text-[11px] text-muted-foreground">{data.timeSignal}</p>
-      </div>
-
-      {/* Suggestion */}
-      <div className="flex items-start gap-2 rounded-lg bg-violet-500/8 border border-violet-500/20 px-3 py-2">
-        <Zap className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
-        <p className="text-xs text-violet-300">{data.suggestion}</p>
-      </div>
-
-      {/* Multiplier breakdown */}
-      <details className="group">
-        <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
-          Preisberechnung anzeigen ▸
-        </summary>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-          {[
-            { label: "Basispreis",       value: `€${bd.basePrice.toFixed(3)}` },
-            { label: "Nachfrage ×",      value: `${bd.demandMultiplier.toFixed(2)}×` },
-            { label: "Tageszeit ×",      value: `${bd.timeMultiplier.toFixed(2)}×` },
-            { label: "Wettbewerb ×",     value: `${bd.slotMultiplier.toFixed(2)}×` },
-            { label: "Wochenend-Bonus",  value: `${bd.weekendBonus.toFixed(2)}×` },
-            { label: "Gesamtfaktor",     value: `${bd.totalMultiplier.toFixed(2)}×` },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex justify-between rounded bg-muted/30 px-2 py-1">
-              <span className="text-muted-foreground">{label}</span>
-              <span className="font-mono font-semibold text-foreground">{value}</span>
+        {pricing.slotTiers && pricing.slotTiers.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+              <BarChart3 className="w-3.5 h-3.5" /> Slot-Preise
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {pricing.slotTiers.map((slot) => (
+                <div
+                  key={slot.tier}
+                  className={`rounded-lg border p-2.5 text-center transition-colors ${
+                    slot.tier === "top1"
+                      ? "border-amber-300 bg-amber-50/50"
+                      : slot.tier === "top3"
+                      ? "border-blue-200 bg-blue-50/30"
+                      : "border-border bg-card"
+                  }`}
+                >
+                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">{slot.label.split(" — ")[0]}</p>
+                  <p className={`text-sm font-bold ${
+                    slot.tier === "top1" ? "text-amber-700" : slot.tier === "top3" ? "text-blue-700" : "text-foreground"
+                  }`}>{"\u20AC"}{slot.pricePer1000.toFixed(2)}</p>
+                  <p className="text-[9px] text-muted-foreground">{slot.label.split(" — ")[1]}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+        )}
+
+        {suggestions.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" /> KI-Empfehlungen
+            </p>
+            <div className="space-y-1.5">
+              {suggestions.slice(0, 3).map((s, i) => (
+                <div
+                  key={i}
+                  className={`rounded-lg border px-3 py-2 flex items-start gap-2 ${
+                    s.priority === "high"
+                      ? "border-amber-200 bg-amber-50/40"
+                      : s.priority === "medium"
+                      ? "border-blue-200/50 bg-blue-50/20"
+                      : "border-border bg-card"
+                  }`}
+                >
+                  <SuggestionIcon type={s.type} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground">{s.title}</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">{s.description}</p>
+                  </div>
+                  {s.priority === "high" && (
+                    <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] shrink-0">Empfohlen</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {autoOptEnabled
+              ? <ToggleRight className="w-5 h-5 text-emerald-500" />
+              : <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+            }
+            <div>
+              <p className="text-xs font-semibold text-foreground">Automatisch optimieren</p>
+              <p className="text-[10px] text-muted-foreground">
+                {autoOptEnabled
+                  ? "System optimiert Timing & Budget automatisch"
+                  : "System passt Ausgaben und Timing automatisch an"
+                }
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => autoOptMutation.mutate(!autoOptEnabled)}
+            disabled={autoOptMutation.isPending}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
+              autoOptEnabled
+                ? "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200"
+                : "bg-card text-foreground border-border hover:border-primary/40"
+            }`}
+          >
+            {autoOptMutation.isPending ? "..." : autoOptEnabled ? "Aktiv" : "Aktivieren"}
+          </button>
         </div>
-        <p className="mt-2 text-[10px] text-muted-foreground">
-          Maximaler Faktor: {data.breakdown ? `${(data as any).config?.maxMultiplier ?? 2.5}×` : "2.50×"} — Preis wird nie darüber steigen.
-        </p>
-      </details>
+
+        <div className="flex items-start gap-2 text-[10px] text-muted-foreground bg-muted/20 rounded-lg px-3 py-2 border border-border/20">
+          <Shield className="w-3 h-3 shrink-0 mt-0.5" />
+          <span>
+            {"Preise \u00E4ndern sich maximal um "}{pricing.config.maxChangePercent}{"% pro Zyklus. "}
+            {"Max. \u20AC"}{(pricing.config.maxPrice * 1000).toFixed(1)}{"/1.000 Einbl. "}
+            {"Keine versteckten Kosten."}
+          </span>
+        </div>
+
+        <details className="group">
+          <summary className="text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
+            {"Preisberechnung anzeigen \u25B8"}
+          </summary>
+          <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+            {[
+              { label: "Basispreis",       value: `\u20AC${bd.basePrice.toFixed(3)}` },
+              { label: "Nachfrage \u00D7",      value: `${bd.demandMultiplier.toFixed(2)}\u00D7` },
+              { label: "Tageszeit \u00D7",      value: `${bd.timeMultiplier.toFixed(2)}\u00D7` },
+              { label: "Wettbewerb \u00D7",     value: `${bd.slotMultiplier.toFixed(2)}\u00D7` },
+              { label: "Standort \u00D7",       value: `${bd.locationMultiplier.toFixed(2)}\u00D7` },
+              { label: "Wochenend-Bonus",  value: `${bd.weekendBonus.toFixed(2)}\u00D7` },
+              { label: "Gesamtfaktor",     value: `${bd.totalMultiplier.toFixed(2)}\u00D7` },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex justify-between rounded bg-muted/30 px-2 py-1">
+                <span className="text-muted-foreground">{label}</span>
+                <span className="font-mono font-semibold text-foreground">{value}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            {"Maximaler Faktor: "}{pricing.config.maxMultiplier}{"\u00D7 \u2014 Preis wird nie dar\u00FCber steigen."}
+          </p>
+        </details>
+      </div>
     </div>
   );
 }

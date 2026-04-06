@@ -1,0 +1,171 @@
+MASTER RULES APPLY
+
+Build a "Smart Dynamic Pricing System (Fast & Controlled)" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT create fake urgency.
+Do NOT manipulate prices unfairly.
+Keep pricing transparent and stable.
+
+This system applies to:
+- Boost / sponsored visibility
+- premium upgrade timing insights (optional)
+
+========================
+GOAL
+========================
+
+Adjust pricing intelligently based on:
+
+- demand
+- timing
+- location
+- competition
+
+To:
+- increase revenue
+- improve ROI for businesses
+- stay fair and understandable
+
+========================
+1. DEMAND SIGNALS
+========================
+
+Use real signals:
+
+- number of active boosts in same area
+- search activity
+- user traffic
+- heat map intensity
+- time of day
+
+Higher demand → higher price  
+Lower demand → lower price
+
+========================
+2. TIME-BASED LOGIC
+========================
+
+Adjust pricing by time:
+
+Morning:
+- cafés → lower price
+
+Lunch:
+- restaurants → medium/high
+
+Evening/Night:
+- bars → higher price
+
+========================
+3. LOCATION FACTOR
+========================
+
+Adjust by location:
+
+- city center → higher
+- low traffic areas → lower
+
+========================
+4. SLOT-BASED PRICING
+========================
+
+Define positions:
+
+- Top #1 → highest price
+- Top #2–3 → medium
+- Standard boost → base price
+
+========================
+5. CLEAR PRICE DISPLAY
+========================
+
+Always show:
+
+- current price €
+- demand level (Low / Medium / High)
+- short explanation
+
+Examples:
+- "Hohe Nachfrage aktuell"
+- "Gute Zeit für Sichtbarkeit"
+- "Wenig Konkurrenz – günstiger Preis"
+
+========================
+6. AI INTEGRATION
+========================
+
+Connect with AI system:
+
+- suggest best times
+- suggest optimal budget
+- detect high ROI moments
+
+Example:
+- "Jetzt boosten – hohe Aktivität in deiner Umgebung"
+
+========================
+7. SAFE LIMITS
+========================
+
+Define:
+
+- minimum price
+- maximum price
+- max % increase
+
+Avoid:
+- sudden jumps
+- confusing changes
+
+========================
+8. AUTO MODE (OPTIONAL)
+========================
+
+Allow:
+
+👉 "Automatisch optimieren"
+
+If enabled:
+- system adjusts spend
+- shifts timing
+- improves performance
+
+User stays in control.
+
+========================
+9. FAIRNESS RULES
+========================
+
+Must:
+
+- be transparent
+- explain price changes
+- avoid manipulation
+- avoid fake urgency
+
+========================
+10. SIMPLE UX
+========================
+
+Show only:
+
+- price
+- demand level
+- expected impact
+
+No complex dashboards.
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster dynamically adjusts boost pricing in a smart, fair, and profitable way.
+
+Result:
+
+- more revenue
+- better timing
+- higher ROI
+- professional monetization system

@@ -1,14 +1,22 @@
 /**
- * Dynamic Pricing Engine
+ * Dynamic Pricing Engine v2 — Smart & Controlled
  *
  * Computes real-time boost impression prices based on:
- *  - Demand  (platform-wide active boosts)
- *  - Time    (business-type-aware peak windows)
- *  - Slot    (same-category competition density)
- *  - Weekend bonus (bars on Fri/Sat)
+ *  - Demand    (platform-wide active boosts)
+ *  - Time      (business-type-aware peak windows)
+ *  - Slot      (same-category competition density)
+ *  - Location  (city center vs outer districts)
+ *  - Weekend   (bars on Fri/Sat/Sun)
  *
- * Pricing is fully transparent — all multipliers are returned to the client
- * so owners always understand why a price is what it is.
+ * Safety:
+ *  - Min/max price caps enforced
+ *  - Max price change per cycle capped at 25%
+ *  - All multipliers returned for full transparency
+ *
+ * Slot-based pricing tiers:
+ *  - Top #1:  highest price (1.30× slot premium)
+ *  - Top #2-3: medium price (1.15× slot premium)
+ *  - Standard: base price (1.0× slot)
  */
 
 import { db } from "@workspace/db";
@@ -17,13 +25,23 @@ import { sql } from "drizzle-orm";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DemandLevel = "low" | "normal" | "high" | "very_high";
+export type LocationTier = "zentrum" | "innenbezirk" | "aussenbezirk";
 
 export interface PricingConfig {
   basePrice: number;
   maxMultiplier: number;
   minPrice: number;
+  maxPrice: number;
+  maxChangePercent: number;
   demandSensitivity: number;
   demandThresholds: { low: number; normal: number; high: number; very_high: number };
+}
+
+export interface SlotTier {
+  tier: "top1" | "top3" | "standard";
+  label: string;
+  multiplier: number;
+  pricePer1000: number;
 }
 
 export interface PricingResult {
@@ -33,22 +51,34 @@ export interface PricingResult {
   totalActivePlatformBoosts: number;
   competingBoosts: number;
   slotPosition: number;
+  locationTier: LocationTier;
   demandSignal: string;
   timeSignal: string;
   competitionSignal: string;
+  locationSignal: string;
   pricingContext: string;
   suggestion: string;
   bestBoostWindow: string;
+  slotTiers: SlotTier[];
   breakdown: {
     basePrice: number;
     demandMultiplier: number;
     timeMultiplier: number;
     slotMultiplier: number;
+    locationMultiplier: number;
     weekendBonus: number;
     finalPrice: number;
     totalMultiplier: number;
   };
-  config: { basePrice: number; maxMultiplier: number };
+  config: { basePrice: number; maxMultiplier: number; maxPrice: number; maxChangePercent: number };
+}
+
+export interface SmartSuggestion {
+  type: "timing" | "budget" | "opportunity" | "savings";
+  priority: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  actionLabel?: string;
 }
 
 // ─── Config loader ────────────────────────────────────────────────────────────
@@ -57,6 +87,8 @@ const DEFAULT_CONFIG: PricingConfig = {
   basePrice: 0.01,
   maxMultiplier: 2.5,
   minPrice: 0.004,
+  maxPrice: 0.025,
+  maxChangePercent: 25,
   demandSensitivity: 1.0,
   demandThresholds: { low: 3, normal: 8, high: 15, very_high: 25 },
 };
@@ -145,13 +177,79 @@ function getSlotMultiplier(sameTypeBoosts: number): SlotInfo {
   return                           { mult: 1.20, position: sameTypeBoosts + 1,  competition: `${sameTypeBoosts} Mitbewerber — hoher Wettbewerb` };
 }
 
+// ─── Location multiplier (Vienna district-based) ────────────────────────────
+
+interface LocationInfo { mult: number; tier: LocationTier; signal: string }
+
+export function getLocationMultiplier(district?: number): LocationInfo {
+  const zentrum = [1];
+  const inner = [2, 3, 4, 5, 6, 7, 8, 9];
+
+  if (!district || district <= 0) {
+    return { mult: 1.15, tier: "innenbezirk", signal: "Innenbezirk — durchschnittliche Nachfrage" };
+  }
+
+  if (zentrum.includes(district)) {
+    return { mult: 1.25, tier: "zentrum", signal: "1. Bezirk — höchste Lauffrequenz, Premium-Lage" };
+  }
+  if (inner.includes(district)) {
+    return { mult: 1.15, tier: "innenbezirk", signal: `${district}. Bezirk — gute Lage, hohe Nachfrage` };
+  }
+  return { mult: 0.90, tier: "aussenbezirk", signal: `${district}. Bezirk — weniger Konkurrenz, günstigerer Preis` };
+}
+
+// ─── Slot-based pricing tiers ────────────────────────────────────────────────
+
+function computeSlotTiers(basePricePer1000: number): SlotTier[] {
+  return [
+    {
+      tier: "top1",
+      label: "Top #1 — Maximale Sichtbarkeit",
+      multiplier: 1.30,
+      pricePer1000: Math.round(basePricePer1000 * 1.30 * 100) / 100,
+    },
+    {
+      tier: "top3",
+      label: "Top #2–3 — Premium-Platzierung",
+      multiplier: 1.15,
+      pricePer1000: Math.round(basePricePer1000 * 1.15 * 100) / 100,
+    },
+    {
+      tier: "standard",
+      label: "Standard — Regulärer Boost",
+      multiplier: 1.00,
+      pricePer1000: Math.round(basePricePer1000 * 100) / 100,
+    },
+  ];
+}
+
+// ─── Safe price limiting (scoped per business type) ─────────────────────────
+
+const lastPriceByBiz: Record<string, number> = {};
+
+function applySafeLimits(rawPrice: number, config: PricingConfig, bizType: string): number {
+  let price = Math.max(config.minPrice, Math.min(config.maxPrice, rawPrice));
+
+  const lastPrice = lastPriceByBiz[bizType];
+  if (lastPrice !== undefined && config.maxChangePercent > 0) {
+    const maxDelta = lastPrice * (config.maxChangePercent / 100);
+    const upper = lastPrice + maxDelta;
+    const lower = lastPrice - maxDelta;
+    price = Math.max(lower, Math.min(upper, price));
+  }
+
+  price = Math.round(price * 10000) / 10000;
+  lastPriceByBiz[bizType] = price;
+  return price;
+}
+
 // ─── Main computation ─────────────────────────────────────────────────────────
 
-export async function computeDynamicPrice(bizType: string): Promise<PricingResult> {
+export async function computeDynamicPrice(bizType: string, district?: number): Promise<PricingResult> {
   const config = await getPricingConfig();
   const hour      = new Date().getHours();
   const dayOfWeek = new Date().getDay();
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6; // Fri/Sat/Sun
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6;
 
   const [totalResult, sameTypeResult] = await Promise.all([
     db.execute(sql`
@@ -171,18 +269,21 @@ export async function computeDynamicPrice(bizType: string): Promise<PricingResul
   const totalActivePlatformBoosts = parseInt((totalResult.rows[0] as any)?.count ?? "0");
   const competingBoosts           = parseInt((sameTypeResult.rows[0] as any)?.count ?? "0");
 
-  const timeInfo   = getTimeMultiplier(bizType, hour);
-  const demandInfo = getDemandMultiplier(totalActivePlatformBoosts, config);
-  const slotInfo   = getSlotMultiplier(competingBoosts);
+  const timeInfo     = getTimeMultiplier(bizType, hour);
+  const demandInfo   = getDemandMultiplier(totalActivePlatformBoosts, config);
+  const slotInfo     = getSlotMultiplier(competingBoosts);
+  const locationInfo = getLocationMultiplier(district);
 
   const weekendBonus = (bizType === "bar" && isWeekend) ? 1.10 : 1.0;
 
-  const rawMultiplier   = demandInfo.mult * timeInfo.mult * slotInfo.mult * weekendBonus;
+  const rawMultiplier   = demandInfo.mult * timeInfo.mult * slotInfo.mult * locationInfo.mult * weekendBonus;
   const totalMultiplier = Math.min(rawMultiplier, config.maxMultiplier);
   const rawPrice        = config.basePrice * totalMultiplier;
-  const finalPrice      = Math.max(config.minPrice, Math.round(rawPrice * 10000) / 10000);
+  const finalPrice      = applySafeLimits(rawPrice, config, bizType);
 
-  // Human-readable pricing context
+  const pricePer1000 = Math.round(finalPrice * 1000 * 100) / 100;
+  const slotTiers = computeSlotTiers(pricePer1000);
+
   let pricingContext: string;
   if (demandInfo.level === "very_high")
     pricingContext = `Sehr hohe Nachfrage — Preis erhöht (${totalMultiplier.toFixed(2)}× Basis)`;
@@ -193,7 +294,6 @@ export async function computeDynamicPrice(bizType: string): Promise<PricingResul
   else
     pricingContext = `Normale Nachfrage — Standardpreis (${totalMultiplier.toFixed(2)}× Basis)`;
 
-  // Actionable suggestion
   let suggestion: string;
   if (demandInfo.level === "low") {
     suggestion = "Jetzt boosten — niedrige Nachfrage bedeutet günstige Preise und wenig Konkurrenz";
@@ -201,7 +301,7 @@ export async function computeDynamicPrice(bizType: string): Promise<PricingResul
     suggestion = `Hohe Kosten gerade — für günstigere Preise bis ${timeInfo.bestWindow} warten`;
   } else if (timeInfo.mult < 0.9) {
     suggestion = `Günstige Zeit — warten bis ${timeInfo.bestWindow} für Peak-Sichtbarkeit`;
-  } else if (slotInfo.competition.includes("keine") || slotInfo.competition.includes("keine")) {
+  } else if (slotInfo.position === 1) {
     suggestion = "Keine Konkurrenz aktiv — idealer Zeitpunkt für maximale Sichtbarkeit";
   } else {
     suggestion = "Guter Zeitpunkt zum Boosten — solide Nachfrage, faire Preise";
@@ -209,26 +309,184 @@ export async function computeDynamicPrice(bizType: string): Promise<PricingResul
 
   return {
     pricePerImpression: finalPrice,
-    pricePer1000: Math.round(finalPrice * 1000 * 100) / 100,
+    pricePer1000,
     demandLevel: demandInfo.level,
     totalActivePlatformBoosts,
     competingBoosts,
     slotPosition: slotInfo.position,
+    locationTier: locationInfo.tier,
     demandSignal: demandInfo.signal,
     timeSignal: timeInfo.label,
     competitionSignal: slotInfo.competition,
+    locationSignal: locationInfo.signal,
     pricingContext,
     suggestion,
     bestBoostWindow: timeInfo.bestWindow,
+    slotTiers,
     breakdown: {
       basePrice: config.basePrice,
       demandMultiplier: demandInfo.mult,
       timeMultiplier: timeInfo.mult,
       slotMultiplier: slotInfo.mult,
+      locationMultiplier: locationInfo.mult,
       weekendBonus,
       finalPrice,
       totalMultiplier,
     },
-    config: { basePrice: config.basePrice, maxMultiplier: config.maxMultiplier },
+    config: {
+      basePrice: config.basePrice,
+      maxMultiplier: config.maxMultiplier,
+      maxPrice: config.maxPrice,
+      maxChangePercent: config.maxChangePercent,
+    },
   };
 }
+
+// ─── AI Smart Suggestions ────────────────────────────────────────────────────
+
+export async function generateSmartSuggestions(bizType: string, district?: number): Promise<SmartSuggestion[]> {
+  const suggestions: SmartSuggestion[] = [];
+  const config = await getPricingConfig();
+  const hour = new Date().getHours();
+  const dayOfWeek = new Date().getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6;
+
+  const [totalResult, perfResult, scheduleData] = await Promise.all([
+    db.execute(sql`
+      SELECT COUNT(*) AS count FROM promotions
+      WHERE status = 'active' AND (ends_at IS NULL OR ends_at > NOW())
+    `),
+    db.execute(sql`
+      SELECT type, SUM(impressions) AS imp, SUM(clicks) AS clk, SUM(bookings_attributed) AS bk
+      FROM promotions
+      WHERE created_at > NOW() - INTERVAL '30 days'
+      GROUP BY type
+      ORDER BY SUM(clicks)::float / GREATEST(SUM(impressions), 1) DESC
+    `),
+    generateScheduleData(bizType, config),
+  ]);
+
+  const activeBoosts = parseInt((totalResult.rows[0] as any)?.count ?? "0");
+  const perfRows = perfResult.rows as any[];
+
+  const cheapestHour = scheduleData.reduce((best, cur) =>
+    cur.pricePer1000 < best.pricePer1000 ? cur : best
+  );
+
+  if (cheapestHour.hour !== hour) {
+    const formattedHour = `${String(cheapestHour.hour).padStart(2, "0")}:00`;
+    suggestions.push({
+      type: "timing",
+      priority: cheapestHour.pricePer1000 < scheduleData[hour]?.pricePer1000 * 0.7 ? "high" : "medium",
+      title: `Günstigster Zeitpunkt: ${formattedHour} Uhr`,
+      description: `Um ${formattedHour} Uhr kostet ein Boost nur €${cheapestHour.pricePer1000.toFixed(2)}/1.000 Einblendungen — ${Math.round((1 - cheapestHour.pricePer1000 / Math.max(scheduleData[hour]?.pricePer1000 ?? 1, 0.01)) * 100)}% günstiger als jetzt.`,
+      actionLabel: "Boost planen",
+    });
+  }
+
+  if (activeBoosts <= (config.demandThresholds.low ?? 3)) {
+    suggestions.push({
+      type: "opportunity",
+      priority: "high",
+      title: "Wenig Konkurrenz — jetzt zuschlagen",
+      description: `Nur ${activeBoosts} Boosts auf der Plattform aktiv. Jetzt boosten für maximale Sichtbarkeit zum niedrigsten Preis.`,
+      actionLabel: "Jetzt boosten",
+    });
+  }
+
+  if (perfRows.length > 0) {
+    const bestType = perfRows[0];
+    const ctr = Number(bestType.imp) > 0 ? (Number(bestType.clk) / Number(bestType.imp) * 100) : 0;
+    if (ctr > 0) {
+      const typeLabels: Record<string, string> = {
+        breakfast_boost: "Frühstücks-Boost",
+        lunch_boost: "Mittags-Boost",
+        happy_hour_boost: "Happy Hour Boost",
+        nightlife_boost: "Nachtleben-Boost",
+        local_spotlight: "Local Spotlight",
+        local_heat_boost: "Heat-Map Boost",
+      };
+      suggestions.push({
+        type: "budget",
+        priority: "medium",
+        title: `${typeLabels[bestType.type] ?? bestType.type} hat die beste Performance`,
+        description: `${ctr.toFixed(1)}% CTR mit ${Number(bestType.bk)} Buchungen in den letzten 30 Tagen. Mehr Budget hier bringt den besten ROI.`,
+        actionLabel: "Budget erhöhen",
+      });
+    }
+  }
+
+  if (isWeekend && bizType === "bar") {
+    suggestions.push({
+      type: "opportunity",
+      priority: "high",
+      title: "Wochenend-Peak für Bars",
+      description: "Freitag bis Sonntag sind die stärksten Tage für Bars. Ein Nachtleben-Boost jetzt bringt maximale Reichweite.",
+      actionLabel: "Nachtleben-Boost starten",
+    });
+  } else if (isWeekend && bizType === "restaurant") {
+    suggestions.push({
+      type: "opportunity",
+      priority: "medium",
+      title: "Wochenend-Brunch Gelegenheit",
+      description: "Am Wochenende suchen mehr Gäste nach Brunch und Mittagessen. Ein Frühstücks- oder Mittags-Boost lohnt sich besonders.",
+    });
+  }
+
+  const timeInfo = getTimeMultiplier(bizType, hour);
+  if (timeInfo.mult < 0.85) {
+    suggestions.push({
+      type: "savings",
+      priority: "low",
+      title: "Niedrige Preise gerade — Schnäppchen-Boost",
+      description: `Aktuell sind die Preise ${Math.round((1 - timeInfo.mult) * 100)}% unter dem Durchschnitt. Gut für Langzeit-Boosts wie Local Spotlight.`,
+    });
+  }
+
+  if (hour >= 17 && hour < 21 && bizType === "restaurant") {
+    suggestions.push({
+      type: "timing",
+      priority: "high",
+      title: "Jetzt boosten — Abend-Peak aktiv",
+      description: "Die meisten Gäste suchen jetzt nach Restaurants. Hohe Aktivität in deiner Umgebung.",
+      actionLabel: "Jetzt boosten",
+    });
+  }
+
+  return suggestions.sort((a, b) => {
+    const prio = { high: 0, medium: 1, low: 2 };
+    return prio[a.priority] - prio[b.priority];
+  });
+}
+
+// ─── Schedule data helper ────────────────────────────────────────────────────
+
+interface SchedulePoint {
+  hour: number;
+  pricePerImpression: number;
+  pricePer1000: number;
+  level: string;
+}
+
+async function generateScheduleData(bizType: string, config: PricingConfig): Promise<SchedulePoint[]> {
+  const totalResult = await db.execute(sql`
+    SELECT COUNT(*) AS count FROM promotions
+    WHERE status = 'active' AND (ends_at IS NULL OR ends_at > NOW())
+  `);
+  const activePlatformBoosts = parseInt((totalResult.rows[0] as any)?.count ?? "0");
+  const dMult = getDemandMultiplier(activePlatformBoosts, config).mult;
+
+  return Array.from({ length: 24 }, (_, h) => {
+    const tMult = getTimeMultiplier(bizType, h).mult;
+    const rawMult = dMult * tMult;
+    const totalMult = Math.min(rawMult, config.maxMultiplier);
+    const price = Math.max(config.minPrice, Math.round(config.basePrice * totalMult * 10000) / 10000);
+    const level =
+      totalMult >= 1.35 ? "very_high" :
+      totalMult >= 1.10 ? "high" :
+      totalMult < 0.90  ? "low" : "normal";
+    return { hour: h, pricePerImpression: price, pricePer1000: Math.round(price * 1000 * 100) / 100, level };
+  });
+}
+
+export { generateScheduleData };
