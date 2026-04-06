@@ -1,0 +1,302 @@
+MASTER RULES APPLY
+
+Perform a full "Team Invite + Role Permissions End-to-End Validation Pass" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random new features.
+Do NOT modify Founder dashboard.
+This pass is ONLY for validating the business team system and role-based permissions.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+It must work with:
+- Business Staff Management System
+- Role-Based UI Locking + Permission Enforcement
+- Owner / Manager / Staff roles
+- business dashboard routes and sections
+
+========================
+GOAL
+========================
+
+Simulate the full real workflow of a business owner inviting team members and ensure that:
+
+- invites work correctly
+- roles are assigned correctly
+- accepted users get the right access
+- unauthorized access is blocked
+- the UI changes correctly by role
+- backend permissions are truly enforced
+
+This must feel production-ready and secure.
+
+========================
+1. TEAM INVITE FLOW TEST (CRITICAL)
+========================
+
+Simulate a business owner doing the following:
+
+- opens the Team / Mitarbeiter section
+- invites a new team member
+- assigns a role:
+  - Manager
+  - Staff
+- sends invitation
+
+Verify:
+- invite is created correctly
+- invite status appears correctly
+- duplicate invite handling works
+- invalid invite handling works
+
+========================
+2. INVITE ACCEPTANCE FLOW
+========================
+
+Simulate the invited user accepting the invitation.
+
+Verify:
+- invitation can be accepted successfully
+- accepted user is attached to the correct business
+- accepted user receives the correct assigned role
+- team list updates correctly
+- pending status changes to active
+
+========================
+3. OWNER FLOW VALIDATION
+========================
+
+Verify owner can:
+
+- add staff
+- change roles
+- remove staff
+- view all team statuses
+- access all owner-only sections
+
+Check that owner retains full control over:
+- billing
+- premium
+- team management
+- critical settings
+
+========================
+4. MANAGER FLOW VALIDATION
+========================
+
+Log in or simulate as Manager.
+
+Verify manager can:
+- access allowed dashboard sections
+- use allowed tools
+- edit allowed business content
+- access analytics if intended
+- access boost/visibility tools if intended
+
+Verify manager cannot:
+- access billing
+- change subscription
+- manage owner-only settings
+- manage team roles if not allowed
+- access protected owner-only routes
+
+========================
+5. STAFF FLOW VALIDATION
+========================
+
+Log in or simulate as Staff.
+
+Verify staff can:
+- access only limited permitted areas
+- see only the appropriate dashboard mode
+
+Verify staff cannot:
+- access billing
+- access premium controls
+- access team management
+- access owner/manager-only routes
+- access high-risk business settings
+
+========================
+6. UI ROLE LOCKING CHECK
+========================
+
+For each role (Owner / Manager / Staff), verify the dashboard UI changes correctly.
+
+Check:
+- hidden sections are really hidden
+- restricted sections are not shown unnecessarily
+- buttons are not visible where not allowed
+- no misleading UI appears
+
+The dashboard must feel naturally adapted to each role.
+
+========================
+7. ROUTE PROTECTION VALIDATION
+========================
+
+Test direct access attempts to protected routes.
+
+Examples:
+- staff tries to open /billing
+- manager tries to open /team if not allowed
+- unauthorized user tries to open owner-only settings
+
+Verify:
+- access is blocked
+- clean German access denied state is shown
+- no sensitive data leaks
+- no broken page appears
+
+========================
+8. BACKEND PERMISSION ENFORCEMENT
+========================
+
+Verify role restrictions are enforced server-side, not only in the UI.
+
+Test sensitive actions such as:
+- billing changes
+- subscription changes
+- role changes
+- team invite/removal
+- boost campaign creation if restricted
+- premium setting changes
+
+Ensure unauthorized users cannot perform these actions even if they try direct requests.
+
+========================
+9. ROLE CHANGE LIVE UPDATE TEST
+========================
+
+Simulate the owner changing a user role.
+
+Examples:
+- Staff → Manager
+- Manager → Staff
+
+Verify:
+- UI updates correctly
+- access updates correctly
+- previous permissions are removed
+- newly granted permissions work
+- no stale access remains after role change
+
+========================
+10. REMOVAL / DEACTIVATION TEST
+========================
+
+Simulate removing a team member.
+
+Verify:
+- removed user disappears from active team list
+- removed user loses access correctly
+- if user has active session, restricted access is enforced correctly
+- no ghost access remains
+
+========================
+11. EDGE CASE VALIDATION
+========================
+
+Test:
+- duplicate invites
+- invalid invite target
+- invite acceptance after role changed
+- removed user trying to access dashboard
+- role changed during active session
+- direct URL access by restricted user
+- pending invite not yet accepted
+
+Ensure system remains safe and stable.
+
+========================
+12. GERMAN UI / MESSAGING CHECK
+========================
+
+Verify all team and permission-related business UI is in German.
+
+Examples:
+- "Mitarbeiter hinzufügen"
+- "Einladung senden"
+- "Rolle ändern"
+- "Kein Zugriff"
+- "Dieser Bereich ist nur für Inhaber verfügbar"
+
+No mixed language in business-facing team/permission flow.
+
+========================
+13. REALITY CLASSIFICATION
+========================
+
+For each major part of the team/permissions system, classify it as:
+
+- Fully Working
+- Working but Weak
+- UI Only
+- Broken
+- Needs More Backend Protection
+
+Apply this to:
+- invite creation
+- invite acceptance
+- owner controls
+- manager controls
+- staff controls
+- route protection
+- backend protection
+- role change updates
+- removal logic
+
+========================
+14. AUTO FIX PASS
+========================
+
+Fix any issues found in:
+- invite flow
+- acceptance flow
+- role enforcement
+- route protection
+- stale access
+- hidden but accessible sections
+- backend trust problems
+
+Do NOT overbuild.
+Only fix and harden the existing system.
+
+========================
+15. FINAL REPORT
+========================
+
+Produce a structured final report with:
+
+A. Invite flow status
+B. Acceptance flow status
+C. Owner/Manager/Staff access status
+D. UI locking status
+E. Route protection status
+F. Backend enforcement status
+G. Role change/removal status
+H. Remaining permission risks if any
+I. Whether the team system is now production-ready
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must have a real, secure, and production-ready business team system.
+
+A business owner should be able to:
+- invite team members
+- assign roles
+- share dashboard access safely
+
+And each role must only see and access what is truly allowed.
+
+The system must feel:
+- simple
+- secure
+- professional
+- ready for real business teams

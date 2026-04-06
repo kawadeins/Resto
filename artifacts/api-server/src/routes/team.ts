@@ -286,7 +286,7 @@ router.post("/resend", async (req, res) => {
     }
 
     const { memberId } = req.body;
-    if (!memberId) return res.status(400).json({ error: "memberId required" });
+    if (!memberId) return res.status(400).json({ error: "Mitglieds-ID erforderlich" });
 
     const member = await db
       .select()
