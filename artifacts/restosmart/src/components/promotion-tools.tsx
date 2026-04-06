@@ -201,6 +201,162 @@ function DemandChip({ level }: { level: PricingData["demandLevel"] }) {
   );
 }
 
+// ── ROI Revenue Engine ────────────────────────────────────────────────────────
+
+interface ROIEstimate {
+  impressionsLow:  number;
+  impressionsHigh: number;
+  guestsLow:  number;
+  guestsHigh: number;
+  revenueLow:  number;
+  revenueHigh: number;
+  cost:         number;
+  roiMultiple:  number;
+  confidence:   string;
+  guestLabel:   string;
+  isStrongROI:  boolean;
+}
+
+function calcROI(
+  businessType: string,
+  pricing: PricingData | undefined,
+  historicalPromos: Promotion[],
+): ROIEstimate | null {
+  if (!pricing) return null;
+
+  const bizCfg: Record<string, {
+    avgOrderLow: number; avgOrderHigh: number;
+    baseConvRate: number; baseCTR: number;
+    impressionsLow: number; impressionsHigh: number;
+    guestLabel: string;
+  }> = {
+    restaurant: { avgOrderLow: 22, avgOrderHigh: 35, baseConvRate: 0.14, baseCTR: 0.030, impressionsLow: 350, impressionsHigh: 520, guestLabel: "Gäste" },
+    café:       { avgOrderLow: 8,  avgOrderHigh: 14, baseConvRate: 0.18, baseCTR: 0.040, impressionsLow: 280, impressionsHigh: 430, guestLabel: "Besuche" },
+    bar:        { avgOrderLow: 15, avgOrderHigh: 25, baseConvRate: 0.12, baseCTR: 0.032, impressionsLow: 380, impressionsHigh: 560, guestLabel: "Gäste" },
+  };
+
+  const cfg = bizCfg[businessType] ?? bizCfg.restaurant;
+
+  const demandMult: Record<PricingData["demandLevel"], number> = {
+    low: 0.65, normal: 1.0, high: 1.35, very_high: 1.7,
+  };
+  const mult = demandMult[pricing.demandLevel] ?? 1.0;
+
+  const totalImpHist  = historicalPromos.reduce((s, p) => s + (Number(p.impressions) || 0), 0);
+  const totalClkHist  = historicalPromos.reduce((s, p) => s + (Number(p.clicks) || 0), 0);
+  const totalBkgHist  = historicalPromos.reduce((s, p) => s + (Number(p.bookings_attributed) || 0), 0);
+
+  let ctr      = cfg.baseCTR;
+  let convRate = cfg.baseConvRate;
+  let confidence = "Basierend auf ähnlichen Betrieben in Wien";
+
+  if (totalImpHist > 50 && totalClkHist > 0) {
+    ctr = Math.min(0.12, totalClkHist / totalImpHist);
+    confidence = "Basierend auf Ihren vergangenen Kampagnen";
+  }
+  if (totalClkHist > 5 && totalBkgHist > 0) {
+    convRate = Math.min(0.40, totalBkgHist / totalClkHist);
+  }
+
+  const impressionsLow  = Math.round(cfg.impressionsLow  * mult);
+  const impressionsHigh = Math.round(cfg.impressionsHigh * mult);
+  const guestsLow  = Math.max(1, Math.round(impressionsLow  * ctr * convRate));
+  const guestsHigh = Math.max(2, Math.round(impressionsHigh * ctr * convRate));
+  const revenueLow  = Math.round(guestsLow  * cfg.avgOrderLow);
+  const revenueHigh = Math.round(guestsHigh * cfg.avgOrderHigh);
+
+  const midImpressions = (impressionsLow + impressionsHigh) / 2;
+  const cost = Math.max(0.5, Math.round((midImpressions / 1000) * pricing.pricePer1000 * 10) / 10);
+  const roiMultiple  = cost > 0 ? revenueLow / cost : 0;
+  const isStrongROI  = roiMultiple >= 5;
+
+  return {
+    impressionsLow, impressionsHigh, guestsLow, guestsHigh,
+    revenueLow, revenueHigh, cost, roiMultiple,
+    confidence, guestLabel: cfg.guestLabel, isStrongROI,
+  };
+}
+
+function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportunity: boolean }) {
+  const rows = [
+    { label: "Geschätzte Reichweite", value: `+${roi.impressionsLow.toLocaleString("de")}–${roi.impressionsHigh.toLocaleString("de")} Personen` },
+    { label: `Erwartete ${roi.guestLabel}`, value: `${roi.guestsLow}–${roi.guestsHigh}` },
+    { label: "Potentieller Umsatz", value: `\u20AC${roi.revenueLow}–\u20AC${roi.revenueHigh}`, highlight: true },
+  ];
+
+  const roiColor = roi.isStrongROI ? C.active : roi.roiMultiple >= 3 ? "#7B8CFF" : C.muted;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        borderRadius: 12,
+        border: roi.isStrongROI
+          ? "1px solid rgba(34,197,94,0.2)"
+          : isOpportunity
+          ? "1px solid rgba(79,140,255,0.18)"
+          : `1px solid ${C.border}`,
+        backgroundColor: roi.isStrongROI
+          ? "rgba(34,197,94,0.04)"
+          : isOpportunity
+          ? "rgba(79,140,255,0.04)"
+          : "rgba(255,255,255,0.02)",
+        padding: "11px 13px",
+        display: "flex",
+        flexDirection: "column" as const,
+        gap: 7,
+      }}
+    >
+      {/* Header: ROI label + cost */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: roiColor }}>
+          ROI-Schätzung
+        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px]" style={{ color: C.muted }}>Kosten ca.</span>
+          <span className="text-[10px] font-bold" style={{ color: C.text }}>{"\u20AC"}{roi.cost.toFixed(1)}</span>
+        </div>
+      </div>
+
+      {/* Metrics rows */}
+      {rows.map(row => (
+        <div key={row.label} className="flex items-center justify-between gap-2">
+          <span className="text-[11px]" style={{ color: C.muted }}>{row.label}</span>
+          <span className="text-[11px] font-semibold tabular-nums" style={{ color: row.highlight ? C.active : C.text }}>
+            {row.value}
+          </span>
+        </div>
+      ))}
+
+      {/* ROI multiplier bar */}
+      {roi.roiMultiple >= 2 && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px]" style={{ color: C.muted }}>Kosten / Ertrag</span>
+            <span className="text-[10px] font-bold" style={{ color: roiColor }}>~{roi.roiMultiple.toFixed(0)}×</span>
+          </div>
+          <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.08)" }}>
+            <motion.div
+              className="h-full rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, roi.roiMultiple * 8)}%` }}
+              transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+              style={{ background: roi.isStrongROI ? "linear-gradient(90deg,#22C55E,#4ade80)" : C.grad }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Confidence notice */}
+      <p className="text-[10px]" style={{ color: "rgba(156,163,175,0.65)" }}>
+        {"\u2139\uFE0F"} {roi.confidence} {"\u00B7"} Konservative Schätzung
+      </p>
+    </motion.div>
+  );
+}
+
 // ── Smart Revenue Trigger Panel ───────────────────────────────────────────────
 
 function SmartRevenueTrigger({
@@ -686,17 +842,12 @@ export function PromotionTools() {
                   </motion.div>
                 )}
 
-                {/* Price on inactive cards */}
-                {!promo && pricing && (
-                  <div className="text-[11px] flex items-center gap-1.5"
-                    style={{ color: C.muted, borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 8, marginTop: -4 }}>
-                    <BarChart3 style={{ width: 11, height: 11 }} />
-                    <span>{"\u20AC"}{pricing.pricePer1000.toFixed(2)} / 1.000 Einblendungen</span>
-                    <span style={{ marginLeft: "auto" }}>
-                      <DemandChip level={pricing.demandLevel} />
-                    </span>
-                  </div>
-                )}
+                {/* ROI Revenue Engine — inactive cards only */}
+                {!promo && (() => {
+                  const roi = calcROI(businessType, pricing, promotions.filter(p => p.type === cfg.type));
+                  if (!roi) return null;
+                  return <BoostROIEstimate roi={roi} isOpportunity={cardOppty} />;
+                })()}
 
                 {/* CTA buttons */}
                 <div className="flex gap-2 mt-auto">

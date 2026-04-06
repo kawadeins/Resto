@@ -1,0 +1,191 @@
+MASTER RULES APPLY
+
+Build a "ROI Revenue Engine (Real Profit Estimation + Conversion Optimization)" inside the Promotion Tools section of the RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT fake numbers.
+Do NOT create misleading or unrealistic estimates.
+All calculations must be based on real or conservative approximations.
+
+========================
+GOAL
+========================
+
+Show business owners:
+
+- expected impact of activating a boost
+- estimated customers gained
+- estimated revenue potential
+
+This must increase trust and conversion.
+
+User should feel:
+
+👉 "This is worth it"
+👉 "I see the value clearly"
+👉 "I should activate now"
+
+========================
+1. DATA SOURCES
+========================
+
+Use real signals:
+
+- impressions (Einblendungen)
+- clicks (Klicks)
+- bookings (Buchungen)
+- historical boost performance
+- time of day activity
+- local demand
+- business type (restaurant / café / bar)
+
+========================
+2. ROI ESTIMATION MODEL
+========================
+
+Estimate:
+
+- potential additional visibility
+- expected clicks
+- expected bookings
+- potential customers gained
+
+Then estimate:
+
+👉 revenue range (conservative)
+
+Example logic:
+
+- clicks → bookings conversion rate
+- bookings → average order value
+- demand multiplier
+
+========================
+3. ROI DISPLAY (CRITICAL 💸)
+========================
+
+Show directly on card:
+
+Examples (German):
+
+"Geschätzte Reichweite heute: +120–180 Personen"
+
+"Erwartete zusätzliche Gäste: 5–12"
+
+"Potentieller Umsatz: 80€ – 240€"
+
+Keep it realistic and not exaggerated.
+
+========================
+4. COST VS VALUE
+========================
+
+Show:
+
+- cost of boost
+- expected return
+
+Example:
+
+"Kosten: 5€  
+Möglicher Umsatz: 80€ – 240€"
+
+This is the main conversion driver.
+
+========================
+5. CONFIDENCE LEVEL
+========================
+
+Add subtle confidence indicator:
+
+- "Basierend auf aktueller Aktivität"
+- "Basierend auf ähnlichen Kampagnen"
+- "Mittlere Sicherheit"
+
+Do NOT overpromise.
+
+========================
+6. SMART CTA
+========================
+
+When ROI is strong:
+
+Highlight CTA:
+
+- "Jetzt aktivieren (empfohlen)"
+- "Hohe Chance auf zusätzliche Gäste"
+
+When weak:
+
+- reduce urgency
+- suggest better timing
+
+========================
+7. VISUAL INTEGRATION
+========================
+
+Display ROI cleanly:
+
+- small card section
+- no clutter
+- readable
+- consistent with premium UI
+
+========================
+8. NO FAKE URGENCY
+========================
+
+NEVER:
+
+- invent fake numbers
+- exaggerate results
+- mislead user
+
+Trust is critical.
+
+========================
+9. ADAPT BY BUSINESS TYPE
+========================
+
+Restaurants:
+- bookings
+- meals
+
+Cafés:
+- visits
+- coffee traffic
+
+Bars:
+- evening guests
+- group visits
+
+========================
+10. LEARNING LOOP
+========================
+
+Improve over time:
+
+- compare predicted vs actual
+- adjust model
+- increase accuracy
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster becomes:
+
+👉 a revenue advisor
+
+Not just a tool.
+
+The system should:
+
+- show clear value
+- reduce hesitation
+- increase spending
+- build trust
+
+User should think:
+
+👉 "If I don’t activate, I lose money"
