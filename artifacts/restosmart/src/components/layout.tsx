@@ -177,7 +177,7 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
         )}
         <button
           onClick={() => {
-            if (trialCtaId) trackVariantClick(trialCtaId, false);
+            if (trialCtaId) trackVariantClick(trialCtaId, true);
             localStorage.setItem("restosmart_owner_premium", "active");
             localStorage.removeItem("restosmart_trial_end");
             window.location.reload();

@@ -12,6 +12,7 @@ interface VariantRow {
   copyText: string;
   isWinner: boolean;
   isRetired: boolean;
+  rolloutPct: number;
   impressions: number;
   clicks: number;
   conversions: number;
@@ -176,7 +177,7 @@ export default function VariantOptimizationPanel() {
                   <div className="text-sm text-white mt-0.5 leading-snug">"{v.copyText}"</div>
                   <div className="text-[10px] text-[#555] mt-0.5">
                     Variante {v.variantKey} · {v.impressions} Impressionen · {v.ctr}% CTR
-                    {v.isWinner && <span className="ml-1 text-emerald-400 font-semibold">✓ Gewinner</span>}
+                    {v.isWinner && <span className="ml-1 text-emerald-400 font-semibold">{"✓ Gewinner"}{v.rolloutPct < 100 ? ` (${v.rolloutPct}%)` : ""}</span>}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
@@ -202,7 +203,7 @@ export default function VariantOptimizationPanel() {
                 <h3 className="text-sm font-bold text-white">{ELEMENT_LABELS[et] ?? et}</h3>
                 {winner && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                    Gewinner: Variante {winner.variantKey}
+                    Gewinner: Variante {winner.variantKey}{winner.rolloutPct < 100 ? ` (${winner.rolloutPct}% Rollout)` : ""}
                   </span>
                 )}
                 {!winner && !hasEnoughData && (

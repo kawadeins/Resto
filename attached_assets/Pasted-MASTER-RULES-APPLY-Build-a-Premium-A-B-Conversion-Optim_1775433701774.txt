@@ -1,0 +1,192 @@
+MASTER RULES APPLY
+
+Build a "Premium A/B Conversion Optimization System" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT change core flows.
+Do NOT add random features.
+
+This system is for optimizing Premium conversion using controlled A/B testing.
+
+========================
+GOAL
+========================
+
+Continuously increase Premium conversion rates by:
+
+- testing different copy versions
+- testing different CTA styles
+- testing different timing moments
+- identifying what drives more paid upgrades
+
+The system must remain:
+- clean
+- controlled
+- measurable
+- non-annoying
+
+========================
+1. VARIANT SYSTEM (CORE)
+========================
+
+Create support for multiple variants of conversion content.
+
+At minimum support:
+
+- Variant A (baseline)
+- Variant B (alternative)
+
+Each variant can differ in:
+- headline
+- message
+- CTA wording
+- urgency style
+- value framing
+
+========================
+2. VARIANT ASSIGNMENT
+========================
+
+When a business user enters the app:
+
+- assign them randomly to Variant A or B
+- keep assignment consistent per user
+- do NOT switch variants mid-session
+
+========================
+3. TEST AREAS
+========================
+
+Apply A/B testing to:
+
+- Premium page
+- upgrade popups
+- dashboard upgrade cards
+- trial ending messages
+- boost access prompts
+
+Do NOT test everything at once.
+Keep it controlled.
+
+========================
+4. METRICS TRACKING
+========================
+
+Track per variant:
+
+- impressions (how many saw it)
+- clicks (CTA clicks)
+- trial starts
+- paid conversions
+- conversion rate (%)
+
+========================
+5. CONVERSION DEFINITION
+========================
+
+Define success as:
+
+- starting trial
+- upgrading to paid
+- continuing after trial
+
+========================
+6. PERFORMANCE COMPARISON
+========================
+
+Continuously compare:
+
+- Variant A vs Variant B
+
+Identify:
+- higher CTR
+- higher conversion
+- better trial-to-paid rate
+
+========================
+7. WINNER SELECTION
+========================
+
+After enough data:
+
+- automatically detect winning variant
+- mark it as primary
+- optionally replace weaker variant
+
+Do NOT switch too early (avoid low data decisions).
+
+========================
+8. SAFE ROLLOUT
+========================
+
+When a winner is detected:
+
+- gradually increase exposure
+- do NOT instantly switch 100%
+
+========================
+9. GERMAN COPY VARIANTS (EXAMPLE)
+========================
+
+Variant A (Value-driven):
+"Mehr Sichtbarkeit. Mehr Kunden."
+
+Variant B (Loss-driven):
+"Ohne Premium bleibst du unsichtbar."
+
+Variant A CTA:
+"Jetzt starten"
+
+Variant B CTA:
+"Mehr Kunden erreichen"
+
+========================
+10. FOUNDER VISIBILITY
+========================
+
+Inside Founder Dashboard (light integration):
+
+Show:
+- active tests
+- variant performance
+- conversion rates
+- current winner
+
+Keep it simple.
+
+========================
+11. NO USER CONFUSION
+========================
+
+Ensure:
+- user sees consistent experience
+- no flashing changes
+- no random switching
+
+========================
+12. DO NOT OVERCOMPLICATE
+========================
+
+No:
+- complex experiment builder
+- heavy analytics UI
+- too many variants
+
+Keep:
+- 2 variants
+- clear results
+- fast iteration
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should:
+
+- learn what sells Premium better
+- optimize conversion automatically
+- increase revenue over time
+- without manual constant changes
+
+Business owners should naturally convert more because the system continuously improves persuasion.

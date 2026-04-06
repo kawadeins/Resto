@@ -24,7 +24,7 @@ router.get("/active", async (req, res) => {
 
     const rows = await db.execute(sql`
       SELECT id, element_type, business_type, variant_key, copy_text,
-             is_winner, impressions, clicks
+             is_winner, rollout_pct, impressions, clicks
       FROM conversion_variants
       WHERE is_retired = false
         AND (business_type = 'all' OR business_type = ${bizType})
@@ -51,22 +51,29 @@ router.get("/active", async (req, res) => {
 
       const winner = candidates.find((v: any) => v.is_winner);
       if (winner) {
-        result[elementType] = { id: Number(winner.id), variantKey: winner.variant_key, copyText: winner.copy_text };
-        continue;
+        // Gradual rollout: serve winner at rollout_pct, otherwise random from remaining
+        const rolloutPct = Number(winner.rollout_pct ?? 100);
+        if (rolloutPct >= 100 || Math.random() * 100 < rolloutPct) {
+          result[elementType] = { id: Number(winner.id), variantKey: winner.variant_key, copyText: winner.copy_text };
+          continue;
+        }
+        // Fall through to weighted random for gradual rollout exploration
       }
 
       // Weighted random — under-shown variants get higher weight
-      let chosen = candidates[0];
-      if (candidates.length > 1) {
-        const weights = candidates.map((v: any) => {
+      const nonWinnerCandidates = candidates.filter((v: any) => !v.is_winner);
+      const activePool = nonWinnerCandidates.length > 0 ? nonWinnerCandidates : candidates;
+      let chosen = activePool[0];
+      if (activePool.length > 1) {
+        const weights = activePool.map((v: any) => {
           const imp = Number(v.impressions);
           return imp === 0 ? 100 : Math.max(1, Math.round(100 / (imp + 1)));
         });
         const totalW = weights.reduce((s: number, w: number) => s + w, 0);
         let rand = Math.random() * totalW;
-        for (let i = 0; i < candidates.length; i++) {
+        for (let i = 0; i < activePool.length; i++) {
           rand -= weights[i];
-          if (rand <= 0) { chosen = candidates[i]; break; }
+          if (rand <= 0) { chosen = activePool[i]; break; }
         }
       }
       result[elementType] = { id: Number(chosen.id), variantKey: chosen.variant_key, copyText: chosen.copy_text };
@@ -119,7 +126,7 @@ router.get("/insights", founderAuth, async (_req, res) => {
   try {
     const rows = await db.execute(sql`
       SELECT id, element_type, business_type, variant_key, copy_text,
-             is_winner, is_retired, impressions, clicks, conversions,
+             is_winner, is_retired, impressions, clicks, conversions, rollout_pct,
              CASE WHEN impressions > 0 THEN ROUND(clicks::numeric / impressions * 100, 1) ELSE 0 END AS ctr,
              CASE WHEN clicks > 0 THEN ROUND(conversions::numeric / clicks * 100, 1) ELSE 0 END AS conv_rate,
              updated_at
@@ -138,6 +145,7 @@ router.get("/insights", founderAuth, async (_req, res) => {
         copyText: r.copy_text,
         isWinner: Boolean(r.is_winner),
         isRetired: Boolean(r.is_retired),
+        rolloutPct: Number(r.rollout_pct ?? 100),
         impressions: Number(r.impressions),
         clicks: Number(r.clicks),
         conversions: Number(r.conversions),
@@ -235,11 +243,39 @@ async function runAutoOptimize(): Promise<string[]> {
       const advantage = best.ctr / Math.max(worst.ctr, 0.001);
 
       if (advantage >= 1 + WIN_ADVANTAGE) {
+        const currentImp = Number(best.impressions);
         await db.execute(sql`
-          UPDATE conversion_variants SET is_winner = true, updated_at = NOW()
+          UPDATE conversion_variants SET is_winner = true, rollout_pct = 70,
+            rollout_stage_impressions = ${currentImp}, updated_at = NOW()
           WHERE id = ${Number(best.id)}
         `);
-        actions.push(`WINNER [${key}] variant ${best.variant_key}: CTR ${(best.ctr * 100).toFixed(1)}% vs ${(worst.ctr * 100).toFixed(1)}%`);
+        actions.push(`WINNER [${key}] variant ${best.variant_key}: CTR ${(best.ctr * 100).toFixed(1)}% vs ${(worst.ctr * 100).toFixed(1)}% — rollout starts at 70%`);
+      }
+    }
+
+    // Gradual rollout: escalate existing winners toward 100%
+    const winnerRows = await db.execute(sql`
+      SELECT id, element_type, business_type, variant_key, rollout_pct,
+             impressions, rollout_stage_impressions
+      FROM conversion_variants
+      WHERE is_winner = true AND rollout_pct < 100
+    `);
+    for (const w of winnerRows.rows as any[]) {
+      const pct = Number(w.rollout_pct);
+      const imp = Number(w.impressions);
+      const stageBase = Number(w.rollout_stage_impressions);
+      const impSinceLastStep = imp - stageBase;
+      // Escalate after 20 new impressions since last rollout step
+      if (impSinceLastStep >= 20) {
+        const newPct = Math.min(100, pct + 10);
+        if (newPct > pct) {
+          await db.execute(sql`
+            UPDATE conversion_variants
+            SET rollout_pct = ${newPct}, rollout_stage_impressions = ${imp}, updated_at = NOW()
+            WHERE id = ${Number(w.id)}
+          `);
+          actions.push(`ROLLOUT [${w.element_type}::${w.business_type}] ${w.variant_key}: ${pct}% → ${newPct}% (after ${impSinceLastStep} new impressions)`);
+        }
       }
     }
   } catch (err) {

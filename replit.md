@@ -32,8 +32,9 @@ RestoSmart is a full-stack SaaS web application designed as a premium restaurant
     -   **Modules:** Home (flash deals), Explore (listings, map view), Near You Now (hyper-local scoring, availability chips), Restaurant Detail (booking form, color-coded availability), My Bookings (reviews, loyalty points), Profile Hub (account management, avatar upload, privacy/security), Meal Plan (personal/group planning, smart matches), Owner Premium Card/Flow.
     -   **Design:** Engaging, user-friendly interface with emphasis on discovery and personalization.
 -   **Premium Auto-Conversion Optimization Loop:**
-    -   **Architecture:** A/B testing framework (`conversion_variants` table, dedicated API endpoints) to optimize conversion elements (headlines, CTAs, proof points).
-    -   **Logic:** Auto-win logic for variants with significant performance leads (impressions ≥ 40, CTR ≥ 20% higher than runner-up).
+    -   **Architecture:** A/B testing framework (`conversion_variants` table with `rollout_pct` + `rollout_stage_impressions` columns, dedicated API endpoints) to optimize conversion elements (headlines, CTAs, proof points).
+    -   **Logic:** Auto-win logic for variants with significant performance leads (impressions ≥ 40, CTR ≥ 20% higher than runner-up). Winners start at 70% rollout, escalating +10% after every 20 new impressions until 100%.
+    -   **Conversion Tracking:** All trial start and paid upgrade CTAs track `isConversion=true` via `trackVariantClick()`. 38 active variants across 7 element types; 5 fake proof_focus variants retired; Variant D high-impact copy seeded.
 -   **Business Self-Serve Growth Loop:**
     -   **Entry Point:** Dedicated `/for-business` landing page in customer app, footer CTA.
     -   **Activation Flow:** Instant trial activation for self-serve sign-ups, eliminating 24h wait.

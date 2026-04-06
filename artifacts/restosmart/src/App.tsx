@@ -185,7 +185,7 @@ function TrialExpiredRequired() {
             className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity cursor-pointer"
             onClick={() => {
               track("upgrade_cta_clicked", { ctaLabel: "F\u00fcr 39,90\u20ac / Monat fortsetzen", dedup: false });
-              if (expiredHlId) trackVariantClick(expiredHlId, false);
+              if (expiredHlId) trackVariantClick(expiredHlId, true);
               localStorage.setItem("restosmart_owner_premium", "active");
               localStorage.removeItem("restosmart_trial_end");
               track("premium_activated", { businessType: biz, source: "expired_gate" });
@@ -329,7 +329,7 @@ function PremiumRequired() {
             className="flex items-center justify-center gap-2 w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity cursor-pointer"
             onClick={() => {
               track("upgrade_cta_clicked", { ctaLabel: gateCta, dedup: false });
-              if (gateCtaId) trackVariantClick(gateCtaId, false);
+              if (gateCtaId) trackVariantClick(gateCtaId, true);
               const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
               localStorage.setItem("restosmart_owner_premium", "trial");
               localStorage.setItem("restosmart_trial_end", trialEnd);
@@ -343,7 +343,7 @@ function PremiumRequired() {
             className="flex items-center justify-center gap-2 w-full h-10 py-2 rounded-xl border border-white/10 bg-white/3 text-[#999] font-medium text-xs hover:bg-white/6 transition-colors cursor-pointer"
             onClick={() => {
               track("upgrade_cta_clicked", { ctaLabel: "14 Tage kostenlos starten", dedup: false });
-              if (gateCtaId) trackVariantClick(gateCtaId, false);
+              if (gateCtaId) trackVariantClick(gateCtaId, true);
               const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
               localStorage.setItem("restosmart_owner_premium", "trial");
               localStorage.setItem("restosmart_trial_end", trialEnd);
