@@ -1,0 +1,244 @@
+MASTER RULES APPLY
+
+Perform a full "Promotion Tools Premium UI/UX Redesign + Conversion Optimization + Animation Pass" inside the RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT break functionality.
+Do NOT change backend logic.
+Do NOT remove existing features.
+
+This is a visual + UX + conversion upgrade ONLY.
+
+This section is revenue-critical.
+
+========================
+GOAL
+========================
+
+Transform Promotion Tools into a:
+
+- premium-looking system
+- clean and modern UI
+- easy-to-use experience
+- high-conversion interface
+
+User must feel:
+- this is powerful
+- this brings customers
+- I want to activate boosts
+
+========================
+1. COLOR SYSTEM (REMOVE CHAOS)
+========================
+
+Replace all current mixed colors with a clean system:
+
+Background:
+- Main: #0B0F1A
+- Cards: #121826
+- Hover: #161E2E
+
+Primary Gradient:
+- #4F8CFF → #7B5CFF
+
+States:
+- Active: #22C55E
+- Paused: #F59E0B
+- Stop: #EF4444
+
+Text:
+- Main: #FFFFFF
+- Secondary: #9CA3AF
+
+RULE:
+No rainbow UI. Keep colors consistent.
+
+========================
+2. CARD REDESIGN
+========================
+
+Each boost card must be:
+
+- border-radius: 16px
+- padding: 20px
+- no heavy borders
+- soft shadow:
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3)
+
+Clean layout:
+
+[ Title + Badge ]
+[ Time ]
+[ Description ]
+[ Metrics Row ]
+[ Actions ]
+
+========================
+3. TYPOGRAPHY
+========================
+
+- Title: bold, clear
+- Subtitle: soft gray
+- Description: readable
+- Avoid faded text
+
+========================
+4. METRICS (SIMPLIFY)
+========================
+
+Remove colorful icons.
+
+Use unified style:
+
+- icons: #9CA3AF
+- numbers: #FFFFFF
+
+Metrics:
+- Einblendungen
+- Klicks
+- Buchungen
+- Aktivität
+
+========================
+5. BUTTON SYSTEM (CRITICAL 💸)
+========================
+
+Primary CTA:
+
+- gradient background (#4F8CFF → #7B5CFF)
+- white text
+- height: 48px
+- border-radius: 12px
+
+Examples:
+- "Jetzt aktivieren"
+- "Fortsetzen"
+
+Secondary:
+- subtle border
+- gray text
+- "Pause"
+
+Danger:
+- light red background
+- "Stop"
+
+RULE:
+One clear main button per card.
+
+========================
+6. STATE DESIGN
+========================
+
+Active:
+- green badge "Live & aktiv"
+- soft glow:
+  box-shadow: 0 0 20px rgba(34,197,94,0.15)
+
+Paused:
+- orange badge
+- no glow
+
+Inactive:
+- calm card
+- strong CTA visible
+
+========================
+7. UX SIMPLIFICATION
+========================
+
+User must instantly understand:
+
+- what this boost is
+- when it runs
+- what it does
+- how to activate
+
+No confusion.
+
+========================
+8. REMOVE VISUAL FATIGUE
+========================
+
+Fix:
+
+- too many borders
+- too many colors
+- clutter
+
+Goal:
+Clean, calm, premium UI.
+
+========================
+9. MICRO-INTERACTIONS (🔥)
+========================
+
+Add subtle animations:
+
+- card hover → slight lift
+- button hover → glow
+- click → soft feedback
+- active card → gentle pulse/glow
+
+Duration:
+- 150–250ms
+
+Keep it subtle, not flashy.
+
+========================
+10. ACTIVE FEEL
+========================
+
+Active boosts should feel alive:
+
+- soft glow
+- green accent
+- subtle animation
+
+User should feel:
+"this is running and working"
+
+========================
+11. CONVERSION OPTIMIZATION
+========================
+
+Make activation easy:
+
+- strong CTA
+- no clutter
+- no confusion
+
+User must feel:
+
+- this brings customers
+- this is worth paying
+- I should activate now
+
+========================
+12. FINAL POLISH
+========================
+
+Ensure:
+
+- spacing consistent
+- alignment perfect
+- no visual bugs
+- smooth UI
+
+========================
+FINAL GOAL
+========================
+
+Promotion Tools becomes:
+
+- premium
+- clean
+- powerful
+- easy to use
+- high-converting
+
+User opens it and thinks:
+
+👉 "This looks professional"
+👉 "I trust this system"
+👉 "I want to spend money here"
