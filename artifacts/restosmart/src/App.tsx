@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { PermissionProvider } from "@/hooks/use-permissions";
+import { RoleGuard } from "@/components/access-denied";
 import NotFound from "@/pages/not-found";
 import Overview from "@/pages/overview";
 import Staff from "@/pages/staff";
@@ -386,36 +388,41 @@ function App() {
             {/* All other routes require premium */}
             <Route>
               <PremiumGate>
-                <Layout>
-                  <Switch>
-                    <Route path="/login">
-                      <Redirect to="/" />
-                    </Route>
-                    <Route path="/" component={Overview} />
-                    <Route path="/staff" component={Staff} />
-                    <Route path="/inventory" component={Inventory} />
-                    <Route path="/finances" component={Finances} />
-                    <Route path="/reservations" component={Reservations} />
-                    <Route path="/analytics" component={Analytics} />
-                    <Route path="/menu" component={Menu} />
-                    <Route path="/pos" component={Pos} />
-                    <Route path="/marketing" component={Marketing} />
-                    <Route path="/bookings" component={Bookings} />
-                    <Route path="/billing" component={Billing} />
-                    <Route path="/reviews" component={Reviews} />
-                    <Route path="/super-admin" component={SuperAdmin} />
-                    <Route path="/insights" component={Insights} />
-                    <Route path="/onboarding" component={Onboarding} />
-                    <Route path="/campaigns" component={Campaigns} />
-                    <Route path="/tables" component={Tables} />
-                    <Route path="/payroll" component={Payroll} />
-                    <Route path="/profile" component={Profile} />
-                    <Route path="/optimizer" component={Optimizer} />
-                    <Route path="/boost" component={Boost} />
-                    <Route path="/team" component={Team} />
-                    <Route component={NotFound} />
-                  </Switch>
-                </Layout>
+                <PermissionProvider>
+                  <Layout>
+                    <Switch>
+                      <Route path="/login">
+                        <Redirect to="/" />
+                      </Route>
+                      <Route path="/" component={Overview} />
+                      <Route path="/profile" component={Profile} />
+                      <Route path="/bookings" component={Bookings} />
+                      <Route path="/reservations" component={Reservations} />
+                      <Route path="/tables" component={Tables} />
+                      <Route path="/pos" component={Pos} />
+                      <Route path="/reviews" component={Reviews} />
+                      <Route path="/onboarding" component={Onboarding} />
+
+                      <Route path="/staff">{() => <RoleGuard allowed={["owner", "manager"]} section="Personal"><Staff /></RoleGuard>}</Route>
+                      <Route path="/inventory">{() => <RoleGuard allowed={["owner", "manager"]} section="Inventar"><Inventory /></RoleGuard>}</Route>
+                      <Route path="/menu">{() => <RoleGuard allowed={["owner", "manager"]} section="Speisekarte"><Menu /></RoleGuard>}</Route>
+                      <Route path="/analytics">{() => <RoleGuard allowed={["owner", "manager"]} section="Analyse"><Analytics /></RoleGuard>}</Route>
+                      <Route path="/boost">{() => <RoleGuard allowed={["owner", "manager"]} section="Sichtbarkeit & Boost"><Boost /></RoleGuard>}</Route>
+                      <Route path="/marketing">{() => <RoleGuard allowed={["owner", "manager"]} section="Marketing"><Marketing /></RoleGuard>}</Route>
+                      <Route path="/insights">{() => <RoleGuard allowed={["owner", "manager"]} section="Tote Stunden"><Insights /></RoleGuard>}</Route>
+                      <Route path="/campaigns">{() => <RoleGuard allowed={["owner", "manager"]} section="Wachstum"><Campaigns /></RoleGuard>}</Route>
+                      <Route path="/optimizer">{() => <RoleGuard allowed={["owner", "manager"]} section="Optimizer"><Optimizer /></RoleGuard>}</Route>
+
+                      <Route path="/finances">{() => <RoleGuard allowed="owner" section="Finanzen"><Finances /></RoleGuard>}</Route>
+                      <Route path="/payroll">{() => <RoleGuard allowed="owner" section="Gehaltsabrechnung"><Payroll /></RoleGuard>}</Route>
+                      <Route path="/billing">{() => <RoleGuard allowed="owner" section="Abonnement"><Billing /></RoleGuard>}</Route>
+                      <Route path="/team">{() => <RoleGuard allowed="owner" section="Team"><Team /></RoleGuard>}</Route>
+                      <Route path="/super-admin">{() => <RoleGuard allowed="owner" section="Admin"><SuperAdmin /></RoleGuard>}</Route>
+
+                      <Route component={NotFound} />
+                    </Switch>
+                  </Layout>
+                </PermissionProvider>
               </PremiumGate>
             </Route>
           </Switch>

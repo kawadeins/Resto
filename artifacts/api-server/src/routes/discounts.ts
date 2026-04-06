@@ -4,6 +4,7 @@ import { discountsTable, notificationsTable } from "@workspace/db";
 import { reservationsTable } from "@workspace/db";
 import { z } from "zod";
 import { eq, gte, and } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -126,7 +127,7 @@ router.get("/active-status", async (req, res) => {
   }
 });
 
-router.post("/flash", async (req, res) => {
+router.post("/flash", requireManagerOrAbove(), async (req, res) => {
   try {
     const { label, percentage } = z.object({
       label: z.string().default("Flash Deal"),
@@ -157,7 +158,7 @@ router.post("/flash", async (req, res) => {
   }
 });
 
-router.post("/scheduled", async (req, res) => {
+router.post("/scheduled", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateScheduledBody.parse(req.body);
     const [deal] = await db.insert(discountsTable).values({
@@ -177,7 +178,7 @@ router.post("/scheduled", async (req, res) => {
   }
 });
 
-router.patch("/:id/toggle", async (req, res) => {
+router.patch("/:id/toggle", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { enabled } = z.object({ enabled: z.boolean() }).parse(req.body);
@@ -193,7 +194,7 @@ router.patch("/:id/toggle", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await db.delete(discountsTable).where(eq(discountsTable.id, id));
@@ -204,7 +205,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/blast", async (req, res) => {
+router.post("/blast", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = z.object({
       title: z.string(),

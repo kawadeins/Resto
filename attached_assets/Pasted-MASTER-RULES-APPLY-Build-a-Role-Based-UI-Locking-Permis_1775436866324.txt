@@ -1,0 +1,290 @@
+MASTER RULES APPLY
+
+Build a "Role-Based UI Locking + Permission Enforcement System" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing systems.
+Do NOT modify Founder dashboard.
+This pass is for business-side access control only.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+It must work with:
+- Business Staff Management System
+- Owner / Manager / Staff roles
+- Premium business dashboard
+- billing / premium controls
+- boost / visibility tools
+- analytics
+- business profile editing
+
+========================
+GOAL
+========================
+
+Ensure each business user only sees and accesses the parts of the dashboard that match their role.
+
+The dashboard must become role-aware, secure, and clean.
+
+========================
+1. ROLE DEFINITIONS (CRITICAL)
+========================
+
+Use these roles:
+
+1. Owner
+- full access
+- billing access
+- premium access
+- team management
+- boost tools
+- analytics
+- profile management
+
+2. Manager
+- profile management
+- boost / visibility tools
+- analytics
+- operational controls
+- no billing ownership
+- no owner-only settings
+
+3. Staff
+- limited dashboard access
+- view-only or limited operational access
+- no billing
+- no premium controls
+- no team management
+- no high-risk settings
+
+========================
+2. UI LOCKING SYSTEM
+========================
+
+Lock the dashboard UI based on role.
+
+Examples:
+
+Owner sees:
+- full dashboard
+- billing
+- premium
+- team section
+- sensitive controls
+
+Manager sees:
+- operations
+- analytics
+- boost tools
+- profile editing
+- no billing section
+- no owner-only controls
+
+Staff sees:
+- limited permitted sections only
+- no hidden sensitive pages
+- no premium/billing/team controls
+
+Do NOT merely disable buttons visually.
+Hide or restrict inappropriate sections cleanly.
+
+========================
+3. SERVER-SIDE PERMISSION ENFORCEMENT
+========================
+
+Enforce role permissions on the backend too.
+
+Do NOT trust frontend role only.
+
+For every sensitive action verify:
+- user belongs to business
+- user has correct role
+- action is allowed for that role
+
+Protect especially:
+- billing
+- subscription changes
+- premium controls
+- role changes
+- staff invites/removals
+- boost campaign creation if restricted
+- sensitive business settings
+
+========================
+4. ROUTE PROTECTION
+========================
+
+Protect dashboard routes and sub-sections by role.
+
+Examples:
+- /billing → owner only
+- /team → owner only
+- /premium → owner only or owner/manager if intended
+- /boost → owner/manager
+- /analytics → owner/manager
+- restricted staff pages → block if unauthorized
+
+If unauthorized:
+- do not show broken page
+- redirect safely or show access denied state
+
+========================
+5. CLEAN ROLE-BASED EXPERIENCE
+========================
+
+The dashboard should feel natural for each role.
+
+Users should not constantly hit permission errors because they should mostly only see what they are allowed to use.
+
+The experience must feel:
+- clean
+- secure
+- professional
+
+========================
+6. GERMAN UI LABELS
+========================
+
+All business-facing permission-related UI must be in German.
+
+Examples:
+- "Kein Zugriff"
+- "Nur für Inhaber"
+- "Nicht verfügbar für diese Rolle"
+- "Zugriff verweigert"
+- "Berechtigungen"
+
+========================
+7. ACCESS DENIED STATES
+========================
+
+When a user tries to access something outside their role, show a clean German state like:
+
+- "Du hast keinen Zugriff auf diesen Bereich."
+- "Dieser Bereich ist nur für Inhaber verfügbar."
+
+No technical error pages.
+
+========================
+8. SENSITIVE SECTION MAPPING
+========================
+
+Explicitly map each major dashboard section to allowed roles.
+
+At minimum map:
+- Premium / Subscription
+- Billing
+- Team / Staff
+- Boost / Sponsored visibility
+- Analytics
+- Profile editing
+- Growth prompts
+- Visibility tools
+- Settings
+
+Make this mapping clean and consistent.
+
+========================
+9. STAFF-SAFE DASHBOARD MODE
+========================
+
+Create a safe limited dashboard mode for staff.
+
+Staff should still feel useful, but not dangerous.
+
+They can see:
+- allowed operational info
+- permitted tasks
+
+They cannot:
+- affect billing
+- affect premium
+- affect ownership
+- affect team permissions
+
+========================
+10. MANAGER CAPABILITY MODE
+========================
+
+Managers should feel trusted but not equal to the owner.
+
+Allow managers to help run the business without exposing owner-only business control.
+
+========================
+11. OWNER MASTER CONTROL
+========================
+
+Owners should have full business control.
+
+This includes:
+- subscription
+- billing
+- staff roles
+- premium tools
+- critical business settings
+
+========================
+12. PERMISSION CHANGE VALIDATION
+========================
+
+If owner changes someone’s role:
+- UI updates correctly
+- access updates correctly
+- previous permissions are removed
+- no stale access remains
+
+========================
+13. EDGE CASES
+========================
+
+Handle:
+- removed staff still logged in
+- pending invites
+- role changed during session
+- unauthorized direct URL access
+- duplicate role conflicts
+
+========================
+14. NO FAKE SECURITY
+========================
+
+Do NOT make this only visual.
+
+Permissions must be real:
+- UI locking
+- route locking
+- backend validation
+
+All three.
+
+========================
+15. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Role mappings implemented
+B. UI sections locked by role
+C. Backend protections added
+D. Route protections added
+E. Access denied states added
+F. Edge cases handled
+G. Remaining permission risks if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster business dashboard should become role-aware and secure.
+
+Owner, Manager, and Staff should each see the right dashboard for their role.
+
+The system must feel:
+- secure
+- professional
+- clean
+- ready for real team usage

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { subscriptionsTable, restaurantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { requireOwner } from "../middleware/role-guard";
 
 async function getRestaurantPilotMode(): Promise<boolean> {
   try {
@@ -75,7 +76,7 @@ router.get("/subscription", async (req, res) => {
 });
 
 // POST /api/billing/trial — start 14-day free trial (once per restaurant)
-router.post("/trial", async (req, res) => {
+router.post("/trial", requireOwner(), async (req, res) => {
   try {
     const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
     const existing = rows[0];
@@ -133,7 +134,7 @@ router.post("/trial", async (req, res) => {
 });
 
 // POST /api/billing/checkout — activate full subscription (from trial or direct)
-router.post("/checkout", async (req, res) => {
+router.post("/checkout", requireOwner(), async (req, res) => {
   try {
     const sessionId = `cs_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
@@ -179,7 +180,7 @@ router.post("/checkout", async (req, res) => {
 });
 
 // POST /api/billing/cancel — cancel subscription
-router.post("/cancel", async (req, res) => {
+router.post("/cancel", requireOwner(), async (req, res) => {
   try {
     const [sub] = await db.update(subscriptionsTable)
       .set({ status: "cancelled", cancelledAt: new Date() })

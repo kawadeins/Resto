@@ -34,6 +34,13 @@ RestoSmart is a full-stack SaaS web application providing a premium, information
     -   **API Routes:** `/api/team`, `/api/team/invite`, `/api/team/accept`, `/api/team/:id/role` (PATCH), `/api/team/:id` (DELETE), `/api/team/resend`, `/api/team/permissions`, `/api/team/bootstrap-owner`.
     -   **Frontend:** `/team` page with role cards, invite form, member list with action menus, pending/active status indicators.
     -   **Navigation:** "Team" nav item with UsersRound icon between Gehaltsabrechnung and Inventar.
+-   **Role-Based UI Locking & Permission Enforcement:**
+    -   **Permission Hook:** `usePermissions()` fetches role/permissions from `/api/team/permissions`, provides `role`, `permissions`, `hasPermission()`, `isOwner`, `isManager`, `isStaff`.
+    -   **Route Protection:** `RoleGuard` component wraps protected routes in App.tsx — shows "Kein Zugriff" page (German) with role info when unauthorized.
+    -   **Navigation Filtering:** Sidebar and mobile nav hide items the user's role can't access. Staff sees only: Übersicht, Profil, Buchungen, Reservierungen, Tische, Kassenterminal, Bewertungen. Manager adds: Personal, Inventar, Speisekarte, Analyse, Boost, Marketing, Insights, Wachstum, Optimizer. Owner sees everything including Finanzen, Gehaltsabrechnung, Team, Abonnement.
+    -   **Server-Side Enforcement:** `requireOwner()` and `requireManagerOrAbove()` middleware on sensitive API routes: billing (trial/checkout/cancel), promotions (create), employees (create/update/delete), profile (update).
+    -   **Access Denied UI:** Clean German component with shield icon, role label, section name, and link back to overview.
+    -   **Key Files:** `hooks/use-permissions.tsx`, `components/access-denied.tsx`, `middleware/role-guard.ts`.
 -   **Business Self-Serve Growth Loop:** Dedicated `/for-business` landing page for instant trial activation and an in-dashboard Growth Activation Hub with checklists and value signals for trial users.
 -   **Business Competition Engine:** Provides owners with competitive insights via dashboard widgets (Visibility Strength, Demand/Competition Signal) and a founder panel for deeper analysis.
 -   **AI Self-Healing Ops Layer v2 + Founder Alert System:** An `ops_incidents` database tracks and auto-heals incidents across various categories (billing, boost delivery, platform consistency). Features an auto-retry engine and billing reconciliation. The Founder Interface ("Mission Control") provides a comprehensive overview of system health, incident management, and audit trails.

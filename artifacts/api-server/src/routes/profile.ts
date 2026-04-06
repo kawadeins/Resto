@@ -6,6 +6,7 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 const RESTAURANT_ID = 1;
@@ -101,7 +102,7 @@ const UpdateProfileBody = z.object({
 });
 
 // PATCH /api/profile
-router.patch("/", async (req, res) => {
+router.patch("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = UpdateProfileBody.parse(req.body);
     const updates: Record<string, any> = {};

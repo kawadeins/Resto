@@ -12,6 +12,7 @@
  */
 
 import { Router } from "express";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -122,7 +123,7 @@ const CreatePromoSchema = z.object({
   durationHours: z.number().min(1).max(168).optional(), // optional: null = manual stop
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreatePromoSchema.parse(req.body);
 
@@ -154,7 +155,7 @@ router.post("/", async (req, res) => {
 });
 
 // ─── PUT /api/promotions/:id/pause ────────────────────────────────────────────
-router.put("/:id/pause", async (req, res) => {
+router.put("/:id/pause", requireManagerOrAbove(), async (req, res) => {
   try {
     await db.execute(sql`
       UPDATE promotions SET status = 'paused', updated_at = NOW()
@@ -168,7 +169,7 @@ router.put("/:id/pause", async (req, res) => {
 });
 
 // ─── PUT /api/promotions/:id/resume ───────────────────────────────────────────
-router.put("/:id/resume", async (req, res) => {
+router.put("/:id/resume", requireManagerOrAbove(), async (req, res) => {
   try {
     await db.execute(sql`
       UPDATE promotions SET status = 'active', updated_at = NOW()
@@ -182,7 +183,7 @@ router.put("/:id/resume", async (req, res) => {
 });
 
 // ─── PUT /api/promotions/:id/stop ─────────────────────────────────────────────
-router.put("/:id/stop", async (req, res) => {
+router.put("/:id/stop", requireManagerOrAbove(), async (req, res) => {
   try {
     await db.execute(sql`
       UPDATE promotions SET status = 'ended', ends_at = NOW(), updated_at = NOW()
@@ -464,7 +465,7 @@ router.get("/budget", async (req, res) => {
 });
 
 // ─── PUT /api/promotions/:id/budget — set daily budget for a promotion ─────────
-router.put("/:id/budget", async (req, res) => {
+router.put("/:id/budget", requireManagerOrAbove(), async (req, res) => {
   try {
     const promoId = Number(req.params.id);
     const schema = z.object({ dailyBudget: z.number().min(0).max(500) });

@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { salesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { CreateSaleRecordBody } from "@workspace/api-zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -27,7 +28,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateSaleRecordBody.parse(req.body);
     const [sale] = await db.insert(salesTable).values({

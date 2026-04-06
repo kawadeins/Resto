@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { track } from "@/lib/conversion-tracking";
 import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
+import { usePermissions, type TeamRole } from "@/hooks/use-permissions";
 
 function getTrialState() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -196,35 +197,37 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
   );
 }
 
-const navigation = [
+type NavItem = { name: string; href: string; icon: typeof LayoutDashboard; roles?: TeamRole[] };
+
+const navigation: NavItem[] = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
   { name: "Mein Profil", href: "/profile", icon: UserCircle },
   { name: "Buchungen", href: "/bookings", icon: BookOpen },
   { name: "Reservierungen", href: "/reservations", icon: Calendar },
   { name: "Tische", href: "/tables", icon: Armchair },
-  { name: "Personal", href: "/staff", icon: Users },
-  { name: "Gehaltsabrechnung", href: "/payroll", icon: Wallet },
-  { name: "Team", href: "/team", icon: UsersRound },
-  { name: "Inventar", href: "/inventory", icon: Package },
-  { name: "Speisekarte", href: "/menu", icon: UtensilsCrossed },
+  { name: "Personal", href: "/staff", icon: Users, roles: ["owner", "manager"] },
+  { name: "Gehaltsabrechnung", href: "/payroll", icon: Wallet, roles: ["owner"] },
+  { name: "Team", href: "/team", icon: UsersRound, roles: ["owner"] },
+  { name: "Inventar", href: "/inventory", icon: Package, roles: ["owner", "manager"] },
+  { name: "Speisekarte", href: "/menu", icon: UtensilsCrossed, roles: ["owner", "manager"] },
   { name: "Kassenterminal", href: "/pos", icon: ShoppingCart },
-  { name: "Finanzen", href: "/finances", icon: DollarSign },
-  { name: "Analyse", href: "/analytics", icon: BarChart3 },
-  { name: "Sichtbarkeit & Boost", href: "/boost", icon: Flame },
-  { name: "Marketing", href: "/marketing", icon: Megaphone },
-  { name: "Tote Stunden", href: "/insights", icon: Lightbulb },
-  { name: "Wachstum", href: "/campaigns", icon: TrendingUp },
-  { name: "Optimizer", href: "/optimizer", icon: Zap },
+  { name: "Finanzen", href: "/finances", icon: DollarSign, roles: ["owner"] },
+  { name: "Analyse", href: "/analytics", icon: BarChart3, roles: ["owner", "manager"] },
+  { name: "Sichtbarkeit & Boost", href: "/boost", icon: Flame, roles: ["owner", "manager"] },
+  { name: "Marketing", href: "/marketing", icon: Megaphone, roles: ["owner", "manager"] },
+  { name: "Tote Stunden", href: "/insights", icon: Lightbulb, roles: ["owner", "manager"] },
+  { name: "Wachstum", href: "/campaigns", icon: TrendingUp, roles: ["owner", "manager"] },
+  { name: "Optimizer", href: "/optimizer", icon: Zap, roles: ["owner", "manager"] },
   { name: "Bewertungen", href: "/reviews", icon: Star },
-  { name: "Abonnement", href: "/billing", icon: CreditCard },
+  { name: "Abonnement", href: "/billing", icon: CreditCard, roles: ["owner"] },
 ];
 
-const mobileNavigation = [
+const mobileNavigation: NavItem[] = [
   { name: "Übersicht", href: "/", icon: LayoutDashboard },
   { name: "Buchungen", href: "/bookings", icon: BookOpen },
-  { name: "Marketing", href: "/marketing", icon: Megaphone },
+  { name: "Marketing", href: "/marketing", icon: Megaphone, roles: ["owner", "manager"] },
   { name: "Bewertungen", href: "/reviews", icon: Star },
-  { name: "Personal", href: "/staff", icon: Users },
+  { name: "Personal", href: "/staff", icon: Users, roles: ["owner", "manager"] },
 ];
 
 function getOwnerInfo() {
@@ -250,6 +253,17 @@ function exitToProfile() {
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { email, name, initials } = getOwnerInfo();
+  const { role } = usePermissions();
+
+  const filteredNavigation = navigation.filter((item) => {
+    if (!item.roles) return true;
+    return item.roles.includes(role);
+  });
+
+  const filteredMobileNav = mobileNavigation.filter((item) => {
+    if (!item.roles) return true;
+    return item.roles.includes(role);
+  });
 
   return (
     <div className="flex h-screen bg-background text-foreground dark overflow-hidden">
@@ -267,7 +281,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6">
           <nav className="flex-1 space-y-1">
-            {navigation.map((item) => {
+            {filteredNavigation.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
               return (
                 <Link
@@ -334,7 +348,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile-Navigation unten */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-sidebar border-t border-border flex justify-around items-center h-16 px-2">
-        {mobileNavigation.map((item) => {
+        {filteredMobileNav.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
           return (
             <Link

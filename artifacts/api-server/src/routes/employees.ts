@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { employeesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateEmployeeBody, UpdateEmployeeBody, GetEmployeeParams, UpdateEmployeeParams, DeleteEmployeeParams } from "@workspace/api-zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -23,7 +24,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateEmployeeBody.parse(req.body);
     const [employee] = await db.insert(employeesTable).values({
@@ -66,7 +67,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = UpdateEmployeeParams.parse({ id: parseInt(req.params.id) });
     const body = UpdateEmployeeBody.parse(req.body);
@@ -92,7 +93,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = DeleteEmployeeParams.parse({ id: parseInt(req.params.id) });
     await db.delete(employeesTable).where(eq(employeesTable.id, id));

@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { inventoryTable } from "@workspace/db";
 import { eq, lte } from "drizzle-orm";
 import { CreateInventoryItemBody, UpdateInventoryItemBody, UpdateInventoryItemParams, DeleteInventoryItemParams } from "@workspace/api-zod";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -44,7 +45,7 @@ router.get("/low-stock", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateInventoryItemBody.parse(req.body);
     const [item] = await db.insert(inventoryTable).values({
@@ -62,7 +63,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = UpdateInventoryItemParams.parse({ id: parseInt(req.params.id) });
     const body = UpdateInventoryItemBody.parse(req.body);
@@ -82,7 +83,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = DeleteInventoryItemParams.parse({ id: parseInt(req.params.id) });
     await db.delete(inventoryTable).where(eq(inventoryTable.id, id));

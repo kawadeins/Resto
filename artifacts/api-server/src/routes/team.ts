@@ -322,7 +322,15 @@ router.get("/permissions", async (req, res) => {
     const email = (req.headers["x-user-email"] as string) || "";
     if (!email) return res.json({ role: null, permissions: {} });
 
-    const role = await getCallerTeamRole(email);
+    let role = await getCallerTeamRole(email);
+
+    if (!role) {
+      const ownerEmail = await getOwnerEmail();
+      if (!ownerEmail) {
+        role = "owner";
+      }
+    }
+
     if (!role) return res.json({ role: null, permissions: {} });
 
     const permissions = {
