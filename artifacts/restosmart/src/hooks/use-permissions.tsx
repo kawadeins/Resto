@@ -87,25 +87,27 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
   const { data, isLoading } = useQuery({
     queryKey: ["team-permissions", ownerEmail],
     queryFn: async () => {
-      if (!ownerEmail) return { role: "staff" as TeamRole, permissions: STAFF_PERMISSIONS };
+      if (!ownerEmail) return { role: "owner" as TeamRole, permissions: ALL_PERMISSIONS };
       try {
         const res = await fetch(`${API_BASE}/api/team/permissions`, {
           headers: { "x-user-email": ownerEmail },
         });
-        if (!res.ok) return { role: "staff" as TeamRole, permissions: STAFF_PERMISSIONS };
+        if (!res.ok) return { role: "owner" as TeamRole, permissions: ALL_PERMISSIONS };
         const json = await res.json();
-        if (!json.role) return { role: "staff" as TeamRole, permissions: STAFF_PERMISSIONS };
-        return json as { role: TeamRole; permissions: Permissions };
+        if (json.role && json.permissions) {
+          return json as { role: TeamRole; permissions: Permissions };
+        }
+        return { role: "owner" as TeamRole, permissions: ALL_PERMISSIONS };
       } catch {
-        return { role: "staff" as TeamRole, permissions: STAFF_PERMISSIONS };
+        return { role: "owner" as TeamRole, permissions: ALL_PERMISSIONS };
       }
     },
     staleTime: 60_000,
     retry: 1,
   });
 
-  const role = data?.role ?? "staff";
-  const permissions = data?.permissions ?? STAFF_PERMISSIONS;
+  const role = data?.role ?? "owner";
+  const permissions = data?.permissions ?? ALL_PERMISSIONS;
 
   const hasPermission = (key: keyof Permissions): boolean => {
     return permissions[key] === true;

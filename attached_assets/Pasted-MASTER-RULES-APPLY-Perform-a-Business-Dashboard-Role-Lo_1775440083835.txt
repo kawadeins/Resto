@@ -1,0 +1,151 @@
+MASTER RULES APPLY
+
+Perform a "Business Dashboard Role Locking Recovery + Missing Sections Restore Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT remove the role-based permission system.
+Do NOT touch Founder dashboard.
+This is a recovery pass for the business dashboard after role-based locking hid too many sections.
+
+========================
+GOAL
+========================
+
+Restore missing business dashboard sections that were hidden too aggressively after the role-based UI locking and route protection changes.
+
+The dashboard must remain secure, but it must NOT hide valid owner sections or break the full owner experience.
+
+========================
+1. IDENTIFY WHY SECTIONS DISAPPEARED
+========================
+
+Audit the current business dashboard and determine exactly why sections disappeared.
+
+Check whether each missing section is hidden because of:
+- sidebar filtering
+- wrong role detection
+- wrong default role
+- broken role mapping
+- route protection too strict
+- role guard mismatch between frontend and backend
+- demo/test account incorrectly treated as staff/manager
+
+========================
+2. RESTORE FULL OWNER DASHBOARD
+========================
+
+Ensure that the Owner role sees the complete business dashboard again.
+
+Owner must see all intended business sections, including relevant items such as:
+- overview
+- profile
+- bookings / reservations
+- tables
+- POS
+- reviews
+- menu
+- staff/team
+- analytics
+- marketing / boost
+- campaigns
+- availability
+- onboarding/progress
+- premium / billing where intended
+
+Restore all missing sections that should belong to Owner.
+
+========================
+3. KEEP MANAGER / STAFF LOCKING
+========================
+
+Do NOT remove permission locking completely.
+
+Instead:
+- Owner = full dashboard
+- Manager = limited but operational dashboard
+- Staff = safe limited dashboard
+
+Fix only the over-restriction problem.
+
+========================
+4. FIX ROLE DETECTION
+========================
+
+Verify that the logged-in user is being identified with the correct business role.
+
+If demo/test business accounts are being incorrectly treated as staff or manager, fix that.
+
+Ensure:
+- owner accounts load owner UI
+- manager accounts load manager UI
+- staff accounts load staff UI
+
+========================
+5. SIDEBAR RECOVERY
+========================
+
+Audit the sidebar filtering logic.
+
+Restore all sections that should be visible for Owner.
+
+Do NOT let valid owner sections disappear because of overly strict sidebar filtering.
+
+========================
+6. ROUTE PROTECTION RECOVERY
+========================
+
+Audit role guards and route protection.
+
+If valid owner pages are being blocked or hidden because of incorrect route-guard rules, fix them.
+
+Owner should not lose access to legitimate owner pages.
+
+========================
+7. FRONTEND / BACKEND ROLE CONSISTENCY
+========================
+
+Ensure the role used by:
+- frontend sidebar
+- frontend page rendering
+- backend route guards
+
+is consistent.
+
+No section should disappear just because frontend and backend disagree on the role.
+
+========================
+8. DEMO / TEST ACCOUNT TOLERANCE
+========================
+
+If the current account is a demo/test business account, do NOT over-hide the dashboard in a way that makes the product look broken.
+
+Use safe demo-aware logic where appropriate, but keep the dashboard complete for owner-level demo accounts.
+
+========================
+9. FINAL OWNER VIEW VALIDATION
+========================
+
+After recovery, verify that Owner can again see the full business dashboard correctly and that nothing important is missing.
+
+========================
+10. FINAL REPORT
+========================
+
+Produce a clear report with:
+
+A. Which sections were hidden incorrectly
+B. Why they disappeared
+C. What was restored
+D. Whether owner view is now complete
+E. Whether manager/staff locking still works correctly
+F. Any remaining permission risks
+
+========================
+FINAL GOAL
+========================
+
+The business dashboard must keep secure role-based locking while restoring the complete Owner dashboard experience.
+
+No important owner sections should disappear.
+The dashboard must feel complete again, not broken.
