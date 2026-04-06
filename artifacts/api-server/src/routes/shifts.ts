@@ -168,6 +168,25 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
   }
 });
 
+router.put("/:id", requireManagerOrAbove(), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (!id || isNaN(id)) return void res.status(400).json({ error: "Invalid shift id" });
+    const { startTime, endTime } = req.body as { startTime?: string; endTime?: string };
+    if (!startTime || !endTime) return void res.status(400).json({ error: "startTime and endTime required" });
+    const [shift] = await db
+      .update(shiftsTable)
+      .set({ startTime, endTime })
+      .where(eq(shiftsTable.id, id))
+      .returning();
+    if (!shift) return void res.status(404).json({ error: "Shift not found" });
+    res.json({ id: shift.id, employeeId: shift.employeeId, dayOfWeek: shift.dayOfWeek, startTime: shift.startTime, endTime: shift.endTime });
+  } catch (err) {
+    req.log.error({ err }, "Failed to update shift");
+    res.status(500).json({ error: "Failed to update shift" });
+  }
+});
+
 router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = DeleteShiftParams.parse({ id: parseInt(req.params.id) });

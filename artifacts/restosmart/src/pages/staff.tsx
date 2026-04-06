@@ -3,27 +3,25 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useListEmployees,
   getListEmployeesQueryKey,
-  useCreateEmployee,
-  useUpdateEmployee,
-  useDeleteEmployee,
   useListShifts,
   getListShiftsQueryKey,
-  useCreateShift,
-  useDeleteShift,
   useGetWorkingNow,
   getGetWorkingNowQueryKey,
   useGetUpcomingShiftReminders,
-  getGetUpcomingShiftRemindersQueryKey
+  getGetUpcomingShiftRemindersQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Pencil, Trash2, Clock, Users, Bell, TreePalm, Coffee, CalendarDays, X } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Plus, Pencil, Trash2, Clock, Users, Bell, TreePalm, Coffee, CalendarDays, X,
+  Copy, Share2, MessageCircle, Mail, Send, ChevronRight, UserCircle2,
+  ClipboardList, AlertCircle,
+} from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { z } from "zod";
@@ -34,7 +32,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { Employee } from "@workspace/api-client-react";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
+const ROLE_PRESETS = [
+  "Service", "Küche", "Bar", "Manager", "Theke", "Kasse",
+  "Lieferung", "Reinigung", "Sous-Chef", "Barista", "Sommelier", "Hostess",
+];
 
 const employeeSchema = z.object({
   name: z.string().min(2, "Name ist erforderlich"),
@@ -43,31 +46,32 @@ const employeeSchema = z.object({
   phone: z.string().min(5, "Telefonnummer ist erforderlich"),
   status: z.enum(["active", "inactive"]),
 });
-
 type EmployeeFormValues = z.infer<typeof employeeSchema>;
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
+type Day = typeof DAYS[number];
+
 const DAY_LABELS: Record<string, string> = {
-  Monday: "Mo",
-  Tuesday: "Di",
-  Wednesday: "Mi",
-  Thursday: "Do",
-  Friday: "Fr",
-  Saturday: "Sa",
-  Sunday: "So",
+  Monday: "Mo", Tuesday: "Di", Wednesday: "Mi", Thursday: "Do",
+  Friday: "Fr", Saturday: "Sa", Sunday: "So",
 };
 const DAY_FULL: Record<string, string> = {
-  Monday: "Montag",
-  Tuesday: "Dienstag",
-  Wednesday: "Mittwoch",
-  Thursday: "Donnerstag",
-  Friday: "Freitag",
-  Saturday: "Samstag",
-  Sunday: "Sonntag",
+  Monday: "Montag", Tuesday: "Dienstag", Wednesday: "Mittwoch",
+  Thursday: "Donnerstag", Friday: "Freitag", Saturday: "Samstag", Sunday: "Sonntag",
 };
 
 type OffDay = { id: number; employeeId: number; dayOfWeek: string };
 type Vacation = { id: number; employeeId: number; startDate: string; endDate: string; notes?: string | null };
+type Shift = { id: number; employeeId: number; dayOfWeek: string; startTime: string; endTime: string; employeeName?: string };
+
+const QUICK_TIMES = [
+  "06:00","06:30","07:00","07:30","08:00","08:30",
+  "09:00","09:30","10:00","10:30","11:00","11:30",
+  "12:00","12:30","13:00","13:30","14:00","14:30",
+  "15:00","15:30","16:00","16:30","17:00","17:30",
+  "18:00","18:30","19:00","19:30","20:00","20:30",
+  "21:00","21:30","22:00","22:30","23:00","23:30","00:00",
+];
 
 function getCurrentWeekDates(): Record<string, string> {
   const now = new Date();
@@ -89,16 +93,161 @@ function formatDateDE(dateStr: string): string {
   return `${d}.${m}.${y}`;
 }
 
+function getWeekRange(dates: Record<string, string>): string {
+  const mon = dates["Monday"];
+  const sun = dates["Sunday"];
+  if (!mon || !sun) return "";
+  return `${formatDateDE(mon)} – ${formatDateDE(sun)}`;
+}
+
+function buildScheduleText(
+  employee: Employee,
+  shifts: Shift[],
+  offDays: OffDay[],
+  vacations: Vacation[],
+  weekDates: Record<string, string>
+): string {
+  const weekRange = getWeekRange(weekDates);
+  const lines: string[] = [
+    `📋 Dienstplan – ${employee.name}`,
+    `🗓 Woche: ${weekRange}`,
+    `💼 Rolle: ${employee.role}`,
+    "",
+  ];
+  DAYS.forEach((day) => {
+    const dateStr = weekDates[day];
+    const dayLabel = `${DAY_LABELS[day]} ${formatDateDE(dateStr)}`;
+    const isVacation = vacations.some(
+      (v) => v.employeeId === employee.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
+    );
+    const isOff = offDays.some((d) => d.employeeId === employee.id && d.dayOfWeek === day);
+    const empShifts = shifts.filter((s) => s.employeeId === employee.id && s.dayOfWeek === day);
+
+    if (isVacation) {
+      lines.push(`${dayLabel}: 🏖 Urlaub`);
+    } else if (isOff) {
+      lines.push(`${dayLabel}: ☕ Frei`);
+    } else if (empShifts.length > 0) {
+      empShifts.forEach((s) => lines.push(`${dayLabel}: ⏰ ${s.startTime} – ${s.endTime}`));
+    } else {
+      lines.push(`${dayLabel}: –`);
+    }
+  });
+  lines.push("", "– Gesendet via RestoSmart");
+  return lines.join("\n");
+}
+
+function buildTeamScheduleText(
+  employees: Employee[],
+  shifts: Shift[],
+  offDays: OffDay[],
+  vacations: Vacation[],
+  weekDates: Record<string, string>
+): string {
+  const weekRange = getWeekRange(weekDates);
+  const lines: string[] = [`📋 Teamdienstplan – Woche ${weekRange}`, ""];
+  employees.filter((e) => e.status === "active").forEach((emp) => {
+    lines.push(`👤 ${emp.name} (${emp.role})`);
+    DAYS.forEach((day) => {
+      const dateStr = weekDates[day];
+      const dayLabel = `  ${DAY_LABELS[day]}`;
+      const isVacation = vacations.some(
+        (v) => v.employeeId === emp.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
+      );
+      const isOff = offDays.some((d) => d.employeeId === emp.id && d.dayOfWeek === day);
+      const empShifts = shifts.filter((s) => s.employeeId === emp.id && s.dayOfWeek === day);
+      if (isVacation) lines.push(`${dayLabel}: Urlaub`);
+      else if (isOff) lines.push(`${dayLabel}: Frei`);
+      else if (empShifts.length > 0) empShifts.forEach((s) => lines.push(`${dayLabel}: ${s.startTime} – ${s.endTime}`));
+      else lines.push(`${dayLabel}: –`);
+    });
+    lines.push("");
+  });
+  lines.push("– Gesendet via RestoSmart");
+  return lines.join("\n");
+}
+
+function shareViaWhatsApp(text: string, phone?: string) {
+  const encoded = encodeURIComponent(text);
+  const url = phone
+    ? `https://api.whatsapp.com/send?phone=${phone.replace(/[^0-9]/g, "")}&text=${encoded}`
+    : `https://api.whatsapp.com/send?text=${encoded}`;
+  window.open(url, "_blank");
+}
+
+function shareViaEmail(text: string, email?: string, name?: string) {
+  const subject = encodeURIComponent(`Dienstplan – ${name ?? "Team"}`);
+  const body = encodeURIComponent(text);
+  window.open(`mailto:${email ?? ""}?subject=${subject}&body=${body}`, "_blank");
+}
+
+async function shareViaNative(text: string, title: string): Promise<boolean> {
+  if (!navigator.share) return false;
+  try {
+    await navigator.share({ title, text });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-muted-foreground block mb-1">{label}</label>
+      <div className="flex gap-2 items-center">
+        <Input
+          type="time"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          step={1800}
+          className="flex-1"
+        />
+      </div>
+      <div className="flex flex-wrap gap-1 mt-2">
+        {QUICK_TIMES.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => onChange(t)}
+            className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${
+              value === t
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Staff() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [roleCustom, setRoleCustom] = useState(false);
 
   const [shiftDialogOpen, setShiftDialogOpen] = useState(false);
-  const [shiftDay, setShiftDay] = useState<typeof DAYS[number]>("Monday");
+  const [shiftDay, setShiftDay] = useState<Day>("Monday");
   const [shiftEmployeeId, setShiftEmployeeId] = useState<number | null>(null);
+  const [newShiftStart, setNewShiftStart] = useState("09:00");
+  const [newShiftEnd, setNewShiftEnd] = useState("17:00");
+
+  const [editShiftDialog, setEditShiftDialog] = useState<{ open: boolean; shift: Shift | null }>({ open: false, shift: null });
+  const [editShiftStart, setEditShiftStart] = useState("09:00");
+  const [editShiftEnd, setEditShiftEnd] = useState("17:00");
+
+  const [copyShiftDialog, setCopyShiftDialog] = useState<{ open: boolean; shift: Shift | null }>({ open: false, shift: null });
+  const [copyTargetDay, setCopyTargetDay] = useState<Day>("Monday");
+
+  const [shareDialog, setShareDialog] = useState<{ open: boolean; employee: Employee | null; mode: "employee" | "team" }>({
+    open: false, employee: null, mode: "employee",
+  });
 
   const [vacationDialogEmployee, setVacationDialogEmployee] = useState<Employee | null>(null);
   const [vacationStart, setVacationStart] = useState("");
@@ -108,19 +257,19 @@ export default function Staff() {
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
 
   const { data: employees, isLoading: loadingEmployees } = useListEmployees({
-    query: { queryKey: getListEmployeesQueryKey() }
+    query: { queryKey: getListEmployeesQueryKey() },
   });
 
   const { data: shifts, isLoading: loadingShifts } = useListShifts({
-    query: { queryKey: getListShiftsQueryKey() }
+    query: { queryKey: getListShiftsQueryKey() },
   });
 
   const { data: workingNow, isLoading: loadingWorkingNow } = useGetWorkingNow({
-    query: { queryKey: getGetWorkingNowQueryKey(), refetchInterval: 60000 }
+    query: { queryKey: getGetWorkingNowQueryKey(), refetchInterval: 60000 },
   });
 
-  const { data: shiftReminders, isLoading: loadingReminders } = useGetUpcomingShiftReminders({
-    query: { queryKey: getGetUpcomingShiftRemindersQueryKey(), refetchInterval: 60000 }
+  const { data: shiftReminders } = useGetUpcomingShiftReminders({
+    query: { queryKey: getGetUpcomingShiftRemindersQueryKey(), refetchInterval: 60000 },
   });
 
   const { data: offDays = [] } = useQuery<OffDay[]>({
@@ -137,7 +286,10 @@ export default function Staff() {
     mutationFn: ({ employeeId, dayOfWeek }: { employeeId: number; dayOfWeek: string }) =>
       fetch(`${API_BASE}/api/employee-days/toggle`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
+        },
         body: JSON.stringify({ employeeId, dayOfWeek }),
       }).then((r) => r.json()),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["employee-days"] }),
@@ -147,14 +299,18 @@ export default function Staff() {
     mutationFn: (data: { employeeId: number; startDate: string; endDate: string; notes?: string }) =>
       fetch(`${API_BASE}/api/employee-vacations`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
+        },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      }).then(async (r) => {
+        if (!r.ok) throw new Error("Fehler");
+        return r.json();
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-vacations"] });
-      setVacationStart("");
-      setVacationEnd("");
-      setVacationNotes("");
+      setVacationStart(""); setVacationEnd(""); setVacationNotes("");
       toast({ title: "Urlaub eingetragen" });
     },
     onError: () => toast({ title: "Fehler beim Eintragen des Urlaubs", variant: "destructive" }),
@@ -162,26 +318,88 @@ export default function Staff() {
 
   const deleteVacation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`${API_BASE}/api/employee-vacations/${id}`, { method: "DELETE" }),
+      fetch(`${API_BASE}/api/employee-vacations/${id}`, {
+        method: "DELETE",
+        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-vacations"] });
       toast({ title: "Urlaub entfernt" });
     },
   });
 
-  const createEmployee = useCreateEmployee();
-  const updateEmployee = useUpdateEmployee();
-  const deleteEmployee = useDeleteEmployee();
-  const createShift = useCreateShift();
-  const deleteShift = useDeleteShift();
+  const updateShift = useMutation({
+    mutationFn: ({ id, startTime, endTime }: { id: number; startTime: string; endTime: string }) =>
+      fetch(`${API_BASE}/api/shifts/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
+        },
+        body: JSON.stringify({ startTime, endTime }),
+      }).then(async (r) => {
+        if (!r.ok) throw new Error("Update fehlgeschlagen");
+        return r.json();
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
+      setEditShiftDialog({ open: false, shift: null });
+      toast({ title: "Schicht aktualisiert" });
+    },
+    onError: () => toast({ title: "Fehler beim Aktualisieren", variant: "destructive" }),
+  });
+
+  const getAuthHeaders = () => ({
+    "Content-Type": "application/json",
+    "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
+  });
+
+  const createEmployee = useMutation({
+    mutationFn: (data: EmployeeFormValues) =>
+      fetch(`${API_BASE}/api/employees`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      }).then(async (r) => { if (!r.ok) throw new Error("Fehler"); return r.json(); }),
+  });
+
+  const updateEmployee = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: EmployeeFormValues }) =>
+      fetch(`${API_BASE}/api/employees/${id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      }).then(async (r) => { if (!r.ok) throw new Error("Fehler"); return r.json(); }),
+  });
+
+  const deleteEmployee = useMutation({
+    mutationFn: (id: number) =>
+      fetch(`${API_BASE}/api/employees/${id}`, {
+        method: "DELETE",
+        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+      }).then(async (r) => { if (!r.ok && r.status !== 204) throw new Error("Fehler"); }),
+  });
+
+  const createShift = useMutation({
+    mutationFn: (data: { employeeId: number; dayOfWeek: string; startTime: string; endTime: string }) =>
+      fetch(`${API_BASE}/api/shifts`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      }).then(async (r) => { if (!r.ok) throw new Error("Fehler"); return r.json(); }),
+  });
+
+  const deleteShift = useMutation({
+    mutationFn: (id: number) =>
+      fetch(`${API_BASE}/api/shifts/${id}`, {
+        method: "DELETE",
+        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+      }).then(async (r) => { if (!r.ok && r.status !== 204) throw new Error("Fehler"); }),
+  });
 
   const employeeForm = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
     defaultValues: { name: "", role: "", email: "", phone: "", status: "active" },
-  });
-
-  const shiftForm = useForm({
-    defaultValues: { startTime: "09:00", endTime: "17:00" }
   });
 
   const onEmployeeSubmit = (data: EmployeeFormValues) => {
@@ -192,29 +410,27 @@ export default function Staff() {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
             setEmployeeDialogOpen(false);
-            toast({ title: "Mitarbeiter erfolgreich aktualisiert" });
+            toast({ title: "Mitarbeiter aktualisiert" });
           },
-          onError: () => toast({ title: "Aktualisierung fehlgeschlagen", variant: "destructive" })
+          onError: () => toast({ title: "Aktualisierung fehlgeschlagen", variant: "destructive" }),
         }
       );
     } else {
-      createEmployee.mutate(
-        { data },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
-            setEmployeeDialogOpen(false);
-            employeeForm.reset();
-            toast({ title: "Mitarbeiter erfolgreich erstellt" });
-          },
-          onError: () => toast({ title: "Erstellen fehlgeschlagen", variant: "destructive" })
-        }
-      );
+      createEmployee.mutate(data, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
+          setEmployeeDialogOpen(false);
+          employeeForm.reset();
+          toast({ title: "Mitarbeiter erstellt" });
+        },
+        onError: () => toast({ title: "Erstellen fehlgeschlagen", variant: "destructive" }),
+      });
     }
   };
 
   const handleEditEmployee = (emp: Employee) => {
     setEditingEmployee(emp);
+    setRoleCustom(!ROLE_PRESETS.includes(emp.role));
     employeeForm.reset({
       name: emp.name, role: emp.role, email: emp.email,
       phone: emp.phone, status: emp.status as "active" | "inactive",
@@ -224,48 +440,80 @@ export default function Staff() {
 
   const handleDeleteEmployee = (id: number) => {
     if (confirm("Möchten Sie diesen Mitarbeiter wirklich löschen?")) {
-      deleteEmployee.mutate(
-        { id },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
-            toast({ title: "Mitarbeiter gelöscht" });
-          }
-        }
-      );
+      deleteEmployee.mutate(id, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
+          toast({ title: "Mitarbeiter gelöscht" });
+        },
+        onError: () => toast({ title: "Löschen fehlgeschlagen", variant: "destructive" }),
+      });
     }
   };
 
-  const openShiftDialog = (employeeId: number, day: typeof DAYS[number]) => {
+  const openShiftDialog = (employeeId: number, day: Day) => {
     setShiftEmployeeId(employeeId);
     setShiftDay(day);
+    setNewShiftStart("09:00");
+    setNewShiftEnd("17:00");
     setShiftDialogOpen(true);
   };
 
-  const onShiftSubmit = (data: { startTime: string; endTime: string }) => {
+  const handleAddShift = () => {
     if (!shiftEmployeeId) return;
     createShift.mutate(
-      { data: { employeeId: shiftEmployeeId, dayOfWeek: shiftDay, startTime: data.startTime, endTime: data.endTime } },
+      { employeeId: shiftEmployeeId, dayOfWeek: shiftDay, startTime: newShiftStart, endTime: newShiftEnd },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
           setShiftDialogOpen(false);
           toast({ title: "Schicht hinzugefügt" });
-        }
+        },
+        onError: () => toast({ title: "Fehler beim Speichern", variant: "destructive" }),
+      }
+    );
+  };
+
+  const openEditShiftDialog = (shift: Shift) => {
+    setEditShiftDialog({ open: true, shift });
+    setEditShiftStart(shift.startTime);
+    setEditShiftEnd(shift.endTime);
+  };
+
+  const handleEditShiftSave = () => {
+    if (!editShiftDialog.shift) return;
+    updateShift.mutate({ id: editShiftDialog.shift.id, startTime: editShiftStart, endTime: editShiftEnd });
+  };
+
+  const openCopyShiftDialog = (shift: Shift) => {
+    setCopyShiftDialog({ open: true, shift });
+    const nextDay = DAYS[(DAYS.indexOf(shift.dayOfWeek as Day) + 1) % 7];
+    setCopyTargetDay(nextDay);
+  };
+
+  const handleCopyShift = () => {
+    if (!copyShiftDialog.shift) return;
+    const s = copyShiftDialog.shift;
+    createShift.mutate(
+      { employeeId: s.employeeId, dayOfWeek: copyTargetDay, startTime: s.startTime, endTime: s.endTime },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
+          setCopyShiftDialog({ open: false, shift: null });
+          toast({ title: `Schicht nach ${DAY_FULL[copyTargetDay]} kopiert` });
+        },
+        onError: () => toast({ title: "Fehler beim Kopieren", variant: "destructive" }),
       }
     );
   };
 
   const handleDeleteShift = (id: number) => {
-    deleteShift.mutate(
-      { id },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
-          toast({ title: "Schicht entfernt" });
-        }
-      }
-    );
+    deleteShift.mutate(id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
+        toast({ title: "Schicht entfernt" });
+      },
+      onError: () => toast({ title: "Fehler beim Löschen", variant: "destructive" }),
+    });
   };
 
   const isDayOff = (employeeId: number, dayOfWeek: string) =>
@@ -274,9 +522,7 @@ export default function Staff() {
   const isDayVacation = (employeeId: number, dayOfWeek: string) => {
     const dateStr = weekDates[dayOfWeek];
     if (!dateStr) return false;
-    return vacations.some(
-      (v) => v.employeeId === employeeId && v.startDate <= dateStr && v.endDate >= dateStr
-    );
+    return vacations.some((v) => v.employeeId === employeeId && v.startDate <= dateStr && v.endDate >= dateStr);
   };
 
   const getEmployeeVacations = (employeeId: number) =>
@@ -297,68 +543,61 @@ export default function Staff() {
     });
   };
 
+  const openShareDialog = (employee: Employee) => {
+    setShareDialog({ open: true, employee, mode: "employee" });
+  };
+
+  const openTeamShareDialog = () => {
+    setShareDialog({ open: true, employee: null, mode: "team" });
+  };
+
+  const getShareText = () => {
+    if (!shifts || !employees) return "";
+    if (shareDialog.mode === "team") {
+      return buildTeamScheduleText(employees, shifts as Shift[], offDays, vacations, weekDates);
+    }
+    if (!shareDialog.employee) return "";
+    return buildScheduleText(shareDialog.employee, shifts as Shift[], offDays, vacations, weekDates);
+  };
+
+  const activeEmployees = employees?.filter((e) => e.status === "active") ?? [];
+  const inactiveEmployees = employees?.filter((e) => e.status === "inactive") ?? [];
+
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Personalverwaltung</h2>
-          <p className="text-muted-foreground mt-2">Team und Wochendienstplan verwalten.</p>
+          <p className="text-muted-foreground mt-1">
+            Team und Wochendienstplan verwalten — Woche {getWeekRange(weekDates)}
+          </p>
         </div>
-        <Dialog open={employeeDialogOpen} onOpenChange={(open) => {
-          setEmployeeDialogOpen(open);
-          if (!open) { setEditingEmployee(null); employeeForm.reset({ name: "", role: "", email: "", phone: "", status: "active" }); }
-        }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" /> Mitarbeiter hinzufügen</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingEmployee ? "Mitarbeiter bearbeiten" : "Neuen Mitarbeiter hinzufügen"}</DialogTitle>
-            </DialogHeader>
-            <Form {...employeeForm}>
-              <form onSubmit={employeeForm.handleSubmit(onEmployeeSubmit)} className="space-y-4">
-                <FormField control={employeeForm.control} name="name" render={({ field }) => (
-                  <FormItem><FormLabel>Vollständiger Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={employeeForm.control} name="role" render={({ field }) => (
-                    <FormItem><FormLabel>Rolle</FormLabel><FormControl><Input {...field} placeholder="z.B. Kellner, Koch" /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={employeeForm.control} name="status" render={({ field }) => (
-                    <FormItem><FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Status wählen" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="active">Aktiv</SelectItem>
-                          <SelectItem value="inactive">Inaktiv</SelectItem>
-                        </SelectContent>
-                      </Select><FormMessage /></FormItem>
-                  )} />
-                </div>
-                <FormField control={employeeForm.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>E-Mail</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={employeeForm.control} name="phone" render={({ field }) => (
-                  <FormItem><FormLabel>Telefon</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <Button type="submit" className="w-full" disabled={createEmployee.isPending || updateEmployee.isPending}>
-                  {editingEmployee ? "Änderungen speichern" : "Mitarbeiter erstellen"}
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={openTeamShareDialog}>
+            <Share2 className="h-4 w-4 mr-2" /> Dienstplan teilen
+          </Button>
+          <Button onClick={() => {
+            setEditingEmployee(null);
+            setRoleCustom(false);
+            employeeForm.reset({ name: "", role: "", email: "", phone: "", status: "active" });
+            setEmployeeDialogOpen(true);
+          }}>
+            <Plus className="h-4 w-4 mr-2" /> Mitarbeiter hinzufügen
+          </Button>
+        </div>
       </div>
 
+      {/* Shift reminders */}
       {shiftReminders && shiftReminders.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex flex-col gap-2">
-            {shiftReminders.map(reminder => (
-              <Alert key={`${reminder.employeeId}-${reminder.startTime}`} className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                <Bell className="h-4 w-4 text-amber-600" />
-                <AlertTitle>Schicht beginnt bald</AlertTitle>
-                <AlertDescription>
-                  {reminder.employeeName} ({reminder.role}) beginnt in {reminder.minutesUntilStart} Min. um {reminder.startTime} Uhr.
+            {shiftReminders.map((r) => (
+              <Alert key={`${r.employeeId}-${r.startTime}`} className="bg-amber-500/10 border-amber-500/20">
+                <Bell className="h-4 w-4 text-amber-500" />
+                <AlertTitle className="text-amber-600">Schicht beginnt bald</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-400">
+                  {r.employeeName} ({r.role}) beginnt in {r.minutesUntilStart} Min. um {r.startTime} Uhr.
                 </AlertDescription>
               </Alert>
             ))}
@@ -366,269 +605,336 @@ export default function Staff() {
         </motion.div>
       )}
 
+      {/* Currently working */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Aktuell im Dienst
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-5 w-5 text-primary" /> Aktuell im Dienst
+              {workingNow && workingNow.length > 0 && (
+                <Badge className="ml-auto bg-emerald-500/15 text-emerald-600 border-emerald-500/20">
+                  {workingNow.length} aktiv
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loadingWorkingNow ? (
-              <Skeleton className="h-20 w-full" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[1, 2].map((i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+              </div>
             ) : workingNow && workingNow.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {workingNow.map(emp => (
-                  <div key={emp.id} className="flex flex-col justify-between p-4 rounded-lg border bg-card">
-                    <div className="flex justify-between items-start mb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {workingNow.map((emp) => (
+                  <div key={emp.id} className="flex flex-col p-3 rounded-lg border bg-card">
+                    <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-semibold">{emp.name}</p>
-                        <p className="text-sm text-muted-foreground">{emp.role}</p>
+                        <p className="font-semibold text-sm">{emp.name}</p>
+                        <p className="text-xs text-muted-foreground">{emp.role}</p>
                       </div>
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                        {emp.shiftStart} - {emp.shiftEnd}
+                      <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                        {emp.shiftStart}–{emp.shiftEnd}
                       </Badge>
                     </div>
-                    <div className="text-sm font-medium text-emerald-500 mt-2">
-                      Noch {emp.minutesUntilEnd} Min.
-                    </div>
+                    <p className="text-xs font-medium text-emerald-500 flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Noch {emp.minutesUntilEnd} Min.
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center p-8 text-muted-foreground">
-                <Users className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                <p>Momentan ist niemand eingestempelt.</p>
+              <div className="text-center py-6 text-muted-foreground">
+                <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">Momentan ist niemand im Dienst.</p>
               </div>
             )}
           </CardContent>
         </Card>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      {/* Employee list */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <Card>
-          <CardHeader>
-            <CardTitle>Teammitglieder</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between text-base">
+              <span className="flex items-center gap-2">
+                <UserCircle2 className="h-5 w-5 text-primary" /> Mitarbeiter
+              </span>
+              <span className="text-sm font-normal text-muted-foreground">
+                {activeEmployees.length} aktiv{inactiveEmployees.length > 0 && ` · ${inactiveEmployees.length} inaktiv`}
+              </span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loadingEmployees ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
+              </div>
+            ) : employees && employees.length > 0 ? (
               <div className="space-y-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+                {employees.map((emp) => {
+                  const empVacations = getEmployeeVacations(emp.id);
+                  const today = new Date().toISOString().split("T")[0];
+                  const activeVacation = empVacations.find((v) => v.startDate <= today && v.endDate >= today);
+                  const nextVacation = empVacations.find((v) => v.startDate > today);
+                  const weekShiftsCount = (shifts as Shift[] | undefined)?.filter((s) => s.employeeId === emp.id).length ?? 0;
+
+                  return (
+                    <div key={emp.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/20 transition-colors group">
+                      {/* Avatar */}
+                      <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                        {emp.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{emp.name}</span>
+                          <Badge
+                            variant="outline"
+                            className="text-xs h-5 px-1.5 bg-primary/5 text-primary border-primary/20"
+                          >
+                            {emp.role}
+                          </Badge>
+                          {emp.status === "inactive" && (
+                            <Badge variant="secondary" className="text-xs h-5 px-1.5">Inaktiv</Badge>
+                          )}
+                          {activeVacation && (
+                            <Badge variant="outline" className="text-xs h-5 px-1.5 bg-blue-500/10 text-blue-600 border-blue-500/20">
+                              <TreePalm className="h-2.5 w-2.5 mr-1" /> Urlaub bis {formatDateDE(activeVacation.endDate)}
+                            </Badge>
+                          )}
+                          {!activeVacation && nextVacation && (
+                            <Badge variant="outline" className="text-xs h-5 px-1.5 bg-sky-500/10 text-sky-600 border-sky-500/20">
+                              <CalendarDays className="h-2.5 w-2.5 mr-1" /> ab {formatDateDE(nextVacation.startDate)}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <span className="text-xs text-muted-foreground truncate">{emp.email}</span>
+                          {emp.phone && <span className="text-xs text-muted-foreground">{emp.phone}</span>}
+                          {weekShiftsCount > 0 && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {weekShiftsCount}×
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Dienstplan teilen"
+                          onClick={() => openShareDialog(emp)}
+                        >
+                          <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditEmployee(emp)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Bearbeiten
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openShareDialog(emp)}>
+                            <Share2 className="mr-2 h-4 w-4" /> Dienstplan teilen
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setVacationDialogEmployee(emp)}>
+                            <TreePalm className="mr-2 h-4 w-4" /> Urlaub verwalten
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteEmployee(emp.id)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Rolle</TableHead>
-                    <TableHead>Kontakt</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Urlaub</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees?.map((emp) => {
-                    const empVacations = getEmployeeVacations(emp.id);
-                    const today = new Date().toISOString().split("T")[0];
-                    const activeVacation = empVacations.find(v => v.startDate <= today && v.endDate >= today);
-                    const nextVacation = empVacations.find(v => v.startDate > today);
-                    return (
-                      <TableRow key={emp.id}>
-                        <TableCell className="font-medium">{emp.name}</TableCell>
-                        <TableCell>{emp.role}</TableCell>
-                        <TableCell>
-                          <div className="text-sm">{emp.email}</div>
-                          <div className="text-xs text-muted-foreground">{emp.phone}</div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={emp.status === "active" ? "default" : "secondary"} className={emp.status === "active" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : ""}>
-                            {emp.status === "active" ? "Aktiv" : "Inaktiv"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {activeVacation ? (
-                            <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs">
-                              <TreePalm className="h-3 w-3 mr-1" />
-                              Urlaub bis {formatDateDE(activeVacation.endDate)}
-                            </Badge>
-                          ) : nextVacation ? (
-                            <Badge variant="outline" className="bg-sky-500/10 text-sky-600 border-sky-500/20 text-xs">
-                              <CalendarDays className="h-3 w-3 mr-1" />
-                              ab {formatDateDE(nextVacation.startDate)}
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">–</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditEmployee(emp)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Bearbeiten
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => { setVacationDialogEmployee(emp); }}>
-                                <TreePalm className="mr-2 h-4 w-4" /> Urlaub verwalten
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteEmployee(emp.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {!employees?.length && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                        Keine Mitarbeiter gefunden.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+              <div className="text-center py-10 text-muted-foreground">
+                <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                <p className="font-medium">Noch keine Mitarbeiter angelegt</p>
+                <p className="text-sm mt-1">Klicken Sie oben auf "Mitarbeiter hinzufügen" um zu starten.</p>
+              </div>
             )}
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Weekly Rota */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      {/* Weekly schedule / Dienstplan */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Wochendienstplan</CardTitle>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between flex-wrap gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ClipboardList className="h-5 w-5 text-primary" /> Wochendienstplan
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">{getWeekRange(weekDates)}</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-3 h-3 rounded-sm bg-muted border border-border/50" />
-                  Arbeitstag
+                  <span className="inline-block w-3 h-3 rounded-sm bg-primary/20 border border-primary/30" />
+                  Schicht
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-3 h-3 rounded-sm bg-slate-200 dark:bg-slate-700" />
-                  Frei / Ruhetag
+                  <span className="inline-block w-3 h-3 rounded-sm bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600" />
+                  Frei
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-3 h-3 rounded-sm bg-blue-100 dark:bg-blue-900/30" />
+                  <span className="inline-block w-3 h-3 rounded-sm bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700" />
                   Urlaub
                 </span>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="overflow-x-auto p-0">
             {loadingEmployees || loadingShifts ? (
-              <Skeleton className="h-[300px] w-full" />
+              <div className="p-6"><Skeleton className="h-[300px] w-full" /></div>
+            ) : activeEmployees.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground">
+                <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                <p className="text-sm">Noch keine aktiven Mitarbeiter für den Dienstplan.</p>
+              </div>
             ) : (
-              <div className="min-w-[900px]">
-                {/* Header row */}
-                <div className="grid grid-cols-8 gap-2 mb-2">
-                  <div className="font-semibold p-2">Mitarbeiter</div>
-                  {DAYS.map(d => (
-                    <div key={d} className="font-semibold p-2 text-center bg-muted/50 rounded-md">
-                      <div>{DAY_LABELS[d]}</div>
-                      <div className="text-xs font-normal text-muted-foreground">{weekDates[d]?.slice(5).replace("-", ".")}</div>
+              <div className="min-w-[860px]">
+                {/* Day header */}
+                <div className="grid grid-cols-8 border-b border-border/50 bg-muted/30">
+                  <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Mitarbeiter
+                  </div>
+                  {DAYS.map((d) => (
+                    <div key={d} className="px-2 py-2 text-center border-l border-border/30">
+                      <div className="text-xs font-semibold">{DAY_LABELS[d]}</div>
+                      <div className="text-xs text-muted-foreground">{weekDates[d]?.slice(5).replace("-", ".")}</div>
                     </div>
                   ))}
                 </div>
 
-                {employees?.filter(e => e.status === "active").map((emp) => (
-                  <div key={emp.id} className="grid grid-cols-8 gap-2 py-2 border-b border-border/50 last:border-0 items-start">
-                    {/* Employee name + vacation button */}
-                    <div className="flex flex-col gap-1 pr-2 pt-1">
-                      <span className="font-medium truncate text-sm">{emp.name}</span>
-                      <button
-                        onClick={() => setVacationDialogEmployee(emp)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-blue-500 transition-colors"
-                        title="Urlaub verwalten"
-                      >
-                        <TreePalm className="h-3 w-3" />
-                        <span>Urlaub</span>
-                      </button>
+                {/* Employee rows */}
+                {activeEmployees.map((emp, empIdx) => (
+                  <div
+                    key={emp.id}
+                    className={`grid grid-cols-8 border-b border-border/40 last:border-0 ${empIdx % 2 === 0 ? "" : "bg-muted/10"}`}
+                  >
+                    {/* Employee name cell */}
+                    <div className="px-4 py-3 flex flex-col justify-center gap-0.5 border-r border-border/30">
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold shrink-0">
+                          {emp.name[0].toUpperCase()}
+                        </div>
+                        <span className="text-sm font-medium truncate">{emp.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-8">{emp.role}</span>
                     </div>
 
-                    {DAYS.map(day => {
+                    {/* Day cells */}
+                    {DAYS.map((day) => {
                       const dayOff = isDayOff(emp.id, day);
                       const dayVacation = isDayVacation(emp.id, day);
-                      const blocked = dayOff || dayVacation;
-                      const empShifts = shifts?.filter(s => s.employeeId === emp.id && s.dayOfWeek === day);
+                      const empShifts = (shifts as Shift[] | undefined)?.filter(
+                        (s) => s.employeeId === emp.id && s.dayOfWeek === day
+                      ) ?? [];
 
                       return (
                         <div
                           key={`${emp.id}-${day}`}
-                          className={`min-h-[80px] border rounded-md p-1 flex flex-col gap-1 transition-colors ${
+                          className={`px-1.5 py-2 border-l border-border/30 min-h-[80px] flex flex-col gap-1 ${
                             dayVacation
-                              ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                              ? "bg-blue-50 dark:bg-blue-900/15"
                               : dayOff
-                              ? "bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700"
-                              : "bg-card border-border/50"
+                              ? "bg-slate-100 dark:bg-slate-800/40"
+                              : ""
                           }`}
                         >
-                          {/* State indicator */}
                           {dayVacation ? (
-                            <div className="flex items-center justify-between px-0.5">
-                              <span className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-                                <TreePalm className="h-3 w-3" /> Urlaub
-                              </span>
+                            <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium px-1 py-1">
+                              <TreePalm className="h-3 w-3 shrink-0" />
+                              <span>Urlaub</span>
                             </div>
                           ) : dayOff ? (
-                            <div className="flex items-center justify-between px-0.5">
-                              <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
+                            <div className="flex items-center justify-between px-1 py-1">
+                              <span className="flex items-center gap-1 text-xs text-slate-500 font-medium">
                                 <Coffee className="h-3 w-3" /> Frei
                               </span>
                               <button
                                 onClick={() => toggleOffDay.mutate({ employeeId: emp.id, dayOfWeek: day })}
-                                className="text-slate-400 hover:text-slate-600 transition-colors"
+                                className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded"
                                 title="Ruhetag aufheben"
                               >
                                 <X className="h-3 w-3" />
                               </button>
                             </div>
                           ) : (
-                            /* Shift entries */
                             <>
-                              {empShifts?.map(shift => (
-                                <div key={shift.id} className="text-xs bg-primary/10 text-primary p-1 rounded flex justify-between items-center group">
-                                  <span>{shift.startTime} - {shift.endTime}</span>
-                                  <button
-                                    onClick={() => handleDeleteShift(shift.id)}
-                                    className="opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded p-0.5 transition-opacity"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
+                              {empShifts.map((shift) => (
+                                <div
+                                  key={shift.id}
+                                  className="text-xs bg-primary/10 text-primary rounded px-1.5 py-1 flex items-center justify-between gap-1 group/shift"
+                                >
+                                  <span className="font-medium tabular-nums">
+                                    {shift.startTime}–{shift.endTime}
+                                  </span>
+                                  <div className="flex items-center gap-0.5 opacity-0 group-hover/shift:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() => openEditShiftDialog(shift)}
+                                      className="hover:bg-primary/20 rounded p-0.5 transition-colors"
+                                      title="Schicht bearbeiten"
+                                    >
+                                      <Pencil className="h-2.5 w-2.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => openCopyShiftDialog(shift)}
+                                      className="hover:bg-primary/20 rounded p-0.5 transition-colors"
+                                      title="Schicht kopieren"
+                                    >
+                                      <Copy className="h-2.5 w-2.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteShift(shift.id)}
+                                      className="hover:bg-destructive/20 text-destructive rounded p-0.5 transition-colors"
+                                      title="Schicht löschen"
+                                    >
+                                      <Trash2 className="h-2.5 w-2.5" />
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </>
                           )}
 
-                          {/* Bottom action area */}
+                          {/* Bottom action buttons */}
                           {!dayVacation && (
-                            <div className="mt-auto flex flex-col gap-0.5">
+                            <div className="mt-auto flex flex-col gap-0.5 pt-1">
                               {!dayOff && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-full text-xs text-muted-foreground"
+                                <button
                                   onClick={() => openShiftDialog(emp.id, day)}
+                                  className="w-full text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-1 rounded hover:bg-primary/5 transition-colors"
                                 >
-                                  <Plus className="h-3 w-3 mr-1" /> Schicht
-                                </Button>
+                                  <Plus className="h-2.5 w-2.5" /> Schicht
+                                </button>
                               )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={`h-6 w-full text-xs transition-colors ${dayOff ? "text-emerald-600 hover:text-emerald-700" : "text-slate-400 hover:text-slate-600"}`}
+                              <button
                                 onClick={() => toggleOffDay.mutate({ employeeId: emp.id, dayOfWeek: day })}
+                                className={`w-full text-xs flex items-center justify-center gap-1 py-1 rounded transition-colors ${
+                                  dayOff
+                                    ? "text-emerald-600 hover:bg-emerald-500/10"
+                                    : "text-muted-foreground hover:text-slate-600 hover:bg-slate-500/10"
+                                }`}
                                 title={dayOff ? "Als Arbeitstag markieren" : "Als Ruhetag markieren"}
                               >
-                                <Coffee className="h-3 w-3 mr-1" />
+                                <Coffee className="h-2.5 w-2.5" />
                                 {dayOff ? "Arbeiten" : "Frei"}
-                              </Button>
+                              </button>
                             </div>
                           )}
                         </div>
@@ -642,29 +948,335 @@ export default function Staff() {
         </Card>
       </motion.div>
 
-      {/* Shift Add Dialog */}
-      <Dialog open={shiftDialogOpen} onOpenChange={setShiftDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+      {/* ── DIALOGS ── */}
+
+      {/* Add employee */}
+      <Dialog open={employeeDialogOpen} onOpenChange={(open) => {
+        setEmployeeDialogOpen(open);
+        if (!open) { setEditingEmployee(null); employeeForm.reset({ name: "", role: "", email: "", phone: "", status: "active" }); }
+      }}>
+        <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
-            <DialogTitle>Schicht für {DAY_FULL[shiftDay]} hinzufügen</DialogTitle>
+            <DialogTitle>{editingEmployee ? "Mitarbeiter bearbeiten" : "Neuen Mitarbeiter hinzufügen"}</DialogTitle>
           </DialogHeader>
-          <Form {...shiftForm}>
-            <form onSubmit={shiftForm.handleSubmit(onShiftSubmit)} className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField control={shiftForm.control} name="startTime" render={({ field }) => (
-                  <FormItem><FormLabel>Beginn</FormLabel><FormControl><Input type="time" {...field} /></FormControl></FormItem>
+          <Form {...employeeForm}>
+            <form onSubmit={employeeForm.handleSubmit(onEmployeeSubmit)} className="space-y-4 pt-2">
+              <FormField control={employeeForm.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vollständiger Name</FormLabel>
+                  <FormControl><Input placeholder="z.B. Maria Müller" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* Role with presets */}
+              <FormField control={employeeForm.control} name="role" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rolle / Position</FormLabel>
+                  {!roleCustom ? (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {ROLE_PRESETS.map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => field.onChange(r)}
+                            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                              field.value === r
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setRoleCustom(true)}
+                        className="text-xs text-muted-foreground hover:text-foreground underline"
+                      >
+                        Andere Rolle eingeben…
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <FormControl><Input placeholder="z.B. Eventkoordinator" {...field} /></FormControl>
+                      <button
+                        type="button"
+                        onClick={() => { setRoleCustom(false); field.onChange(""); }}
+                        className="text-xs text-muted-foreground hover:text-foreground whitespace-nowrap"
+                      >
+                        Vorschläge
+                      </button>
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <div className="grid grid-cols-2 gap-3">
+                <FormField control={employeeForm.control} name="status" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="active">Aktiv</SelectItem>
+                        <SelectItem value="inactive">Inaktiv</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )} />
-                <FormField control={shiftForm.control} name="endTime" render={({ field }) => (
-                  <FormItem><FormLabel>Ende</FormLabel><FormControl><Input type="time" {...field} /></FormControl></FormItem>
+                <FormField control={employeeForm.control} name="phone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefon</FormLabel>
+                    <FormControl><Input placeholder="z.B. 0664 123 456" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )} />
               </div>
-              <Button type="submit" className="w-full" disabled={createShift.isPending}>Schicht hinzufügen</Button>
+
+              <FormField control={employeeForm.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-Mail</FormLabel>
+                  <FormControl><Input type="email" placeholder="mitarbeiter@example.at" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <Button type="submit" className="w-full" disabled={createEmployee.isPending || updateEmployee.isPending}>
+                {editingEmployee ? "Änderungen speichern" : "Mitarbeiter erstellen"}
+              </Button>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
 
-      {/* Vacation Management Dialog */}
+      {/* Add shift */}
+      <Dialog open={shiftDialogOpen} onOpenChange={setShiftDialogOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>
+              Schicht hinzufügen — {DAY_FULL[shiftDay]}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            <div className="grid grid-cols-2 gap-4">
+              <TimeSelect label="Beginn (Arbeitszeit)" value={newShiftStart} onChange={setNewShiftStart} />
+              <TimeSelect label="Ende (Arbeitszeit)" value={newShiftEnd} onChange={setNewShiftEnd} />
+            </div>
+            {newShiftStart && newShiftEnd && newShiftStart < newShiftEnd && (
+              <div className="text-sm text-center text-muted-foreground bg-muted/30 rounded-lg py-2">
+                Dauer:{" "}
+                <span className="font-semibold text-foreground">
+                  {(() => {
+                    const [sh, sm] = newShiftStart.split(":").map(Number);
+                    const [eh, em] = newShiftEnd.split(":").map(Number);
+                    const mins = (eh * 60 + em) - (sh * 60 + sm);
+                    return `${Math.floor(mins / 60)}h ${mins % 60 > 0 ? `${mins % 60}min` : ""}`;
+                  })()}
+                </span>
+              </div>
+            )}
+            <Button className="w-full" onClick={handleAddShift} disabled={createShift.isPending}>
+              <Plus className="h-4 w-4 mr-2" /> Schicht hinzufügen
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit shift */}
+      <Dialog open={editShiftDialog.open} onOpenChange={(open) => {
+        if (!open) setEditShiftDialog({ open: false, shift: null });
+      }}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>
+              Schicht bearbeiten — {editShiftDialog.shift ? DAY_FULL[editShiftDialog.shift.dayOfWeek as Day] : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            <div className="grid grid-cols-2 gap-4">
+              <TimeSelect label="Beginn" value={editShiftStart} onChange={setEditShiftStart} />
+              <TimeSelect label="Ende" value={editShiftEnd} onChange={setEditShiftEnd} />
+            </div>
+            {editShiftStart && editShiftEnd && editShiftStart < editShiftEnd && (
+              <div className="text-sm text-center text-muted-foreground bg-muted/30 rounded-lg py-2">
+                Dauer:{" "}
+                <span className="font-semibold text-foreground">
+                  {(() => {
+                    const [sh, sm] = editShiftStart.split(":").map(Number);
+                    const [eh, em] = editShiftEnd.split(":").map(Number);
+                    const mins = (eh * 60 + em) - (sh * 60 + sm);
+                    return `${Math.floor(mins / 60)}h ${mins % 60 > 0 ? `${mins % 60}min` : ""}`;
+                  })()}
+                </span>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => {
+                  if (editShiftDialog.shift) {
+                    handleDeleteShift(editShiftDialog.shift.id);
+                    setEditShiftDialog({ open: false, shift: null });
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" /> Schicht löschen
+              </Button>
+              <Button className="flex-1" onClick={handleEditShiftSave} disabled={updateShift.isPending}>
+                Speichern
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Copy shift */}
+      <Dialog open={copyShiftDialog.open} onOpenChange={(open) => {
+        if (!open) setCopyShiftDialog({ open: false, shift: null });
+      }}>
+        <DialogContent className="sm:max-w-[380px]">
+          <DialogHeader>
+            <DialogTitle>Schicht kopieren</DialogTitle>
+          </DialogHeader>
+          {copyShiftDialog.shift && (
+            <div className="space-y-4 pt-2">
+              <div className="bg-muted/30 rounded-lg p-3 text-sm text-center">
+                <span className="font-semibold">{copyShiftDialog.shift.startTime} – {copyShiftDialog.shift.endTime}</span>
+                <span className="text-muted-foreground ml-2">
+                  ({DAY_FULL[copyShiftDialog.shift.dayOfWeek as Day]})
+                </span>
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-2">Ziel-Tag</label>
+                <div className="flex flex-wrap gap-2">
+                  {DAYS.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setCopyTargetDay(d)}
+                      disabled={d === copyShiftDialog.shift?.dayOfWeek}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                        copyTargetDay === d
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : d === copyShiftDialog.shift?.dayOfWeek
+                          ? "opacity-30 cursor-not-allowed border-border"
+                          : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {DAY_LABELS[d]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Button className="w-full" onClick={handleCopyShift} disabled={createShift.isPending}>
+                <Copy className="h-4 w-4 mr-2" /> Nach {DAY_FULL[copyTargetDay]} kopieren
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Share schedule */}
+      <Dialog open={shareDialog.open} onOpenChange={(open) => {
+        if (!open) setShareDialog({ open: false, employee: null, mode: "employee" });
+      }}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-primary" />
+              {shareDialog.mode === "team"
+                ? "Teamdienstplan teilen"
+                : `Dienstplan – ${shareDialog.employee?.name}`}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {/* Preview */}
+            <div className="bg-muted/30 rounded-lg p-3 max-h-48 overflow-y-auto">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">
+                {getShareText()}
+              </pre>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">Wählen Sie eine Übertragungsart:</p>
+
+            {/* WhatsApp */}
+            <div className="grid grid-cols-1 gap-2">
+              <Button
+                variant="outline"
+                className="justify-start gap-3 h-auto py-3 border-green-500/30 hover:bg-green-500/10 hover:border-green-500/60"
+                onClick={() => shareViaWhatsApp(getShareText(), shareDialog.employee?.phone)}
+              >
+                <div className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                  <MessageCircle className="h-4 w-4 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-sm">Per WhatsApp senden</div>
+                  <div className="text-xs text-muted-foreground">
+                    {shareDialog.employee?.phone ? `An ${shareDialog.employee.phone}` : "Nummer manuell eingeben"}
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="justify-start gap-3 h-auto py-3 border-blue-500/30 hover:bg-blue-500/10 hover:border-blue-500/60"
+                onClick={() => shareViaEmail(getShareText(), shareDialog.employee?.email, shareDialog.employee?.name)}
+              >
+                <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                  <Mail className="h-4 w-4 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-sm">Per E-Mail senden</div>
+                  <div className="text-xs text-muted-foreground">
+                    {shareDialog.employee?.email ? `An ${shareDialog.employee.email}` : "E-Mail-Adresse eingeben"}
+                  </div>
+                </div>
+              </Button>
+
+              {typeof navigator !== "undefined" && "share" in navigator && (
+                <Button
+                  variant="outline"
+                  className="justify-start gap-3 h-auto py-3"
+                  onClick={async () => {
+                    const ok = await shareViaNative(
+                      getShareText(),
+                      `Dienstplan – ${shareDialog.employee?.name ?? "Team"}`
+                    );
+                    if (!ok) toast({ title: "Teilen nicht verfügbar", variant: "destructive" });
+                  }}
+                >
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <Share2 className="h-4 w-4" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-sm">Weitere Optionen</div>
+                    <div className="text-xs text-muted-foreground">Systemfreigabe (SMS, Messenger, …)</div>
+                  </div>
+                </Button>
+              )}
+
+              <Button
+                variant="ghost"
+                className="text-xs text-muted-foreground"
+                onClick={() => {
+                  navigator.clipboard.writeText(getShareText());
+                  toast({ title: "In Zwischenablage kopiert" });
+                }}
+              >
+                Text kopieren
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Vacation management */}
       <Dialog open={!!vacationDialogEmployee} onOpenChange={(open) => { if (!open) setVacationDialogEmployee(null); }}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
@@ -676,11 +1288,13 @@ export default function Staff() {
 
           {vacationDialogEmployee && (
             <div className="space-y-5 pt-2">
-              {/* Existing vacations */}
               <div>
                 <p className="text-sm font-medium mb-2 text-muted-foreground">Eingetragene Urlaubszeiträume</p>
                 {getEmployeeVacations(vacationDialogEmployee.id).length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic">Kein Urlaub eingetragen.</p>
+                  <div className="text-center py-4 text-muted-foreground">
+                    <AlertCircle className="h-6 w-6 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Kein Urlaub eingetragen.</p>
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {getEmployeeVacations(vacationDialogEmployee.id).map((v) => {
@@ -690,8 +1304,8 @@ export default function Staff() {
                       return (
                         <div key={v.id} className={`flex items-center justify-between p-2.5 rounded-lg border ${
                           isActive ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
-                          : isPast ? "bg-muted/30 border-border/40 opacity-60"
-                          : "bg-card border-border/50"
+                            : isPast ? "bg-muted/30 border-border/40 opacity-60"
+                            : "bg-card border-border/50"
                         }`}>
                           <div>
                             <div className="flex items-center gap-2 text-sm font-medium">
@@ -716,35 +1330,23 @@ export default function Staff() {
                 )}
               </div>
 
-              {/* Add vacation form */}
               <div className="border-t pt-4">
                 <p className="text-sm font-medium mb-3">Neuen Urlaubszeitraum eintragen</p>
                 <form onSubmit={handleVacationSubmit} className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium text-muted-foreground block mb-1">Von</label>
-                      <Input
-                        type="date"
-                        value={vacationStart}
-                        onChange={(e) => setVacationStart(e.target.value)}
-                        required
-                      />
+                      <Input type="date" value={vacationStart} onChange={(e) => setVacationStart(e.target.value)} required />
                     </div>
                     <div>
                       <label className="text-xs font-medium text-muted-foreground block mb-1">Bis</label>
-                      <Input
-                        type="date"
-                        value={vacationEnd}
-                        min={vacationStart}
-                        onChange={(e) => setVacationEnd(e.target.value)}
-                        required
-                      />
+                      <Input type="date" value={vacationEnd} min={vacationStart} onChange={(e) => setVacationEnd(e.target.value)} required />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground block mb-1">Notiz (optional)</label>
                     <Input
-                      placeholder="z.B. Familienurlaub, Erholung..."
+                      placeholder="z.B. Familienurlaub, Erholung…"
                       value={vacationNotes}
                       onChange={(e) => setVacationNotes(e.target.value)}
                     />

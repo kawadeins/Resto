@@ -1,0 +1,285 @@
+MASTER RULES APPLY
+
+Perform a full "Staff Management + Shift Planning Upgrade Pass" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the whole app from scratch.
+Do NOT break existing business dashboard functionality.
+This pass is specifically for the staff / personnel / shift planning section used by business owners and managers.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Upgrade the staff/personnel section into a more complete, practical, and professional management tool.
+
+The result should allow a business owner or manager to:
+
+- manage staff clearly
+- create and edit work schedules professionally
+- use flexible time slots including 30-minute increments
+- assign shifts easily
+- share schedules with staff
+- keep the section clean, modern, and useful for real operations
+
+========================
+1. FULL STAFF / PERSONNEL SECTION UPGRADE
+========================
+
+Upgrade the existing staff section completely without removing its current useful structure.
+
+Improve and refine:
+- employee list
+- role display
+- status display
+- contact information
+- shift planner layout
+- weekly planning usability
+
+The section should feel:
+- clean
+- operational
+- manager-friendly
+- production-ready
+
+========================
+2. SHIFT PLANNING IMPROVEMENT (CRITICAL)
+========================
+
+Upgrade the shift planning system so it supports real scheduling use.
+
+Add and improve:
+- assign shift per employee
+- edit shift quickly
+- mark day off / free day
+- duplicate shift to another day
+- weekly planning view
+- cleaner interaction for adding/editing shifts
+
+Make planning faster and less frustrating.
+
+========================
+3. 30-MINUTE TIME SUPPORT (VERY IMPORTANT)
+========================
+
+Add proper shift time granularity so shifts can be set with:
+
+- full hours
+- half hours (30-minute increments)
+
+Examples:
+- 09:00 – 17:00
+- 09:30 – 17:30
+- 10:00 – 14:30
+- 18:30 – 23:00
+
+This is a critical requirement.
+
+Do NOT limit planning to full-hour blocks only.
+
+========================
+4. STAFF ROLE / TYPE CLARITY
+========================
+
+Show staff information more clearly.
+
+Each employee should support fields like:
+- name
+- role / position
+- contact
+- status
+- optional department or area if useful
+
+Examples:
+- Service
+- Küche
+- Bar
+- Manager
+
+Keep it simple but clearer.
+
+========================
+5. SHIFT ACTIONS
+========================
+
+Allow practical actions such as:
+- add shift
+- edit shift
+- remove shift
+- mark as free day
+- copy shift
+- assign same shift to multiple days if clean
+
+Do NOT overcomplicate with enterprise scheduling logic.
+
+========================
+6. SHARE / SEND SCHEDULE (CRITICAL)
+========================
+
+After a manager finishes a schedule, allow them to share it.
+
+Support sharing through:
+- WhatsApp
+- email
+- native share where available
+
+The manager should be able to send the schedule to a staff member easily.
+
+Examples:
+- send one employee’s weekly plan
+- send full team schedule if useful
+- share in a readable summary format
+
+This is a very important requirement.
+
+========================
+7. EMPLOYEE-SPECIFIC SCHEDULE SHARING
+========================
+
+Allow the manager to select one employee and send only that employee’s schedule.
+
+Example:
+- Manager clicks on employee
+- sees their shifts
+- taps share
+- sends via WhatsApp / email
+
+This must feel simple and direct.
+
+========================
+8. CLEAN WEEKLY VIEW
+========================
+
+Improve the weekly planner so it is easier to scan.
+
+Requirements:
+- clear day labels
+- clear shift times
+- free days visible
+- selected employee easy to understand
+- not visually cramped
+- good dark-mode consistency if dashboard uses dark mode
+
+========================
+9. QUICK EDITING EXPERIENCE
+========================
+
+Make editing shifts fast.
+
+Examples:
+- click shift → edit popup/sheet
+- change start/end time quickly
+- set free day quickly
+- save without confusion
+
+Avoid too many steps.
+
+========================
+10. MANAGER / OWNER PERMISSIONS
+========================
+
+Respect role permissions:
+
+- Owner → full control
+- Manager → can manage staff schedules if intended
+- Staff → no high-level schedule editing unless explicitly allowed
+
+Do NOT expose sensitive management controls to the wrong role.
+
+========================
+11. GERMAN LANGUAGE CONSISTENCY
+========================
+
+All business-facing UI in this section must be in German.
+
+Use clear labels such as:
+- "Mitarbeiter"
+- "Schicht"
+- "Frei"
+- "Dienstplan"
+- "Teilen"
+- "Per WhatsApp senden"
+- "Per E-Mail senden"
+- "Arbeitszeit"
+- "Rolle"
+- "Status"
+
+No mixed language.
+
+========================
+12. REAL DATA / NO FAKE UI
+========================
+
+Ensure this section uses real data and real save/update logic.
+
+Do NOT leave:
+- fake shift states
+- fake save confirmations
+- share buttons that do nothing
+- demo-only employee scheduling behavior
+
+If a feature is shown, it must work.
+
+========================
+13. EMPTY / EDGE STATE HANDLING
+========================
+
+Handle cases such as:
+- no employees yet
+- no shifts planned yet
+- employee has no contact method
+- share target missing
+- invalid shift time
+- overlapping shift input if relevant
+
+Use clean error and empty states.
+
+========================
+14. FINAL POLISH
+========================
+
+Make this section feel more premium and complete through:
+- better spacing
+- better readability
+- clearer hierarchy
+- more practical controls
+- cleaner schedule handling
+
+Do NOT overdesign.
+Focus on operational quality.
+
+========================
+15. FINAL REPORT
+========================
+
+At the end, provide a structured report with:
+
+A. Staff section improvements made
+B. Shift planner improvements made
+C. 30-minute time support status
+D. Share/send features added
+E. Permission handling status
+F. Any remaining weak points
+
+========================
+FINAL GOAL
+========================
+
+The staff/personnel section should become a real operational scheduling tool where a manager can:
+
+- manage employees
+- build weekly schedules
+- use half-hour time slots
+- mark shifts and free days
+- share schedules via WhatsApp or email
+
+The section must feel:
+- practical
+- professional
+- clean
+- ready for real business use
