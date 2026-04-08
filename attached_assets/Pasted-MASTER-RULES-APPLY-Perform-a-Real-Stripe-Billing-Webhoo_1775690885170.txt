@@ -1,0 +1,194 @@
+MASTER RULES APPLY
+
+Perform a "Real Stripe Billing + Webhook Hardening Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing Premium, Wallet, or Boost logic.
+Do NOT touch unrelated dashboard sections.
+
+This pass is ONLY for replacing the current demo/test billing behavior with real Stripe-backed billing truth.
+
+========================
+GOAL
+========================
+
+Upgrade the current billing system from demo/test simulation to real Stripe-based billing for the business dashboard.
+
+The system must correctly support:
+
+- real checkout
+- real payment confirmation
+- real subscription state
+- real wallet top-up confirmation
+- real webhook-based billing truth
+- safe sync between Stripe and internal database
+
+========================
+1. REAL STRIPE CHECKOUT
+========================
+
+Replace demo/test checkout behavior with real Stripe checkout logic.
+
+Support:
+- Premium subscription checkout
+- Wallet top-up checkout
+
+Ensure:
+- correct Stripe product/price usage
+- correct amount handling
+- correct return URLs
+- no fake success states
+
+========================
+2. WEBHOOK VERIFICATION (CRITICAL)
+========================
+
+Implement real Stripe webhook signature verification.
+
+Support events such as:
+- checkout.session.completed
+- invoice.paid
+- invoice.payment_failed
+- customer.subscription.updated
+- customer.subscription.deleted
+- payment_intent.succeeded
+- payment_intent.payment_failed
+
+Do NOT trust frontend redirect alone.
+Billing truth must come from Stripe webhook events.
+
+========================
+3. PREMIUM SUBSCRIPTION TRUTH
+========================
+
+Ensure Premium status comes from real billing truth.
+
+Cases:
+- successful subscription payment → Premium active
+- failed payment → Premium not activated / flagged
+- canceled subscription → Premium deactivated correctly
+- expired subscription → reflected correctly in DB and dashboard
+
+========================
+4. WALLET TOP-UP TRUTH
+========================
+
+Ensure wallet credit is only added after verified successful Stripe payment.
+
+Rules:
+- no credit before payment confirmation
+- no duplicate crediting
+- no fake top-up success
+- failed payment = no balance increase
+
+========================
+5. IDENTITY + BILLING LINKING
+========================
+
+Correctly link Stripe customer / checkout session / payment to:
+- business account
+- owner account
+- wallet record
+- premium subscription record
+
+No orphan payment states.
+
+========================
+6. WEBHOOK IDEMPOTENCY
+========================
+
+Protect against duplicate webhook processing.
+
+Ensure:
+- repeated webhook events do not duplicate wallet balance
+- repeated events do not re-activate same subscription incorrectly
+- repeated events do not create duplicate billing records
+
+========================
+7. BILLING RECONCILIATION
+========================
+
+Add reconciliation between:
+- Stripe truth
+- DB subscription truth
+- wallet truth
+- dashboard truth
+
+Fix mismatches safely.
+
+========================
+8. DASHBOARD BILLING STATE
+========================
+
+Ensure the business dashboard shows real billing states only:
+
+- Premium active
+- trial active
+- payment pending
+- payment failed
+- canceled
+- wallet top-up successful
+
+No simulated status.
+
+========================
+9. ERROR HANDLING
+========================
+
+Show clear German error states such as:
+- "Zahlung fehlgeschlagen"
+- "Zahlung wird überprüft"
+- "Premium noch nicht aktiviert"
+- "Guthaben wurde nicht aufgeladen"
+
+No fake success screens.
+
+========================
+10. AUDIT TRAIL
+========================
+
+Log:
+- Stripe event type
+- related business/user
+- action taken
+- success/failure
+- duplicate ignored
+- reconciliation result
+
+========================
+11. SECURITY
+========================
+
+Ensure:
+- webhook secret verification is real
+- no billing state can be activated from frontend only
+- no wallet credit can be added without verified payment
+- no Premium bypass from client state
+
+========================
+12. FINAL REPORT
+========================
+
+Produce a report with:
+
+A. Stripe checkout status
+B. Webhook verification status
+C. Premium billing truth status
+D. Wallet top-up truth status
+E. Duplicate protection status
+F. Remaining billing risks if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster business dashboard must move from demo billing to real Stripe billing truth.
+
+Premium and wallet top-ups must only activate through verified Stripe payment events.
+
+The billing system must become:
+- real
+- safe
+- trustworthy
+- production-ready
