@@ -17,6 +17,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { computeDynamicPrice } from "../lib/pricing-engine";
+import { getWalletBalance, computeBoostCost } from "./wallet";
 
 const router = Router();
 
@@ -127,7 +128,21 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreatePromoSchema.parse(req.body);
 
-    // Pause any active boost of same type for this restaurant (one active per type)
+    // ── Wallet balance check ───────────────────────────────────────────────────
+    const boostCost     = await computeBoostCost(body.type, body.restaurantId);
+    const currentBalance = await getWalletBalance(body.restaurantId);
+
+    if (currentBalance < boostCost) {
+      return res.status(402).json({
+        error:    "insufficient_balance",
+        message:  "Nicht gen\u00FCgend Guthaben. Bitte lade zuerst dein Guthaben auf.",
+        required: boostCost,
+        current:  Math.round(currentBalance * 100) / 100,
+        shortfall: Math.round((boostCost - currentBalance) * 100) / 100,
+      });
+    }
+
+    // ── Pause any active boost of same type (one active per type) ─────────────
     await db.execute(sql`
       UPDATE promotions
       SET status = 'paused', updated_at = NOW()
@@ -146,7 +161,29 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
       RETURNING *
     `);
 
-    return res.status(201).json(result.rows[0]);
+    const promotion = result.rows[0] as { id: number; type: string };
+
+    // ── Deduct from wallet ─────────────────────────────────────────────────────
+    const newBalance = Math.round((currentBalance - boostCost) * 100) / 100;
+    const boostLabel = BOOST_TYPES[body.type as keyof typeof BOOST_TYPES]?.label ?? body.type;
+
+    await db.execute(sql`
+      INSERT INTO wallet_transactions (restaurant_id, type, amount, description, boost_type, balance_after)
+      VALUES (
+        ${body.restaurantId},
+        'boost_spend',
+        ${boostCost},
+        ${"Boost aktiviert: " + boostLabel},
+        ${body.type},
+        ${newBalance}
+      )
+    `);
+
+    return res.status(201).json({
+      ...promotion,
+      walletDeducted: boostCost,
+      walletBalance:  newBalance,
+    });
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ error: err.errors });
     req.log.error({ err }, "Failed to create promotion");

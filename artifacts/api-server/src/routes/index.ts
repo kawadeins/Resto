@@ -43,6 +43,7 @@ import citiesRouter from "./cities";
 import opsRouter from "./ops";
 import brainRouter from "./brain";
 import teamRouter from "./team";
+import walletRouter from "./wallet";
 
 const router: IRouter = Router();
 
@@ -90,5 +91,6 @@ router.use("/cities", citiesRouter);
 router.use("/ops", opsRouter);
 router.use("/brain", brainRouter);
 router.use("/team", teamRouter);
+router.use("/wallet", walletRouter);
 
 export default router;

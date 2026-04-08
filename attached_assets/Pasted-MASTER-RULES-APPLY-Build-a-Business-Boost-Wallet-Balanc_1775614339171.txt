@@ -1,0 +1,260 @@
+MASTER RULES APPLY
+
+Build a "Business Boost Wallet + Balance Top-Up System" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing Premium / Boost logic.
+Do NOT remove existing boost tools.
+This is a monetization infrastructure upgrade for boost usage.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Add a real prepaid balance / wallet system so business owners must first add credit before they can run boost campaigns.
+
+The owner should:
+- top up balance
+- see available credit clearly
+- spend from balance when activating boosts
+- understand costs and deductions clearly
+
+This must feel:
+- professional
+- simple
+- trustworthy
+- ready for real money usage
+
+========================
+1. WALLET / BALANCE SYSTEM (CRITICAL)
+========================
+
+Add a dedicated balance system for business accounts.
+
+Each business owner should have:
+- current balance
+- top-up history
+- boost spending history
+- remaining credit
+
+Use clear German wording such as:
+- "Guthaben"
+- "Guthaben aufladen"
+- "Verfügbares Guthaben"
+- "Verbrauch"
+- "Aufladeverlauf"
+
+========================
+2. BOOST REQUIRES BALANCE
+========================
+
+When the owner tries to activate a boost:
+
+If balance is NOT enough:
+- block activation
+- show clear message
+- direct user to top-up section
+
+Example German messages:
+- "Nicht genügend Guthaben"
+- "Bitte lade zuerst dein Guthaben auf"
+- "Du benötigst Guthaben, um diesen Boost zu aktivieren"
+
+Do NOT allow boost activation without sufficient balance.
+
+========================
+3. TOP-UP SECTION
+========================
+
+Create a dedicated wallet/top-up section inside the business dashboard.
+
+Add clear quick top-up options such as:
+- 5€
+- 10€
+- 20€
+- 50€
+- custom amount (optional if clean)
+
+The section should feel:
+- simple
+- premium
+- easy to use
+
+========================
+4. TOP-UP FLOW
+========================
+
+Allow business owner to:
+- choose amount
+- proceed to payment
+- complete payment
+- see balance updated immediately
+
+After successful payment:
+- new balance appears instantly
+- dashboard reflects the new available credit
+
+========================
+5. BOOST COST DEDUCTION
+========================
+
+When a boost is activated:
+- deduct the correct amount from wallet balance
+- update balance immediately
+- show transaction in spending history
+
+Examples:
+- boost activated for 5€
+- wallet decreases by 5€
+- transaction recorded clearly
+
+Do NOT hide deductions.
+
+========================
+6. BALANCE VISIBILITY (VERY IMPORTANT)
+========================
+
+Show current balance clearly inside:
+- boost section
+- wallet section
+- relevant promotion cards if useful
+
+The owner should always know:
+- how much balance is available
+- whether it is enough
+- how much the selected boost will cost
+
+========================
+7. SPENDING HISTORY
+========================
+
+Add a simple history view showing:
+
+- top-up amount
+- top-up date
+- boost spend amount
+- boost name/type
+- remaining balance after transaction if useful
+
+Use German labels such as:
+- "Aufladung"
+- "Ausgabe"
+- "Verlauf"
+
+========================
+8. LOW BALANCE WARNINGS
+========================
+
+If balance is low, show clean warning messages like:
+- "Niedriges Guthaben"
+- "Dein Guthaben reicht bald nicht mehr aus"
+- "Jetzt Guthaben aufladen"
+
+This should help conversion but not feel spammy.
+
+========================
+9. PREMIUM + WALLET RELATIONSHIP
+========================
+
+Keep the logic clear:
+
+- Premium subscription unlocks access to boost tools
+- wallet balance is still required to actually run boosts
+
+This must be explained clearly.
+
+Premium ≠ free boosts
+
+========================
+10. BILLING / PAYMENT INTEGRITY
+========================
+
+Ensure wallet logic is truthful and safe:
+
+- no fake balance updates
+- no fake successful top-ups
+- no boost deduction without real balance
+- no mismatch between payment success and wallet credit
+
+This must connect cleanly to billing truth.
+
+========================
+11. GERMAN UX COPY
+========================
+
+All business-facing wallet/boost payment content must be in German.
+
+Examples:
+- "Guthaben aufladen"
+- "Verfügbares Guthaben"
+- "Nicht genügend Guthaben"
+- "Jetzt 10€ aufladen"
+- "Boost aktivieren"
+- "Aus deinem Guthaben bezahlt"
+
+========================
+12. CLEAN UI STRUCTURE
+========================
+
+Organize the section clearly:
+
+- Current Balance Card
+- Quick Top-Up Buttons
+- Boost Cost Display
+- Transaction History
+
+Do NOT make it messy or banking-like.
+Keep it simple and business-friendly.
+
+========================
+13. EMPTY / EDGE CASES
+========================
+
+Handle cases such as:
+- zero balance
+- failed payment
+- pending top-up
+- boost cost higher than balance
+- duplicate top-up attempt
+- payment success but balance not updated yet
+
+Show clear states and error messages.
+
+========================
+14. FINAL REPORT
+========================
+
+At the end, provide a structured report with:
+
+A. Wallet/balance system added
+B. Top-up flow status
+C. Boost deduction flow status
+D. Balance visibility status
+E. Transaction history status
+F. Remaining risks if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have a real Boost Wallet system where business owners must first load balance before running paid boosts.
+
+The flow must be:
+
+- add balance
+- see balance
+- activate boost
+- pay from balance
+- track spending
+
+The system must feel:
+- professional
+- clear
+- trustworthy
+- ready for real monetization

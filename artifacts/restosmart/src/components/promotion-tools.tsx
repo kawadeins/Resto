@@ -14,8 +14,26 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BOOST_CONFIGS, isBoostCurrentlyActive } from "@/lib/monetization-engine";
+import { WalletPanel } from "./wallet-panel";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
+// ── Boost base costs (must stay in sync with wallet.ts BOOST_BASE_COSTS) ──────
+const BOOST_BASE_COSTS: Record<string, number> = {
+  breakfast_boost:  1.50,
+  lunch_boost:      2.00,
+  happy_hour_boost: 2.00,
+  nightlife_boost:  2.50,
+  local_spotlight:  1.80,
+  local_heat_boost: 1.80,
+};
+
+function clientBoostCost(boostType: string, pricing: PricingData | undefined): number {
+  const base = BOOST_BASE_COSTS[boostType] ?? 2.00;
+  if (!pricing?.breakdown?.demandMultiplier) return base;
+  const raw = base * pricing.breakdown.demandMultiplier;
+  return Math.max(0.50, Math.min(9.99, Math.round(raw * 10) / 10));
+}
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -536,9 +554,10 @@ function AITimingStrip({ pricing }: { pricing: PricingData }) {
 export function PromotionTools() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [launching, setLaunching] = useState<string | null>(null);
+  const [launching, setLaunching]     = useState<string | null>(null);
   const [editingBudget, setEditingBudget] = useState<number | null>(null);
   const [budgetInput, setBudgetInput] = useState<Record<number, string>>({});
+  const [showWallet, setShowWallet]   = useState(false);
 
   // ── Promotions data ─────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery<MyPromotionsData>({
@@ -622,21 +641,67 @@ export function PromotionTools() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ restaurantId, type }),
       });
+      if (res.status === 402) {
+        const body = await res.json();
+        const err = new Error("insufficient_balance") as Error & { walletError: typeof body };
+        err.walletError = body;
+        throw err;
+      }
       if (!res.ok) throw new Error("Fehler");
       return res.json();
     },
-    onSuccess: (_, type) => {
+    onSuccess: (data, type) => {
       const cfg = BOOST_CONFIGS.find(b => b.type === type);
-      toast({ title: `${cfg?.emoji ?? "\uD83D\uDE80"} ${cfg?.label ?? type} gestartet!`, description: "Ihre Sichtbarkeit steigt ab sofort." });
+      toast({
+        title: `${cfg?.emoji ?? "\uD83D\uDE80"} ${cfg?.label ?? type} gestartet!`,
+        description: data.walletDeducted
+          ? `\u20AC${data.walletDeducted.toFixed(2)} Guthaben verwendet \u00B7 Restguthaben: \u20AC${data.walletBalance?.toFixed(2)}`
+          : "Ihre Sichtbarkeit steigt ab sofort.",
+      });
       setLaunching(null);
       invalidate();
+      queryClient.invalidateQueries({ queryKey: ["wallet"] });
     },
-    onError: () => { toast({ title: "Boost konnte nicht gestartet werden", variant: "destructive" }); setLaunching(null); },
+    onError: (err: Error & { walletError?: { required?: number; current?: number; shortfall?: number } }) => {
+      if (err.message === "insufficient_balance" && err.walletError) {
+        const { required = 0, current = 0 } = err.walletError;
+        toast({
+          title: "Nicht gen\u00FCgend Guthaben",
+          description: `Ben\u00F6tigt: \u20AC${required.toFixed(2)} \u00B7 Aktuell: \u20AC${current.toFixed(2)}. Lade dein Guthaben auf.`,
+          variant: "destructive",
+        });
+        setShowWallet(true);
+      } else {
+        toast({ title: "Boost konnte nicht gestartet werden", variant: "destructive" });
+      }
+      setLaunching(null);
+    },
   });
 
   const pauseMutation  = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/pause`,  { method: "PUT" }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); } });
   const resumeMutation = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT" }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); } });
   const stopMutation   = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/stop`,   { method: "PUT" }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); } });
+
+  // ── Wallet ──────────────────────────────────────────────────────────────────
+  const { data: walletData } = useQuery<{ restaurantId: number; balance: number; isLow: boolean; isEmpty: boolean; transactions: unknown[] }>({
+    queryKey: ["wallet", restaurantId],
+    queryFn: async () => {
+      if (!restaurantId) return { restaurantId: 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
+      const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`);
+      if (!res.ok) return { restaurantId: restaurantId ?? 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
+      return res.json();
+    },
+    enabled: !!restaurantId,
+    staleTime: 15000,
+    refetchInterval: 30000,
+  });
+
+  const walletBalance = walletData?.balance ?? 0;
+
+  const hasSufficientBalance = (boostType: string): boolean => {
+    const cost = clientBoostCost(boostType, pricing);
+    return walletBalance >= cost;
+  };
 
   // ── Derived opportunity signals ─────────────────────────────────────────────
   const relevantBoosts   = BOOST_CONFIGS.filter(b => b.bizTypes.includes(businessType));
@@ -690,20 +755,55 @@ export function PromotionTools() {
             </div>
           </div>
         </div>
-        {activeCount > 0 && (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full shrink-0"
-            style={{ color: C.active, backgroundColor: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.22)" }}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          {/* Wallet balance chip */}
+          <motion.button
+            onClick={() => setShowWallet(v => !v)}
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 12px", borderRadius: 999,
+              backgroundColor: walletBalance <= 0 ? "rgba(239,68,68,0.1)" : walletData?.isLow ? "rgba(245,158,11,0.1)" : "rgba(34,197,94,0.08)",
+              border: `1px solid ${walletBalance <= 0 ? "rgba(239,68,68,0.3)" : walletData?.isLow ? "rgba(245,158,11,0.3)" : "rgba(34,197,94,0.25)"}`,
+              background: "none", cursor: "pointer",
+            }}
           >
-            <motion.span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: C.active }}
-              animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }} />
-            {activeCount} {activeCount === 1 ? "Boost" : "Boosts"} aktiv
-          </motion.div>
-        )}
+            <Wallet style={{ width: 13, height: 13, color: walletBalance <= 0 ? C.danger : walletData?.isLow ? C.paused : C.active }} />
+            <span className="text-xs font-bold tabular-nums" style={{ color: walletBalance <= 0 ? C.danger : walletData?.isLow ? C.paused : C.active }}>
+              {"\u20AC"}{walletBalance.toFixed(2)}
+            </span>
+          </motion.button>
+
+          {activeCount > 0 && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ color: C.active, backgroundColor: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.22)" }}
+            >
+              <motion.span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: C.active }}
+                animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }} />
+              {activeCount} {activeCount === 1 ? "Boost" : "Boosts"} aktiv
+            </motion.div>
+          )}
+        </div>
       </div>
 
       <div style={{ padding: "0 24px 24px" }} className="space-y-5">
+
+        {/* ── Wallet Panel (collapsible) ── */}
+        <AnimatePresence>
+          {showWallet && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.28 }}
+              style={{ overflow: "hidden" }}
+            >
+              <WalletPanel restaurantId={restaurantId} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── Smart Revenue Trigger ── */}
         <SmartRevenueTrigger
@@ -850,22 +950,56 @@ export function PromotionTools() {
                 })()}
 
                 {/* CTA buttons */}
-                <div className="flex gap-2 mt-auto">
-                  {!promo && (
-                    <GradBtn
-                      onClick={() => { setLaunching(cfg.type); launchMutation.mutate(cfg.type); }}
-                      disabled={launching === cfg.type || !restaurantId}
-                      urgent={cardOppty}
-                    >
-                      <Zap style={{ width: 14, height: 14 }} />
-                      {launching === cfg.type
-                        ? "Startet\u2026"
-                        : cardOppty
-                        ? "Empfohlen: Jetzt aktivieren"
-                        : "Jetzt aktivieren"
-                      }
-                    </GradBtn>
-                  )}
+                <div className="flex gap-2 mt-auto flex-col">
+                  {!promo && (() => {
+                    const cost = clientBoostCost(cfg.type, pricing);
+                    const canAfford = hasSufficientBalance(cfg.type);
+                    if (!canAfford && restaurantId) {
+                      return (
+                        <div className="space-y-2">
+                          <motion.button
+                            onClick={() => setShowWallet(true)}
+                            whileHover={{ boxShadow: "0 0 18px rgba(245,158,11,0.35)" }}
+                            whileTap={{ scale: 0.97 }}
+                            style={{
+                              width: "100%", height: 44, borderRadius: 12,
+                              background: "linear-gradient(135deg,#F59E0B,#f97316)",
+                              border: "none", color: "#fff", fontWeight: 600, fontSize: 13,
+                              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                            }}
+                          >
+                            <Wallet style={{ width: 14, height: 14 }} />
+                            Guthaben aufladen ({"\u20AC"}{cost.toFixed(2)} ben\u00F6tigt)
+                          </motion.button>
+                          <p className="text-center text-[10px]" style={{ color: C.muted }}>
+                            Aktuelles Guthaben: {"\u20AC"}{walletBalance.toFixed(2)}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="space-y-1.5">
+                        <GradBtn
+                          onClick={() => { setLaunching(cfg.type); launchMutation.mutate(cfg.type); }}
+                          disabled={launching === cfg.type || !restaurantId}
+                          urgent={cardOppty}
+                        >
+                          <Zap style={{ width: 14, height: 14 }} />
+                          {launching === cfg.type
+                            ? "Startet\u2026"
+                            : cardOppty
+                            ? "Empfohlen: Jetzt aktivieren"
+                            : "Jetzt aktivieren"
+                          }
+                        </GradBtn>
+                        {restaurantId && (
+                          <p className="text-center text-[10px]" style={{ color: C.muted }}>
+                            Kosten: {"\u20AC"}{cost.toFixed(2)} \u00B7 Guthaben: {"\u20AC"}{walletBalance.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {isLive && (
                     <>
                       <SecBtn onClick={() => pauseMutation.mutate(promo!.id)}>
