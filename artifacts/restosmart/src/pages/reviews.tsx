@@ -10,7 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Star, StarHalf, MessageSquare, MessageCircleReply, User,
   TrendingUp, TrendingDown, Minus, AlertTriangle, Send, Mail, RefreshCw,
-  Sparkles, ShieldAlert, ChevronDown, ChevronUp, Loader2, CheckCircle2
+  Sparkles, ShieldAlert, ChevronDown, ChevronUp, Loader2, CheckCircle2,
+  Lock, BarChart2, Clock, ThumbsUp, Zap, Crown
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 
@@ -43,6 +44,22 @@ interface ReviewInsights {
   needsAttention: RecoveryReview[];
   pendingRecovery: RecoveryReview[];
   pendingRecoveryCount: number;
+  recovery?: {
+    totalCases: number;
+    resolvedRate: number;
+    avgRatingImprovement: number | null;
+    avgResponseTimeHours: number | null;
+    aiUsageRate: number;
+    aiSuccessRate: number | null;
+  };
+}
+
+function getPremiumStatus(): "active" | "trial" | "inactive" {
+  const premium = localStorage.getItem("restosmart_owner_premium");
+  const trialEnd = localStorage.getItem("restosmart_trial_end");
+  if (premium === "active") return "active";
+  if (premium === "trial" && trialEnd && new Date(trialEnd) > new Date()) return "trial";
+  return "inactive";
 }
 
 interface PendingRequest {
@@ -80,10 +97,15 @@ export default function Reviews() {
   const [replyText, setReplyText] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [showRecoverySection, setShowRecoverySection] = useState(true);
+  const [showAnalyticsSection, setShowAnalyticsSection] = useState(true);
   const [respondingTo, setRespondingTo] = useState<number | null>(null);
   const [responseText, setResponseText] = useState<Record<number, string>>({});
   const [aiLoading, setAiLoading] = useState<Record<number, boolean>>({});
   const [aiSuggestions, setAiSuggestions] = useState<Record<number, string>>({});
+  const [isPro] = useState(() => {
+    const s = getPremiumStatus();
+    return s === "active" || s === "trial";
+  });
 
   const { data: reviews, isLoading: loadingReviews } = useListReviews({}, {
     query: { queryKey: getListReviewsQueryKey() }
@@ -381,7 +403,7 @@ export default function Reviews() {
                               <Textarea
                                 value={responseText[review.id] ?? ""}
                                 onChange={e => setResponseText(prev => ({ ...prev, [review.id]: e.target.value }))}
-                                placeholder="Ihre Antwort an den Gast\u2026"
+                                placeholder="Ihre Antwort an den Gast…"
                                 className="min-h-[100px] text-sm"
                                 autoFocus
                               />
@@ -404,37 +426,73 @@ export default function Reviews() {
                                   disabled={sendBusinessResponseMutation.isPending || !responseText[review.id]?.trim()}
                                 >
                                   <Send className="w-3.5 h-3.5" />
-                                  {sendBusinessResponseMutation.isPending ? "Wird gesendet\u2026" : "Antwort senden"}
+                                  {sendBusinessResponseMutation.isPending ? "Wird gesendet…" : "Antwort senden"}
                                 </Button>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                className="gap-1.5 bg-violet-600 hover:bg-violet-700 text-white border-none"
-                                onClick={() => fetchAiSuggestion(review)}
-                                disabled={aiLoading[review.id]}
-                              >
-                                {aiLoading[review.id] ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <div className="space-y-2">
+                              <div className="flex gap-2">
+                                {isPro ? (
+                                  <Button
+                                    size="sm"
+                                    className="gap-1.5 bg-violet-600 hover:bg-violet-700 text-white border-none"
+                                    onClick={() => fetchAiSuggestion(review)}
+                                    disabled={aiLoading[review.id]}
+                                  >
+                                    {aiLoading[review.id] ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Sparkles className="w-3.5 h-3.5" />
+                                    )}
+                                    KI-Antwort
+                                  </Button>
                                 ) : (
-                                  <Sparkles className="w-3.5 h-3.5" />
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      size="sm"
+                                      className="gap-1.5 bg-violet-900/40 text-violet-300 border border-violet-500/30 cursor-not-allowed opacity-70"
+                                      disabled
+                                    >
+                                      <Lock className="w-3.5 h-3.5" />
+                                      KI-Antwort
+                                    </Button>
+                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Crown className="w-3 h-3 text-amber-400" />
+                                      Premium erforderlich
+                                    </span>
+                                  </div>
                                 )}
-                                Antwort vorschlagen
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1.5"
-                                onClick={() => {
-                                  setRespondingTo(review.id);
-                                  if (!responseText[review.id]) setResponseText(prev => ({ ...prev, [review.id]: "" }));
-                                }}
-                              >
-                                <MessageCircleReply className="w-3.5 h-3.5" />
-                                Manuell antworten
-                              </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1.5"
+                                  onClick={() => {
+                                    setRespondingTo(review.id);
+                                    if (!responseText[review.id]) setResponseText(prev => ({ ...prev, [review.id]: "" }));
+                                  }}
+                                >
+                                  <MessageCircleReply className="w-3.5 h-3.5" />
+                                  Manuell antworten
+                                </Button>
+                              </div>
+                              {!isPro && (
+                                <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 px-3 py-2 flex items-center justify-between">
+                                  <div className="text-xs text-muted-foreground">
+                                    <span className="font-medium text-violet-400">KI-Antworten</span>{" "}
+                                    verbessern Bewertungen und sparen Zeit
+                                  </div>
+                                  <button
+                                    className="text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors underline underline-offset-2"
+                                    onClick={() => {
+                                      localStorage.setItem("restosmart_owner_premium", "active");
+                                      window.location.reload();
+                                    }}
+                                  >
+                                    Upgrade auf Premium
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -447,6 +505,125 @@ export default function Reviews() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Feedback-Analyse (Premium) ── */}
+      {insights?.recovery && insights.recovery.totalCases > 0 && (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+          <Card className="border-violet-500/20 bg-violet-500/5 overflow-hidden">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                    <BarChart2 className="w-4.5 h-4.5 text-violet-500" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      Feedback-Analyse
+                      <Badge className="text-xs h-5 px-1.5 bg-violet-600/80 text-white border-none gap-1">
+                        <Crown className="w-3 h-3" />
+                        Premium
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription className="mt-0.5">
+                      {insights.recovery.totalCases} kritische {insights.recovery.totalCases === 1 ? "Fall" : "Fälle"} analysiert
+                    </CardDescription>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAnalyticsSection(v => !v)}
+                  className="p-1.5 rounded-lg hover:bg-muted/60 transition-colors text-muted-foreground"
+                >
+                  {showAnalyticsSection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
+            </CardHeader>
+            <AnimatePresence>
+              {showAnalyticsSection && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <CardContent className="pt-0">
+                    {isPro ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {/* Resolved rate */}
+                        <div className="rounded-xl border border-border/50 bg-background p-3 space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
+                            Gelöste Fälle
+                          </div>
+                          <div className="text-2xl font-bold text-emerald-500">{insights.recovery.resolvedRate}%</div>
+                          <div className="text-xs text-muted-foreground">der kritischen Fälle</div>
+                        </div>
+                        {/* Avg rating improvement */}
+                        <div className="rounded-xl border border-border/50 bg-background p-3 space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+                            Ø Verbesserung
+                          </div>
+                          <div className="text-2xl font-bold text-amber-500">
+                            {insights.recovery.avgRatingImprovement !== null
+                              ? `+${insights.recovery.avgRatingImprovement.toFixed(1)} ★`
+                              : "—"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Sterne nach Antwort</div>
+                        </div>
+                        {/* Avg response time */}
+                        <div className="rounded-xl border border-border/50 bg-background p-3 space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <Clock className="w-3.5 h-3.5 text-blue-500" />
+                            Ø Antwortzeit
+                          </div>
+                          <div className="text-2xl font-bold text-blue-500">
+                            {insights.recovery.avgResponseTimeHours !== null
+                              ? insights.recovery.avgResponseTimeHours < 1
+                                ? `${Math.round(insights.recovery.avgResponseTimeHours * 60)} Min`
+                                : `${insights.recovery.avgResponseTimeHours.toFixed(1)} Std`
+                              : "—"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">bis zur Antwort</div>
+                        </div>
+                        {/* AI success rate */}
+                        <div className="rounded-xl border border-border/50 bg-background p-3 space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <Zap className="w-3.5 h-3.5 text-violet-500" />
+                            KI-Erfolgsrate
+                          </div>
+                          <div className="text-2xl font-bold text-violet-500">
+                            {insights.recovery.aiSuccessRate !== null ? `${insights.recovery.aiSuccessRate}%` : "—"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {insights.recovery.aiUsageRate}% nutzen KI
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-6 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto">
+                          <Lock className="w-5 h-5 text-violet-500" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm">Premium erforderlich</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Upgrade auf Premium, um KI-Antworten und Analysen zu nutzen
+                          </p>
+                        </div>
+                        <button
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold transition-colors"
+                          onClick={() => {
+                            localStorage.setItem("restosmart_owner_premium", "active");
+                            window.location.reload();
+                          }}
+                        >
+                          <Crown className="w-3.5 h-3.5" />
+                          Jetzt upgraden
+                        </button>
+                      </div>
+                    )}
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Pending review requests */}
       {(pendingRequests ?? []).length > 0 && (

@@ -27,6 +27,9 @@ function mapReview(r: ReviewRow) {
     businessResponse: r.businessResponse ?? null,
     businessRespondedAt: r.businessRespondedAt?.toISOString() ?? null,
     aiReplySuggestion: r.aiReplySuggestion ?? null,
+    initialRating: r.initialRating ?? null,
+    aiUsed: r.aiUsed ?? false,
+    responseTimeHours: r.responseTimeHours !== null && r.responseTimeHours !== undefined ? parseFloat(String(r.responseTimeHours)) : null,
   };
 }
 
@@ -113,6 +116,39 @@ router.get("/insights", async (req, res) => {
     const distribution: Record<string, number> = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 };
     for (const r of publicReviews) distribution[String(r.rating)] = (distribution[String(r.rating)] || 0) + 1;
 
+    // ── Recovery Analytics ──────────────────────────────────────────────────────
+    const recoveryReviews = allReviews.filter(r => r.recoveryStatus !== null);
+    const totalRecovery = recoveryReviews.length;
+    const resolvedRecovery = recoveryReviews.filter(r => ["resolved", "published", "closed"].includes(r.recoveryStatus ?? ""));
+    const publishedRecovery = recoveryReviews.filter(r => r.recoveryStatus === "published" && r.initialRating !== null);
+    const resolvedRate = totalRecovery > 0 ? Math.round((resolvedRecovery.length / totalRecovery) * 100) : 0;
+
+    // Average rating improvement for published recovery reviews
+    const ratingImprovements = publishedRecovery
+      .filter(r => r.initialRating !== null)
+      .map(r => r.rating - (r.initialRating ?? r.rating));
+    const avgRatingImprovement = ratingImprovements.length > 0
+      ? parseFloat((ratingImprovements.reduce((s, v) => s + v, 0) / ratingImprovements.length).toFixed(2))
+      : null;
+
+    // Average response time
+    const responseTimes = recoveryReviews
+      .filter(r => r.responseTimeHours !== null)
+      .map(r => parseFloat(String(r.responseTimeHours)));
+    const avgResponseTimeHours = responseTimes.length > 0
+      ? parseFloat((responseTimes.reduce((s, v) => s + v, 0) / responseTimes.length).toFixed(1))
+      : null;
+
+    // AI metrics
+    const aiUsedReviews = recoveryReviews.filter(r => r.aiUsed === true);
+    const aiUsageRate = totalRecovery > 0 ? Math.round((aiUsedReviews.length / totalRecovery) * 100) : 0;
+    const aiPublishedWithImprovement = aiUsedReviews.filter(r =>
+      r.recoveryStatus === "published" && r.initialRating !== null && r.rating > (r.initialRating ?? r.rating)
+    );
+    const aiSuccessRate = aiUsedReviews.filter(r => r.recoveryStatus === "published").length > 0
+      ? Math.round((aiPublishedWithImprovement.length / aiUsedReviews.filter(r => r.recoveryStatus === "published").length) * 100)
+      : null;
+
     res.json({
       totalCount,
       averageRating: avgRating ? parseFloat(avgRating.toFixed(2)) : null,
@@ -127,6 +163,15 @@ router.get("/insights", async (req, res) => {
       needsAttention,
       pendingRecovery,
       pendingRecoveryCount: pendingRecovery.length,
+      // Recovery analytics
+      recovery: {
+        totalCases: totalRecovery,
+        resolvedRate,
+        avgRatingImprovement,
+        avgResponseTimeHours,
+        aiUsageRate,
+        aiSuccessRate,
+      },
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get review insights");
@@ -242,6 +287,7 @@ router.post("/", async (req, res) => {
       comment: body.comment,
       recoveryStatus: startRecovery ? "pending" : null,
       recoveryMessage: startRecovery ? body.comment : null,
+      initialRating: startRecovery ? body.rating : null,
     }).returning();
 
     // Award loyalty points
@@ -319,8 +365,10 @@ router.post("/:id/business-response", async (req, res) => {
     const { response } = BusinessResponseBody.parse(req.body);
     const [existing] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
     if (!existing) return void res.status(404).json({ error: "Review not found" });
+    const respondedAt = new Date();
+    const responseTimeHours = parseFloat(((respondedAt.getTime() - existing.createdAt.getTime()) / 3_600_000).toFixed(2));
     const [updated] = await db.update(reviewsTable)
-      .set({ businessResponse: response, businessRespondedAt: new Date(), recoveryStatus: "resolved", ownerReply: response, ownerRepliedAt: new Date() })
+      .set({ businessResponse: response, businessRespondedAt: respondedAt, recoveryStatus: "resolved", ownerReply: response, ownerRepliedAt: respondedAt, responseTimeHours: String(responseTimeHours) })
       .where(eq(reviewsTable.id, id))
       .returning();
     res.json(mapReview(updated));
@@ -419,8 +467,8 @@ Antworte NUR mit dem Text der Antwort, ohne Einleitung oder Erklärung.`;
 
     const suggestion = (completion.choices[0]?.message?.content ?? "").trim();
 
-    // Cache the suggestion
-    await db.update(reviewsTable).set({ aiReplySuggestion: suggestion }).where(eq(reviewsTable.id, id));
+    // Cache the suggestion and mark AI was used
+    await db.update(reviewsTable).set({ aiReplySuggestion: suggestion, aiUsed: true }).where(eq(reviewsTable.id, id));
 
     res.json({ suggestion });
   } catch (err) {

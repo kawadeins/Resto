@@ -1,0 +1,249 @@
+MASTER RULES APPLY
+
+Build a complete "Review Intelligence System (Recovery + AI Reply + Impact Tracking + Premium Access)" inside the RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT remove normal review functionality.
+Do NOT manipulate users.
+Do NOT hide real reviews permanently.
+
+This system must remain fair, transparent, and trustworthy.
+
+========================
+GOAL
+========================
+
+Create an advanced review system that:
+
+- gives businesses a chance to resolve negative feedback
+- helps them respond professionally using AI
+- tracks the impact of responses
+- increases review quality
+- becomes a high-value Premium feature
+
+========================
+1. LOW-RATING TRIGGER
+========================
+
+If rating = 1, 2, or 3 stars:
+
+→ DO NOT publish immediately  
+→ trigger recovery flow
+
+If rating = 4 or 5:
+
+→ publish normally
+
+========================
+2. USER FLOW (GERMAN)
+========================
+
+Show:
+
+"Möchtest du dein Problem zuerst mit dem Betrieb klären?"
+
+Buttons:
+- "Problem klären"
+- "Trotzdem veröffentlichen"
+
+User must decide freely.
+
+========================
+3. PRIVATE RESOLUTION FLOW
+========================
+
+If user selects "Problem klären":
+
+- send alert to business
+- include:
+  - rating
+  - message
+  - issue summary
+
+Mark review as:
+👉 "In Klärung"
+
+Do NOT publish yet.
+
+========================
+4. BUSINESS DASHBOARD
+========================
+
+Add section:
+
+👉 "Kritisches Feedback"
+
+Show:
+- rating
+- message
+- status
+- respond button
+
+========================
+5. AI SMART REPLY (PREMIUM 🔥)
+========================
+
+Add:
+
+👉 "Antwort vorschlagen"
+
+Generate professional German reply.
+
+Rules:
+- polite
+- solution-focused
+- no fake promises
+- no blaming
+
+IMPORTANT:
+This feature is Premium-only.
+
+If user is NOT Premium:
+- show locked state
+- show upgrade prompt:
+  "Diese Funktion ist Teil von Premium"
+
+========================
+6. BUSINESS RESPONSE
+========================
+
+Business can:
+- use AI reply (Premium)
+- edit reply
+- send manually
+
+========================
+7. USER AFTER RESPONSE
+========================
+
+Notify user:
+
+"Der Betrieb hat geantwortet"
+
+User can:
+- publish review
+- edit review
+- change rating
+- close issue
+
+========================
+8. TIME LIMIT
+========================
+
+If business does NOT respond:
+
+→ user can publish review normally
+
+========================
+9. IMPACT TRACKING (PREMIUM 📊)
+========================
+
+Track:
+
+- initial rating
+- business response
+- response time
+- AI used or not
+- user final action
+
+========================
+10. RATING CHANGE TRACKING
+========================
+
+If rating changes:
+
+- store old rating
+- store new rating
+- calculate improvement
+
+========================
+11. ANALYTICS DASHBOARD (PREMIUM)
+========================
+
+Add section:
+
+👉 "Feedback-Analyse"
+
+Show:
+
+- % resolved cases
+- average rating improvement
+- response success rate
+- response time
+
+Examples:
+
+"60% der Fälle wurden gelöst"  
+"Durchschnittliche Verbesserung: +1,5 Sterne"
+
+========================
+12. AI PERFORMANCE METRICS
+========================
+
+Track:
+
+- AI usage
+- success rate
+- rating improvement after AI replies
+
+Example:
+
+"KI-Antworten verbesserten Bewertungen in 45% der Fälle"
+
+========================
+13. PREMIUM GATING (CRITICAL 💸)
+========================
+
+Define:
+
+FREE users:
+- can receive critical feedback
+- can reply manually
+
+PREMIUM users:
+- AI reply suggestions
+- full analytics
+- performance tracking
+
+Show upgrade prompts when needed:
+
+"Upgrade auf Premium, um KI-Antworten und Analysen zu nutzen"
+
+========================
+14. FAIRNESS RULES
+========================
+
+System must:
+
+- not force rating changes
+- not hide reviews
+- not manipulate users
+- remain transparent
+
+========================
+15. GERMAN UI
+========================
+
+Use:
+
+- "Kritisches Feedback"
+- "In Klärung"
+- "Antwort vorschlagen"
+- "Feedback-Analyse"
+- "Premium erforderlich"
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster becomes:
+
+👉 a review intelligence platform  
+👉 a reputation growth system  
+👉 a Premium monetization feature  
+
+Businesses should feel:
+
+👉 "This helps me protect my reputation"
+👉 "This is worth paying for"
