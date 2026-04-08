@@ -617,7 +617,7 @@ export function PromotionTools() {
   const budgetMutation = useMutation({
     mutationFn: async ({ promoId, dailyBudget }: { promoId: number; dailyBudget: number }) => {
       const res = await fetch(`${API_BASE}/api/promotions/${promoId}/budget`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+        method: "PUT", headers: { "Content-Type": "application/json", "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
         body: JSON.stringify({ dailyBudget }),
       });
       if (!res.ok) throw new Error("Fehler");
@@ -638,7 +638,7 @@ export function PromotionTools() {
     mutationFn: async (type: string) => {
       if (!restaurantId) throw new Error("Kein Restaurant");
       const res = await fetch(`${API_BASE}/api/promotions`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json", "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
         body: JSON.stringify({ restaurantId, type }),
       });
       if (res.status === 402) {
@@ -678,16 +678,19 @@ export function PromotionTools() {
     },
   });
 
-  const pauseMutation  = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/pause`,  { method: "PUT" }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); } });
-  const resumeMutation = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT" }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); } });
-  const stopMutation   = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/stop`,   { method: "PUT" }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); } });
+  const authHdr = () => ({ "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" });
+  const pauseMutation  = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/pause`,  { method: "PUT", headers: authHdr() }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); } });
+  const resumeMutation = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT", headers: authHdr() }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); } });
+  const stopMutation   = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/stop`,   { method: "PUT", headers: authHdr() }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); } });
 
   // ── Wallet ──────────────────────────────────────────────────────────────────
   const { data: walletData } = useQuery<{ restaurantId: number; balance: number; isLow: boolean; isEmpty: boolean; transactions: unknown[] }>({
     queryKey: ["wallet", restaurantId],
     queryFn: async () => {
       if (!restaurantId) return { restaurantId: 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
-      const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`);
+      const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`, {
+        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+      });
       if (!res.ok) return { restaurantId: restaurantId ?? 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
       return res.json();
     },

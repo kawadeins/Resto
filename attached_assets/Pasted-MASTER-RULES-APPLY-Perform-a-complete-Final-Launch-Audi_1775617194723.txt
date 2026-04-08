@@ -1,0 +1,245 @@
+MASTER RULES APPLY
+
+Perform a complete "Final Launch Audit + System Validation + Critical Fix Pass" for the RestoMaster platform.
+
+IMPORTANT:
+This is NOT a feature-building task.
+This is NOT a redesign task.
+Do NOT add random features.
+
+Your job is to:
+- inspect
+- validate
+- detect risks
+- fix critical issues
+- prepare the app for real public launch
+
+========================
+PRIMARY GOAL
+========================
+
+Ensure RestoMaster is:
+
+- secure
+- monetization-ready
+- system-consistent
+- user-ready
+- trustworthy
+
+========================
+1. MONETIZATION CHECK (CRITICAL 💸)
+========================
+
+Verify:
+
+- Wallet (Guthaben) works correctly
+- Top-up flow works end-to-end
+- Balance updates correctly
+- Boost deducts balance correctly
+- Boost cannot run without balance
+- Premium gating works correctly
+- No free access to paid features
+
+Fix any:
+- missing deductions
+- fake balances
+- bypass cases
+
+========================
+2. PAYMENT INTEGRITY
+========================
+
+Verify:
+
+- payment success → balance updated
+- payment failure → no balance added
+- no mismatch between Stripe (or payment) and wallet
+
+Fix inconsistencies.
+
+========================
+3. SECURITY CHECK (CRITICAL 🔐)
+========================
+
+Verify:
+
+- backend does NOT trust client userId
+- all sensitive actions are server-validated
+- role-based permissions enforced server-side
+- rate limiting exists
+- no open endpoints
+
+Check especially:
+
+- wallet
+- boost activation
+- premium access
+- role changes
+
+Fix any vulnerabilities.
+
+========================
+4. SYSTEM INTEGRATION (⚙️)
+========================
+
+Verify ALL systems are connected:
+
+- Boost + Wallet + Pricing
+- ROI Engine + Dynamic Pricing
+- Auto Boost System
+- Reviews + AI + Tracking
+- Staff + Roles + Permissions
+
+Check:
+
+- no broken flows
+- no disconnected logic
+- no "UI only" features
+
+Fix broken links.
+
+========================
+5. UI / UX CHECK (🎨)
+========================
+
+Verify:
+
+- Promotion UI is clean and premium
+- CTA buttons are clear ("Jetzt aktivieren")
+- user flow is simple
+- no confusion
+- no dead buttons
+- no missing feedback
+
+Fix:
+
+- confusing flows
+- unclear actions
+- visual clutter
+
+========================
+6. DATA HONESTY (CRITICAL 📊)
+========================
+
+Verify:
+
+- no fake data
+- no fake metrics
+- no fake activity
+- no fake ROI
+
+If data is missing:
+- show honest fallback (not fake numbers)
+
+========================
+7. REVIEW SYSTEM CHECK
+========================
+
+Verify:
+
+- recovery flow works
+- AI reply works
+- impact tracking works
+- fairness rules respected
+
+No manipulation.
+
+========================
+8. ROLE SYSTEM CHECK
+========================
+
+Verify:
+
+- owner sees full dashboard
+- manager limited correctly
+- staff restricted correctly
+
+No access leaks.
+
+========================
+9. ERROR HANDLING
+========================
+
+Check:
+
+- empty states
+- payment failure
+- no balance
+- no data
+- failed API
+
+Ensure clean user messages.
+
+========================
+10. PERFORMANCE CHECK
+========================
+
+Verify:
+
+- no slow screens
+- no heavy unnecessary loads
+- no UI freezing
+
+========================
+11. REMOVE FAKE / DEMO LOGIC
+========================
+
+Remove or fix:
+
+- demo data
+- fake interactions
+- simulated systems
+
+Everything must be real.
+
+========================
+12. FINAL AUTO-FIX PASS
+========================
+
+Fix all:
+
+- critical issues
+- broken logic
+- monetization risks
+- security gaps
+
+Do NOT overbuild.
+
+========================
+13. FINAL REPORT
+========================
+
+Produce a clear structured report:
+
+A. Monetization status  
+B. Payment integrity  
+C. Security status  
+D. System integration  
+E. UX quality  
+F. Data honesty  
+G. Review system  
+H. Role system  
+I. Remaining risks  
+
+Classify each:
+
+- Ready
+- Needs Fix
+- Critical Risk
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must be:
+
+👉 safe  
+👉 real  
+👉 monetizable  
+👉 stable  
+👉 ready for launch  
+
+If something is risky → fix it  
+If something is fake → remove it  
+
+The app must be truly production-ready.

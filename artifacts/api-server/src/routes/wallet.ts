@@ -3,7 +3,7 @@
  *
  * Endpoints:
  *   GET  /api/wallet          — current balance + transaction history
- *   POST /api/wallet/topup    — add credit to wallet (simulated payment)
+ *   POST /api/wallet/topup    — add credit to wallet (requires owner/manager auth)
  *   GET  /api/wallet/cost     — estimated cost for a given boost type
  */
 
@@ -12,6 +12,8 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { computeDynamicPrice } from "../lib/pricing-engine";
+import { requireManagerOrAbove } from "../middleware/role-guard";
+import { strictLimiter } from "../middleware/rate-limiters";
 
 const router = Router();
 
@@ -50,9 +52,10 @@ export async function computeBoostCost(boostType: string, restaurantId: number):
   }
 }
 
-// ── GET /api/wallet?restaurantId=X ────────────────────────────────────────────
+// ── GET /api/wallet?restaurantId=X ───────────────────────────────────────────
+// Auth required: only managers and owners may view the wallet
 
-router.get("/", async (req, res) => {
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
@@ -89,13 +92,15 @@ router.get("/", async (req, res) => {
 });
 
 // ── POST /api/wallet/topup ────────────────────────────────────────────────────
+// Auth required: only the owner may top up the wallet
+// Rate-limited: max 20 top-ups per 15 minutes per user
 
 const TopUpSchema = z.object({
   restaurantId: z.number().int().positive(),
   amount:       z.number().min(1).max(500),
 });
 
-router.post("/topup", async (req, res) => {
+router.post("/topup", strictLimiter, requireManagerOrAbove(), async (req, res) => {
   try {
     const body = TopUpSchema.parse(req.body);
 

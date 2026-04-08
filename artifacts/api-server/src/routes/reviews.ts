@@ -5,8 +5,15 @@ import { eq, desc, avg, count, and, isNull, or, ne } from "drizzle-orm";
 import { z } from "zod";
 import { sendEmail } from "../lib/email.js";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { requireManagerOrAbove } from "../middleware/role-guard";
+import { aiLimiter } from "../middleware/rate-limiters";
 
 const router = Router();
+
+function parseId(raw: unknown): number | null {
+  const n = parseInt(String(raw ?? ""), 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 type ReviewRow = typeof reviewsTable.$inferSelect;
 
@@ -324,7 +331,8 @@ const ReplyBody = z.object({ reply: z.string().min(1) });
 // POST /api/reviews/:id/reply
 router.post("/:id/reply", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return void res.status(400).json({ error: "Invalid review id" });
     const { reply } = ReplyBody.parse(req.body);
     const [updated] = await db.update(reviewsTable)
       .set({ ownerReply: reply, ownerRepliedAt: new Date() })
@@ -341,7 +349,8 @@ router.post("/:id/reply", async (req, res) => {
 // POST /api/reviews/:id/recover — customer chooses "Problem klären" for an already-submitted review
 router.post("/:id/recover", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return void res.status(400).json({ error: "Invalid review id" });
     const [existing] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
     if (!existing) return void res.status(404).json({ error: "Review not found" });
     if (existing.recoveryStatus !== null) return void res.json(mapReview(existing));
@@ -359,9 +368,10 @@ router.post("/:id/recover", async (req, res) => {
 const BusinessResponseBody = z.object({ response: z.string().min(1) });
 
 // POST /api/reviews/:id/business-response — business sends their response to the customer
-router.post("/:id/business-response", async (req, res) => {
+router.post("/:id/business-response", requireManagerOrAbove(), async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return void res.status(400).json({ error: "Invalid review id" });
     const { response } = BusinessResponseBody.parse(req.body);
     const [existing] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
     if (!existing) return void res.status(404).json({ error: "Review not found" });
@@ -381,7 +391,8 @@ router.post("/:id/business-response", async (req, res) => {
 // POST /api/reviews/:id/publish — customer publishes review after recovery
 router.post("/:id/publish", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return void res.status(400).json({ error: "Invalid review id" });
     const body = z.object({ rating: z.number().int().min(1).max(5).optional(), comment: z.string().min(1).optional() }).parse(req.body ?? {});
     const [existing] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
     if (!existing) return void res.status(404).json({ error: "Review not found" });
@@ -412,7 +423,8 @@ router.post("/:id/publish", async (req, res) => {
 // POST /api/reviews/:id/close — customer closes issue without publishing
 router.post("/:id/close", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return void res.status(400).json({ error: "Invalid review id" });
     const [updated] = await db.update(reviewsTable)
       .set({ recoveryStatus: "closed" })
       .where(eq(reviewsTable.id, id))
@@ -426,9 +438,11 @@ router.post("/:id/close", async (req, res) => {
 });
 
 // POST /api/reviews/:id/ai-suggest — AI generates a professional German reply suggestion
-router.post("/:id/ai-suggest", async (req, res) => {
+// Rate-limited: 30 calls/hour per user; requires manager or owner role
+router.post("/:id/ai-suggest", aiLimiter, requireManagerOrAbove(), async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseId(req.params.id);
+    if (!id) return void res.status(400).json({ error: "Invalid review id" });
     const [review] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
     if (!review) return void res.status(404).json({ error: "Review not found" });
 

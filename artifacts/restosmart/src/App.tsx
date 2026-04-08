@@ -48,7 +48,7 @@ const queryClient = new QueryClient({
 
 type GateStatus = "loading" | "active" | "trial" | "expired" | "inactive";
 
-function getPremiumStatus(): GateStatus {
+function localGateStatus(): GateStatus {
   const premium = localStorage.getItem("restosmart_owner_premium");
   const trialEnd = localStorage.getItem("restosmart_trial_end");
   if (premium === "active") return "active";
@@ -59,11 +59,51 @@ function getPremiumStatus(): GateStatus {
   return "inactive";
 }
 
+// Syncs localStorage with the authoritative DB subscription state.
+// Returns the resolved GateStatus after the network check.
+async function syncSubscription(): Promise<GateStatus> {
+  try {
+    const res = await fetch("/api/billing/subscription");
+    if (!res.ok) return localGateStatus();
+    const sub = await res.json() as {
+      isActive?: boolean;
+      status?: string;
+      currentPeriodEnd?: string;
+    };
+    if (sub.isActive || sub.status === "active") {
+      localStorage.setItem("restosmart_owner_premium", "active");
+      return "active";
+    }
+    if (sub.status === "trial") {
+      localStorage.setItem("restosmart_owner_premium", "trial");
+      if (sub.currentPeriodEnd) {
+        localStorage.setItem("restosmart_trial_end", sub.currentPeriodEnd);
+      }
+      const trialEnd = localStorage.getItem("restosmart_trial_end");
+      if (trialEnd && new Date(trialEnd) > new Date()) return "trial";
+      return "expired";
+    }
+    // DB says inactive — clear any stale localStorage override
+    localStorage.removeItem("restosmart_owner_premium");
+    localStorage.removeItem("restosmart_trial_end");
+    return "inactive";
+  } catch {
+    // Network error: fall back to cached localStorage state
+    return localGateStatus();
+  }
+}
+
 function PremiumGate({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<GateStatus>("loading");
 
   useEffect(() => {
-    setStatus(getPremiumStatus());
+    // Show cached state instantly while the DB check runs in background
+    const cached = localGateStatus();
+    if (cached !== "inactive" && cached !== "expired") {
+      setStatus(cached);
+    }
+    // Always verify with the server — prevents bypass and prevents lockout
+    syncSubscription().then(setStatus);
   }, []);
 
   if (status === "loading") {

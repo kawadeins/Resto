@@ -122,6 +122,10 @@ interface WalletPanelProps {
   compact?: boolean;
 }
 
+function getOwnerEmail(): string {
+  return localStorage.getItem("restosmart_owner_email") ?? "";
+}
+
 export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -134,7 +138,9 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
     queryKey: ["wallet", restaurantId],
     queryFn: async () => {
       if (!restaurantId) return { restaurantId: 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
-      const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`);
+      const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`, {
+        headers: { "x-user-email": getOwnerEmail() },
+      });
       if (!res.ok) return { restaurantId: restaurantId ?? 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
       return res.json();
     },
@@ -147,7 +153,7 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
     mutationFn: async (amount: number) => {
       const res = await fetch(`${API_BASE}/api/wallet/topup`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-email": getOwnerEmail() },
         body: JSON.stringify({ restaurantId, amount }),
       });
       if (!res.ok) throw new Error("Top-up fehlgeschlagen");
