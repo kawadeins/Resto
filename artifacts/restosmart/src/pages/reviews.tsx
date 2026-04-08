@@ -6,16 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Star, StarHalf, MessageSquare, MessageCircleReply, User,
-  TrendingUp, TrendingDown, Minus, AlertTriangle, Send, Mail, RefreshCw
+  TrendingUp, TrendingDown, Minus, AlertTriangle, Send, Mail, RefreshCw,
+  Sparkles, ShieldAlert, ChevronDown, ChevronUp, Loader2, CheckCircle2
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 type FilterTab = "all" | "needs_attention" | "unreplied" | "positive";
+
+interface RecoveryReview {
+  id: number;
+  customerName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  recoveryMessage: string | null;
+  businessResponse: string | null;
+  aiReplySuggestion: string | null;
+}
 
 interface ReviewInsights {
   totalCount: number;
@@ -28,13 +40,9 @@ interface ReviewInsights {
   previousAvg: number | null;
   trend: "up" | "down" | "stable" | "new";
   distribution: Record<string, number>;
-  needsAttention: Array<{
-    id: number;
-    customerName: string;
-    rating: number;
-    comment: string;
-    createdAt: string;
-  }>;
+  needsAttention: RecoveryReview[];
+  pendingRecovery: RecoveryReview[];
+  pendingRecoveryCount: number;
 }
 
 interface PendingRequest {
@@ -71,6 +79,11 @@ export default function Reviews() {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
+  const [showRecoverySection, setShowRecoverySection] = useState(true);
+  const [respondingTo, setRespondingTo] = useState<number | null>(null);
+  const [responseText, setResponseText] = useState<Record<number, string>>({});
+  const [aiLoading, setAiLoading] = useState<Record<number, boolean>>({});
+  const [aiSuggestions, setAiSuggestions] = useState<Record<number, string>>({});
 
   const { data: reviews, isLoading: loadingReviews } = useListReviews({}, {
     query: { queryKey: getListReviewsQueryKey() }
@@ -118,6 +131,44 @@ export default function Reviews() {
     },
     onError: () => toast({ title: "Bewertungssynchronisierung fehlgeschlagen", variant: "destructive" }),
   });
+
+  const sendBusinessResponseMutation = useMutation({
+    mutationFn: ({ id, response }: { id: number; response: string }) =>
+      fetch(`${API_BASE}/api/reviews/${id}/business-response`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response }),
+      }).then(r => r.json()),
+    onSuccess: (_, { id }) => {
+      toast({ title: "Antwort erfolgreich gesendet", description: "Der Gast wurde benachrichtigt." });
+      setRespondingTo(null);
+      setResponseText(prev => { const n = { ...prev }; delete n[id]; return n; });
+      queryClient.invalidateQueries({ queryKey: ["review-insights"] });
+      queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey() });
+    },
+    onError: () => toast({ title: "Antwort konnte nicht gesendet werden", variant: "destructive" }),
+  });
+
+  const fetchAiSuggestion = async (review: RecoveryReview) => {
+    if (aiSuggestions[review.id]) {
+      setResponseText(prev => ({ ...prev, [review.id]: aiSuggestions[review.id] }));
+      setRespondingTo(review.id);
+      return;
+    }
+    setAiLoading(prev => ({ ...prev, [review.id]: true }));
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews/${review.id}/ai-suggest`, { method: "POST" });
+      const data = await res.json();
+      const suggestion = data.suggestion ?? "";
+      setAiSuggestions(prev => ({ ...prev, [review.id]: suggestion }));
+      setResponseText(prev => ({ ...prev, [review.id]: suggestion }));
+      setRespondingTo(review.id);
+    } catch {
+      toast({ title: "KI-Vorschlag nicht verf\u00FCgbar", variant: "destructive" });
+    } finally {
+      setAiLoading(prev => ({ ...prev, [review.id]: false }));
+    }
+  };
 
   const handleReply = (id: number) => {
     if (!replyText.trim()) return;
@@ -246,6 +297,156 @@ export default function Reviews() {
           </Card>
         </motion.div>
       </div>
+
+      {/* ── Kritisches Feedback (Recovery Queue) ── */}
+      <AnimatePresence>
+        {(insights?.pendingRecoveryCount ?? 0) > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ delay: 0.18 }}>
+            <Card className="border-red-500/30 bg-red-500/5 overflow-hidden">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                      <ShieldAlert className="w-4.5 h-4.5 text-red-500" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        Kritisches Feedback
+                        <Badge variant="destructive" className="text-xs h-5 px-1.5">
+                          {insights!.pendingRecoveryCount}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription className="mt-0.5">
+                        {insights!.pendingRecoveryCount === 1
+                          ? "1 Gast wartet auf Ihre Antwort — noch nicht ver\u00F6ffentlicht"
+                          : `${insights!.pendingRecoveryCount} G\u00E4ste warten auf Ihre Antwort — noch nicht ver\u00F6ffentlicht`}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowRecoverySection(v => !v)}
+                    className="p-1.5 rounded-lg hover:bg-muted/60 transition-colors text-muted-foreground"
+                  >
+                    {showRecoverySection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+              </CardHeader>
+
+              <AnimatePresence>
+                {showRecoverySection && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <CardContent className="pt-0 space-y-4">
+                      {(insights?.pendingRecovery ?? []).map(review => (
+                        <div key={review.id} className="rounded-xl border border-border/50 bg-background p-4 space-y-3">
+                          {/* Header row */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex gap-3">
+                              <div className="bg-red-100 dark:bg-red-900/30 w-9 h-9 rounded-full flex items-center justify-center text-red-600 font-semibold text-sm shrink-0">
+                                {review.customerName.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-sm">{review.customerName}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(review.createdAt).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {[1,2,3,4,5].map(s => (
+                                <Star key={s} className={`w-3.5 h-3.5 ${s <= review.rating ? "fill-amber-400 text-amber-400" : "text-muted"}`} />
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Customer message */}
+                          <div className="bg-muted/40 rounded-lg p-3 border border-border/30">
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Feedback des Gastes:</p>
+                            <p className="text-sm leading-relaxed">{review.recoveryMessage ?? review.comment}</p>
+                          </div>
+
+                          {/* Response area */}
+                          {respondingTo === review.id ? (
+                            <div className="space-y-2">
+                              {aiSuggestions[review.id] && responseText[review.id] === aiSuggestions[review.id] && (
+                                <div className="flex items-center gap-1.5 text-xs text-violet-500 font-medium">
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                  KI-Vorschlag — bearbeite die Antwort nach Bedarf
+                                </div>
+                              )}
+                              <Textarea
+                                value={responseText[review.id] ?? ""}
+                                onChange={e => setResponseText(prev => ({ ...prev, [review.id]: e.target.value }))}
+                                placeholder="Ihre Antwort an den Gast\u2026"
+                                className="min-h-[100px] text-sm"
+                                autoFocus
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => { setRespondingTo(null); }}
+                                >
+                                  Abbrechen
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="gap-1.5"
+                                  onClick={() => {
+                                    const txt = responseText[review.id] ?? "";
+                                    if (!txt.trim()) return;
+                                    sendBusinessResponseMutation.mutate({ id: review.id, response: txt });
+                                  }}
+                                  disabled={sendBusinessResponseMutation.isPending || !responseText[review.id]?.trim()}
+                                >
+                                  <Send className="w-3.5 h-3.5" />
+                                  {sendBusinessResponseMutation.isPending ? "Wird gesendet\u2026" : "Antwort senden"}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                className="gap-1.5 bg-violet-600 hover:bg-violet-700 text-white border-none"
+                                onClick={() => fetchAiSuggestion(review)}
+                                disabled={aiLoading[review.id]}
+                              >
+                                {aiLoading[review.id] ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                )}
+                                Antwort vorschlagen
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1.5"
+                                onClick={() => {
+                                  setRespondingTo(review.id);
+                                  if (!responseText[review.id]) setResponseText(prev => ({ ...prev, [review.id]: "" }));
+                                }}
+                              >
+                                <MessageCircleReply className="w-3.5 h-3.5" />
+                                Manuell antworten
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Pending review requests */}
       {(pendingRequests ?? []).length > 0 && (

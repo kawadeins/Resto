@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store, MessageCircle, Send, Edit2, XCircle, AlertTriangle } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
@@ -254,6 +254,10 @@ export default function Restaurant() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
+  const [recoveryDialog, setRecoveryDialog] = useState<{ open: boolean; formData: ReviewFormValues | null }>({ open: false, formData: null });
+  const [recoverySubmitting, setRecoverySubmitting] = useState(false);
+  const [recoveryReview, setRecoveryReview] = useState<{ id: number; status: string; businessResponse: string | null; rating: number } | null>(null);
+  const [publishEditRating, setPublishEditRating] = useState<number | null>(null);
   const [slotData, setSlotData] = useState<SlotData | null>(null);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
@@ -387,14 +391,89 @@ export default function Restaurant() {
   });
 
   const onReviewSubmit = (data: ReviewFormValues) => {
-    createReview.mutate({
-      data: {
-        ...data,
-        rating: reviewRating,
-        restaurantId
-      }
-    });
+    const ratingToUse = reviewRating;
+    if (ratingToUse <= 3) {
+      setRecoveryDialog({ open: true, formData: { ...data, rating: ratingToUse } });
+      return;
+    }
+    createReview.mutate({ data: { ...data, rating: ratingToUse, restaurantId } });
   };
+
+  const submitWithRecovery = useCallback(async (startRecovery: boolean) => {
+    if (!recoveryDialog.formData) return;
+    setRecoverySubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...recoveryDialog.formData, restaurantId, startRecovery }),
+      });
+      const data = await res.json();
+      setRecoveryDialog({ open: false, formData: null });
+      setShowReviewForm(false);
+      reviewForm.reset();
+      setReviewRating(5);
+      queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey({ restaurantId }) });
+      queryClient.invalidateQueries({ queryKey: getGetReviewStatsQueryKey({ restaurantId }) });
+      queryClient.invalidateQueries({ queryKey: getGetMarketplaceRestaurantQueryKey(restaurantId) });
+      if (startRecovery) {
+        setRecoveryReview({ id: data.id, status: "pending", businessResponse: null, rating: data.rating });
+        toast({ title: "Problem gemeldet", description: "Der Betrieb wurde benachrichtigt und wird sich melden." });
+      } else {
+        toast({ title: "Bewertung eingereicht!", description: "Danke f\u00FCr Ihr Feedback." });
+      }
+    } catch {
+      toast({ title: "Fehler", description: "Bewertung konnte nicht eingereicht werden.", variant: "destructive" });
+    } finally {
+      setRecoverySubmitting(false);
+    }
+  }, [recoveryDialog.formData, restaurantId, reviewForm, queryClient]);
+
+  const pollRecoveryStatus = useCallback(async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews?restaurantId=${restaurantId}`);
+      const list = await res.json();
+      const found = list.find((r: { id: number }) => r.id === id)
+        ?? await fetch(`${API_BASE}/api/reviews/insights?restaurantId=${restaurantId}`)
+            .then(r => r.json())
+            .then((ins: { pendingRecovery?: Array<{ id: number; businessResponse: string | null }> }) =>
+              ins.pendingRecovery?.find((r: { id: number }) => r.id === id));
+      if (found) {
+        setRecoveryReview(prev => prev ? { ...prev, status: found.recoveryStatus ?? prev.status, businessResponse: found.businessResponse ?? prev.businessResponse } : prev);
+      }
+    } catch {}
+  }, [restaurantId]);
+
+  const publishRecoveryReview = useCallback(async () => {
+    if (!recoveryReview) return;
+    try {
+      await fetch(`${API_BASE}/api/reviews/${recoveryReview.id}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(publishEditRating ? { rating: publishEditRating } : {}),
+      });
+      setRecoveryReview(null);
+      setPublishEditRating(null);
+      toast({ title: "Bewertung ver\u00F6ffentlicht" });
+      queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey({ restaurantId }) });
+      queryClient.invalidateQueries({ queryKey: getGetReviewStatsQueryKey({ restaurantId }) });
+    } catch {}
+  }, [recoveryReview, publishEditRating, restaurantId, queryClient]);
+
+  const closeRecoveryReview = useCallback(async () => {
+    if (!recoveryReview) return;
+    try {
+      await fetch(`${API_BASE}/api/reviews/${recoveryReview.id}/close`, { method: "POST" });
+    } catch {}
+    setRecoveryReview(null);
+    toast({ title: "Angelegenheit abgeschlossen" });
+  }, [recoveryReview]);
+
+  useEffect(() => {
+    if (!recoveryReview || recoveryReview.status !== "pending") return;
+    const interval = setInterval(() => pollRecoveryStatus(recoveryReview.id), 20_000);
+    return () => clearInterval(interval);
+  }, [recoveryReview, pollRecoveryStatus]);
 
   const onSubmit = (data: BookingFormValues) => {
     // Save email for convenience
@@ -776,6 +855,127 @@ export default function Restaurant() {
                 </div>
               ))}
             </div>
+
+            {/* Recovery status panel — shown after customer chose "Problem klären" */}
+            {recoveryReview && (
+              <div className={`pt-4 border-t border-dashed`}>
+                <div className={`rounded-2xl p-5 border ${recoveryReview.status === "resolved" ? "border-emerald-400/40 bg-emerald-50/60 dark:bg-emerald-950/20" : "border-amber-400/40 bg-amber-50/60 dark:bg-amber-950/20"}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    {recoveryReview.status === "resolved" ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 text-amber-500" />
+                    )}
+                    <span className="font-semibold text-sm">
+                      {recoveryReview.status === "resolved" ? "Der Betrieb hat geantwortet" : "In Kl\u00E4rung"}
+                    </span>
+                    {recoveryReview.status === "pending" && (
+                      <span className="ml-auto text-xs text-muted-foreground animate-pulse">Wartet auf Antwort\u2026</span>
+                    )}
+                  </div>
+
+                  {recoveryReview.businessResponse && (
+                    <div className="bg-white/70 dark:bg-gray-900/40 rounded-xl p-4 mb-4 border border-border/30">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1.5">Antwort des Betriebs:</p>
+                      <p className="text-sm leading-relaxed">{recoveryReview.businessResponse}</p>
+                    </div>
+                  )}
+
+                  {recoveryReview.status === "resolved" && (
+                    <div className="space-y-3">
+                      <p className="text-xs text-muted-foreground">M\u00F6chtest du deine Bewertung jetzt ver\u00F6ffentlichen?</p>
+                      {/* Optional rating adjustment */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground mr-1">Neue Bewertung:</span>
+                        {[1,2,3,4,5].map(s => (
+                          <button key={s} type="button" onClick={() => setPublishEditRating(s)} className="p-0.5 hover:scale-110 transition-transform">
+                            <Star className={`w-5 h-5 ${s <= (publishEditRating ?? recoveryReview.rating) ? "fill-amber-400 text-amber-400" : "text-muted stroke-muted-foreground"}`} />
+                          </button>
+                        ))}
+                        {publishEditRating && publishEditRating !== recoveryReview.rating && (
+                          <span className="text-xs ml-1 text-emerald-600 font-medium">ge\u00E4ndert</span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" className="gap-1.5 rounded-full flex-1" onClick={publishRecoveryReview}>
+                          <Send className="w-3.5 h-3.5" />
+                          Bewertung ver\u00F6ffentlichen
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-1.5 rounded-full" onClick={closeRecoveryReview}>
+                          <XCircle className="w-3.5 h-3.5" />
+                          Schlie\u00DFen
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {recoveryReview.status === "pending" && (
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" variant="outline" className="gap-1.5 rounded-full text-xs" onClick={() => publishRecoveryReview()}>
+                        <Send className="w-3 h-3" />
+                        Trotzdem ver\u00F6ffentlichen
+                      </Button>
+                      <Button size="sm" variant="ghost" className="gap-1.5 rounded-full text-xs text-muted-foreground" onClick={closeRecoveryReview}>
+                        <XCircle className="w-3 h-3" />
+                        Abbrechen
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Recovery choice dialog (overlay) */}
+            {recoveryDialog.open && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => {}}>
+                <div className="bg-background rounded-2xl shadow-2xl max-w-md w-full p-6 border">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                      <MessageCircle className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg leading-tight">M\u00F6chtest du dein Problem zuerst mit dem Betrieb kl\u00E4ren?</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Der Betrieb hat die M\u00F6glichkeit, dein Anliegen direkt zu l\u00F6sen, bevor deine Bewertung ver\u00F6ffentlicht wird.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-muted/40 rounded-xl p-3 mb-5 border border-border/40">
+                    <div className="flex gap-1 mb-1">
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} className={`w-4 h-4 ${s <= (recoveryDialog.formData?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "text-muted"}`} />
+                      ))}
+                    </div>
+                    <p className="text-sm italic text-muted-foreground line-clamp-2">{`"${recoveryDialog.formData?.comment ?? ""}"`}</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      className="w-full h-11 rounded-full gap-2"
+                      onClick={() => submitWithRecovery(true)}
+                      disabled={recoverySubmitting}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Problem kl\u00E4ren
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full h-11 rounded-full text-muted-foreground"
+                      onClick={() => submitWithRecovery(false)}
+                      disabled={recoverySubmitting}
+                    >
+                      Trotzdem ver\u00F6ffentlichen
+                    </Button>
+                    <button
+                      className="text-xs text-muted-foreground mt-1 hover:underline"
+                      onClick={() => setRecoveryDialog({ open: false, formData: null })}
+                      disabled={recoverySubmitting}
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Write a Review Form */}
             <div className="pt-4 border-t border-dashed">

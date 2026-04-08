@@ -13,6 +13,11 @@ export const reviewsTable = pgTable("reviews", {
   ownerReply: text("owner_reply"),
   ownerRepliedAt: timestamp("owner_replied_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  recoveryStatus: text("recovery_status"),
+  recoveryMessage: text("recovery_message"),
+  businessResponse: text("business_response"),
+  businessRespondedAt: timestamp("business_responded_at", { withTimezone: true }),
+  aiReplySuggestion: text("ai_reply_suggestion"),
 });
 
 export const insertReviewSchema = createInsertSchema(reviewsTable).omit({ id: true, ownerReply: true, ownerRepliedAt: true, createdAt: true });

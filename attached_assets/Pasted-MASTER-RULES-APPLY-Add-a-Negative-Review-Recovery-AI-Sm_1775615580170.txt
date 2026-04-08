@@ -1,0 +1,159 @@
+MASTER RULES APPLY
+
+Add a "Negative Review Recovery + AI Smart Reply System" to the RestoMaster review system.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT remove normal review flow.
+Do NOT manipulate users.
+Do NOT hide real reviews permanently.
+
+========================
+GOAL
+========================
+
+When a user gives a low rating (1–3 stars):
+
+- give business a chance to fix the issue BEFORE public review
+- help business respond professionally using AI
+- improve customer satisfaction
+- keep system fair and transparent
+
+========================
+1. TRIGGER
+========================
+
+If rating = 1, 2, or 3 stars:
+
+→ do NOT publish immediately  
+→ trigger recovery flow
+
+If rating = 4 or 5:
+
+→ publish normally
+
+========================
+2. USER FLOW (GERMAN)
+========================
+
+Show:
+
+"Möchtest du dein Problem zuerst mit dem Betrieb klären?"
+
+Buttons:
+- "Problem klären"
+- "Trotzdem veröffentlichen"
+
+User must choose freely.
+
+========================
+3. IF USER CHOOSES "PROBLEM KLÄREN"
+========================
+
+- send alert to business
+- include:
+  - rating
+  - short message
+  - issue summary
+
+Mark review as:
+👉 "In Klärung"
+
+Do NOT publish yet.
+
+========================
+4. BUSINESS DASHBOARD
+========================
+
+Add section:
+
+"Kritisches Feedback"
+
+Show:
+- rating
+- message
+- respond button
+
+========================
+5. AI SMART REPLY (NEW 🔥)
+========================
+
+Add button:
+
+👉 "Antwort vorschlagen"
+
+When clicked:
+
+AI generates a professional German reply.
+
+Examples tone:
+- polite
+- apologetic
+- solution-oriented
+
+Example output:
+
+"Es tut uns leid, dass deine Erfahrung nicht zufriedenstellend war.  
+Wir würden das gerne für dich klären. Bitte melde dich bei uns, damit wir eine Lösung finden können."
+
+Rules:
+- no fake promises
+- no aggressive tone
+- no blaming customer
+
+========================
+6. BUSINESS RESPONSE
+========================
+
+Business can:
+- send AI suggestion
+- edit it
+- send manually
+
+========================
+7. USER AFTER RESPONSE
+========================
+
+Notify user:
+
+"Der Betrieb hat geantwortet"
+
+User can:
+- publish review
+- edit review
+- change rating
+- close issue
+
+========================
+8. TIME LIMIT
+========================
+
+If no business response:
+
+→ user can publish normally
+
+========================
+9. RULES
+========================
+
+- user always has control
+- no forced rating change
+- no hiding real reviews
+- system must stay fair
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should:
+
+- reduce negative reviews
+- improve customer-business communication
+- help businesses respond professionally
+- keep trust and transparency
+
+The system must feel:
+👉 fair  
+👉 helpful  
+👉 smart  
+👉 professional
