@@ -156,19 +156,21 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
         headers: { "Content-Type": "application/json", "x-user-email": getOwnerEmail() },
         body: JSON.stringify({ restaurantId, amount }),
       });
-      if (!res.ok) throw new Error("Top-up fehlgeschlagen");
-      return res.json() as Promise<{ balance: number; transaction: WalletTransaction }>;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Aufladung fehlgeschlagen");
+      return data as { checkoutUrl: string; sessionId: string; amount: number };
     },
     onSuccess: (data) => {
-      toast({
-        title: `\u2705 Guthaben aufgeladen!`,
-        description: `Neues Guthaben: ${fmtEur(data.balance)}`,
-      });
-      queryClient.invalidateQueries({ queryKey: ["wallet"] });
-      setShowTopup(false);
-      setCustomAmount("");
+      // Redirect to Stripe Checkout — credit is added only after webhook confirms payment
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
     },
-    onError: () => toast({ title: "Aufladung fehlgeschlagen", variant: "destructive" }),
+    onError: (err: Error) => toast({
+      title: "Aufladung fehlgeschlagen",
+      description: err.message ?? "Guthaben konnte nicht aufgeladen werden.",
+      variant: "destructive",
+    }),
   });
 
   const finalAmount = customAmount ? parseFloat(customAmount) : selectedAmount;
@@ -387,11 +389,11 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
                   }}
                 >
                   {topupMutation.isPending ? (
-                    "Wird aufgeladen\u2026"
+                    "Weiterleitung zu Stripe\u2026"
                   ) : (
                     <>
                       <Zap style={{ width: 15, height: 15 }} />
-                      {finalAmount >= 1 ? `Jetzt \u20AC${finalAmount.toFixed(2)} aufladen` : "Betrag w\u00E4hlen"}
+                      {finalAmount >= 1 ? `\u20AC${finalAmount.toFixed(2)} via Stripe aufladen` : "Betrag w\u00E4hlen"}
                     </>
                   )}
                 </motion.button>

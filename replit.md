@@ -68,7 +68,24 @@ RestoSmart is a full-stack SaaS web application providing a premium, information
 -   **Customer:** localStorage email (`restosmart_email`).
 -   **Owner Premium:** localStorage flag (`restosmart_owner_premium`).
 
-**Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant auth, mock payments, email delivery disabled by default without `RESEND_API_KEY`.
+-   **Real Stripe Billing System (Production-Ready):**
+    -   **Stripe Integration:** Connected via Replit Stripe connector. Packages: `stripe@20.0.0` + `stripe-replit-sync@1.0.0` at workspace root.
+    -   **Products created in Stripe:** "RestoSmart Business Premium" (€39.90/month recurring EUR) and "RestoSmart Wallet Topup" (one-time prices: €5, €10, €20, €50 EUR).
+    -   **Checkout flow:** `POST /api/billing/checkout` → creates real Stripe Checkout Session → returns `{url}` → frontend redirects. Premium is NOT activated by this route — only by webhook.
+    -   **Wallet topup flow:** `POST /api/wallet/topup` → creates real Stripe Checkout Session (one-time payment) → returns `{checkoutUrl}` → frontend redirects. Wallet credit is ONLY added after `checkout.session.completed` webhook with `payment_status=paid`.
+    -   **Webhook:** Registered at `POST /api/stripe/webhook` with `express.raw()` BEFORE `express.json()`. Handled in `webhookHandlers.ts` using `stripe-replit-sync` for signature verification + custom business logic.
+    -   **Events handled:** `checkout.session.completed` (subscription + wallet topup), `invoice.paid` (renewal), `invoice.payment_failed` (past_due), `customer.subscription.updated/deleted` (state sync), `payment_intent.succeeded/failed` (logged).
+    -   **Idempotency:** `stripe_webhook_events` table prevents duplicate processing. Events are checked before processing.
+    -   **Stripe schema:** `stripe-replit-sync` manages 29 tables in `stripe` schema (products, prices, customers, subscriptions, etc.). Synced via `runMigrations()` + `syncBackfill()` on startup.
+    -   **Stripe init:** `initStripe()` in `index.ts` runs on startup: `runMigrations()` → `getStripeSync()` → `findOrCreateManagedWebhook()` → `syncBackfill()` (non-blocking).
+    -   **Cancel:** `POST /api/billing/cancel` cancels in Stripe (if subscription ID exists) + updates DB. Also accessible via Stripe Customer Portal.
+    -   **Portal:** `GET /api/billing/portal` creates Stripe Billing Portal session for managing payment method, invoices, and subscriptions.
+    -   **Return URLs:** Success → `/restosmart/billing?stripe=success`, Cancel → `/restosmart/billing?stripe=cancel`. Wallet: `?topup=success/cancel`. Billing page polls DB status after return.
+    -   **Frontend:** billing.tsx shows real-time status banners (payment pending, activated, cancelled, past_due). All checkout buttons redirect to Stripe. "Zahlungsdetails & Rechnungen verwalten" links to Stripe Portal.
+    -   **Seed script:** `pnpm --filter @workspace/scripts run seed-products` creates Stripe products/prices.
+    -   **Key files:** `artifacts/api-server/src/stripeClient.ts`, `webhookHandlers.ts`, `routes/billing.ts`, `routes/wallet.ts`, `scripts/src/seed-products.ts`.
+
+**Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant auth, email delivery disabled by default without `RESEND_API_KEY`.
 
 ## External Dependencies
 

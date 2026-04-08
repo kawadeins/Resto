@@ -2,18 +2,25 @@
  * Wallet API — prepaid boost balance system for business owners.
  *
  * Endpoints:
- *   GET  /api/wallet          — current balance + transaction history
- *   POST /api/wallet/topup    — add credit to wallet (requires owner/manager auth)
- *   GET  /api/wallet/cost     — estimated cost for a given boost type
+ *   GET  /api/wallet               — current balance + transaction history
+ *   POST /api/wallet/topup         — create Stripe Checkout for wallet top-up
+ *   GET  /api/wallet/topup/verify  — verify topup session after Stripe redirect
+ *   GET  /api/wallet/cost          — estimated cost for a given boost type
+ *
+ * Billing truth: wallet credit is ONLY added by the webhook handler after
+ * Stripe confirms successful payment (checkout.session.completed with payment_status=paid).
+ * No credit is added directly in this route.
  */
 
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { subscriptionsTable } from "@workspace/db";
+import { sql, eq } from "drizzle-orm";
 import { z } from "zod";
 import { computeDynamicPrice } from "../lib/pricing-engine";
 import { requireManagerOrAbove } from "../middleware/role-guard";
 import { strictLimiter } from "../middleware/rate-limiters";
+import { getUncachableStripeClient } from "../stripeClient";
 
 const router = Router();
 
@@ -92,41 +99,134 @@ router.get("/", requireManagerOrAbove(), async (req, res) => {
 });
 
 // ── POST /api/wallet/topup ────────────────────────────────────────────────────
-// Auth required: only the owner may top up the wallet
-// Rate-limited: max 20 top-ups per 15 minutes per user
+// Creates a Stripe Checkout Session for a one-time wallet top-up payment.
+// Returns {checkoutUrl} — frontend redirects to Stripe.
+// Credit is ONLY added after verified payment via webhook (checkout.session.completed).
+// Rate-limited: max 20 top-up sessions per 15 minutes per user.
+
+const ALLOWED_TOPUP_AMOUNTS = [5, 10, 20, 50] as const;
+type AllowedAmount = typeof ALLOWED_TOPUP_AMOUNTS[number];
 
 const TopUpSchema = z.object({
   restaurantId: z.number().int().positive(),
-  amount:       z.number().min(1).max(500),
+  amount:       z.number().refine(
+    (n): n is AllowedAmount => (ALLOWED_TOPUP_AMOUNTS as readonly number[]).includes(n),
+    { message: "Betrag muss 5, 10, 20 oder 50 EUR sein." }
+  ),
 });
+
+function getFrontendBase(): string {
+  const domain = process.env.REPLIT_DOMAINS?.split(",")[0] ?? "localhost";
+  return `https://${domain}/restosmart`;
+}
 
 router.post("/topup", strictLimiter, requireManagerOrAbove(), async (req, res) => {
   try {
     const body = TopUpSchema.parse(req.body);
+    const stripe = await getUncachableStripeClient();
+    const frontendBase = getFrontendBase();
 
-    const currentBalance = await getWalletBalance(body.restaurantId);
-    const newBalance     = Math.round((currentBalance + body.amount) * 100) / 100;
+    // Find or reuse Stripe customer for this restaurant
+    const subRows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, body.restaurantId));
+    const existingSub = subRows[0];
+    let customerId: string | undefined = existingSub?.stripeCustomerId ?? undefined;
 
-    const result = await db.execute(sql`
-      INSERT INTO wallet_transactions (restaurant_id, type, amount, description, balance_after)
-      VALUES (
-        ${body.restaurantId},
-        'topup',
-        ${body.amount},
-        ${"Guthaben aufgeladen: \u20AC" + body.amount.toFixed(2)},
-        ${newBalance}
-      )
-      RETURNING *
-    `);
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        metadata: { restaurant_id: String(body.restaurantId), platform: "restosmart" },
+      });
+      customerId = customer.id;
+
+      if (existingSub) {
+        await db.update(subscriptionsTable)
+          .set({ stripeCustomerId: customerId })
+          .where(eq(subscriptionsTable.restaurantId, body.restaurantId));
+      }
+    }
+
+    // Look up the wallet topup price for this amount from Stripe
+    const amountCents = body.amount * 100;
+    let priceId: string | null = null;
+
+    try {
+      const products = await stripe.products.search({
+        query: "name:'RestoSmart Wallet Topup' AND active:'true'",
+      });
+      if (products.data.length > 0) {
+        const prices = await stripe.prices.list({
+          product: products.data[0].id,
+          active: true,
+        });
+        const match = prices.data.find((p) => p.unit_amount === amountCents && p.currency === "eur" && !p.recurring);
+        priceId = match?.id ?? null;
+      }
+    } catch (err) {
+      req.log.warn({ err }, "Could not look up wallet topup price from Stripe");
+    }
+
+    if (!priceId) {
+      return void res.status(503).json({
+        error: "stripe_product_not_configured",
+        message: "Das Stripe-Produkt f\u00fcr Wallet-Aufladung ist noch nicht eingerichtet.",
+      });
+    }
+
+    // Create one-time Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ["card"],
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: "payment",
+      success_url: `${frontendBase}/billing?topup=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendBase}/billing?topup=cancel`,
+      metadata: {
+        restaurant_id: String(body.restaurantId),
+        type: "wallet_topup",
+        topup_amount: String(body.amount),
+        platform: "restosmart",
+      },
+    });
+
+    req.log.info({ sessionId: session.id, amount: body.amount, restaurantId: body.restaurantId }, "Wallet topup Stripe checkout created");
 
     return res.status(201).json({
-      balance:     newBalance,
-      transaction: result.rows[0],
+      checkoutUrl: session.url,
+      sessionId: session.id,
+      amount: body.amount,
     });
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ error: err.errors });
-    req.log.error({ err }, "Failed to top up wallet");
-    return res.status(500).json({ error: "Top-up failed" });
+    req.log.error({ err }, "Failed to create wallet topup checkout");
+    return res.status(500).json({ error: "Guthaben konnte nicht aufgeladen werden. Bitte versuchen Sie es erneut." });
+  }
+});
+
+// ── GET /api/wallet/topup/verify?session_id=cs_xxx ───────────────────────────
+// Called after returning from Stripe topup success URL.
+// Webhook is the true source of credit — this just returns current DB balance.
+
+router.get("/topup/verify", requireManagerOrAbove(), async (req, res) => {
+  try {
+    const sessionId = req.query.session_id as string;
+    const restaurantId = Number(req.query.restaurantId ?? 1);
+
+    if (!sessionId) return void res.status(400).json({ error: "session_id required" });
+
+    const stripe = await getUncachableStripeClient();
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const currentBalance = await getWalletBalance(restaurantId);
+
+    res.json({
+      stripeStatus: session.payment_status,
+      balance: Math.round(currentBalance * 100) / 100,
+      isPaid: session.payment_status === "paid",
+      message: session.payment_status === "paid"
+        ? "Zahlung erfolgreich — Guthaben wird in K\u00fcrze gutgeschrieben"
+        : "Zahlung wird noch verarbeitet",
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to verify topup session");
+    res.status(500).json({ error: "Verifizierung fehlgeschlagen" });
   }
 });
 
