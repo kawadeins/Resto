@@ -1,0 +1,483 @@
+MASTER RULES APPLY
+
+Perform a full "Business Dashboard Final Hardening + Security + Scale Readiness Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random new features.
+Do NOT focus on Founder dashboard in this pass.
+This pass is ONLY for the business-side platform used by restaurants, cafés, and bars.
+
+This is the final hardening pass to make the business dashboard:
+- secure
+- stable
+- production-ready
+- scalable for many businesses
+- ready for aggressive growth
+
+========================
+PRIMARY GOAL
+========================
+
+Fix all remaining weaknesses in the business dashboard so it can support:
+
+- real money flows
+- many restaurant accounts
+- many staff accounts
+- many concurrent sessions
+- heavy dashboard usage
+- future large growth
+
+The final result must make the business dashboard:
+
+- fully working
+- secure
+- session-safe
+- role-safe
+- monetization-safe
+- scalable
+- launch-ready
+
+========================
+1. AUTH HARDENING (CRITICAL)
+========================
+
+Audit and harden the current business authentication system.
+
+Current system already has:
+- session-based auth
+- httpOnly cookie
+- email-based login
+- session checks
+- logout
+
+Now make it truly production-ready.
+
+Required upgrades:
+
+A. Remove weak auth assumptions
+- no hardcoded owner fallback
+- no client-trusted identity
+- no fake auth shortcuts
+
+B. Add stronger login protection
+Implement ONE of these properly:
+- email OTP / one-time login code
+OR
+- password-based login
+OR
+- magic link flow
+
+Choose the cleanest approach that fits the existing codebase best.
+
+The business dashboard must NOT rely on email-only login without proof of ownership in production.
+
+C. Keep session auth server-side
+- continue using session-backed identity
+- keep httpOnly cookies
+- validate user identity against real DB records
+
+========================
+2. SESSION STORE HARDENING (CRITICAL)
+========================
+
+Replace the default in-memory session store with a production-safe persistent store.
+
+Preferred:
+- PostgreSQL-backed session store
+
+Requirements:
+- sessions survive server restarts
+- sessions scale across many users
+- session expiration is enforced correctly
+- session cleanup is handled safely
+
+Do NOT keep memory-only sessions for production launch.
+
+========================
+3. REMOVE / REDUCE x-user-email FALLBACK
+========================
+
+Audit all business dashboard flows that still depend on x-user-email.
+
+The business dashboard should primarily use:
+- authenticated session identity
+
+The x-user-email header fallback may remain only if absolutely necessary for internal tooling, but:
+
+- do NOT let normal business dashboard flows depend on it
+- do NOT allow it to bypass real session auth
+- minimize its usage in production code
+
+========================
+4. ROLE / PERMISSION HARDENING
+========================
+
+Fully validate and harden role-based access for:
+
+- Owner
+- Manager
+- Staff
+
+Requirements:
+- Owner = full business control
+- Manager = operational access only
+- Staff = safe limited access
+
+Audit:
+- UI visibility
+- route protection
+- backend enforcement
+- action-level permission checks
+
+Fix any remaining:
+- permission leaks
+- hidden but accessible sensitive routes
+- stale access after role change
+- cross-business access risks
+
+========================
+5. BUSINESS IDENTITY ISOLATION
+========================
+
+Ensure every business dashboard request is correctly scoped to the authenticated business.
+
+No business user must ever be able to:
+- read another business wallet
+- view another business campaigns
+- see another business reviews
+- manage another business team
+- access another business analytics
+
+Audit all business endpoints and enforce strict tenant isolation.
+
+========================
+6. WALLET + BILLING SECURITY HARDENING
+========================
+
+Audit all wallet and billing flows again for production strength.
+
+Verify and harden:
+- wallet balance access
+- wallet top-up flow
+- webhook-only credit
+- wallet → boost deduction
+- transaction history
+- Stripe success/cancel flows
+- insufficient balance handling
+- duplicate request protection
+
+Ensure:
+- no double charge
+- no double credit
+- no hidden free spend
+- no top-up mismatch
+- no boost without deduction
+- no deduction without boost
+
+========================
+7. RATE LIMITING / ABUSE PROTECTION
+========================
+
+Expand and harden rate limiting for high-traffic production use.
+
+Ensure proper limits exist for:
+- login attempts
+- OTP/password verification if added
+- wallet top-up
+- boost activation
+- AI reply generation
+- review actions
+- team invites
+- export/share actions if relevant
+
+The system must resist:
+- brute-force login attempts
+- spammy boost activations
+- AI abuse
+- invite abuse
+- heavy repeated dashboard mutations
+
+========================
+8. CSRF / SESSION SAFETY
+========================
+
+Harden session-protected routes against unwanted requests.
+
+If needed, add:
+- CSRF protection
+- origin checks
+- secure cookie settings
+- sameSite strategy review
+- secure flag in production
+
+The business dashboard must be safe for real browser-based session auth.
+
+========================
+9. PERFORMANCE + SCALE AUDIT (VERY IMPORTANT)
+========================
+
+Prepare the business dashboard for many restaurants and heavy usage.
+
+Audit for:
+- repeated duplicate API calls
+- unnecessary refetching
+- slow queries
+- missing DB indexes
+- heavy dashboard loads
+- large page bottlenecks
+- expensive analytics queries
+- N+1 problems
+- oversized payloads
+
+Apply optimizations where needed:
+- indexing
+- better query filtering
+- pagination where useful
+- caching where safe
+- lighter payloads
+- deduplicated fetches
+
+This is critical for future scale.
+
+========================
+10. DATABASE HARDENING
+========================
+
+Audit the database layer for scale and safety.
+
+Ensure:
+- key business tables have indexes
+- wallet transactions indexed properly
+- boost/campaign queries indexed properly
+- review analytics queries indexed properly
+- team member lookups indexed properly
+- session store indexed properly if added
+
+Also ensure:
+- transaction boundaries are correct
+- atomic flows stay atomic
+- write-heavy paths are safe
+
+========================
+11. QUEUE / BACKGROUND TASK SAFETY
+========================
+
+Audit background or delayed flows such as:
+- Stripe webhook processing
+- review analytics updates
+- campaign metrics updates
+- auto campaign mode decisions
+- scheduled refresh/reconciliation tasks
+
+Ensure they:
+- do not double-run dangerously
+- do not corrupt state
+- handle retries safely
+- log failures clearly
+
+========================
+12. UI STABILITY + BUTTON RELIABILITY
+========================
+
+Run another strict button and flow audit after all hardening changes.
+
+Verify ALL important business actions still work:
+
+- login
+- logout
+- premium activation
+- wallet top-up
+- activate boost
+- pause/stop boost
+- auto mode toggle
+- team invite
+- role change
+- PDF export
+- print
+- share
+- AI reply
+- review resolution
+- settings save
+
+No hardening pass should break real usability.
+
+========================
+13. ERROR HANDLING + RECOVERY
+========================
+
+Ensure all important business flows have strong user-safe error handling.
+
+Examples:
+- failed login
+- expired session
+- failed top-up
+- failed boost activation
+- insufficient balance
+- permission denied
+- invalid share/export
+- failed AI generation
+- failed team invite
+
+Requirements:
+- clear German messages
+- no blank page
+- no raw technical error
+- no confusing failure states
+
+========================
+14. DATA HONESTY + TRUST
+========================
+
+Final audit of business-facing truthfulness.
+
+Verify:
+- no fake wallet values
+- no fake campaign metrics
+- no fake ROI
+- no fake AI claims
+- no fake review analytics
+- no fake active states
+- no fake automation claims
+
+If a value is estimated:
+- make that clear
+- keep it conservative
+
+========================
+15. LOAD / CONCURRENCY SAFETY
+========================
+
+Harden the system for multiple concurrent businesses and users.
+
+Simulate and protect against:
+- multiple owners/managers acting at once
+- repeated boost activation requests
+- concurrent wallet usage
+- concurrent role changes
+- heavy dashboard refresh usage
+- multiple review responses
+- simultaneous schedule edits if relevant
+
+Ensure:
+- no race conditions
+- no duplicate state
+- no inconsistent money state
+- no stale overwrite issues
+
+========================
+16. GERMAN BUSINESS UX CONSISTENCY
+========================
+
+Ensure all business-side UI remains consistent in German after hardening.
+
+No mixed English/German in:
+- login/auth
+- wallet/billing
+- campaigns
+- team
+- reviews
+- analytics
+- errors
+- upgrade prompts
+
+========================
+17. FINAL AUTO-REPAIR PASS
+========================
+
+Where problems are found, fix them directly if within scope.
+
+Examples:
+- upgrade auth flow
+- add persistent session store
+- secure endpoints
+- add missing index
+- fix slow query
+- restore broken button
+- tighten role check
+- correct stale session behavior
+- reduce duplicate fetches
+
+Do NOT redesign.
+Do NOT overbuild.
+Just make the current business dashboard fully secure and scalable.
+
+========================
+18. FINAL SCALABILITY READINESS JUDGMENT
+========================
+
+Judge the business dashboard specifically for:
+
+- small launch
+- medium growth
+- heavy growth
+- future high-scale readiness
+
+Classify:
+- Ready for small launch
+- Ready for strong early growth
+- Needs more work for large-scale use
+- Critical blocker
+
+Be honest.
+
+========================
+19. FINAL REPORT (MANDATORY)
+========================
+
+Produce a strict final report with:
+
+A. Auth hardening status
+B. Session store status
+C. Role/permission security status
+D. Business tenant isolation status
+E. Wallet/billing safety status
+F. Rate limiting / abuse protection status
+G. CSRF/session safety status
+H. Performance / query optimization status
+I. Database/indexing status
+J. Button / UI reliability status
+K. Error handling status
+L. Data honesty status
+M. Scalability readiness status
+N. Remaining risks if any
+
+For each category classify:
+- Ready
+- Ready with Minor Risk
+- Needs More Work
+- Critical Blocker
+
+========================
+20. FINAL VERDICT (MANDATORY)
+========================
+
+Give one final verdict for the BUSINESS DASHBOARD ONLY:
+
+- ✅ 100% READY FOR LAUNCH
+- ⚠️ READY WITH MINOR RISKS
+- ❌ NOT READY
+
+Only say "100% READY FOR LAUNCH" if:
+- auth is production-safe
+- sessions are persistent and secure
+- wallet/billing is safe
+- key business actions work
+- role isolation is correct
+- no critical fake/demo logic remains
+- no major performance/scalability blocker remains
+
+========================
+FINAL GOAL
+========================
+
+The RestoMaster business dashboard must become:
+
+- fully secure
+- fully functional
+- stable under heavy usage
+- safe for real money
+- ready for many restaurants
+- structurally ready for future scale
+
+The owner should be able to trust it as a real business operating system.

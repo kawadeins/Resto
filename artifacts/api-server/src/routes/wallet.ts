@@ -19,7 +19,7 @@ import { sql, eq } from "drizzle-orm";
 import { z } from "zod";
 import { computeDynamicPrice } from "../lib/pricing-engine";
 import { requireManagerOrAbove } from "../middleware/role-guard";
-import { strictLimiter } from "../middleware/rate-limiters";
+import { walletTopupLimiter } from "../middleware/rate-limiters";
 import { getUncachableStripeClient } from "../stripeClient";
 
 const router = Router();
@@ -139,7 +139,7 @@ function getFrontendBase(): string {
   return `https://${domain}/restosmart`;
 }
 
-router.post("/topup", strictLimiter, requireManagerOrAbove(), async (req, res) => {
+router.post("/topup", walletTopupLimiter, requireManagerOrAbove(), async (req, res) => {
   try {
     const body = TopUpSchema.parse(req.body);
     const stripe = await getUncachableStripeClient();

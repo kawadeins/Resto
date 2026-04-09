@@ -13,6 +13,7 @@
 
 import { Router } from "express";
 import { requireManagerOrAbove } from "../middleware/role-guard";
+import { boostActivationLimiter, mutationLimiter } from "../middleware/rate-limiters";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -124,7 +125,7 @@ const CreatePromoSchema = z.object({
   durationHours: z.number().min(1).max(168).optional(), // optional: null = manual stop
 });
 
-router.post("/", requireManagerOrAbove(), async (req, res) => {
+router.post("/", boostActivationLimiter, requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreatePromoSchema.parse(req.body);
 
@@ -255,7 +256,7 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
 });
 
 // ─── PUT /api/promotions/:id/pause ────────────────────────────────────────────
-router.put("/:id/pause", requireManagerOrAbove(), async (req, res) => {
+router.put("/:id/pause", mutationLimiter, requireManagerOrAbove(), async (req, res) => {
   try {
     await db.execute(sql`
       UPDATE promotions SET status = 'paused', updated_at = NOW()

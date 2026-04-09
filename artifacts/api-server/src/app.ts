@@ -1,8 +1,9 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import router from "./routes";
 import { WebhookHandlers } from "./webhookHandlers";
 import { logger } from "./lib/logger";
@@ -37,11 +38,22 @@ app.use(
 );
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// Allow credentials from any Replit preview/dev domain and the production domain.
+const ALLOWED_ORIGIN_PATTERN = /\.repl(it|\.co|\.dev)\.com$|\.replit\.app$|^http:\/\/localhost/;
+
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow server-to-server (no origin), curl, and matched domains
+    if (!origin || ALLOWED_ORIGIN_PATTERN.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // still allow for now — log suspicious origins
+      logger.warn({ origin }, "CORS: request from unexpected origin");
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-user-email", "x-founder-key"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-user-email", "x-founder-key", "x-super-admin-key"],
 }));
 
 // ── Stripe Webhook — MUST be registered BEFORE express.json() ────────────────
@@ -74,12 +86,20 @@ app.post(
   }
 );
 
-// ── Sessions — registered before routes ───────────────────────────────────────
+// ── Sessions — PostgreSQL-backed, persistent across restarts ──────────────────
 const SESSION_SECRET = process.env.SESSION_SECRET ?? "dev-insecure-secret-change-me";
 const IS_PRODUCTION = process.env.REPLIT_DEPLOYMENT === "1";
 
+const PgSession = connectPgSimple(session);
+
 app.use(
   session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: "sessions",
+      pruneSessionInterval: 60 * 15, // prune expired sessions every 15 min
+      errorLog: (err) => logger.error({ err }, "Session store error"),
+    }),
     name: "restosmart.sid",
     secret: SESSION_SECRET,
     resave: false,

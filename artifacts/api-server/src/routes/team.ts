@@ -3,30 +3,14 @@ import { db } from "@workspace/db";
 import { teamMembersTable } from "@workspace/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import crypto from "crypto";
+import { requireOwner, requireManagerOrAbove } from "../middleware/role-guard";
+import { teamInviteLimiter, mutationLimiter } from "../middleware/rate-limiters";
 
 const router = Router();
 const RESTAURANT_ID = 1;
 
 type TeamRole = "owner" | "manager" | "staff";
 const VALID_ROLES: TeamRole[] = ["owner", "manager", "staff"];
-
-async function getCallerTeamRole(email: string): Promise<TeamRole | null> {
-  if (!email) return null;
-
-  const ownerEmail = await getOwnerEmail();
-  if (ownerEmail && email.toLowerCase() === ownerEmail.toLowerCase()) return "owner";
-
-  if (!ownerEmail) return null;
-
-  const rows = await db
-    .select({ role: teamMembersTable.role, status: teamMembersTable.status })
-    .from(teamMembersTable)
-    .where(and(eq(teamMembersTable.email, email.toLowerCase()), eq(teamMembersTable.restaurantId, RESTAURANT_ID)))
-    .limit(1);
-
-  if (!rows.length || rows[0].status !== "active") return null;
-  return rows[0].role as TeamRole;
-}
 
 async function getOwnerEmail(): Promise<string | null> {
   const result = await db.execute(sql`
@@ -37,12 +21,9 @@ async function getOwnerEmail(): Promise<string | null> {
   return email || null;
 }
 
-async function isCallerAuthenticated(email: string): Promise<boolean> {
-  if (!email) return false;
-  const role = await getCallerTeamRole(email);
-  return role !== null;
-}
-
+// ── POST /api/team/bootstrap-owner ───────────────────────────────────────────
+// One-time owner setup — only callable when owner_email is not yet set.
+// No auth required (bootstrapping). Idempotent — blocked after first call.
 router.post("/bootstrap-owner", async (req, res) => {
   try {
     const { email } = req.body;
@@ -64,19 +45,10 @@ router.post("/bootstrap-owner", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+// ── GET /api/team ─────────────────────────────────────────────────────────────
+// Requires manager or above (via session)
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
-    const callerEmail = (req.headers["x-user-email"] as string) || "";
-    const callerRole = await getCallerTeamRole(callerEmail);
-
-    if (!callerRole) {
-      const ownerEmail = await getOwnerEmail();
-      if (!ownerEmail) {
-        return res.json({ members: [], needsOwnerSetup: true });
-      }
-      return res.status(403).json({ error: "Kein Zugriff" });
-    }
-
     const members = await db
       .select()
       .from(teamMembersTable)
@@ -111,20 +83,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/invite", async (req, res) => {
+// ── POST /api/team/invite ─────────────────────────────────────────────────────
+router.post("/invite", requireOwner(), teamInviteLimiter, async (req, res) => {
   try {
-    const callerEmail = (req.headers["x-user-email"] as string) || "";
-    const callerRole = await getCallerTeamRole(callerEmail);
-    if (callerRole !== "owner") {
-      return res.status(403).json({ error: "Nur der Inhaber kann Teammitglieder einladen" });
-    }
-
     const { email, name, role } = req.body;
     if (!email || !name) {
       return res.status(400).json({ error: "E-Mail und Name sind erforderlich" });
     }
 
     const inviteRole = (role && VALID_ROLES.includes(role) && role !== "owner") ? role : "staff";
+    const callerEmail = (req as any).userEmail ?? "";
 
     const existing = await db
       .select()
@@ -169,6 +137,8 @@ router.post("/invite", async (req, res) => {
   }
 });
 
+// ── POST /api/team/accept ─────────────────────────────────────────────────────
+// Public — invite token is the credential
 router.post("/accept", async (req, res) => {
   try {
     const { token, email } = req.body;
@@ -205,14 +175,9 @@ router.post("/accept", async (req, res) => {
   }
 });
 
-router.patch("/:id/role", async (req, res) => {
+// ── PATCH /api/team/:id/role ──────────────────────────────────────────────────
+router.patch("/:id/role", requireOwner(), mutationLimiter, async (req, res) => {
   try {
-    const callerEmail = (req.headers["x-user-email"] as string) || "";
-    const callerRole = await getCallerTeamRole(callerEmail);
-    if (callerRole !== "owner") {
-      return res.status(403).json({ error: "Nur der Inhaber kann Rollen ändern" });
-    }
-
     const memberId = parseInt(req.params.id);
     if (isNaN(memberId)) return res.status(400).json({ error: "Ungültige ID" });
 
@@ -244,14 +209,9 @@ router.patch("/:id/role", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+// ── DELETE /api/team/:id ──────────────────────────────────────────────────────
+router.delete("/:id", requireOwner(), mutationLimiter, async (req, res) => {
   try {
-    const callerEmail = (req.headers["x-user-email"] as string) || "";
-    const callerRole = await getCallerTeamRole(callerEmail);
-    if (callerRole !== "owner") {
-      return res.status(403).json({ error: "Nur der Inhaber kann Mitglieder entfernen" });
-    }
-
     const memberId = parseInt(req.params.id);
     if (isNaN(memberId)) return res.status(400).json({ error: "Ungültige ID" });
 
@@ -277,14 +237,9 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/resend", async (req, res) => {
+// ── POST /api/team/resend ─────────────────────────────────────────────────────
+router.post("/resend", requireOwner(), teamInviteLimiter, async (req, res) => {
   try {
-    const callerEmail = (req.headers["x-user-email"] as string) || "";
-    const callerRole = await getCallerTeamRole(callerEmail);
-    if (callerRole !== "owner") {
-      return res.status(403).json({ error: "Nur der Inhaber kann Einladungen erneut senden" });
-    }
-
     const { memberId } = req.body;
     if (!memberId) return res.status(400).json({ error: "Mitglieds-ID erforderlich" });
 
@@ -317,17 +272,33 @@ router.post("/resend", async (req, res) => {
   }
 });
 
+// ── GET /api/team/permissions ─────────────────────────────────────────────────
+// Returns role and permissions for the currently authenticated user.
+// Uses session identity only — does NOT fall back to x-user-email header.
 router.get("/permissions", async (req, res) => {
   try {
-    const email = (req.headers["x-user-email"] as string) || "";
-    if (!email) return res.json({ role: null, permissions: {} });
+    const email = req.session?.userEmail ?? "";
 
-    let role = await getCallerTeamRole(email);
+    // No session → return null role (unauthenticated)
+    if (!email) {
+      return res.json({ role: null, permissions: {} });
+    }
 
-    if (!role) {
-      const ownerEmail = await getOwnerEmail();
-      if (!ownerEmail) {
-        role = "owner";
+    // Resolve role from DB (session email is validated)
+    const ownerEmail = await getOwnerEmail();
+    let role: TeamRole | null = null;
+
+    if (ownerEmail && email.toLowerCase() === ownerEmail.toLowerCase()) {
+      role = "owner";
+    } else if (ownerEmail) {
+      const rows = await db
+        .select({ role: teamMembersTable.role, status: teamMembersTable.status })
+        .from(teamMembersTable)
+        .where(and(eq(teamMembersTable.email, email.toLowerCase()), eq(teamMembersTable.restaurantId, RESTAURANT_ID)))
+        .limit(1);
+
+      if (rows.length && rows[0].status === "active") {
+        role = rows[0].role as TeamRole;
       }
     }
 

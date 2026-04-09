@@ -5,7 +5,14 @@ function safeIpKey(req: Request): string {
   return ipKeyGenerator(req.ip ?? "unknown");
 }
 
-// Global limiter — 300 requests/min per IP
+// Session-aware key generator: prefer session email → header email → IP
+function sessionOrIpKey(req: Request): string {
+  const sessionEmail = (req as any).session?.userEmail as string | undefined;
+  const headerEmail = req.headers["x-user-email"] as string | undefined;
+  return (sessionEmail || headerEmail)?.trim() || safeIpKey(req);
+}
+
+// ── Global limiter — 300 requests/min per IP ─────────────────────────────────
 export const globalLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 300,
@@ -15,28 +22,82 @@ export const globalLimiter = rateLimit({
   skip: (req) => req.method === "OPTIONS",
 });
 
-// Strict limiter — 20 requests/15 min, keyed by user email or IP
+// ── Strict limiter — 10 requests/15 min (auth, sensitive ops) ────────────────
 export const strictLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Zu viele Versuche. Bitte 15 Minuten warten." },
-  keyGenerator: (req) => {
-    const email = req.headers["x-user-email"] as string | undefined;
-    return email?.trim() || safeIpKey(req);
-  },
+  keyGenerator: safeIpKey,
 });
 
-// AI limiter — 30 AI calls/hour, keyed by user email or IP (prevents OpenAI cost abuse)
+// ── OTP request limiter — 5 OTPs per 15 min per IP ───────────────────────────
+export const otpRequestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Code-Anfragen. Bitte 15 Minuten warten." },
+  keyGenerator: safeIpKey,
+});
+
+// ── OTP verify limiter — 10 attempts/15 min per IP ───────────────────────────
+export const otpVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Anmeldeversuche. Bitte 15 Minuten warten." },
+  keyGenerator: safeIpKey,
+});
+
+// ── Wallet top-up limiter — 5 top-ups/15 min per user ───────────────────────
+export const walletTopupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Auflade-Versuche. Bitte kurz warten." },
+  keyGenerator: sessionOrIpKey,
+});
+
+// ── Team invite limiter — 20 invites/hour per user ───────────────────────────
+export const teamInviteLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Einladungs-Limit erreicht. Bitte später erneut versuchen." },
+  keyGenerator: sessionOrIpKey,
+});
+
+// ── Boost activation limiter — 30 boost activations/hour per user ────────────
+export const boostActivationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Boost-Aktivierungen. Bitte später versuchen." },
+  keyGenerator: sessionOrIpKey,
+});
+
+// ── AI limiter — 30 AI calls/hour per user (prevents OpenAI cost abuse) ──────
 export const aiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "KI-Anfrage-Limit erreicht. Bitte sp\u00e4ter erneut versuchen." },
-  keyGenerator: (req) => {
-    const email = req.headers["x-user-email"] as string | undefined;
-    return email?.trim() || safeIpKey(req);
-  },
+  message: { error: "KI-Anfrage-Limit erreicht. Bitte später erneut versuchen." },
+  keyGenerator: sessionOrIpKey,
+});
+
+// ── Dashboard mutation limiter — 100 mutations/15 min per user ───────────────
+export const mutationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Aktionen. Bitte kurz warten." },
+  keyGenerator: sessionOrIpKey,
 });

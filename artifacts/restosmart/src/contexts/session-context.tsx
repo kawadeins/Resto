@@ -1,13 +1,18 @@
 /**
- * SessionContext — server-side session integration.
+ * SessionContext — server-side session integration with two-step OTP login.
  *
- * On mount, fetches GET /api/auth/session to determine whether a valid
- * server session exists. If authenticated, the user email is also written
- * to localStorage under `restosmart_owner_email` so that existing components
- * that read that key continue to work without modification.
+ * Auth flow:
+ *   1. requestOtp(email) → POST /api/auth/request-otp
+ *      - validates email exists in DB
+ *      - generates 6-digit code (sent by email in prod, returned in devCode in dev)
+ *   2. verifyOtp(email, code) → POST /api/auth/verify-otp
+ *      - validates code, creates server session
+ *      - returns session user on success
  *
- * Login / logout actions talk to /api/auth/* endpoints and keep the
- * React context and localStorage in sync.
+ * On mount, fetchSession() checks GET /api/auth/session to restore an
+ * existing session. The user email is also mirrored to localStorage under
+ * `restosmart_owner_email` so existing components' x-user-email header
+ * patterns continue to work without modification.
  */
 
 import {
@@ -28,11 +33,23 @@ export interface SessionUser {
   restaurantId: number;
 }
 
+interface OtpRequestResult {
+  success: boolean;
+  devCode?: string;
+  error?: string;
+}
+
+interface OtpVerifyResult {
+  success: boolean;
+  error?: string;
+}
+
 interface SessionContextValue {
   user: SessionUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string) => Promise<{ success: boolean; error?: string }>;
+  requestOtp: (email: string) => Promise<OtpRequestResult>;
+  verifyOtp: (email: string, code: string) => Promise<OtpVerifyResult>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -41,7 +58,8 @@ const SessionContext = createContext<SessionContextValue>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
-  login: async () => ({ success: false }),
+  requestOtp: async () => ({ success: false }),
+  verifyOtp: async () => ({ success: false }),
   logout: async () => {},
   refresh: async () => {},
 });
@@ -90,18 +108,41 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     fetchSession();
   }, [fetchSession]);
 
-  const login = useCallback(
-    async (email: string): Promise<{ success: boolean; error?: string }> => {
+  // Step 1: Request OTP for the given email
+  const requestOtp = useCallback(
+    async (email: string): Promise<OtpRequestResult> => {
       try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
+        const res = await fetch(`${API_BASE}/api/auth/request-otp`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
         });
+        const data = await res.json() as { sent?: boolean; devCode?: string; error?: string };
+        if (!res.ok) {
+          return { success: false, error: data.error ?? "Anfrage fehlgeschlagen" };
+        }
+        return { success: true, devCode: data.devCode };
+      } catch {
+        return { success: false, error: "Netzwerkfehler — bitte erneut versuchen" };
+      }
+    },
+    [],
+  );
+
+  // Step 2: Verify OTP and create session
+  const verifyOtp = useCallback(
+    async (email: string, code: string): Promise<OtpVerifyResult> => {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/verify-otp`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code }),
+        });
         const data = await res.json() as SessionUser & { error?: string };
         if (!res.ok) {
-          return { success: false, error: data.error ?? "Login fehlgeschlagen" };
+          return { success: false, error: data.error ?? "Anmeldung fehlgeschlagen" };
         }
         const u: SessionUser = {
           email: data.email,
@@ -133,7 +174,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
-        login,
+        requestOtp,
+        verifyOtp,
         logout,
         refresh: fetchSession,
       }}

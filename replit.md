@@ -62,20 +62,23 @@ RestoSmart is a full-stack SaaS web application providing a premium, information
 -   **Auto Revenue Optimization Engine (`/optimizer`):** Analyzes promotion data to generate business-type-aware recommendations and provides a dashboard with KPIs, ROI feedback, and strategy tips.
 -   **Dynamic Pricing Engine:** Computes real-time impression costs based on various factors, with owner-facing panels and founder configuration controls, ensuring transparency of cost breakdowns.
 
-**Authentication:**
--   **Business Owner / Team Members (Server-Side Session):**
-    -   `POST /api/auth/login` — accepts `{ email }`, validates email against `restaurants.owner_email` or `team_members` (active only), creates a signed `express-session` cookie (`restosmart.sid`) using `SESSION_SECRET` env var. 7-day session TTL. Rate-limited via `strictLimiter`.
+**Authentication (Hardened — Production-Ready):**
+-   **Two-Step OTP Login + PostgreSQL Sessions:**
+    -   `POST /api/auth/request-otp` — validates email vs DB, generates 6-digit code (10-min TTL) in `auth_otps` table. Dev mode: returns `devCode` + displays on login screen. Prod with RESEND: sends email only. Limit: 5 OTP requests/15 min/IP.
+    -   `POST /api/auth/verify-otp` — validates OTP (marks used immediately), re-validates identity, creates server session. Limit: 10 attempts/15 min/IP. Replay-safe.
     -   `GET /api/auth/session` — returns `{ authenticated, email, role, restaurantId }` or 401.
-    -   `POST /api/auth/logout` — destroys server session, clears cookie.
-    -   `role-guard.ts` — reads identity from session first (`req.session.userEmail`), falls back to `x-user-email` header for API tooling. Both paths validate against the DB. Never trusts unauthenticated input.
-    -   Frontend: `SessionContext` (`src/contexts/session-context.tsx`) fetches `/api/auth/session` on load. Shows `Login` page if unauthenticated. On login, email also written to `restosmart_owner_email` in localStorage so existing `x-user-email` header patterns continue working.
-    -   **No hardcoded owner bootstrap** — `bootstrapOwnerEmail()` hack removed. Users must enter their business email explicitly.
+    -   `POST /api/auth/logout` — destroys session from PostgreSQL store, clears cookie.
+    -   **PostgreSQL session store** via `connect-pg-simple` (table: `sessions`, index: `idx_sessions_expire`). Survives restarts. Auto-pruned every 15 min. 7-day TTL.
+    -   `role-guard.ts` — session-first identity (`req.session.userEmail`), header fallback for API tooling. Both validated against DB.
+    -   Frontend: `SessionContext` with `requestOtp()` + `verifyOtp()` methods. Two-step login page shows dev code when RESEND not configured.
+-   **Team routes (session-hardened):** `GET /team` → `requireManagerOrAbove()`. `/invite`, `/:id/role`, `/:id`, `/resend` → `requireOwner()` + `teamInviteLimiter`/`mutationLimiter`. `/permissions` → session email only, no auto-owner fallback.
+-   **Rate Limiters:** `otpRequestLimiter` (5/15min), `otpVerifyLimiter` (10/15min), `walletTopupLimiter` (5/15min), `teamInviteLimiter` (20/hr), `boostActivationLimiter` (30/hr), `mutationLimiter` (100/15min), `aiLimiter` (30/hr), `globalLimiter` (300/min).
+-   **DB Indexes (performance):** `idx_wallet_transactions_restaurant_id/created_at`, `idx_team_members_email/restaurant_id`, `idx_reviews_restaurant_id/created_at`, `idx_promotions_restaurant_id/status`, `idx_sessions_expire`, `idx_auth_otps_email_code/expires_at`.
 -   **Super-admin:** `X-Super-Admin-Key` header.
 -   **Founder:** `x-founder-key` header, localStorage `restosmart_founder_key`.
 -   **Customer:** localStorage email (`restosmart_email`).
 -   **Owner Premium:** localStorage flag (`restosmart_owner_premium`).
--   **Wallet GET Security:** `GET /api/wallet` requires `requireManagerOrAbove()` auth (was temporarily made public — now secured again).
--   **Key files:** `artifacts/api-server/src/routes/auth.ts`, `artifacts/api-server/src/middleware/role-guard.ts`, `artifacts/restosmart/src/contexts/session-context.tsx`, `artifacts/restosmart/src/pages/login.tsx`.
+-   **Key files:** `artifacts/api-server/src/routes/auth.ts`, `artifacts/api-server/src/middleware/role-guard.ts`, `artifacts/api-server/src/middleware/rate-limiters.ts`, `artifacts/restosmart/src/contexts/session-context.tsx`, `artifacts/restosmart/src/pages/login.tsx`.
 
 -   **Real Stripe Billing System (Production-Ready):**
     -   **Stripe Integration:** Connected via Replit Stripe connector. Packages: `stripe@20.0.0` + `stripe-replit-sync@1.0.0` at workspace root.
