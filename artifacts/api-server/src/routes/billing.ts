@@ -188,8 +188,15 @@ router.post("/checkout", requireOwner(), async (req, res) => {
       }
     }
 
-    // Live Stripe price ID for RestoSmart Business Premium (€39.90/month)
-    const PREMIUM_PRICE_ID = "price_1TK7DxDq06OMDnUjYnSnpUY3";
+    // Environment-aware price selection
+    // LIVE  — deployed production (REPLIT_DEPLOYMENT=1)
+    // TEST  — local development / sandbox
+    const PREMIUM_PRICE_ID_LIVE = "price_1TK7DxDq06OMDnUjYnSnpUY3";
+    const PREMIUM_PRICE_ID_TEST = "price_1TK5gkAgY8yJ0qgTg1oAXFd6";
+    const isDeployed = process.env.REPLIT_DEPLOYMENT === "1";
+    const PREMIUM_PRICE_ID = isDeployed ? PREMIUM_PRICE_ID_LIVE : PREMIUM_PRICE_ID_TEST;
+
+    req.log.info({ priceId: PREMIUM_PRICE_ID, isDeployed }, "Using Stripe price");
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
