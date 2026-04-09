@@ -1,0 +1,418 @@
+MASTER RULES APPLY
+
+Perform a full "Business Dashboard Final Launch Readiness + Button Audit + Full System Repair Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT focus on Founder Dashboard in this pass.
+Do NOT add random new features.
+This pass is ONLY for the business-side dashboard used by restaurants, cafés, and bars.
+
+This is the final pre-launch validation and repair pass for the business dashboard.
+
+========================
+GOAL
+========================
+
+Fully inspect, validate, repair, and finalize the entire business dashboard so it is truly ready for launch.
+
+This pass must:
+
+- inspect every section
+- inspect every button
+- inspect every route
+- inspect every business flow
+- verify every paid tool
+- verify every role-based screen
+- verify every critical business interaction
+- repair anything broken or disconnected
+- produce a final structured report
+
+The final result must clearly say whether the business dashboard is:
+
+- 100% ready
+- ready with minor risks
+- not ready
+
+========================
+1. FULL BUSINESS DASHBOARD AUDIT (CRITICAL)
+========================
+
+Inspect the entire business dashboard for all supported business types:
+
+- restaurant
+- café
+- bar
+
+Audit every major section, including but not limited to:
+
+- overview
+- profile
+- bookings / reservations
+- tables
+- POS / Kassenterminal
+- reviews
+- premium
+- billing
+- wallet / Guthaben
+- promotion tools / boosts
+- campaign command center
+- ROI / performance analytics
+- staff / team management
+- shift planner
+- schedule sharing / PDF / print
+- review recovery / AI reply / feedback analytics
+- settings
+- onboarding / completion progress if present
+
+For each section, determine:
+- fully working
+- partially working
+- broken
+- UI only
+- fake/demo only
+- hidden incorrectly
+- inaccessible incorrectly
+
+========================
+2. FULL BUTTON AUDIT (VERY IMPORTANT)
+========================
+
+Inspect ALL buttons across the business dashboard.
+
+For each button, verify:
+
+- clickable
+- triggers the correct action
+- no dead button
+- no broken loading state
+- no wrong redirect
+- no missing backend action
+- no hidden error
+
+This includes buttons such as:
+- activate premium
+- start trial
+- top up wallet
+- activate boost
+- pause boost
+- stop boost
+- enable auto mode
+- team invite
+- role change
+- PDF export
+- print
+- share via WhatsApp/email
+- AI reply suggestion
+- publish / resolve review
+- save settings
+- any CTA inside every section
+
+If any button is broken, fix it.
+
+========================
+3. FULL ROUTE / PAGE AUDIT
+========================
+
+Inspect all business dashboard routes and page transitions.
+
+Verify:
+- correct page loads
+- no blank page
+- no broken routing
+- no wrong redirect
+- no page accessible when it should be blocked
+- no page blocked when it should be visible
+
+Include:
+- owner-only routes
+- manager routes
+- staff-safe routes
+
+========================
+4. ROLE / PERMISSION VALIDATION
+========================
+
+Validate complete role-based behavior for:
+
+- Owner
+- Manager
+- Staff
+
+Verify:
+- Owner sees full correct dashboard
+- Manager sees correct limited operational dashboard
+- Staff sees safe limited dashboard
+- no permission leaks
+- no hidden-but-accessible sensitive routes
+- no owner sections lost by mistake
+
+Fix all permission mismatches.
+
+========================
+5. MONETIZATION / MONEY FLOW VALIDATION
+========================
+
+Inspect and validate all money-related systems:
+
+- Premium subscription
+- trial logic (14 days)
+- billing state
+- wallet top-up
+- wallet balance display
+- wallet history
+- wallet → boost deduction
+- Stripe checkout redirects
+- success/cancel return states
+- boost activation with real deduction
+- boost blocking when balance insufficient
+
+Verify:
+- no fake money logic
+- no free paid access
+- no hidden bypass
+- no wrong balance
+- no boost without deduction
+- no deduction without boost
+
+Fix anything critical immediately.
+
+========================
+6. BOOST / CAMPAIGN SYSTEM VALIDATION
+========================
+
+Inspect all promotion systems:
+
+- promotion tools
+- smart recommendations
+- ROI analytics
+- auto budget optimization
+- auto campaign mode
+- campaign command center
+
+Verify:
+- real metrics only
+- recommendations use real logic
+- auto mode respects limits
+- duplicate activation protection works
+- campaign history is real
+- alerts are useful
+- campaign controls work correctly
+
+Fix broken or fake behavior.
+
+========================
+7. REVIEW / REPUTATION SYSTEM VALIDATION
+========================
+
+Inspect:
+- normal review flow
+- low-rating recovery flow
+- private resolution state
+- business reply
+- AI reply suggestion
+- feedback analytics
+- rating change tracking
+- premium gating if applied
+
+Verify:
+- user fairness preserved
+- no manipulative hiding of reviews
+- no broken reply actions
+- analytics are real
+- low-rating flow works correctly
+
+Fix issues.
+
+========================
+8. STAFF / SHIFT SYSTEM VALIDATION
+========================
+
+Inspect:
+- team member list
+- invite flow
+- role assignment
+- removal
+- shift planner
+- 30-minute increments
+- PDF export
+- print
+- WhatsApp/email sharing
+- AI schedule generation if present
+
+Verify:
+- all actions work
+- no dead UI
+- schedule data is real
+- share works
+- PDF/print works
+- role permissions respected
+
+Fix all issues found.
+
+========================
+9. UX / EMPTY STATE / ERROR HANDLING AUDIT
+========================
+
+Inspect user experience across all business sections.
+
+Verify:
+- clean loading states
+- no stuck spinners
+- no silent failures
+- clear German messaging
+- clean empty states
+- no broken sections when data is missing
+- no technical raw errors shown to users
+
+Fix weak UX and bad error handling where needed.
+
+========================
+10. DATA HONESTY AUDIT
+========================
+
+Inspect all business-facing analytics and data surfaces.
+
+Verify:
+- no fake impressions
+- no fake clicks
+- no fake ROI
+- no fake balance
+- no fake campaign success
+- no fake review analytics
+- no fake scheduling logic
+- no fake “active” states
+
+If real data is not available:
+- show honest fallback / empty state
+- do NOT invent values
+
+========================
+11. CROSS-SECTION INTEGRATION CHECK
+========================
+
+Verify all connected systems work together properly:
+
+- wallet ↔ boost
+- wallet ↔ transaction history
+- premium ↔ locked features
+- premium ↔ AI tools
+- roles ↔ visible sections
+- reviews ↔ AI reply ↔ analytics
+- campaigns ↔ ROI ↔ recommendations ↔ auto mode
+- staff ↔ roles ↔ planner ↔ share/export
+- billing ↔ dashboard state
+
+Fix all missing connections.
+
+========================
+12. AUTO REPAIR PASS
+========================
+
+Where problems are found, fix them directly if they are within scope.
+
+Examples:
+- reconnect broken button action
+- restore missing section
+- fix route mapping
+- fix wrong role lock
+- remove fake UI
+- correct broken state logic
+- repair missing German text
+- reconnect analytics source
+- fix wrong success/cancel behavior
+- fix duplicated CTA chaos
+
+Do NOT overbuild.
+Do NOT redesign.
+Just make the existing business dashboard fully functional and launch-ready.
+
+========================
+13. FINAL CLICK-BY-CLICK WALKTHROUGH
+========================
+
+Simulate a real business owner journey end-to-end:
+
+- open dashboard
+- inspect overview
+- view premium status
+- top up wallet
+- activate boost
+- inspect campaign results
+- check recommendations
+- enable/disable auto mode
+- inspect reviews
+- respond to critical feedback
+- manage staff
+- edit shift plan
+- export/share schedule
+- navigate settings
+- return to dashboard
+
+Everything must work cleanly.
+
+Also simulate:
+- manager journey
+- staff-safe journey
+
+========================
+14. FINAL STRUCTURED REPORT
+========================
+
+Produce a strict final report with:
+
+A. Sections fully working
+B. Buttons fully working
+C. Routes fully working
+D. Monetization systems status
+E. Boost/campaign systems status
+F. Review systems status
+G. Staff/shift systems status
+H. Role/permission systems status
+I. UX/error-handling status
+J. Fake/demo logic removed
+K. Remaining risks if any
+
+For each major category classify:
+- Ready
+- Ready with Minor Risk
+- Needs More Work
+- Critical Blocker
+
+========================
+15. FINAL VERDICT (MANDATORY)
+========================
+
+Give one final verdict for the BUSINESS DASHBOARD ONLY:
+
+- ✅ 100% READY FOR LAUNCH
+- ⚠️ READY WITH MINOR RISKS
+- ❌ NOT READY
+
+Do NOT overstate readiness.
+
+Only say "100% READY FOR LAUNCH" if:
+- all critical money flows work
+- all key buttons work
+- all sections work
+- all role restrictions are correct
+- no critical fake/demo logic remains
+- the dashboard feels real and trustworthy
+
+========================
+FINAL GOAL
+========================
+
+The RestoMaster business dashboard must become fully launch-ready.
+
+It must be:
+- fully connected
+- fully clickable
+- secure
+- monetization-ready
+- role-safe
+- honest
+- stable
+- professional
+
+The owner should be able to use the dashboard like a real business tool without hitting broken buttons, fake data, or dead sections.
