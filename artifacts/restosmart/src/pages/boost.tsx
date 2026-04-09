@@ -8,6 +8,7 @@ import { track } from "@/lib/conversion-tracking";
 import { PromotionTools } from "@/components/promotion-tools";
 import { PromotionPerformance } from "@/components/promotion-performance";
 import { BoostROIPanel } from "@/components/boost-roi-panel";
+import { SmartBoostRecommendations } from "@/components/smart-boost-recommendations";
 import { TrialConversionBanner } from "@/components/layout";
 import { getBizType } from "@/lib/biz-copy";
 import { Zap } from "lucide-react";
@@ -43,6 +44,7 @@ export default function Boost() {
         </div>
       </div>
 
+      <SmartBoostRecommendations />
       <PromotionTools />
       <PromotionPerformance />
       <BoostROIPanel />

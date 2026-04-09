@@ -741,6 +741,276 @@ router.get("/:id/stats", async (req, res) => {
   }
 });
 
+// ─── GET /api/promotions/recommendations?restaurantId=:id ────────────────────
+// Returns ranked smart boost recommendations driven by real business data:
+// business type, Vienna time, demand signals, wallet balance, and historical ROI.
+
+const BOOST_HOUR_SCORE: Record<string, (hour: number) => number> = {
+  breakfast_boost:  h => h >= 5  && h < 11 ? 1.0 : h >= 11 && h < 13 ? 0.35 : 0.1,
+  lunch_boost:      h => h >= 10 && h < 15 ? 1.0 : h >= 15 && h < 17 ? 0.4  : 0.1,
+  happy_hour_boost: h => h >= 14 && h < 20 ? 1.0 : h >= 20 && h < 22 ? 0.5  : 0.15,
+  nightlife_boost:  h => h >= 18           ? 1.0 : h < 3              ? 0.8  : 0.05,
+  local_spotlight:  _  => 0.7,
+  local_heat_boost: _  => 0.65,
+};
+
+const BIZ_BOOST_WEIGHT: Record<string, Record<string, number>> = {
+  restaurant: { breakfast_boost: 0.85, lunch_boost: 1.0,  happy_hour_boost: 0.9, nightlife_boost: 0.4, local_spotlight: 0.95, local_heat_boost: 0.85 },
+  cafe:       { breakfast_boost: 1.0,  lunch_boost: 0.85, happy_hour_boost: 0.6, nightlife_boost: 0.2, local_spotlight: 0.9,  local_heat_boost: 0.8  },
+  bar:        { breakfast_boost: 0.2,  lunch_boost: 0.4,  happy_hour_boost: 1.0, nightlife_boost: 1.0, local_spotlight: 0.75, local_heat_boost: 0.7  },
+};
+
+const BOOST_WINDOW_LABEL: Record<string, string> = {
+  breakfast_boost:  "05:00–11:00 Uhr",
+  lunch_boost:      "10:00–15:00 Uhr",
+  happy_hour_boost: "14:00–20:00 Uhr",
+  nightlife_boost:  "18:00–02:00 Uhr",
+  local_spotlight:  "Ganztags",
+  local_heat_boost: "Ganztags",
+};
+
+const BOOST_EMOJIS: Record<string, string> = {
+  breakfast_boost: "☕", lunch_boost: "🍽️", happy_hour_boost: "🍹",
+  nightlife_boost: "🌙", local_spotlight: "⭐", local_heat_boost: "🔥",
+};
+const BOOST_LABELS: Record<string, string> = {
+  breakfast_boost: "Frühstücks-Boost", lunch_boost: "Mittags-Boost",
+  happy_hour_boost: "Happy Hour Boost", nightlife_boost: "Nachtleben-Boost",
+  local_spotlight: "Local Spotlight", local_heat_boost: "Heat-Map Boost",
+};
+
+router.get("/recommendations", async (req, res) => {
+  try {
+    const restaurantId = Number(req.query.restaurantId);
+    if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+
+    // ── Context gathering ────────────────────────────────────────────────────
+    const [restRes, walletEurRaw, roiRes, activeRes] = await Promise.all([
+      db.execute(sql`SELECT business_type, name FROM restaurants WHERE id = ${restaurantId} LIMIT 1`),
+      getWalletBalance(restaurantId),
+      // Best ROI per boost type (last 30 days)
+      db.execute(sql`
+        WITH spend AS (
+          SELECT boost_type, SUM(amount) AS cost
+          FROM wallet_transactions
+          WHERE restaurant_id = ${restaurantId} AND type = 'boost_spend'
+            AND created_at > NOW() - INTERVAL '30 days'
+          GROUP BY boost_type
+        ),
+        perf AS (
+          SELECT type, SUM(clicks) AS clicks, SUM(impressions) AS impressions,
+                 SUM(bookings_attributed) AS bookings
+          FROM promotions
+          WHERE restaurant_id = ${restaurantId}
+            AND created_at > NOW() - INTERVAL '30 days'
+          GROUP BY type
+        )
+        SELECT p.type, p.clicks, p.impressions, p.bookings,
+               COALESCE(s.cost,0) AS cost
+        FROM perf p LEFT JOIN spend s ON s.boost_type = p.type
+      `),
+      // Currently active boosts
+      db.execute(sql`
+        SELECT type FROM promotions WHERE restaurant_id = ${restaurantId} AND status = 'active'
+      `),
+    ]);
+
+    const biz  = (restRes.rows[0] as any) ?? { business_type: "restaurant" };
+    const bizType: string = biz.business_type ?? "restaurant";
+    const walletEur   = walletEurRaw;
+
+    // Vienna time (UTC+1 / UTC+2 in summer) — use UTC+1 as safe default
+    const nowUtc  = new Date();
+    const hour    = (nowUtc.getUTCHours() + 1) % 24;
+
+    const roiByType = new Map<string, { clicks: number; impressions: number; bookings: number; cost: number }>();
+    for (const row of roiRes.rows as any[]) {
+      roiByType.set(row.type, {
+        clicks:      Number(row.clicks ?? 0),
+        impressions: Number(row.impressions ?? 0),
+        bookings:    Number(row.bookings ?? 0),
+        cost:        Number(row.cost ?? 0),
+      });
+    }
+
+    const activeTypes = new Set((activeRes.rows as any[]).map(r => r.type));
+
+    // ── Demand score from simple heuristic (0-1) ─────────────────────────────
+    // Peak hours inject demand; can be extended via cities_signals later
+    const demandByHour = (h: number) => {
+      if (h >= 7 && h < 9)   return 0.85;
+      if (h >= 11 && h < 14) return 0.95;
+      if (h >= 17 && h < 21) return 1.0;
+      if (h >= 21 && h < 24) return 0.7;
+      if (h >= 0  && h < 3)  return 0.6;
+      return 0.35;
+    };
+    const demandScore = demandByHour(hour);
+
+    // ── CLICK/BOOKING values (same as ROI panel) ──────────────────────────────
+    const CLICK_VAL:   Record<string, number> = { restaurant: 3.00, cafe: 1.50, bar: 2.50 };
+    const BOOKING_VAL: Record<string, number> = { restaurant: 28.0, cafe: 11.0, bar: 20.0 };
+    const clickVal   = CLICK_VAL[bizType]   ?? 2.50;
+    const bookingVal = BOOKING_VAL[bizType] ?? 20.0;
+
+    // ── Score every boost type ────────────────────────────────────────────────
+    const ALL_TYPES = Object.keys(BOOST_HOUR_SCORE);
+    const bizWeight = BIZ_BOOST_WEIGHT[bizType] ?? BIZ_BOOST_WEIGHT.restaurant;
+
+    const scored = ALL_TYPES.map(type => {
+      const hourScore = BOOST_HOUR_SCORE[type](hour);
+      const bizScore  = bizWeight[type] ?? 0.5;
+      const hist      = roiByType.get(type);
+      const histScore = hist
+        ? Math.min(1, (hist.clicks * clickVal + hist.bookings * bookingVal) / Math.max(1, hist.cost * 100)) / 100
+        : 0.5; // neutral if no history
+
+      const confidence = Math.round((hourScore * 0.45 + demandScore * 0.30 + bizScore * 0.15 + histScore * 0.10) * 100);
+
+      // Budget suggestion: based on demand + time
+      const baseBudget = hourScore > 0.8 && demandScore > 0.7 ? 10 :
+                         hourScore > 0.5 || demandScore > 0.5  ?  5 : 5;
+      const suggestedBudget = Math.min(baseBudget, Math.max(5, Math.floor(walletEur * 0.5)));
+
+      // Build reason text
+      let reason = "";
+      const isActive = activeTypes.has(type);
+      if (hourScore > 0.8 && demandScore > 0.7) {
+        reason = "Optimaler Zeitpunkt und hohe lokale Nachfrage — jetzt aktivieren lohnt sich.";
+      } else if (hourScore > 0.8) {
+        reason = "Perfektes Zeitfenster für diesen Boost-Typ.";
+      } else if (demandScore > 0.7) {
+        reason = "Hohe Nachfrage gerade aktiv — erhöhte Sichtbarkeit möglich.";
+      } else if (hist && hist.clicks > 0) {
+        reason = `In den letzten 30 Tagen: ${hist.clicks} Klicks bei €${(hist.cost).toFixed(2)} Ausgaben.`;
+      } else if (bizScore > 0.85) {
+        reason = "Besonders geeignet für Ihren Betriebstyp.";
+      } else {
+        reason = "Grundlegende Sichtbarkeit — aktuell kein idealer Zeitpunkt.";
+      }
+
+      // Warning
+      let warning: string | null = null;
+      if (walletEur < 5) warning = "Wallet-Guthaben unter €5 — bitte zuerst aufladen.";
+      else if (hourScore < 0.3) warning = "Aktuell kein optimales Zeitfenster für diesen Boost.";
+      else if (demandScore < 0.4) warning = "Niedrige Nachfrage — geringere Wirkung zu erwarten.";
+
+      return {
+        type,
+        label:           BOOST_LABELS[type]  ?? type,
+        emoji:           BOOST_EMOJIS[type]  ?? "🚀",
+        window:          BOOST_WINDOW_LABEL[type] ?? "—",
+        confidence,
+        suggestedBudget,
+        reason,
+        warning,
+        isActive,
+        hourScore:       Math.round(hourScore  * 100),
+        demandScore:     Math.round(demandScore * 100),
+        hasHistory:      !!hist,
+        historicalClicks: hist?.clicks ?? 0,
+        historicalImpressions: hist?.impressions ?? 0,
+        historicalCost:  hist?.cost ?? 0,
+      };
+    });
+
+    // Sort: already active last (can keep), then by confidence desc
+    scored.sort((a, b) => {
+      if (a.isActive !== b.isActive) return a.isActive ? 1 : -1;
+      return b.confidence - a.confidence;
+    });
+
+    const top3 = scored.slice(0, 3);
+    const globalWarning =
+      walletEur < 5         ? "Wallet-Guthaben zu niedrig für Boosts. Bitte aufladen." :
+      demandScore < 0.35    ? "Aktuell sehr schwache Nachfrage — Boost nicht empfohlen." :
+      null;
+
+    return res.json({
+      restaurantId,
+      bizType,
+      currentHour: hour,
+      demandScore: Math.round(demandScore * 100),
+      walletEur: Math.round(walletEur * 100) / 100,
+      globalWarning,
+      recommendations: top3,
+      allScored: scored,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Recommendations failed");
+    return res.status(500).json({ error: "Failed to generate recommendations" });
+  }
+});
+
+// ─── GET /api/promotions/auto-budget-settings?restaurantId=:id ───────────────
+router.get("/auto-budget-settings", async (req, res) => {
+  try {
+    const restaurantId = Number(req.query.restaurantId);
+    if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+    const result = await db.execute(sql`
+      SELECT * FROM auto_budget_settings WHERE restaurant_id = ${restaurantId} LIMIT 1
+    `);
+    if (result.rows.length === 0) {
+      return res.json({
+        restaurantId, enabled: false,
+        dailyMaxEur: 10, weeklyMaxEur: 50, minWalletBalanceEur: 5,
+        allowedBoostTypes: ["breakfast_boost","lunch_boost","happy_hour_boost","nightlife_boost","local_spotlight","local_heat_boost"],
+        autoPauseLowROI: true,
+      });
+    }
+    const row = result.rows[0] as any;
+    return res.json({
+      restaurantId,
+      enabled:              row.enabled,
+      dailyMaxEur:          row.daily_max_cents / 100,
+      weeklyMaxEur:         row.weekly_max_cents / 100,
+      minWalletBalanceEur:  row.min_wallet_balance_cents / 100,
+      allowedBoostTypes:    row.allowed_boost_types,
+      autoPauseLowROI:      row.auto_pause_low_roi,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get auto-budget settings");
+    return res.status(500).json({ error: "Failed to get settings" });
+  }
+});
+
+// ─── PUT /api/promotions/auto-budget-settings ─────────────────────────────────
+const AutoBudgetSchema = z.object({
+  restaurantId:         z.number().int().positive(),
+  enabled:              z.boolean(),
+  dailyMaxEur:          z.number().min(1).max(200),
+  weeklyMaxEur:         z.number().min(1).max(500),
+  minWalletBalanceEur:  z.number().min(0).max(50),
+  allowedBoostTypes:    z.array(z.string()).min(1),
+  autoPauseLowROI:      z.boolean(),
+});
+
+router.put("/auto-budget-settings", requireManagerOrAbove(), async (req, res) => {
+  try {
+    const body = AutoBudgetSchema.parse(req.body);
+    await db.execute(sql`
+      INSERT INTO auto_budget_settings
+        (restaurant_id, enabled, daily_max_cents, weekly_max_cents, min_wallet_balance_cents, allowed_boost_types, auto_pause_low_roi, updated_at)
+      VALUES
+        (${body.restaurantId}, ${body.enabled}, ${Math.round(body.dailyMaxEur*100)}, ${Math.round(body.weeklyMaxEur*100)},
+         ${Math.round(body.minWalletBalanceEur*100)}, ${body.allowedBoostTypes}, ${body.autoPauseLowROI}, NOW())
+      ON CONFLICT (restaurant_id) DO UPDATE SET
+        enabled                  = EXCLUDED.enabled,
+        daily_max_cents          = EXCLUDED.daily_max_cents,
+        weekly_max_cents         = EXCLUDED.weekly_max_cents,
+        min_wallet_balance_cents = EXCLUDED.min_wallet_balance_cents,
+        allowed_boost_types      = EXCLUDED.allowed_boost_types,
+        auto_pause_low_roi       = EXCLUDED.auto_pause_low_roi,
+        updated_at               = NOW()
+    `);
+    return res.json({ ok: true });
+  } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ error: err.issues });
+    req.log.error({ err }, "Failed to save auto-budget settings");
+    return res.status(500).json({ error: "Failed to save settings" });
+  }
+});
+
 // ─── GET /api/promotions/roi?restaurantId=:id&period=week|month ───────────────
 // Returns per-boost cost, ROI estimates, spend summary, and smart text insights.
 

@@ -1,0 +1,349 @@
+MASTER RULES APPLY
+
+Build a complete "Smart Boost Recommendations + Auto Budget Optimization System" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break the existing wallet, boost, billing, ROI, or analytics systems.
+Do NOT use fake AI claims.
+Do NOT use fake urgency.
+This system must be based on real tracked data and honest business logic.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+It must work on top of:
+- wallet top-up system
+- wallet → boost deduction engine
+- dynamic pricing
+- boost ROI + profit tracking
+- promotion tools
+- premium business system
+
+========================
+GOAL
+========================
+
+Help business owners make smarter boost decisions automatically.
+
+The system should:
+
+- recommend the best boost type
+- recommend the best timing
+- recommend the best budget level
+- warn against weak/low-ROI spending
+- optionally optimize budget distribution automatically
+
+This must feel:
+- useful
+- professional
+- intelligent
+- trustworthy
+- revenue-focused
+
+========================
+1. SMART BOOST RECOMMENDATION ENGINE (CRITICAL)
+========================
+
+Build a recommendation layer that analyzes real business data and suggests the most effective boost actions.
+
+Use real inputs such as:
+- business type
+- wallet balance
+- historical boost performance
+- ROI results
+- time of day
+- local demand
+- search activity
+- heat map activity
+- clicks / impressions / bookings
+- dynamic pricing state
+- active business hours
+
+The system should answer:
+- which boost should be used now?
+- when should it run?
+- how much should be spent?
+- is this a good time or a waste of money?
+
+========================
+2. RECOMMENDED BOOST TYPE
+========================
+
+The system should recommend the best current boost type based on business context.
+
+Examples:
+
+Restaurants:
+- lunch boost
+- dinner boost
+- local spotlight
+
+Cafés:
+- breakfast boost
+- coffee rush visibility
+- work-hour visibility
+
+Bars:
+- nightlife boost
+- happy hour boost
+- tonight hotspot boost
+
+Use real performance patterns and business type relevance.
+
+========================
+3. BEST TIME RECOMMENDATIONS
+========================
+
+Recommend the best time windows for spending.
+
+Examples:
+- "Beste Zeit heute: 11:30–14:00"
+- "Abendliche Sichtbarkeit ist heute besonders stark"
+- "Morgens ist die Nachfrage für Cafés am höchsten"
+
+This must come from real local demand / historical performance / activity logic.
+
+========================
+4. BUDGET RECOMMENDATION
+========================
+
+Suggest a practical budget amount for each recommendation.
+
+Examples:
+- "Empfohlenes Budget: 5€"
+- "Empfohlenes Budget: 10€ wegen hoher Nachfrage"
+- "Heute reicht ein kleiner Boost von 3–5€"
+
+The system must avoid over-pushing unnecessary spend.
+
+========================
+5. LOW-ROI WARNING
+========================
+
+Warn users when current conditions are weak.
+
+Examples:
+- "Aktuell geringe Nachfrage – Boost nicht empfohlen"
+- "Hohe Kosten bei niedriger Aktivität"
+- "Warte auf ein besseres Zeitfenster"
+
+This is important for trust.
+
+========================
+6. RECOMMENDATION CARD UI
+========================
+
+Inside Promotion Tools / Boost analytics, add a section such as:
+
+- "Empfohlene Boosts"
+- "Heute empfohlen"
+- "Beste nächste Aktion"
+
+Each recommendation card should show:
+- recommended boost type
+- recommended time
+- recommended budget
+- expected performance level
+- short reason
+
+Examples:
+- "Empfohlen: Frühstücks-Boost"
+- "Beste Zeit: 08:00–10:30"
+- "Budget: 5€"
+- "Grund: Hohe Morgenaktivität in deiner Umgebung"
+
+========================
+7. AUTO BUDGET OPTIMIZATION (OPTIONAL MODE)
+========================
+
+Add an optional mode such as:
+
+👉 "Budget automatisch optimieren"
+
+When enabled:
+- system distributes available wallet budget more intelligently
+- system favors stronger windows and stronger boost types
+- system reduces spending on weak periods
+- system stays inside user-defined spending limits
+
+IMPORTANT:
+This must remain optional and transparent.
+
+========================
+8. USER-CONTROLLED LIMITS
+========================
+
+Before using auto optimization, allow the business owner to define:
+
+- daily max spend
+- weekly max spend
+- allowed boost types
+- preferred time ranges if needed
+- stop when wallet below X€
+
+The system must never exceed these limits.
+
+========================
+9. AUTO OPTIMIZATION LOGIC
+========================
+
+If auto budget mode is ON, the system should:
+
+- evaluate current opportunities
+- compare likely ROI
+- choose strongest eligible boosts
+- allocate available budget accordingly
+- avoid bad time windows
+- stop when performance weakens
+- stop when limits are reached
+
+Do NOT make it chaotic.
+Keep it controlled and understandable.
+
+========================
+10. TRANSPARENCY PANEL
+========================
+
+Always explain why the recommendation or auto-allocation happened.
+
+Examples:
+- "Empfohlen wegen hoher Nachfrage"
+- "Budget auf Abendstunden verschoben"
+- "Nicht aktiviert wegen schwacher Performance"
+- "Frühstücks-Boost hat zuletzt besser performt"
+
+No black-box feeling.
+
+========================
+11. BUSINESS-TYPE ADAPTATION
+========================
+
+Adapt recommendations by business type:
+
+Restaurants:
+- lunch / dinner traffic
+- bookings and local meal demand
+
+Cafés:
+- mornings
+- breakfast
+- work-friendly peak hours
+
+Bars:
+- evening
+- nightlife
+- late demand
+- happy hour momentum
+
+The system should feel native to each business type.
+
+========================
+12. PERFORMANCE LEARNING LOOP
+========================
+
+Use historical boost performance to improve recommendations over time.
+
+The system should learn:
+- which boosts perform best
+- which times perform best
+- where spend is wasted
+- which budget levels are effective
+
+Do NOT use fake ML language.
+Use honest rules and performance weighting.
+
+========================
+13. PREMIUM GATING (IMPORTANT 💸)
+========================
+
+Basic recommendation may be visible to all premium-capable business users if intended.
+
+Advanced features should be Premium-only, such as:
+- best-time recommendations
+- budget optimization
+- auto mode
+- weak spend warnings
+- recommendation reasoning
+- performance comparisons
+
+Use German upgrade prompts such as:
+- "Upgrade auf Premium für intelligente Boost-Empfehlungen"
+- "Mit Premium erhältst du Budget-Optimierung und Timing-Empfehlungen"
+
+========================
+14. GERMAN UX COPY
+========================
+
+All business-facing UI must be in German.
+
+Examples:
+- "Empfohlene Boosts"
+- "Beste Zeit"
+- "Empfohlenes Budget"
+- "Heute nicht empfohlen"
+- "Budget automatisch optimieren"
+- "Grund"
+- "Schwache Nachfrage"
+
+========================
+15. DATA HONESTY RULES
+========================
+
+Do NOT:
+- invent demand
+- invent ROI
+- exaggerate likely results
+- fake urgency
+- recommend spending when data is weak
+
+If confidence is low:
+say so clearly.
+
+========================
+16. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- recommendations are based on real data
+- budget suggestions are reasonable
+- weak opportunities are flagged honestly
+- auto mode respects user limits
+- no overspend is possible
+- premium gating works correctly
+- dashboard remains understandable and clean
+
+========================
+17. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Recommendation engine status
+B. Best-time recommendation status
+C. Budget recommendation status
+D. Auto budget optimization status
+E. Transparency/explanation status
+F. Premium gating status
+G. Remaining weak points if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should become a smart business growth assistant that tells owners:
+
+- what boost to run
+- when to run it
+- how much to spend
+- when not to spend
+
+The result should be:
+- smarter spending
+- higher ROI
+- better trust
+- stronger Premium value
+- more repeat boost usage
