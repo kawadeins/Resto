@@ -647,6 +647,9 @@ export function PromotionTools() {
         err.walletError = body;
         throw err;
       }
+      if (res.status === 409) {
+        throw new Error("duplicate_activation");
+      }
       if (!res.ok) throw new Error("Fehler");
       return res.json();
     },
@@ -671,6 +674,12 @@ export function PromotionTools() {
           variant: "destructive",
         });
         setShowWallet(true);
+      } else if (err.message === "duplicate_activation") {
+        toast({
+          title: "Boost bereits gestartet",
+          description: "Dieser Boost wurde gerade erst aktiviert.",
+          variant: "destructive",
+        });
       } else {
         toast({ title: "Boost konnte nicht gestartet werden", variant: "destructive" });
       }

@@ -128,66 +128,128 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreatePromoSchema.parse(req.body);
 
-    // ── Wallet balance check ───────────────────────────────────────────────────
-    const boostCost     = await computeBoostCost(body.type, body.restaurantId);
-    const currentBalance = await getWalletBalance(body.restaurantId);
+    // Compute cost BEFORE the transaction (uses external pricing signals, not wallet state)
+    const boostCost  = await computeBoostCost(body.type, body.restaurantId);
+    const boostLabel = BOOST_TYPES[body.type as BoostType]?.label ?? body.type;
 
-    if (currentBalance < boostCost) {
-      return res.status(402).json({
-        error:    "insufficient_balance",
-        message:  "Nicht gen\u00FCgend Guthaben. Bitte lade zuerst dein Guthaben auf.",
-        required: boostCost,
-        current:  Math.round(currentBalance * 100) / 100,
-        shortfall: Math.round((boostCost - currentBalance) * 100) / 100,
+    req.log.info({ restaurantId: body.restaurantId, boostType: body.type, cost: boostCost }, "Boost activation attempted");
+
+    let txResult: { promotion: { id: number; type: string }; balanceBefore: number; balanceAfter: number };
+
+    try {
+      txResult = await db.transaction(async (tx) => {
+        // ── Advisory lock: serialise concurrent activations per restaurant ────
+        // Released automatically when the transaction ends (commit or rollback).
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(${body.restaurantId})`);
+
+        // ── Balance check INSIDE the transaction (no TOCTOU race) ─────────────
+        const balResult = await tx.execute(sql`
+          SELECT COALESCE(SUM(
+            CASE WHEN type = 'topup' OR type = 'refund' THEN amount ELSE -amount END
+          ), 0) AS balance
+          FROM wallet_transactions
+          WHERE restaurant_id = ${body.restaurantId}
+        `);
+        const currentBalance = parseFloat((balResult.rows[0] as any)?.balance ?? "0");
+
+        if (currentBalance < boostCost) {
+          const err = new Error("insufficient_balance") as Error & { walletData: Record<string, number> };
+          err.walletData = {
+            required:  boostCost,
+            current:   Math.round(currentBalance * 100) / 100,
+            shortfall: Math.round((boostCost - currentBalance) * 100) / 100,
+          };
+          throw err;
+        }
+
+        // ── Duplicate protection: same type activated in last 10 seconds ───────
+        const recentRows = await tx.execute(sql`
+          SELECT id FROM promotions
+          WHERE restaurant_id = ${body.restaurantId}
+            AND type          = ${body.type}
+            AND status        = 'active'
+            AND created_at   > NOW() - INTERVAL '10 seconds'
+          LIMIT 1
+        `);
+        if (recentRows.rows.length > 0) {
+          throw new Error("duplicate_activation");
+        }
+
+        // ── Pause any active boost of same type (one active per type) ─────────
+        await tx.execute(sql`
+          UPDATE promotions
+          SET status = 'paused', updated_at = NOW()
+          WHERE restaurant_id = ${body.restaurantId}
+            AND type          = ${body.type}
+            AND status        = 'active'
+        `);
+
+        // ── Create the new boost ───────────────────────────────────────────────
+        const endsAt = body.durationHours
+          ? sql`NOW() + INTERVAL '${sql.raw(String(body.durationHours))} hours'`
+          : sql`NULL`;
+
+        const insertResult = await tx.execute(sql`
+          INSERT INTO promotions (restaurant_id, type, status, ends_at)
+          VALUES (${body.restaurantId}, ${body.type}, 'active', ${endsAt})
+          RETURNING *
+        `);
+        const promotion = insertResult.rows[0] as { id: number; type: string };
+
+        // ── Deduct from wallet (inside same transaction — atomic with insert) ──
+        const newBalance = Math.round((currentBalance - boostCost) * 100) / 100;
+        await tx.execute(sql`
+          INSERT INTO wallet_transactions
+            (restaurant_id, type, amount, description, boost_type, balance_after)
+          VALUES (
+            ${body.restaurantId},
+            'boost_spend',
+            ${boostCost},
+            ${"Boost aktiviert: " + boostLabel},
+            ${body.type},
+            ${newBalance}
+          )
+        `);
+
+        return { promotion, balanceBefore: currentBalance, balanceAfter: newBalance };
       });
+    } catch (txErr: any) {
+      if (txErr.message === "insufficient_balance") {
+        req.log.warn({ restaurantId: body.restaurantId, boostType: body.type, ...txErr.walletData }, "Boost blocked — insufficient balance");
+        return res.status(402).json({
+          error:    "insufficient_balance",
+          message:  "Nicht gen\u00FCgend Guthaben. Bitte lade zuerst dein Guthaben auf.",
+          ...txErr.walletData,
+        });
+      }
+      if (txErr.message === "duplicate_activation") {
+        req.log.warn({ restaurantId: body.restaurantId, boostType: body.type }, "Boost blocked — duplicate activation within 10 s");
+        return res.status(409).json({
+          error:   "duplicate_activation",
+          message: "Dieser Boost wurde gerade erst aktiviert. Bitte warte kurz.",
+        });
+      }
+      throw txErr;
     }
 
-    // ── Pause any active boost of same type (one active per type) ─────────────
-    await db.execute(sql`
-      UPDATE promotions
-      SET status = 'paused', updated_at = NOW()
-      WHERE restaurant_id = ${body.restaurantId}
-        AND type = ${body.type}
-        AND status = 'active'
-    `);
-
-    const endsAt = body.durationHours
-      ? sql`NOW() + INTERVAL '${sql.raw(String(body.durationHours))} hours'`
-      : sql`NULL`;
-
-    const result = await db.execute(sql`
-      INSERT INTO promotions (restaurant_id, type, status, ends_at)
-      VALUES (${body.restaurantId}, ${body.type}, 'active', ${endsAt})
-      RETURNING *
-    `);
-
-    const promotion = result.rows[0] as { id: number; type: string };
-
-    // ── Deduct from wallet ─────────────────────────────────────────────────────
-    const newBalance = Math.round((currentBalance - boostCost) * 100) / 100;
-    const boostLabel = BOOST_TYPES[body.type as keyof typeof BOOST_TYPES]?.label ?? body.type;
-
-    await db.execute(sql`
-      INSERT INTO wallet_transactions (restaurant_id, type, amount, description, boost_type, balance_after)
-      VALUES (
-        ${body.restaurantId},
-        'boost_spend',
-        ${boostCost},
-        ${"Boost aktiviert: " + boostLabel},
-        ${body.type},
-        ${newBalance}
-      )
-    `);
+    req.log.info({
+      restaurantId:  body.restaurantId,
+      boostType:     body.type,
+      promotionId:   txResult.promotion.id,
+      cost:          boostCost,
+      balanceBefore: txResult.balanceBefore,
+      balanceAfter:  txResult.balanceAfter,
+    }, "Boost activated — wallet deducted atomically");
 
     return res.status(201).json({
-      ...promotion,
+      ...txResult.promotion,
       walletDeducted: boostCost,
-      walletBalance:  newBalance,
+      walletBalance:  txResult.balanceAfter,
     });
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ error: err.errors });
-    req.log.error({ err }, "Failed to create promotion");
-    return res.status(500).json({ error: "Failed to create promotion" });
+    req.log.error({ err }, "Failed to create promotion — unexpected error");
+    return res.status(500).json({ error: "Boost konnte nicht gestartet werden. Bitte versuche es erneut." });
   }
 });
 

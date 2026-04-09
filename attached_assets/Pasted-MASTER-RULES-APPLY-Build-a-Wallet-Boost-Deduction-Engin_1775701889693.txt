@@ -1,0 +1,269 @@
+MASTER RULES APPLY
+
+Build a "Wallet → Boost Deduction Engine" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break existing wallet, Stripe, or boost systems.
+Do NOT create fake balance deductions.
+This is a critical real-money flow.
+
+This pass must connect:
+- wallet balance
+- boost activation
+- transaction history
+- promotion tools
+- billing truth
+
+========================
+GOAL
+========================
+
+When a business owner activates a paid boost, the system must:
+
+- check wallet balance first
+- block activation if balance is insufficient
+- deduct the correct amount immediately and safely
+- create the boost only if deduction succeeds
+- record the spend transaction
+- update the wallet balance in real time
+
+This must be:
+- secure
+- atomic
+- trustworthy
+- production-ready
+
+========================
+1. BOOST REQUIRES SUFFICIENT WALLET BALANCE
+========================
+
+Before any boost activation:
+
+- read the current wallet balance from DB
+- compare it to the selected boost cost
+
+If balance is insufficient:
+- block activation
+- show clean German message:
+  "Nicht genügend Guthaben"
+  "Bitte lade zuerst dein Guthaben auf"
+
+Do NOT activate the boost.
+
+========================
+2. ATOMIC DEDUCTION FLOW (CRITICAL)
+========================
+
+Boost activation and wallet deduction must happen safely in one protected flow.
+
+Rules:
+- do NOT deduct twice
+- do NOT activate boost without deduction
+- do NOT deduct if boost creation fails
+- do NOT allow race conditions
+
+Use a transaction-safe / atomic DB flow so that:
+
+A. validate balance
+B. reserve or deduct correct amount
+C. create boost campaign
+D. write wallet spend transaction
+E. commit only if all succeed
+
+If any step fails:
+- rollback everything
+
+========================
+3. BOOST COST MAPPING
+========================
+
+Use real boost pricing.
+
+Each boost type must have a defined cost.
+
+Examples:
+- Happy Hour Boost → cost X
+- Nachtleben-Boost → cost Y
+- Heat-Map Boost → cost Z
+- Local Spotlight → cost W
+
+Do NOT use fake or hidden costs.
+
+Show the user the cost clearly before activation.
+
+========================
+4. WALLET SPEND TRANSACTION HISTORY
+========================
+
+Whenever a boost is activated successfully:
+
+Create a spend record such as:
+- type: spend
+- source: boost
+- boost name/type
+- amount deducted
+- date/time
+- business/user reference
+- remaining balance if useful
+
+This must appear in wallet history.
+
+German labels:
+- "Ausgabe"
+- "Boost-Ausgabe"
+- "Verlauf"
+
+========================
+5. REAL-TIME BALANCE UPDATE
+========================
+
+After successful boost activation:
+- update wallet balance immediately in UI
+- reflect new remaining balance
+- do not require full page refresh if avoidable
+
+User should instantly see:
+- previous balance
+- deduction
+- current balance
+
+========================
+6. BOOST ACTIVATION ONLY AFTER SUCCESSFUL DEDUCTION
+========================
+
+A boost campaign must only become active if payment from wallet succeeded.
+
+Do NOT allow:
+- active boost with no deduction
+- deduction with no active boost
+- fake "boost activated" messages
+
+========================
+7. DOUBLE-CLICK / DUPLICATE PROTECTION
+========================
+
+Protect against:
+- double click on activate button
+- repeated requests
+- accidental duplicate boost creation
+
+Use:
+- frontend disable while pending
+- backend duplicate protection / request safety
+
+========================
+8. FAILED BOOST CREATION HANDLING
+========================
+
+If boost creation fails after balance check:
+- do NOT keep deduction
+- rollback
+- show clean German error
+
+No money should disappear on failed boost setup.
+
+========================
+9. INSUFFICIENT BALANCE UX
+========================
+
+If the user has not enough balance:
+- show low-balance warning
+- show the exact needed amount if possible
+- offer quick top-up CTA
+
+Examples:
+- "Nicht genügend Guthaben"
+- "Für diesen Boost werden 10€ benötigt"
+- "Jetzt Guthaben aufladen"
+
+========================
+10. BOOST STATUS + WALLET LINK
+========================
+
+In the boost card / promotion section, clearly show:
+- boost cost
+- available wallet balance
+- whether balance is sufficient
+
+This reduces confusion and helps conversion.
+
+========================
+11. GERMAN UX
+========================
+
+Use clear German copy:
+
+- "Nicht genügend Guthaben"
+- "Boost erfolgreich aktiviert"
+- "Aus deinem Guthaben bezahlt"
+- "Boost-Ausgabe"
+- "Jetzt Guthaben aufladen"
+
+========================
+12. AUDIT / LOGGING
+========================
+
+Log:
+- attempted boost activation
+- cost
+- balance before
+- balance after
+- success/failure
+- rollback if any
+- duplicate request blocked
+
+This helps debugging and trust.
+
+========================
+13. NO FAKE MONEY LOGIC
+========================
+
+Do NOT:
+- simulate balance deduction
+- show success before DB commit
+- activate boost on client only
+- trust frontend state
+
+Everything must come from real backend truth.
+
+========================
+14. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- boost cannot activate without enough balance
+- valid balance deducts correctly
+- transaction history records correctly
+- rollback works if boost creation fails
+- duplicate activation is blocked
+- wallet UI updates correctly
+
+========================
+15. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Boost balance-check status
+B. Deduction flow status
+C. Atomic transaction safety status
+D. Wallet history status
+E. Real-time UI update status
+F. Duplicate protection status
+G. Remaining risks if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must have a real money-safe boost activation flow where:
+
+- businesses top up wallet
+- boosts spend from wallet
+- deductions are safe and atomic
+- history is recorded
+- no fake activation happens
+
+This becomes the core monetization engine of the platform.
