@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, TrendingDown, TrendingUp, Clock, AlertTriangle,
@@ -128,9 +128,7 @@ function getOwnerEmail(): string {
 
 export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
-  const [customAmount, setCustomAmount]     = useState<string>("");
   const [showHistory, setShowHistory]       = useState(false);
   const [showTopup, setShowTopup]           = useState(false);
 
@@ -351,39 +349,20 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
                   </div>
                 </div>
 
-                {/* Custom amount */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: C.muted }}>
-                    Eigener Betrag
-                  </p>
-                  <input
-                    type="number" min={1} max={500} step={0.5}
-                    placeholder={`Betrag in \u20AC (1 \u2013 500)`}
-                    value={customAmount}
-                    onChange={e => { setCustomAmount(e.target.value); }}
-                    style={{
-                      width: "100%", height: 42, borderRadius: 10,
-                      border: `1px solid ${customAmount ? "rgba(79,140,255,0.4)" : C.border}`,
-                      backgroundColor: "rgba(255,255,255,0.04)",
-                      color: C.text, fontSize: 13, padding: "0 12px", outline: "none",
-                    }}
-                  />
-                </div>
-
                 {/* Confirm button */}
                 <motion.button
                   whileHover={{ boxShadow: "0 0 20px rgba(79,140,255,0.4)" }}
                   whileTap={{ scale: 0.97 }}
-                  disabled={topupMutation.isPending || !finalAmount || finalAmount < 1}
+                  disabled={topupMutation.isPending || !selectedAmount}
                   onClick={() => {
-                    if (!restaurantId || !finalAmount || finalAmount < 1) return;
-                    topupMutation.mutate(finalAmount);
+                    if (!restaurantId || !selectedAmount) return;
+                    topupMutation.mutate(selectedAmount);
                   }}
                   style={{
                     width: "100%", height: 46, borderRadius: 12,
-                    background: (!finalAmount || finalAmount < 1) ? "rgba(255,255,255,0.06)" : C.grad,
+                    background: C.grad,
                     border: "none", color: "#fff", fontWeight: 700, fontSize: 14,
-                    cursor: (!finalAmount || finalAmount < 1) ? "not-allowed" : "pointer",
+                    cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     opacity: topupMutation.isPending ? 0.7 : 1,
                   }}
@@ -393,7 +372,7 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
                   ) : (
                     <>
                       <Zap style={{ width: 15, height: 15 }} />
-                      {finalAmount >= 1 ? `\u20AC${finalAmount.toFixed(2)} via Stripe aufladen` : "Betrag w\u00E4hlen"}
+                      {`\u20AC${selectedAmount.toFixed(2)} via Stripe aufladen`}
                     </>
                   )}
                 </motion.button>

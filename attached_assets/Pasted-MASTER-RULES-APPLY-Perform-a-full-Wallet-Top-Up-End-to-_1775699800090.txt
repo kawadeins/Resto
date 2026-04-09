@@ -1,0 +1,184 @@
+MASTER RULES APPLY
+
+Perform a full "Wallet Top-Up End-to-End Validation + Test/Live Price Split Check" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT change unrelated billing logic.
+Do NOT modify Premium subscription checkout in this pass.
+This pass is ONLY for validating the wallet top-up flow end-to-end.
+
+========================
+GOAL
+========================
+
+Validate that the Wallet / Guthaben top-up system works correctly from inside the app and is safe across both test and live Stripe environments.
+
+This must confirm the real user journey:
+
+- user opens wallet/top-up section
+- user selects a top-up amount
+- backend creates Stripe checkout session
+- frontend redirects correctly to Stripe Checkout
+- success URL works
+- cancel URL works
+- wallet balance does NOT increase before verified payment
+- test mode uses test prices
+- production uses live prices
+
+========================
+1. FRONTEND ENTRY VALIDATION
+========================
+
+From inside the app, verify the wallet/top-up UI works.
+
+Check:
+- balance section is visible
+- quick top-up buttons are visible (5€, 10€, 20€, 50€ or configured values)
+- top-up button triggers the request correctly
+- no dead button
+- no console error
+- no broken loading state
+
+========================
+2. WALLET TOP-UP ENDPOINT VALIDATION
+========================
+
+Validate the existing wallet top-up endpoint used by the app.
+
+Ensure:
+- it returns a valid Stripe Checkout URL
+- it uses the correct environment-aware price IDs
+- in test mode it uses TEST wallet top-up prices
+- in deployed production it uses LIVE wallet top-up prices
+
+Do NOT change price selection logic unless broken.
+
+========================
+3. TEST/LIVE PRICE SPLIT CHECK
+========================
+
+Verify that wallet top-up follows the same environment split logic as Premium subscription.
+
+Expected behavior:
+- development/sandbox → test wallet price IDs
+- deployed/production → live wallet price IDs
+
+Confirm there are no remaining:
+- hardcoded test-only wallet prices in production path
+- hardcoded live-only wallet prices in test path
+- old demo pricing fallbacks
+
+========================
+4. STRIPE REDIRECT VALIDATION
+========================
+
+Verify that after clicking a top-up amount:
+
+- the app redirects correctly to Stripe Checkout
+- the Stripe Checkout session loads
+- the amount shown is correct
+- the selected wallet amount matches the Stripe page
+
+========================
+5. SUCCESS / CANCEL FLOW VALIDATION
+========================
+
+Validate both flows:
+
+A. Success flow:
+- after successful payment, success URL returns correctly
+- no broken page
+- no bad redirect
+- no false wallet increase before webhook confirmation
+- eventual wallet balance update works correctly after verified payment
+
+B. Cancel flow:
+- after canceling checkout, cancel URL returns correctly
+- no crash
+- no broken page
+- balance remains unchanged
+- user can retry cleanly
+
+========================
+6. BILLING TRUTH VALIDATION
+========================
+
+Confirm wallet credit is only added through verified Stripe billing truth / webhook processing.
+
+Ensure:
+- clicking checkout does NOT change wallet balance
+- returning from Stripe success does NOT instantly fake-add balance
+- only confirmed paid event increases wallet
+- failed/cancelled payment does not increase balance
+- duplicate webhook does not duplicate wallet credit
+
+========================
+7. UX QUALITY
+========================
+
+Check:
+- loading states are clear
+- no duplicate submissions
+- no stuck spinner
+- no silent failure
+- German messages are understandable
+- insufficient auth or payment errors are shown cleanly
+
+========================
+8. TRANSACTION VISIBILITY
+========================
+
+Verify the wallet section correctly shows:
+- current balance
+- top-up history or transaction history if implemented
+- no misleading fake values
+
+If no data exists yet:
+- show honest empty state
+
+========================
+9. ERROR HANDLING
+========================
+
+If wallet top-up fails for any reason, ensure user sees a clean and understandable message.
+
+Do NOT allow:
+- blank screen
+- silent failure
+- raw technical error
+- fake successful top-up state
+
+========================
+10. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Wallet UI status
+B. Top-up endpoint status
+C. Test/live price split status
+D. Stripe redirect status
+E. Success URL status
+F. Cancel URL status
+G. Billing truth status
+H. UX quality
+I. Any blockers or remaining issues
+
+Classify each area as:
+- Working
+- Working but Weak
+- Broken
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must support a clean end-to-end wallet top-up flow from inside the app to Stripe Checkout and back.
+
+The wallet funding flow must be:
+- real
+- truthful
+- environment-safe
+- webhook-backed
+- production-ready
