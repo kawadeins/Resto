@@ -1,0 +1,130 @@
+MASTER RULES APPLY
+
+Perform a "Business Dashboard Security Recovery + Production Auth Cleanup Pass" for the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT remove the recent UI fixes.
+Do NOT touch Founder dashboard.
+This pass is ONLY for replacing temporary demo/auth shortcuts with production-safe logic.
+
+========================
+GOAL
+========================
+
+Keep the business dashboard fully working, but remove insecure temporary fixes that are not acceptable for production.
+
+The dashboard must remain:
+- fully functional
+- visually correct
+- role-aware
+- secure
+- production-ready
+
+========================
+1. REMOVE OWNER EMAIL BOOTSTRAP HACK
+========================
+
+Find and remove any logic that auto-sets a fixed owner email such as:
+- owner@restosmart.app
+- restosmart_owner_email bootstrap in localStorage
+
+This is not production-safe.
+
+Replace it with real business identity resolution from:
+- actual authenticated session
+- actual business owner account
+- real role-based user context
+
+Do NOT rely on a hardcoded owner identity.
+
+========================
+2. RESTORE WALLET GET SECURITY
+========================
+
+Re-secure GET /api/wallet.
+
+Do NOT leave wallet balance publicly readable.
+
+Instead:
+- require real authenticated business user context
+- allow only the correct owner/manager/business user
+- validate access server-side
+- return only the wallet for the correct business
+
+The wallet balance is sensitive business data and must not be open.
+
+========================
+3. KEEP UI FUNCTIONAL
+========================
+
+While restoring secure auth behavior, keep the dashboard working correctly.
+
+Do NOT break:
+- wallet balance display
+- AI reply
+- team management
+- reviews tools
+- campaign center
+- premium pages
+
+Fix the root identity problem rather than bypassing auth.
+
+========================
+4. USE REAL BUSINESS USER CONTEXT
+========================
+
+Make all business dashboard actions depend on real user/business identity.
+
+This includes:
+- wallet
+- review AI
+- team management
+- premium tools
+- campaign tools
+
+Do NOT depend on localStorage hacks as the source of truth.
+
+========================
+5. DEV/DEMO TOLERANCE
+========================
+
+If you need special demo support, isolate it clearly:
+- only in test/dev mode
+- never in production logic
+- never as the default owner identity
+
+========================
+6. FINAL VALIDATION
+========================
+
+After cleanup, verify:
+
+- wallet balance still loads correctly for the correct business owner
+- AI reply still works
+- team management still works
+- no hardcoded owner identity remains
+- no public wallet exposure remains
+- role-based business flows still work
+
+========================
+7. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Hardcoded auth/demo logic removed
+B. Wallet GET security restored
+C. Business identity source now used
+D. UI functions still working
+E. Remaining auth/security risks if any
+
+========================
+FINAL GOAL
+========================
+
+The business dashboard must remain fully functional while using real production-safe identity and access rules.
+
+No hardcoded owner bootstrap.
+No open wallet endpoint.
+No fake auth shortcuts in production.

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { track } from "@/lib/conversion-tracking";
+import { useSession } from "@/contexts/session-context";
 import { useCancelSubscription, useGetSubscription } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ import { PREMIUM_PRICE_DISPLAY, PREMIUM_PLAN_NAME } from "@/lib/monetization-eng
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 function getOwnerEmail(): string {
-  return localStorage.getItem("restosmart_owner_email") ?? "owner@restosmart.app";
+  return localStorage.getItem("restosmart_owner_email") ?? "";
 }
 
 interface MyPromotionsData {
@@ -76,6 +77,7 @@ function getUrlParams() {
 export default function Billing() {
   useEffect(() => { track("premium_page_opened"); }, []);
   const { toast } = useToast();
+  const { logout } = useSession();
   const cancelSubscription = useCancelSubscription();
   const { data: subscription, refetch: refetchSubscription } = useGetSubscription({});
   const { data: promoData } = useTrialStats();
@@ -163,21 +165,21 @@ export default function Billing() {
 
   const handleCancel = () => {
     cancelSubscription.mutate({}, {
-      onSuccess: () => {
+      onSuccess: async () => {
         localStorage.removeItem("restosmart_owner_premium");
-        localStorage.removeItem("restosmart_owner_email");
         localStorage.removeItem("restosmart_trial_end");
         localStorage.removeItem("restosmart_trial_started");
         setCancelled(true);
         toast({ title: "Abonnement beendet", description: "Ihr Zugang wurde deaktiviert." });
+        await logout();
       },
-      onError: () => {
+      onError: async () => {
         localStorage.removeItem("restosmart_owner_premium");
-        localStorage.removeItem("restosmart_owner_email");
         localStorage.removeItem("restosmart_trial_end");
         localStorage.removeItem("restosmart_trial_started");
         setCancelled(true);
         toast({ title: "Zugang beendet" });
+        await logout();
       },
     });
     setShowCancelConfirm(false);

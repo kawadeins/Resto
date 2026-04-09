@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import { track } from "@/lib/conversion-tracking";
 import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 import { usePermissions, type TeamRole } from "@/hooks/use-permissions";
+import { useSession } from "@/contexts/session-context";
+import { LogOut } from "lucide-react";
 
 function getTrialState() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -244,16 +246,15 @@ function getOwnerInfo() {
   return { email, name, initials };
 }
 
-function exitToProfile() {
-  localStorage.removeItem("restosmart_owner_premium");
-  localStorage.removeItem("restosmart_trial_end");
-  window.location.reload();
-}
-
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { email, name, initials } = getOwnerInfo();
   const { role } = usePermissions();
+  const { logout } = useSession();
+
+  async function handleLogout() {
+    await logout();
+  }
 
   const filteredNavigation = navigation.filter((item) => {
     if (!item.roles) return true;
@@ -308,7 +309,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
 
-        {/* Owner section — exit back to customer profile */}
+        {/* Owner section */}
         <div className="shrink-0 px-4 py-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
@@ -321,19 +322,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
             </div>
             <button
-              onClick={exitToProfile}
-              title="Zurück zum Profil"
-              className="shrink-0 p-1.5 rounded-md text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+              onClick={handleLogout}
+              title="Abmelden"
+              className="shrink-0 p-1.5 rounded-md text-sidebar-foreground/40 hover:text-red-400 hover:bg-sidebar-accent/50 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
           <button
-            onClick={exitToProfile}
-            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-sidebar-border/60 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 transition-colors text-xs font-medium"
+            onClick={handleLogout}
+            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-sidebar-border/60 text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-500/5 transition-colors text-xs font-medium"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Zurück zum Benutzerprofil
+            <LogOut className="w-3.5 h-3.5" />
+            Abmelden
           </button>
         </div>
       </div>

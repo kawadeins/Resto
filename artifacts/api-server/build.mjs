@@ -97,6 +97,7 @@ async function buildAll() {
       "zeromq",
       "zeromq-prebuilt",
       "playwright",
+      "openai",
       "puppeteer",
       "puppeteer-core",
       "electron",

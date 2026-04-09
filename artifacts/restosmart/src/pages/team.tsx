@@ -5,7 +5,7 @@ import { Users, UserPlus, Shield, ShieldCheck, ShieldAlert, Mail, MoreVertical, 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 function getOwnerEmail(): string {
-  return localStorage.getItem("restosmart_owner_email") ?? "owner@restosmart.app";
+  return localStorage.getItem("restosmart_owner_email") ?? "";
 }
 
 type TeamRole = "owner" | "manager" | "staff";

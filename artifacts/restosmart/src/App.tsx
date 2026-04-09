@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { SessionProvider, useSession } from "@/contexts/session-context";
+import Login from "@/pages/login";
 import { track } from "@/lib/conversion-tracking";
 import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
@@ -410,84 +412,84 @@ function PremiumRequired() {
   );
 }
 
-// ─── Bootstrap owner identity ─────────────────────────────────────────────────
-// Auto-sets restosmart_owner_email in localStorage if not present,
-// by reading the restaurant profile. Required for auth-gated endpoints.
-async function bootstrapOwnerEmail(): Promise<void> {
-  if (localStorage.getItem("restosmart_owner_email")) return;
-  try {
-    // Use the team bootstrap endpoint to resolve the owner email for this restaurant.
-    const r = await fetch("/api/team/bootstrap-owner", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "owner@restosmart.app", restaurantId: 1 }),
-    });
-    // Always set the known owner email — bootstrap-owner creates the record if needed.
-    localStorage.setItem("restosmart_owner_email", "owner@restosmart.app");
-  } catch {
-    localStorage.setItem("restosmart_owner_email", "owner@restosmart.app");
+// ─── Authenticated shell ───────────────────────────────────────────────────────
+// Shown only when a valid server session exists.
+
+function AuthenticatedApp() {
+  const { isLoading, isAuthenticated } = useSession();
+
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div style={{
+        minHeight: "100vh", background: "#0a0a0a",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <div style={{ color: "#6b7280", fontSize: 14 }}>Wird geladen …</div>
+      </div>
+    );
   }
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return (
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      <Switch>
+        <Route path="/founder" component={Founder} />
+        <Route>
+          <PremiumGate>
+            <PermissionProvider>
+              <Layout>
+                <Switch>
+                  <Route path="/login"><Redirect to="/" /></Route>
+                  <Route path="/" component={Overview} />
+                  <Route path="/profile" component={Profile} />
+                  <Route path="/bookings" component={Bookings} />
+                  <Route path="/reservations" component={Reservations} />
+                  <Route path="/tables" component={Tables} />
+                  <Route path="/pos" component={Pos} />
+                  <Route path="/reviews" component={Reviews} />
+                  <Route path="/onboarding" component={Onboarding} />
+                  <Route path="/staff">{() => <RoleGuard allowed={["owner", "manager"]} section="Personal"><Staff /></RoleGuard>}</Route>
+                  <Route path="/inventory">{() => <RoleGuard allowed={["owner", "manager"]} section="Inventar"><Inventory /></RoleGuard>}</Route>
+                  <Route path="/menu">{() => <RoleGuard allowed={["owner", "manager"]} section="Speisekarte"><Menu /></RoleGuard>}</Route>
+                  <Route path="/analytics">{() => <RoleGuard allowed={["owner", "manager"]} section="Analyse"><Analytics /></RoleGuard>}</Route>
+                  <Route path="/boost">{() => <RoleGuard allowed={["owner", "manager"]} section="Sichtbarkeit & Boost"><Boost /></RoleGuard>}</Route>
+                  <Route path="/marketing">{() => <RoleGuard allowed={["owner", "manager"]} section="Marketing"><Marketing /></RoleGuard>}</Route>
+                  <Route path="/insights">{() => <RoleGuard allowed={["owner", "manager"]} section="Tote Stunden"><Insights /></RoleGuard>}</Route>
+                  <Route path="/campaigns">{() => <RoleGuard allowed={["owner", "manager"]} section="Wachstum"><Campaigns /></RoleGuard>}</Route>
+                  <Route path="/optimizer">{() => <RoleGuard allowed={["owner", "manager"]} section="Optimizer"><Optimizer /></RoleGuard>}</Route>
+                  <Route path="/finances">{() => <RoleGuard allowed="owner" section="Finanzen"><Finances /></RoleGuard>}</Route>
+                  <Route path="/payroll">{() => <RoleGuard allowed="owner" section="Gehaltsabrechnung"><Payroll /></RoleGuard>}</Route>
+                  <Route path="/billing">{() => <RoleGuard allowed="owner" section="Abonnement"><Billing /></RoleGuard>}</Route>
+                  <Route path="/team">{() => <RoleGuard allowed="owner" section="Team"><Team /></RoleGuard>}</Route>
+                  <Route path="/super-admin">{() => <RoleGuard allowed="owner" section="Admin"><SuperAdmin /></RoleGuard>}</Route>
+                  <Route component={NotFound} />
+                </Switch>
+              </Layout>
+            </PermissionProvider>
+          </PremiumGate>
+        </Route>
+      </Switch>
+    </WouterRouter>
+  );
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
-  useEffect(() => {
-    document.documentElement.classList.add("dark");
-    bootstrapOwnerEmail();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Switch>
-            {/* Founder Command Center — completely outside PremiumGate, has its own auth */}
-            <Route path="/founder" component={Founder} />
-
-            {/* All other routes require premium */}
-            <Route>
-              <PremiumGate>
-                <PermissionProvider>
-                  <Layout>
-                    <Switch>
-                      <Route path="/login">
-                        <Redirect to="/" />
-                      </Route>
-                      <Route path="/" component={Overview} />
-                      <Route path="/profile" component={Profile} />
-                      <Route path="/bookings" component={Bookings} />
-                      <Route path="/reservations" component={Reservations} />
-                      <Route path="/tables" component={Tables} />
-                      <Route path="/pos" component={Pos} />
-                      <Route path="/reviews" component={Reviews} />
-                      <Route path="/onboarding" component={Onboarding} />
-
-                      <Route path="/staff">{() => <RoleGuard allowed={["owner", "manager"]} section="Personal"><Staff /></RoleGuard>}</Route>
-                      <Route path="/inventory">{() => <RoleGuard allowed={["owner", "manager"]} section="Inventar"><Inventory /></RoleGuard>}</Route>
-                      <Route path="/menu">{() => <RoleGuard allowed={["owner", "manager"]} section="Speisekarte"><Menu /></RoleGuard>}</Route>
-                      <Route path="/analytics">{() => <RoleGuard allowed={["owner", "manager"]} section="Analyse"><Analytics /></RoleGuard>}</Route>
-                      <Route path="/boost">{() => <RoleGuard allowed={["owner", "manager"]} section="Sichtbarkeit & Boost"><Boost /></RoleGuard>}</Route>
-                      <Route path="/marketing">{() => <RoleGuard allowed={["owner", "manager"]} section="Marketing"><Marketing /></RoleGuard>}</Route>
-                      <Route path="/insights">{() => <RoleGuard allowed={["owner", "manager"]} section="Tote Stunden"><Insights /></RoleGuard>}</Route>
-                      <Route path="/campaigns">{() => <RoleGuard allowed={["owner", "manager"]} section="Wachstum"><Campaigns /></RoleGuard>}</Route>
-                      <Route path="/optimizer">{() => <RoleGuard allowed={["owner", "manager"]} section="Optimizer"><Optimizer /></RoleGuard>}</Route>
-
-                      <Route path="/finances">{() => <RoleGuard allowed="owner" section="Finanzen"><Finances /></RoleGuard>}</Route>
-                      <Route path="/payroll">{() => <RoleGuard allowed="owner" section="Gehaltsabrechnung"><Payroll /></RoleGuard>}</Route>
-                      <Route path="/billing">{() => <RoleGuard allowed="owner" section="Abonnement"><Billing /></RoleGuard>}</Route>
-                      <Route path="/team">{() => <RoleGuard allowed="owner" section="Team"><Team /></RoleGuard>}</Route>
-                      <Route path="/super-admin">{() => <RoleGuard allowed="owner" section="Admin"><SuperAdmin /></RoleGuard>}</Route>
-
-                      <Route component={NotFound} />
-                    </Switch>
-                  </Layout>
-                </PermissionProvider>
-              </PremiumGate>
-            </Route>
-          </Switch>
-        </WouterRouter>
-        <Toaster />
+        <SessionProvider>
+          <AuthenticatedApp />
+          <Toaster />
+        </SessionProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
+import session from "express-session";
 import router from "./routes";
 import { WebhookHandlers } from "./webhookHandlers";
 import { logger } from "./lib/logger";
@@ -9,6 +10,10 @@ import { globalLimiter } from "./middleware/rate-limiters";
 import path from "path";
 
 const app: Express = express();
+
+// Trust the reverse proxy (Replit uses a proxy layer in front of Node).
+// Required for express-rate-limit to correctly identify client IPs from X-Forwarded-For.
+app.set("trust proxy", 1);
 
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use(helmet({
@@ -67,6 +72,25 @@ app.post(
       return res.status(400).json({ error: "Webhook processing error" });
     }
   }
+);
+
+// ── Sessions — registered before routes ───────────────────────────────────────
+const SESSION_SECRET = process.env.SESSION_SECRET ?? "dev-insecure-secret-change-me";
+const IS_PRODUCTION = process.env.REPLIT_DEPLOYMENT === "1";
+
+app.use(
+  session({
+    name: "restosmart.sid",
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: IS_PRODUCTION,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
+  }),
 );
 
 // ── Body parsing (2 MB limit) — registered AFTER the webhook route ────────────
