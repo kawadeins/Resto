@@ -20,56 +20,14 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import { otpRequestLimiter, otpVerifyLimiter } from "../middleware/rate-limiters";
 import { logger } from "../lib/logger";
+import { resolveIdentity } from "../lib/identity";
 
 const router = Router();
-const RESTAURANT_ID = 1;
 const OTP_TTL_MINUTES = 10;
 const DEV_MODE = !process.env.RESEND_API_KEY;
 
 // Resend client — only used when API key is present
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
-type TeamRole = "owner" | "manager" | "staff";
-
-// ── Identity resolution ───────────────────────────────────────────────────────
-
-async function resolveIdentity(
-  email: string,
-): Promise<{ role: TeamRole; restaurantId: number } | null> {
-  if (!email) return null;
-  const normalised = email.trim().toLowerCase();
-
-  const ownerRow = await db.execute(sql`
-    SELECT id, owner_email FROM restaurants WHERE id = ${RESTAURANT_ID} LIMIT 1
-  `);
-  const restaurant = ownerRow.rows[0] as
-    | { id: number; owner_email: string }
-    | undefined;
-  if (!restaurant) return null;
-
-  if (
-    restaurant.owner_email &&
-    normalised === restaurant.owner_email.trim().toLowerCase()
-  ) {
-    return { role: "owner", restaurantId: restaurant.id };
-  }
-
-  const memberRows = await db.execute(sql`
-    SELECT role, status FROM team_members
-    WHERE LOWER(email) = ${normalised}
-      AND restaurant_id = ${restaurant.id}
-    LIMIT 1
-  `);
-  const member = memberRows.rows[0] as
-    | { role: string; status: string }
-    | undefined;
-  if (!member || member.status !== "active") return null;
-
-  return {
-    role: member.role as TeamRole,
-    restaurantId: restaurant.id,
-  };
-}
 
 // ── OTP generation ────────────────────────────────────────────────────────────
 

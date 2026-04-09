@@ -66,11 +66,25 @@ RestoSmart is a full-stack SaaS web application providing a premium, information
 -   **Two-Step OTP Login + PostgreSQL Sessions:**
     -   `POST /api/auth/request-otp` — validates email vs DB, generates 6-digit code (10-min TTL) in `auth_otps` table. Dev mode: returns `devCode` + displays on login screen. Prod with RESEND: sends email only. Limit: 5 OTP requests/15 min/IP.
     -   `POST /api/auth/verify-otp` — validates OTP (marks used immediately), re-validates identity, creates server session. Limit: 10 attempts/15 min/IP. Replay-safe.
-    -   `GET /api/auth/session` — returns `{ authenticated, email, role, restaurantId }` or 401.
+    -   `GET /api/auth/session` — returns `{ authenticated, email, role, restaurantId, csrfToken }` or 401.
     -   `POST /api/auth/logout` — destroys session from PostgreSQL store, clears cookie.
     -   **PostgreSQL session store** via `connect-pg-simple` (table: `sessions`, index: `idx_sessions_expire`). Survives restarts. Auto-pruned every 15 min. 7-day TTL.
     -   `role-guard.ts` — session-first identity (`req.session.userEmail`), header fallback for API tooling. Both validated against DB.
     -   Frontend: `SessionContext` with `requestOtp()` + `verifyOtp()` methods. Two-step login page shows dev code when RESEND not configured.
+    -   **Shared identity resolution:** `lib/identity.ts` — `resolveIdentity(email)` checks owner_email in restaurants table then active team_members; used by OTP + OAuth routes.
+-   **Google OAuth 2.0 (optional — activated by env vars):**
+    -   `GET /api/auth/google` — generates state, stores in session, redirects to Google consent screen.
+    -   `GET /api/auth/google/callback` — verifies state, exchanges code for access_token, fetches email from userinfo endpoint, calls `resolveIdentity()`, creates identical session to OTP flow.
+    -   Required env vars: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+    -   Authorized redirect URI to register: `{OAUTH_CALLBACK_BASE_URL}/api/auth/google/callback`.
+-   **Apple Sign-In (optional — activated by env vars):**
+    -   `GET /api/auth/apple` — generates state, stores in session, redirects to Apple Sign-In.
+    -   `POST /api/auth/apple/callback` — Apple posts here; verifies id_token via Apple JWKS (`jose` library), resolves email (stored in `oauth_accounts` table after first sign-in — Apple only sends email once), calls `resolveIdentity()`, responds with HTML auto-redirect page (sets session cookie before redirect).
+    -   Required env vars: `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`.
+    -   **`oauth_accounts` table:** `(provider, provider_sub, email)` — maps Google/Apple user IDs → email for repeated logins.
+    -   `GET /api/auth/oauth/providers` — returns `{google: bool, apple: bool}` for frontend to conditionally render social buttons.
+    -   `jose` package used for Apple JWT signing (client_secret) and JWKS verification.
+-   **Login page (`pages/login.tsx` — redesigned):** Shows Google/Apple buttons when providers configured (fetched from `/api/auth/providers`). Social buttons do full-page navigation to OAuth routes. Divider + "Mit E-Mail anmelden" toggle for OTP fallback. Handles `?login_error=` query params from OAuth callbacks with German error messages. OAUTH_CALLBACK_BASE_URL auto-detected from `REPLIT_DEV_DOMAIN` env var (set in code, not required as secret).
 -   **Team routes (session-hardened):** `GET /team` → `requireManagerOrAbove()`. `/invite`, `/:id/role`, `/:id`, `/resend` → `requireOwner()` + `teamInviteLimiter`/`mutationLimiter`. `/permissions` → session email only, no auto-owner fallback.
 -   **Rate Limiters:** `otpRequestLimiter` (5/15min), `otpVerifyLimiter` (10/15min), `walletTopupLimiter` (5/15min), `teamInviteLimiter` (20/hr), `boostActivationLimiter` (30/hr), `mutationLimiter` (100/15min), `aiLimiter` (30/hr), `globalLimiter` (300/min).
 -   **DB Indexes (performance):** `idx_wallet_transactions_restaurant_id/created_at`, `idx_team_members_email/restaurant_id`, `idx_reviews_restaurant_id/created_at`, `idx_promotions_restaurant_id/status`, `idx_sessions_expire`, `idx_auth_otps_email_code/expires_at`.

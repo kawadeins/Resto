@@ -45,6 +45,7 @@ import brainRouter from "./brain";
 import teamRouter from "./team";
 import walletRouter from "./wallet";
 import authRouter from "./auth";
+import oauthRouter from "./oauth";
 
 const router: IRouter = Router();
 
@@ -94,5 +95,6 @@ router.use("/brain", brainRouter);
 router.use("/team", teamRouter);
 router.use("/wallet", walletRouter);
 router.use("/auth", authRouter);
+router.use("/auth", oauthRouter);
 
 export default router;

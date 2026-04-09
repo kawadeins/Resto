@@ -1,0 +1,224 @@
+MASTER RULES APPLY
+
+Build and fix the complete "Business Login Page + Real Google/Apple Sign-In Flow" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the whole app.
+Do NOT break the current business dashboard, session auth, OTP system, wallet, premium, or role logic.
+This pass is specifically for making the login experience fast, real, and production-ready so we can test the full dashboard properly.
+
+========================
+GOAL
+========================
+
+Create a proper login page for the business dashboard and enable real authentication using:
+
+- Google sign-in
+- Apple sign-in
+
+The login must be real, not placeholder UI.
+
+The result must allow a business owner / manager to log in quickly and safely using:
+- Google
+- Apple
+- existing email/OTP flow as fallback if needed
+
+This must work so we can test the entire business dashboard end-to-end.
+
+========================
+1. LOGIN PAGE UPGRADE (CRITICAL)
+========================
+
+Build or repair the login page so it feels complete and professional.
+
+Requirements:
+- clean layout
+- clear branding
+- fast loading
+- proper German business-facing text
+- one clear purpose: sign in to the business dashboard
+
+The page must include:
+- Continue with Google
+- Continue with Apple
+- optional email login / OTP fallback if already implemented
+- clear error messages
+- loading states
+- session check / redirect if already logged in
+
+Do NOT leave the login page broken, incomplete, or dev-like.
+
+========================
+2. REAL GOOGLE SIGN-IN
+========================
+
+Implement real Google authentication.
+
+Requirements:
+- use the proper Google OAuth flow
+- create/restore authenticated business session on success
+- connect authenticated identity to the correct business account / role
+- redirect user into the business dashboard after success
+- preserve existing role/session logic
+
+Do NOT leave Google as a fake button.
+
+If configuration is missing, add what is needed in code and clearly list any required environment variables.
+
+========================
+3. REAL APPLE SIGN-IN
+========================
+
+Implement real Apple authentication.
+
+Requirements:
+- use proper Apple sign-in flow
+- create/restore authenticated business session on success
+- connect authenticated identity to the correct business account / role
+- redirect user into the business dashboard after success
+- preserve existing role/session logic
+
+Do NOT leave Apple as a fake button.
+
+If configuration is missing, add what is needed in code and clearly list any required environment variables.
+
+========================
+4. SESSION INTEGRATION
+========================
+
+Both Google and Apple sign-in must end in the same secure business session system already used by the platform.
+
+Requirements:
+- create server-side session after successful auth
+- set correct secure cookie behavior
+- keep role-based access working
+- make dashboard requests authenticated immediately after login
+- do NOT rely on localStorage hacks for identity
+
+========================
+5. ACCOUNT MATCHING / BUSINESS RESOLUTION
+========================
+
+After Google or Apple login, the system must resolve the authenticated business user correctly.
+
+Required behavior:
+- if email matches a real owner account → log in as owner
+- if email matches an active manager/staff team member → log in with correct role
+- if account is unknown → show a clean German message and deny access safely
+
+No accidental auto-owner behavior.
+No fake account creation.
+No unauthorized access.
+
+========================
+6. REDIRECT FLOW
+========================
+
+After successful login:
+- redirect to the correct business dashboard
+- no blank page
+- no broken state
+- no partial session
+
+If user is already authenticated:
+- skip login page
+- send directly into dashboard
+
+========================
+7. ERROR HANDLING
+========================
+
+Fix all login-related error states.
+
+Requirements:
+- clean German messages
+- no raw technical errors
+- no confusing OAuth failures
+- no endless loading
+- no silent failure
+
+Examples:
+- "Anmeldung fehlgeschlagen"
+- "Dieses Konto hat keinen Zugriff auf das Business-Dashboard"
+- "Bitte versuche es erneut"
+
+========================
+8. KEEP OTP FALLBACK IF USEFUL
+========================
+
+If the OTP login flow already exists and works, keep it as a fallback option.
+
+But:
+- Google and Apple must be fast primary options
+- the page should feel modern and easy
+
+========================
+9. FRONTEND + BACKEND COMPLETE FLOW
+========================
+
+Verify the full flow works end-to-end:
+
+- user opens login page
+- clicks Google or Apple
+- completes auth
+- server creates session
+- role resolves correctly
+- dashboard opens
+- authenticated requests work
+- logout still works
+- login persists correctly
+
+========================
+10. TESTING SUPPORT
+========================
+
+Because this is needed for full app testing, verify login works cleanly with the business dashboard sections such as:
+- wallet
+- premium
+- boosts
+- team
+- reviews
+- campaign center
+- billing
+
+No section should fail due to missing auth after login.
+
+========================
+11. GERMAN BUSINESS UX
+========================
+
+All business-facing login text should be in German.
+
+Examples:
+- "Anmelden"
+- "Mit Google fortfahren"
+- "Mit Apple fortfahren"
+- "Oder mit E-Mail anmelden"
+- "Zum Business-Dashboard"
+
+========================
+12. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Login page status
+B. Google sign-in status
+C. Apple sign-in status
+D. Session integration status
+E. Business account matching status
+F. Redirect flow status
+G. Remaining config requirements if any
+H. Any blockers if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must have a proper business login page that supports real Google and Apple sign-in, creates real secure sessions, and lets us enter the dashboard and test the full business system correctly.
+
+This login flow must feel:
+- fast
+- real
+- professional
+- production-ready
