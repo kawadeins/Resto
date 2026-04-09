@@ -107,6 +107,25 @@ router.get("/", requireManagerOrAbove(), async (req, res) => {
 const ALLOWED_TOPUP_AMOUNTS = [5, 10, 20, 50] as const;
 type AllowedAmount = typeof ALLOWED_TOPUP_AMOUNTS[number];
 
+// ── Wallet top-up price IDs (environment-aware) ───────────────────────────────
+const IS_PRODUCTION = process.env.REPLIT_DEPLOYMENT === "1";
+
+const WALLET_PRICE_MAP_TEST: Record<AllowedAmount, string> = {
+  5:  "price_1TK5glAgY8yJ0qgTReaHz2z6",
+  10: "price_1TK5gmAgY8yJ0qgT1fgsk1Q4",
+  20: "price_1TK5gmAgY8yJ0qgTox5IbVhe",
+  50: "price_1TK5gmAgY8yJ0qgTlTgR4k46",
+};
+
+const WALLET_PRICE_MAP_LIVE: Record<AllowedAmount, string> = {
+  5:  "price_1TK85zDq06OMDnUjwib9ALyb",
+  10: "price_1TK86iDq06OMDnUjlGz1JfYl",
+  20: "price_1TK87FDq06OMDnUjz3TfwCgI",
+  50: "price_1TK88CDq06OMDnUjiu6n5Sx7",
+};
+
+const WALLET_PRICE_MAP = IS_PRODUCTION ? WALLET_PRICE_MAP_LIVE : WALLET_PRICE_MAP_TEST;
+
 const TopUpSchema = z.object({
   restaurantId: z.number().int().positive(),
   amount:       z.number().refine(
@@ -144,32 +163,8 @@ router.post("/topup", strictLimiter, requireManagerOrAbove(), async (req, res) =
       }
     }
 
-    // Look up the wallet topup price for this amount from Stripe
-    const amountCents = body.amount * 100;
-    let priceId: string | null = null;
-
-    try {
-      const products = await stripe.products.search({
-        query: "name:'RestoSmart Wallet Topup' AND active:'true'",
-      });
-      if (products.data.length > 0) {
-        const prices = await stripe.prices.list({
-          product: products.data[0].id,
-          active: true,
-        });
-        const match = prices.data.find((p) => p.unit_amount === amountCents && p.currency === "eur" && !p.recurring);
-        priceId = match?.id ?? null;
-      }
-    } catch (err) {
-      req.log.warn({ err }, "Could not look up wallet topup price from Stripe");
-    }
-
-    if (!priceId) {
-      return void res.status(503).json({
-        error: "stripe_product_not_configured",
-        message: "Das Stripe-Produkt f\u00fcr Wallet-Aufladung ist noch nicht eingerichtet.",
-      });
-    }
+    // Resolve price ID from static environment-aware map (no dynamic Stripe lookup)
+    const priceId = WALLET_PRICE_MAP[body.amount as AllowedAmount];
 
     // Create one-time Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({

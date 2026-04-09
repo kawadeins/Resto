@@ -1,0 +1,112 @@
+Implement LIVE Stripe wallet top-up integration using fixed price IDs.
+
+IMPORTANT:
+- Do NOT use dynamic product search anymore
+- Do NOT use test prices in production
+- Use the provided LIVE Stripe price IDs directly
+
+========================================
+PRICE IDS (LIVE)
+========================================
+
+€5  → price_1TK85zDq06OMDnUjwib9ALyb
+€10 → price_1TK86iDq06OMDnUjlGz1JfYl
+€20 → price_1TK87FDq06OMDnUjz3TfwCgI
+€50 → price_1TK88CDq06OMDnUjiu6n5Sx7
+
+========================================
+BACKEND (wallet.ts)
+========================================
+
+1. Replace any dynamic Stripe product lookup with a fixed mapping:
+
+const WALLET_PRICE_MAP = {
+  5: "price_1TK85zDq06OMDnUjwib9ALyb",
+  10: "price_1TK86iDq06OMDnUjlGz1JfYl",
+  20: "price_1TK87FDq06OMDnUjz3TfwCgI",
+  50: "price_1TK88CDq06OMDnUjiu6n5Sx7",
+};
+
+2. Validate amount strictly:
+
+- Only allow: 5, 10, 20, 50
+- Reject anything else with 400 error
+
+3. Create Stripe Checkout Session:
+
+const priceId = WALLET_PRICE_MAP[amount];
+
+const session = await stripe.checkout.sessions.create({
+  mode: "payment",
+  payment_method_types: ["card"],
+  line_items: [
+    {
+      price: priceId,
+      quantity: 1,
+    },
+  ],
+  success_url: `${APP_URL}/billing?topup=success`,
+  cancel_url: `${APP_URL}/billing?topup=cancel`,
+  metadata: {
+    type: "wallet_topup",
+    amount: amount.toString(),
+    userId: user.id,
+  },
+});
+
+4. Return:
+
+return { checkoutUrl: session.url };
+
+========================================
+WEBHOOK (IMPORTANT — DO NOT SKIP)
+========================================
+
+In webhook handler:
+
+IF event.type === "checkout.session.completed":
+
+- Verify:
+  session.payment_status === "paid"
+  session.metadata.type === "wallet_topup"
+
+- Then:
+
+const amount = Number(session.metadata.amount);
+
+- Add to wallet balance in DB
+
+- Use idempotency (do NOT double credit)
+
+========================================
+FRONTEND
+========================================
+
+- Buttons:
+  €5 / €10 / €20 / €50
+
+- Each button calls:
+POST /api/wallet/topup { amount }
+
+- On success:
+window.location.href = checkoutUrl
+
+========================================
+RULES
+========================================
+
+- NEVER add wallet balance before webhook
+- NEVER trust frontend for payment success
+- ALWAYS rely on Stripe webhook
+- Keep rate limiting on endpoint
+- Keep auth middleware
+
+========================================
+GOAL
+========================================
+
+Make wallet top-ups fully LIVE:
+- Real Stripe payments
+- Real money
+- Accurate wallet balance
+- No fake credit

@@ -70,9 +70,15 @@ RestoSmart is a full-stack SaaS web application providing a premium, information
 
 -   **Real Stripe Billing System (Production-Ready):**
     -   **Stripe Integration:** Connected via Replit Stripe connector. Packages: `stripe@20.0.0` + `stripe-replit-sync@1.0.0` at workspace root.
-    -   **Products created in Stripe:** "RestoSmart Business Premium" (€39.90/month recurring EUR) and "RestoSmart Wallet Topup" (one-time prices: €5, €10, €20, €50 EUR).
+    -   **Hardcoded Stripe price IDs (environment-aware via `REPLIT_DEPLOYMENT === "1"`):**
+        -   Premium subscription — TEST: `price_1TK5gkAgY8yJ0qgTg1oAXFd6`, LIVE: `price_1TK7DxDq06OMDnUjYnSnpUY3` (€39.90/month)
+        -   Wallet €5  — TEST: `price_1TK5glAgY8yJ0qgTReaHz2z6`, LIVE: `price_1TK85zDq06OMDnUjwib9ALyb`
+        -   Wallet €10 — TEST: `price_1TK5gmAgY8yJ0qgT1fgsk1Q4`, LIVE: `price_1TK86iDq06OMDnUjlGz1JfYl`
+        -   Wallet €20 — TEST: `price_1TK5gmAgY8yJ0qgTox5IbVhe`, LIVE: `price_1TK87FDq06OMDnUjz3TfwCgI`
+        -   Wallet €50 — TEST: `price_1TK5gmAgY8yJ0qgTlTgR4k46`, LIVE: `price_1TK88CDq06OMDnUjiu6n5Sx7`
+        -   No dynamic Stripe product search — all price IDs are statically mapped in `billing.ts` and `wallet.ts`.
     -   **Checkout flow:** `POST /api/billing/checkout` → creates real Stripe Checkout Session → returns `{url}` → frontend redirects. Premium is NOT activated by this route — only by webhook.
-    -   **Wallet topup flow:** `POST /api/wallet/topup` → creates real Stripe Checkout Session (one-time payment) → returns `{checkoutUrl}` → frontend redirects. Wallet credit is ONLY added after `checkout.session.completed` webhook with `payment_status=paid`.
+    -   **Wallet topup flow:** `POST /api/wallet/topup` → creates real Stripe Checkout Session (one-time payment) → returns `{checkoutUrl}` → frontend redirects. Wallet credit is ONLY added after `checkout.session.completed` webhook with `payment_status=paid`. Only amounts [5, 10, 20, 50] EUR accepted (Zod enforced).
     -   **Webhook:** Registered at `POST /api/stripe/webhook` with `express.raw()` BEFORE `express.json()`. Handled in `webhookHandlers.ts` using `stripe-replit-sync` for signature verification + custom business logic.
     -   **Events handled:** `checkout.session.completed` (subscription + wallet topup), `invoice.paid` (renewal), `invoice.payment_failed` (past_due), `customer.subscription.updated/deleted` (state sync), `payment_intent.succeeded/failed` (logged).
     -   **Idempotency:** `stripe_webhook_events` table prevents duplicate processing. Events are checked before processing.
