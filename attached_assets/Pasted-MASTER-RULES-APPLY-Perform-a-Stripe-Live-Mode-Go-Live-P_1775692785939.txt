@@ -1,0 +1,133 @@
+MASTER RULES APPLY
+
+Perform a "Stripe Live Mode Go-Live Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT change unrelated dashboard systems.
+Do NOT keep any billing flow in test mode after this pass.
+
+This pass is ONLY for switching the current real Stripe integration from test mode to live mode safely.
+
+========================
+GOAL
+========================
+
+Move the existing Stripe integration from test mode to live mode for real payments.
+
+This must include:
+- live Premium subscription billing
+- live wallet top-up billing
+- live webhook verification
+- live customer portal configuration
+- production-safe environment configuration
+
+========================
+1. LIVE STRIPE KEYS
+========================
+
+Replace all Stripe test keys with live keys in production environment variables.
+
+Required:
+- STRIPE_SECRET_KEY = sk_live_...
+- STRIPE_PUBLISHABLE_KEY = pk_live_...
+
+Ensure no test keys remain in production config.
+
+========================
+2. LIVE WEBHOOK
+========================
+
+Create/update the live Stripe webhook endpoint.
+
+Ensure:
+- live webhook endpoint exists
+- live signing secret is used
+- webhook signature verification uses the live secret
+- no test webhook secret remains in production
+
+========================
+3. LIVE PRODUCTS / PRICES
+========================
+
+Ensure all required products and prices exist in live mode:
+
+- Premium subscription (39,90€ / month)
+- wallet top-up amounts (5€, 10€, 20€, 50€)
+
+If test-mode products are currently referenced, replace them with live-mode product/price IDs.
+
+========================
+4. BILLING PORTAL LIVE MODE
+========================
+
+Configure Stripe Billing Portal in live mode.
+
+Ensure:
+- portal is activated in live mode
+- allowed actions are configured correctly
+- return URL is production-ready
+- branding is configured correctly
+
+========================
+5. CHECKOUT URLS
+========================
+
+Verify:
+- success URL uses production app domain
+- cancel URL uses production app domain
+- no localhost/test URLs remain
+
+========================
+6. PRODUCTION BILLING TRUTH
+========================
+
+Verify live mode billing still works through webhook truth only.
+
+Ensure:
+- Premium activates only after verified live webhook
+- wallet balance updates only after verified live payment
+- no frontend-only activation
+- no demo fallback remains
+
+========================
+7. IDEMPOTENCY + DUPLICATE SAFETY
+========================
+
+Keep duplicate protection active in live mode.
+
+Ensure repeated webhook events do not:
+- duplicate wallet top-ups
+- duplicate subscription activations
+- create inconsistent billing state
+
+========================
+8. FINAL LIVE MODE VALIDATION
+========================
+
+Validate:
+- live checkout session is created
+- live wallet top-up session is created
+- webhook verification works in live mode
+- Premium state updates correctly
+- wallet credit updates correctly
+- no test-mode references remain
+
+========================
+9. FINAL REPORT
+========================
+
+Output:
+A. Live keys status
+B. Live webhook status
+C. Live product/price status
+D. Billing portal live status
+E. Premium live billing status
+F. Wallet live billing status
+G. Remaining blockers if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must be fully switched from Stripe test mode to live mode, with real payment processing, real webhook truth, and no production dependency on test-mode keys, products, prices, or portal configuration.

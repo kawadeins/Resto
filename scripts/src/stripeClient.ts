@@ -1,6 +1,13 @@
 import Stripe from "stripe";
 
-async function getCredentials() {
+async function getCredentials(): Promise<{ publishableKey: string; secretKey: string }> {
+  // Allow explicit override for live mode seeding from local environment
+  const explicitKey = process.env.STRIPE_SECRET_KEY;
+  if (explicitKey) {
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY ?? "";
+    return { secretKey: explicitKey, publishableKey };
+  }
+
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? "repl " + process.env.REPL_IDENTITY

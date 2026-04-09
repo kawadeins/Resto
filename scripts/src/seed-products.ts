@@ -10,10 +10,22 @@
  * Run with: pnpm --filter @workspace/scripts exec tsx src/seed-products.ts
  */
 
+import Stripe from "stripe";
 import { getUncachableStripeClient } from "./stripeClient";
 
 async function createProducts() {
   const stripe = await getUncachableStripeClient();
+
+  // Display which mode we're running in for safety
+  const keyHint = (process.env.STRIPE_SECRET_KEY ?? "").substring(0, 12) || "connector";
+  const mode = (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_live") ? "LIVE" : "TEST";
+  console.log(`=== Stripe Seed Script — ${mode} MODE ===`);
+  if (mode === "LIVE") {
+    console.log(`Key: ${keyHint}...`);
+    console.log("WARNING: Creating LIVE products that will charge real money!\n");
+  } else {
+    console.log("Running in test/sandbox mode.\n");
+  }
 
   console.log("Creating RestoSmart products and prices in Stripe...\n");
 
@@ -114,7 +126,9 @@ async function createProducts() {
     }
   }
 
-  console.log("\nDone! Webhook sync will populate the stripe schema tables automatically.");
+  console.log("\n=== Seed complete ===");
+  console.log(`Mode: ${mode}`);
+  console.log("Webhook sync will populate the stripe schema tables automatically when the server starts.");
 }
 
 createProducts().catch((err) => {
