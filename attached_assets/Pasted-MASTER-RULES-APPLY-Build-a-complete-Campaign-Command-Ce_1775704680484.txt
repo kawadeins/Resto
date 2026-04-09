@@ -1,0 +1,299 @@
+MASTER RULES APPLY
+
+Build a complete "Campaign Command Center" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the entire app.
+Do NOT break existing wallet, billing, boost, ROI, recommendation, or auto-campaign systems.
+This is a unification and control-layer pass.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+It must work on top of:
+- wallet top-up system
+- wallet → boost deduction engine
+- boost ROI + profit tracking
+- smart boost recommendations
+- auto budget optimization
+- auto campaign mode
+- promotion tools
+- premium business system
+
+========================
+GOAL
+========================
+
+Create one unified campaign control area where business owners can:
+
+- see all boosts
+- understand spend
+- understand ROI
+- see recommendations
+- manage auto mode
+- review history
+- control campaigns from one place
+
+This should feel like:
+- a real business command center
+- simple but powerful
+- premium
+- decision-oriented
+
+========================
+1. UNIFIED CAMPAIGN OVERVIEW (CRITICAL)
+========================
+
+Add a main section such as:
+
+- "Kampagnenzentrale"
+- "Boost-Kontrollzentrum"
+- "Kampagnenübersicht"
+
+This section must unify all campaign-related functions into one coherent place.
+
+========================
+2. TOP SUMMARY STRIP
+========================
+
+At the top, show a compact summary with:
+
+- current wallet balance
+- active campaigns count
+- total spent this week
+- total estimated return
+- best performing campaign
+- auto mode status
+
+This should give an instant overview.
+
+========================
+3. ACTIVE CAMPAIGNS PANEL
+========================
+
+Show currently active boosts with:
+
+- boost name
+- status
+- spend
+- performance
+- start time
+- auto/manual mode
+- quick actions
+
+Possible statuses:
+- active
+- paused
+- stopped
+- waiting
+- auto-managed
+
+========================
+4. RECOMMENDATIONS PANEL
+========================
+
+Include the smart recommendation area directly in the command center.
+
+Show:
+- recommended next boost
+- recommended budget
+- best time window
+- reason
+
+Examples:
+- "Empfohlen: Mittags-Boost"
+- "Beste Zeit: 11:30–14:00"
+- "Grund: Hohe Nachfrage in deiner Umgebung"
+
+========================
+5. ROI / PERFORMANCE PANEL
+========================
+
+Show boost results clearly:
+
+- spend
+- impressions
+- clicks
+- bookings / interactions
+- ROI
+- strongest/weakest boost
+
+Keep it readable and business-focused.
+
+========================
+6. AUTO MODE CONTROL PANEL
+========================
+
+Include auto campaign controls in the same place.
+
+Show:
+- auto mode ON/OFF
+- current budget limits
+- allowed boost types
+- wallet reserve threshold
+- daily / weekly spend
+
+Allow owner to update these limits easily.
+
+========================
+7. QUICK ACTIONS
+========================
+
+Allow fast actions such as:
+- activate boost now
+- pause campaign
+- stop campaign
+- top up wallet
+- enable auto mode
+- disable auto mode
+
+These actions must be visible and practical.
+
+========================
+8. CAMPAIGN HISTORY PANEL
+========================
+
+Show a history section with:
+
+- past campaigns
+- cost
+- result
+- ROI summary
+- date
+- boost type
+
+This helps the business understand patterns over time.
+
+========================
+9. ALERTS / ATTENTION PANEL
+========================
+
+Add a small area such as:
+- "Benötigt Aufmerksamkeit"
+- "Wichtige Hinweise"
+
+Examples:
+- "Niedriges Guthaben"
+- "Kampagne performt schwach"
+- "Budgetlimit fast erreicht"
+- "Jetzt guter Zeitpunkt für Sichtbarkeit"
+
+Keep this useful, not noisy.
+
+========================
+10. BUSINESS-TYPE ADAPTATION
+========================
+
+Make the command center feel relevant to business type.
+
+Restaurants:
+- lunch/dinner boosts highlighted
+
+Cafés:
+- breakfast / coffee-time focus
+
+Bars:
+- evening / nightlife focus
+
+========================
+11. GERMAN UX
+========================
+
+All labels must be in German.
+
+Examples:
+- "Kampagnenzentrale"
+- "Aktive Kampagnen"
+- "Empfohlene Aktion"
+- "ROI"
+- "Automatischer Kampagnenmodus"
+- "Verlauf"
+- "Guthaben"
+
+========================
+12. PREMIUM GATING
+========================
+
+Basic overview may be visible broadly if intended.
+
+Advanced sections should remain Premium-only, such as:
+- detailed ROI
+- smart recommendations
+- auto mode controls
+- performance insights
+- campaign intelligence
+
+Show clean upgrade prompts where relevant.
+
+========================
+13. DATA HONESTY
+========================
+
+Do NOT show:
+- fake campaign results
+- fake ROI
+- fake recommendations
+- fake statuses
+
+Everything must come from real tracked data or honest estimates.
+
+========================
+14. CLEAN UX PRINCIPLES
+========================
+
+The command center must feel:
+- clean
+- premium
+- not cluttered
+- not overwhelming
+
+Use:
+- compact summary cards
+- strong hierarchy
+- simple sections
+- clear action buttons
+
+========================
+15. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- all campaign systems are visible from one place
+- active/manual/auto campaigns are understandable
+- wallet + spend + ROI + recommendations work together
+- quick actions work
+- history is real
+- premium gating works correctly
+- dashboard remains clean and useful
+
+========================
+16. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Unified overview status
+B. Active campaigns panel status
+C. Recommendations panel status
+D. ROI/performance status
+E. Auto mode control status
+F. History panel status
+G. Alerts panel status
+H. Premium gating status
+I. Remaining weak points if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should have one powerful campaign command center where business owners can understand and control all boost activity from one place.
+
+This section should make the owner feel:
+
+- "I understand my campaigns"
+- "I see where my money goes"
+- "I know what to do next"
+- "This is a professional system"

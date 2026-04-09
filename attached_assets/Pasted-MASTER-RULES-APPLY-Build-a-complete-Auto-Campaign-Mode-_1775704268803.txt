@@ -1,0 +1,332 @@
+MASTER RULES APPLY
+
+Build a complete "Auto Campaign Mode" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break the existing wallet, billing, boost, ROI, analytics, or recommendation systems.
+Do NOT create fake AI behavior.
+Do NOT overspend user money.
+This system must stay controlled, transparent, and safe.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+It must work on top of:
+- wallet top-up system
+- wallet → boost deduction engine
+- boost ROI + profit tracking
+- smart boost recommendations
+- auto budget optimization
+- dynamic pricing
+- promotion tools
+
+========================
+GOAL
+========================
+
+Create a mode where the system can automatically run and manage boost campaigns for the business owner.
+
+The system should be able to:
+
+- activate campaigns automatically
+- choose the best timing
+- stop weak campaigns
+- shift spend toward stronger opportunities
+- stay within business-defined spending limits
+
+This must feel:
+- intelligent
+- safe
+- transparent
+- business-friendly
+- premium
+
+========================
+1. AUTO CAMPAIGN MODE TOGGLE (CRITICAL)
+========================
+
+Add a clear optional mode such as:
+
+- "Automatischer Kampagnenmodus"
+- "Kampagnen automatisch steuern"
+
+This mode must be OFF by default.
+
+When OFF:
+- user controls campaigns manually
+
+When ON:
+- system may activate/pause/stop eligible boosts automatically based on rules and limits
+
+========================
+2. USER LIMITS / CONTROL RULES
+========================
+
+Before auto mode becomes active, allow the business owner to define limits such as:
+
+- daily max spend
+- weekly max spend
+- allowed boost types
+- active time windows
+- minimum wallet reserve
+- stop auto mode when wallet below X€
+- maximum number of active boosts at once
+
+The system must NEVER exceed these limits.
+
+========================
+3. AUTO ACTIVATION LOGIC
+========================
+
+When auto mode is active, the system may automatically activate a boost only if:
+
+- wallet balance is sufficient
+- expected opportunity is strong enough
+- timing is favorable
+- pricing is reasonable
+- business is open / relevant
+- the selected boost type is allowed
+- user limits are respected
+
+Do NOT activate campaigns blindly.
+
+========================
+4. AUTO PAUSE / AUTO STOP LOGIC
+========================
+
+The system must automatically pause or stop boosts when:
+
+- demand drops significantly
+- ROI becomes weak
+- activity becomes too low
+- wallet thresholds are hit
+- max spend is reached
+- another better opportunity is available
+
+This should reduce wasted spend.
+
+========================
+5. AUTO REALLOCATION OF SPEND
+========================
+
+Allow the system to move spending priority toward stronger windows or stronger boost types.
+
+Examples:
+- less spend in weak morning hours
+- more spend in strong evening hours
+- shift from weak boost type to stronger one
+
+Only do this inside user-defined limits.
+
+========================
+6. ELIGIBLE BOOST TYPES
+========================
+
+Allow the owner to choose which boosts can be auto-managed.
+
+Examples:
+- Frühstücks-Boost
+- Mittags-Boost
+- Happy-Hour-Boost
+- Nachtleben-Boost
+- Heat-Map-Boost
+- Local Spotlight
+
+Do NOT assume all boosts are allowed.
+
+========================
+7. AUTO MODE DECISION RULES
+========================
+
+The system must use real inputs such as:
+
+- wallet balance
+- boost cost
+- ROI history
+- business type
+- time of day
+- local demand
+- clicks / impressions / bookings
+- dynamic pricing state
+- previous campaign performance
+
+It must decide:
+- activate
+- wait
+- pause
+- stop
+- shift focus
+
+========================
+8. TRANSPARENCY / EXPLANATION PANEL
+========================
+
+Always show why the system acted.
+
+Examples:
+- "Automatisch aktiviert wegen hoher Nachfrage"
+- "Pausiert wegen schwacher Performance"
+- "Nicht gestartet wegen niedrigem Guthaben"
+- "Budgetlimit für heute erreicht"
+- "Abendlicher Boost bevorzugt wegen besserer Ergebnisse"
+
+Do NOT make this a black box.
+
+========================
+9. LIVE CAMPAIGN STATUS
+========================
+
+Inside Promotion Tools, show clear status for auto-managed boosts:
+
+- "Automatisch aktiv"
+- "Automatisch pausiert"
+- "Wartet auf besseres Zeitfenster"
+- "Budgetlimit erreicht"
+
+This must feel understandable and alive.
+
+========================
+10. MANUAL OVERRIDE
+========================
+
+The owner must always be able to:
+- turn auto mode off instantly
+- manually stop a campaign
+- manually activate a campaign
+- change limits at any time
+
+Manual control must override automation safely.
+
+========================
+11. SPENDING SAFETY
+========================
+
+The system must never:
+- overspend wallet balance
+- activate a boost without wallet deduction safety
+- bypass billing logic
+- create duplicate campaigns
+- ignore max spend limits
+
+All wallet deduction rules must remain enforced.
+
+========================
+12. DUPLICATE / COLLISION PROTECTION
+========================
+
+Ensure auto mode cannot:
+- create duplicate boosts of same type
+- spam repeated activate/pause cycles
+- trigger conflicting states
+
+Add sensible cooldown / stability rules where needed.
+
+========================
+13. BUSINESS-TYPE ADAPTATION
+========================
+
+Adapt automation by business type:
+
+Restaurants:
+- focus lunch and dinner demand
+
+Cafés:
+- focus breakfast / coffee-time demand
+
+Bars:
+- focus evening / nightlife windows
+
+This must feel relevant, not generic.
+
+========================
+14. PREMIUM GATING (IMPORTANT 💸)
+========================
+
+Auto Campaign Mode should be a Premium-only feature.
+
+If user is not Premium:
+show clear locked state and upgrade prompt such as:
+- "Upgrade auf Premium für automatische Kampagnensteuerung"
+- "Mit Premium kann RestoMaster deine Boosts automatisch optimieren"
+
+========================
+15. GERMAN UX COPY
+========================
+
+All business-facing UI must be in German.
+
+Examples:
+- "Automatischer Kampagnenmodus"
+- "Automatisch aktiv"
+- "Automatisch pausiert"
+- "Budgetlimit erreicht"
+- "Wartet auf besseres Zeitfenster"
+- "Automatisch optimiert"
+
+========================
+16. DATA HONESTY RULES
+========================
+
+Do NOT:
+- fake demand
+- fake performance
+- fake ROI
+- fake automatic decisions
+
+If confidence is low:
+- do not act
+- explain uncertainty cleanly
+
+========================
+17. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- auto mode only works when enabled
+- user limits are always respected
+- wallet safety remains intact
+- campaigns activate/pause/stop correctly
+- duplicate campaign creation is blocked
+- explanations are shown clearly
+- manual override works correctly
+- premium gating works correctly
+
+========================
+18. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Auto mode toggle status
+B. Limit controls status
+C. Auto activation logic status
+D. Auto pause/stop logic status
+E. Spend reallocation status
+F. Transparency/explanation status
+G. Manual override status
+H. Premium gating status
+I. Remaining risks if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should become a platform where business owners can let the system manage campaigns automatically in a safe and controlled way.
+
+The system should:
+- spend smarter
+- avoid weak campaigns
+- improve ROI
+- reduce manual effort
+- increase Premium value
+
+The owner should feel:
+
+- "The system is working for me"
+- "It knows when to spend"
+- "It protects my budget"
+- "This is worth paying for"

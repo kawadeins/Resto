@@ -4,18 +4,23 @@
  */
 
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { track } from "@/lib/conversion-tracking";
 import { PromotionTools } from "@/components/promotion-tools";
 import { PromotionPerformance } from "@/components/promotion-performance";
 import { BoostROIPanel } from "@/components/boost-roi-panel";
 import { SmartBoostRecommendations } from "@/components/smart-boost-recommendations";
+import { AutoCampaignMode } from "@/components/auto-campaign-mode";
 import { TrialConversionBanner } from "@/components/layout";
 import { getBizType } from "@/lib/biz-copy";
 import { Zap } from "lucide-react";
 
 export default function Boost() {
   const biz = getBizType();
-  const isTrial = typeof window !== "undefined" && localStorage.getItem("restosmart_owner_premium") === "trial";
+  const [, setLocation] = useLocation();
+  const premiumVal = typeof window !== "undefined" ? localStorage.getItem("restosmart_owner_premium") : null;
+  const isPremium = premiumVal === "true" || premiumVal === "trial";
+  const isTrial = premiumVal === "trial";
 
   useEffect(() => { track("boost_page_opened"); }, []);
 
@@ -44,6 +49,10 @@ export default function Boost() {
         </div>
       </div>
 
+      <AutoCampaignMode
+        isPremium={isPremium}
+        onUpgradeClick={() => setLocation("/subscription")}
+      />
       <SmartBoostRecommendations />
       <PromotionTools />
       <PromotionPerformance />

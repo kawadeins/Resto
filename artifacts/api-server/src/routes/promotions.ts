@@ -988,12 +988,14 @@ const AutoBudgetSchema = z.object({
 router.put("/auto-budget-settings", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = AutoBudgetSchema.parse(req.body);
+    // Serialize JS array to PostgreSQL text[] literal so drizzle doesn't treat it as a row constructor
+    const typesLiteral = "{" + body.allowedBoostTypes.map((t: string) => '"' + t.replace(/"/g, '\\"') + '"').join(",") + "}";
     await db.execute(sql`
       INSERT INTO auto_budget_settings
         (restaurant_id, enabled, daily_max_cents, weekly_max_cents, min_wallet_balance_cents, allowed_boost_types, auto_pause_low_roi, updated_at)
       VALUES
         (${body.restaurantId}, ${body.enabled}, ${Math.round(body.dailyMaxEur*100)}, ${Math.round(body.weeklyMaxEur*100)},
-         ${Math.round(body.minWalletBalanceEur*100)}, ${body.allowedBoostTypes}, ${body.autoPauseLowROI}, NOW())
+         ${Math.round(body.minWalletBalanceEur*100)}, ${typesLiteral}::text[], ${body.autoPauseLowROI}, NOW())
       ON CONFLICT (restaurant_id) DO UPDATE SET
         enabled                  = EXCLUDED.enabled,
         daily_max_cents          = EXCLUDED.daily_max_cents,
@@ -1219,6 +1221,388 @@ router.get("/roi", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to compute ROI");
     return res.status(500).json({ error: "Failed to compute ROI" });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTO CAMPAIGN MODE ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── GET /api/promotions/auto-campaign/log ─────────────────────────────────────
+router.get("/auto-campaign/log", async (req, res) => {
+  try {
+    const restaurantId = Number(req.query.restaurantId);
+    if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+
+    const [logRows, settingsRes, activeRes] = await Promise.all([
+      db.execute(sql`
+        SELECT id, action, boost_type, promotion_id, reason, confidence,
+               wallet_before, wallet_after, created_at
+        FROM auto_campaign_log
+        WHERE restaurant_id = ${restaurantId}
+        ORDER BY created_at DESC
+        LIMIT 50
+      `),
+      db.execute(sql`
+        SELECT enabled, daily_max_cents, weekly_max_cents, min_wallet_balance_cents,
+               allowed_boost_types, auto_pause_low_roi, updated_at
+        FROM auto_budget_settings
+        WHERE restaurant_id = ${restaurantId}
+        LIMIT 1
+      `),
+      db.execute(sql`
+        SELECT type, status, id, created_at, impressions, clicks, bookings_attributed
+        FROM promotions
+        WHERE restaurant_id = ${restaurantId} AND status IN ('active', 'paused')
+        ORDER BY created_at DESC
+      `),
+    ]);
+
+    const settings = (settingsRes.rows[0] as any) ?? null;
+
+    const boostStatus: Record<string, any> = {};
+    for (const row of activeRes.rows as any[]) {
+      if (!boostStatus[row.type]) {
+        boostStatus[row.type] = {
+          status:      row.status,
+          promotionId: row.id,
+          since:       row.created_at,
+          impressions: Number(row.impressions ?? 0),
+          clicks:      Number(row.clicks ?? 0),
+          bookings:    Number(row.bookings_attributed ?? 0),
+        };
+      }
+    }
+
+    return res.json({
+      settings,
+      log:         logRows.rows,
+      boostStatus,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch auto-campaign log");
+    return res.status(500).json({ error: "Failed to fetch auto-campaign log" });
+  }
+});
+
+// ── POST /api/promotions/auto-campaign/run ────────────────────────────────────
+router.post("/auto-campaign/run", async (req, res) => {
+  const restaurantId = Number(req.body?.restaurantId ?? req.query.restaurantId);
+  if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+
+  try {
+    // 1. Load settings
+    const settingsRes = await db.execute(sql`
+      SELECT enabled, daily_max_cents, weekly_max_cents, min_wallet_balance_cents,
+             allowed_boost_types, auto_pause_low_roi
+      FROM auto_budget_settings
+      WHERE restaurant_id = ${restaurantId}
+      LIMIT 1
+    `);
+    const settings = settingsRes.rows[0] as any;
+
+    if (!settings || !settings.enabled) {
+      return res.json({ skipped: true, reason: "Auto-Kampagnenmodus ist deaktiviert." });
+    }
+
+    // 2. Load restaurant context
+    const [restRes, walletEur, spendRes, activeRes] = await Promise.all([
+      db.execute(sql`SELECT business_type, name FROM restaurants WHERE id = ${restaurantId} LIMIT 1`),
+      getWalletBalance(restaurantId),
+      db.execute(sql`
+        SELECT
+          COALESCE(SUM(amount) FILTER (WHERE created_at >= CURRENT_DATE),0)             AS today_cents_raw,
+          COALESCE(SUM(amount) FILTER (WHERE created_at >= date_trunc('week', NOW())),0) AS week_cents_raw
+        FROM wallet_transactions
+        WHERE restaurant_id = ${restaurantId} AND type = 'boost_spend'
+      `),
+      db.execute(sql`
+        SELECT type, id, impressions, clicks, bookings_attributed, created_at
+        FROM promotions
+        WHERE restaurant_id = ${restaurantId} AND status = 'active'
+      `),
+    ]);
+
+    const biz     = (restRes.rows[0] as any) ?? {};
+    const bizType = (biz.business_type as string) ?? "restaurant";
+
+    const spendRow    = spendRes.rows[0] as any;
+    let todaySpent  = Math.round(Number(spendRow?.today_cents_raw ?? 0) * 100);  // in cents
+    let weekSpent   = Math.round(Number(spendRow?.week_cents_raw  ?? 0) * 100);
+
+    const dailyMaxCents  = Number(settings.daily_max_cents  ?? 0);
+    const weeklyMaxCents = Number(settings.weekly_max_cents ?? 0);
+    const minWalletCents = Number(settings.min_wallet_balance_cents ?? 0);
+    let walletCents      = Math.round(walletEur * 100);
+
+    const allowedTypes: string[] = Array.isArray(settings.allowed_boost_types)
+      ? settings.allowed_boost_types
+      : Object.keys(BOOST_TYPES);
+
+    const activeTypes = new Set((activeRes.rows as any[]).map(r => r.type));
+
+    // 3. Current time (Vienna)
+    const nowUtc = new Date();
+    const hour   = (nowUtc.getUTCHours() + 1) % 24;
+
+    const demandByHour = (h: number) => {
+      if (h >= 7  && h < 9)  return 0.85;
+      if (h >= 11 && h < 14) return 0.95;
+      if (h >= 17 && h < 21) return 1.0;
+      if (h >= 21 && h < 24) return 0.7;
+      if (h >= 0  && h < 3)  return 0.6;
+      return 0.35;
+    };
+    const demandScore = demandByHour(hour);
+
+    const bizWeight = BIZ_BOOST_WEIGHT[bizType] ?? BIZ_BOOST_WEIGHT.restaurant;
+    const roiRes = await db.execute(sql`
+      WITH perf AS (
+        SELECT type, SUM(clicks) AS clicks, SUM(impressions) AS impressions,
+               SUM(bookings_attributed) AS bookings
+        FROM promotions
+        WHERE restaurant_id = ${restaurantId} AND created_at > NOW() - INTERVAL '30 days'
+        GROUP BY type
+      )
+      SELECT * FROM perf
+    `);
+    const roiByType = new Map<string, { clicks: number; impressions: number; bookings: number }>();
+    for (const row of roiRes.rows as any[]) {
+      roiByType.set((row as any).type, {
+        clicks:      Number((row as any).clicks      ?? 0),
+        impressions: Number((row as any).impressions ?? 0),
+        bookings:    Number((row as any).bookings    ?? 0),
+      });
+    }
+
+    const actions: Array<{
+      boostType:   string;
+      action:      string;
+      reason:      string;
+      confidence:  number;
+      promotionId?: number;
+      walletBefore?: number;
+      walletAfter?:  number;
+    }> = [];
+
+    // 4. Global limit checks
+    const dailyLimitHit  = dailyMaxCents  > 0 && todaySpent  >= dailyMaxCents;
+    const weeklyLimitHit = weeklyMaxCents > 0 && weekSpent   >= weeklyMaxCents;
+    const walletLow      = minWalletCents > 0 && walletCents <= minWalletCents;
+
+    // 5. Score and decide for each allowed boost type
+    for (const type of allowedTypes) {
+      const hourScore  = BOOST_HOUR_SCORE[type]?.(hour) ?? 0.5;
+      const bizScore   = bizWeight[type]              ?? 0.5;
+      const hist       = roiByType.get(type)          ?? { clicks: 0, impressions: 0, bookings: 0 };
+      const ctr        = hist.impressions > 0 ? hist.clicks / hist.impressions : 0;
+      const histScore  = Math.min(1, ctr * 5 + (hist.bookings > 0 ? 0.2 : 0));
+      const confidence = Math.round((hourScore * 0.45 + demandScore * 0.30 + bizScore * 0.15 + histScore * 0.10) * 100);
+
+      const isActive   = activeTypes.has(type);
+
+      // ── Pause logic: active boost performing poorly ──────────────────────────
+      if (isActive && settings.auto_pause_low_roi && confidence < 30) {
+        const activeRow = (activeRes.rows as any[]).find(r => r.type === type);
+        if (activeRow) {
+          await db.execute(sql`
+            UPDATE promotions SET status = 'paused', updated_at = NOW()
+            WHERE id = ${activeRow.id} AND status = 'active'
+          `);
+          await db.execute(sql`
+            INSERT INTO auto_campaign_log
+              (restaurant_id, action, boost_type, promotion_id, reason, confidence, wallet_before, wallet_after)
+            VALUES (${restaurantId}, 'paused', ${type}, ${activeRow.id},
+              ${"Schwache Performance — Boost automatisch pausiert (Score " + confidence + "%)"},
+              ${confidence}, ${walletEur}, ${walletEur})
+          `);
+          actions.push({
+            boostType: type, action: "paused",
+            reason: "Schwache Performance — Boost automatisch pausiert (Score " + confidence + "%)",
+            confidence, promotionId: activeRow.id,
+          });
+        }
+        continue;
+      }
+
+      // ── Skip if already active and healthy ───────────────────────────────────
+      if (isActive) {
+        actions.push({
+          boostType: type, action: "already_active",
+          reason: "Boost bereits aktiv — kein Handlungsbedarf.",
+          confidence,
+        });
+        continue;
+      }
+
+      // ── Budget / wallet limit checks ─────────────────────────────────────────
+      if (walletLow) {
+        await db.execute(sql`
+          INSERT INTO auto_campaign_log
+            (restaurant_id, action, boost_type, reason, confidence, wallet_before, wallet_after)
+          VALUES (${restaurantId}, 'skipped_low_wallet', ${type},
+            ${"Guthaben zu niedrig — Mindestguthaben nicht erfüllt"},
+            ${confidence}, ${walletEur}, ${walletEur})
+        `);
+        actions.push({
+          boostType: type, action: "skipped_low_wallet",
+          reason: "Guthaben zu niedrig — Mindestguthaben nicht erfüllt.",
+          confidence,
+        });
+        continue;
+      }
+      if (dailyLimitHit) {
+        actions.push({
+          boostType: type, action: "skipped_budget_limit",
+          reason: "Tageslimit erreicht — kein weiterer Boost heute.",
+          confidence,
+        });
+        continue;
+      }
+      if (weeklyLimitHit) {
+        actions.push({
+          boostType: type, action: "skipped_budget_limit",
+          reason: "Wochenlimit erreicht — kein weiterer Boost diese Woche.",
+          confidence,
+        });
+        continue;
+      }
+
+      // ── Low confidence: wait ─────────────────────────────────────────────────
+      if (confidence < 65) {
+        let waitReason = "Bedingungen nicht optimal — System wartet auf besseres Zeitfenster.";
+        if (demandScore < 0.4) waitReason = "Niedrige Nachfrage — Aktivierung verschoben.";
+        else if (hourScore < 0.3) waitReason = "Kein optimales Zeitfenster — System wartet.";
+        await db.execute(sql`
+          INSERT INTO auto_campaign_log
+            (restaurant_id, action, boost_type, reason, confidence, wallet_before, wallet_after)
+          VALUES (${restaurantId}, 'waiting', ${type}, ${waitReason}, ${confidence}, ${walletEur}, ${walletEur})
+        `);
+        actions.push({ boostType: type, action: "waiting", reason: waitReason, confidence });
+        continue;
+      }
+
+      // ── High confidence: activate ────────────────────────────────────────────
+      const boostCost = await computeBoostCost(type as BoostType, restaurantId);
+      if (walletCents < Math.round(boostCost * 100)) {
+        await db.execute(sql`
+          INSERT INTO auto_campaign_log
+            (restaurant_id, action, boost_type, reason, confidence, wallet_before, wallet_after)
+          VALUES (${restaurantId}, 'skipped_low_wallet', ${type},
+            ${"Nicht genug Guthaben für Aktivierung (benötigt €" + boostCost.toFixed(2) + ")"},
+            ${confidence}, ${walletEur}, ${walletEur})
+        `);
+        actions.push({
+          boostType: type, action: "skipped_low_wallet",
+          reason: "Nicht genug Guthaben für Aktivierung (benötigt €" + boostCost.toFixed(2) + ").",
+          confidence,
+        });
+        continue;
+      }
+
+      // Atomic activate + wallet deduction (same pattern as manual POST /)
+      try {
+        const boostLabel = BOOST_TYPES[type as BoostType]?.label ?? type;
+        const txResult = await db.transaction(async (tx) => {
+          await tx.execute(sql`SELECT pg_advisory_xact_lock(${restaurantId})`);
+
+          const balResult = await tx.execute(sql`
+            SELECT COALESCE(SUM(CASE WHEN type='topup' OR type='refund' THEN amount ELSE -amount END),0) AS balance
+            FROM wallet_transactions WHERE restaurant_id = ${restaurantId}
+          `);
+          const currentBalance = parseFloat((balResult.rows[0] as any)?.balance ?? "0");
+          if (currentBalance < boostCost) throw new Error("insufficient_balance");
+
+          // Duplicate guard (within 30s for auto mode)
+          const dupCheck = await tx.execute(sql`
+            SELECT id FROM promotions
+            WHERE restaurant_id = ${restaurantId} AND type = ${type}
+              AND status = 'active' AND created_at > NOW() - INTERVAL '30 seconds'
+            LIMIT 1
+          `);
+          if (dupCheck.rows.length > 0) throw new Error("duplicate_activation");
+
+          // Pause any existing active same-type
+          await tx.execute(sql`
+            UPDATE promotions SET status = 'paused', updated_at = NOW()
+            WHERE restaurant_id = ${restaurantId} AND type = ${type} AND status = 'active'
+          `);
+
+          const insertResult = await tx.execute(sql`
+            INSERT INTO promotions (restaurant_id, type, status)
+            VALUES (${restaurantId}, ${type}, 'active')
+            RETURNING id, type
+          `);
+          const promotion = insertResult.rows[0] as { id: number; type: string };
+
+          const newBalance = Math.round((currentBalance - boostCost) * 100) / 100;
+          await tx.execute(sql`
+            INSERT INTO wallet_transactions
+              (restaurant_id, type, amount, description, boost_type, balance_after, promotion_id)
+            VALUES (${restaurantId}, 'boost_spend', ${boostCost},
+              ${"Auto-Kampagne: " + boostLabel}, ${type}, ${newBalance}, ${promotion.id})
+          `);
+
+          return { promotion, balanceBefore: currentBalance, balanceAfter: newBalance };
+        });
+
+        const activateReason =
+          hourScore  > 0.8 && demandScore > 0.7
+            ? "Automatisch aktiviert wegen hoher Nachfrage und optimalem Zeitfenster."
+            : hourScore > 0.7
+              ? "Automatisch aktiviert wegen optimalem Zeitfenster."
+              : "Automatisch aktiviert wegen guter Marktbedingungen.";
+
+        await db.execute(sql`
+          INSERT INTO auto_campaign_log
+            (restaurant_id, action, boost_type, promotion_id, reason, confidence, wallet_before, wallet_after)
+          VALUES (${restaurantId}, 'activated', ${type}, ${txResult.promotion.id},
+            ${activateReason}, ${confidence}, ${txResult.balanceBefore}, ${txResult.balanceAfter})
+        `);
+
+        actions.push({
+          boostType:   type,
+          action:      "activated",
+          reason:      activateReason,
+          confidence,
+          promotionId: txResult.promotion.id,
+          walletBefore: txResult.balanceBefore,
+          walletAfter:  txResult.balanceAfter,
+        });
+
+        // Update limits tracking
+        todaySpent  += Math.round(boostCost * 100);
+        weekSpent   += Math.round(boostCost * 100);
+        walletCents -= Math.round(boostCost * 100);
+        activeTypes.add(type);
+      } catch (innerErr: any) {
+        const errReason = innerErr.message === "insufficient_balance"
+          ? "Guthaben aufgebraucht — Aktivierung gestoppt."
+          : innerErr.message === "duplicate_activation"
+            ? "Dieser Boost wurde gerade erst aktiviert — Duplikat verhindert."
+            : "Unbekannter Fehler bei der Aktivierung.";
+        await db.execute(sql`
+          INSERT INTO auto_campaign_log
+            (restaurant_id, action, boost_type, reason, confidence, wallet_before, wallet_after)
+          VALUES (${restaurantId}, 'error', ${type}, ${errReason}, ${confidence}, ${walletEur}, ${walletEur})
+        `);
+        actions.push({ boostType: type, action: "error", reason: errReason, confidence });
+      }
+    }
+
+    return res.json({
+      ran:     true,
+      actions,
+      summary: {
+        activated: actions.filter(a => a.action === "activated").length,
+        paused:    actions.filter(a => a.action === "paused").length,
+        waiting:   actions.filter(a => a.action === "waiting").length,
+        skipped:   actions.filter(a => ["skipped_low_wallet","skipped_budget_limit","already_active"].includes(a.action)).length,
+      },
+    });
+  } catch (err) {
+    req.log.error({ err }, "Auto-campaign run failed");
+    return res.status(500).json({ error: "Auto-Kampagne konnte nicht ausgeführt werden." });
   }
 });
 
