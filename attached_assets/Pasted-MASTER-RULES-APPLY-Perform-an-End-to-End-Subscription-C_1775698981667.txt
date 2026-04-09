@@ -1,0 +1,144 @@
+MASTER RULES APPLY
+
+Perform an "End-to-End Subscription Checkout Validation Pass" for the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT change unrelated billing logic.
+Do NOT modify wallet logic in this pass.
+This pass is ONLY for validating the Premium subscription checkout flow from inside the app.
+
+========================
+GOAL
+========================
+
+Validate that the Premium subscription checkout works end-to-end from the business dashboard / Premium flow.
+
+This must confirm the real user journey:
+
+- user opens Premium / upgrade flow
+- user clicks upgrade / start paid plan
+- backend creates Stripe checkout session
+- frontend redirects correctly to Stripe Checkout
+- success URL works
+- cancel URL works
+- no broken state appears
+
+========================
+1. FRONTEND ENTRY VALIDATION
+========================
+
+From inside the app, verify the Premium upgrade button/flow is working.
+
+Check:
+- Premium CTA/button is visible where expected
+- clicking it triggers the checkout request
+- no dead button
+- no console error
+- no broken loading state
+
+========================
+2. BILLING ENDPOINT VALIDATION
+========================
+
+Validate the existing checkout endpoint used by the app.
+
+Ensure:
+- it returns a valid Stripe Checkout URL
+- it uses the correct environment-aware price ID logic
+- in test mode it uses the TEST price
+- in deployed production it uses the LIVE price
+
+Do NOT change price selection logic unless broken.
+
+========================
+3. STRIPE REDIRECT VALIDATION
+========================
+
+Verify that after clicking upgrade:
+
+- the app redirects correctly to Stripe Checkout
+- the Stripe Checkout session loads
+- the subscription amount shown is correct
+- the plan shown matches Premium
+
+========================
+4. SUCCESS / CANCEL FLOW VALIDATION
+========================
+
+Validate both flows:
+
+A. Success flow:
+- after successful checkout, success URL returns correctly
+- no broken page
+- no bad redirect
+- no obvious missing state
+
+B. Cancel flow:
+- after canceling checkout, cancel URL returns correctly
+- no crash
+- no broken page
+
+========================
+5. UI / UX VALIDATION
+========================
+
+Check the user experience around checkout:
+
+- loading feedback is clear
+- no confusing messaging
+- no duplicate clicks causing chaos
+- no stuck spinner
+- no silent failure
+
+========================
+6. ERROR HANDLING
+========================
+
+If checkout fails for any reason, ensure user sees a clean and understandable message.
+
+Do NOT allow:
+- blank screen
+- silent failure
+- raw technical error
+
+========================
+7. BILLING STATE SAFETY
+========================
+
+Confirm that clicking checkout alone does NOT activate Premium.
+
+Premium must only activate later through verified billing truth / webhook flow.
+
+This pass is only validating checkout flow, not forcing activation.
+
+========================
+8. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Premium CTA/button status
+B. Checkout endpoint status
+C. Stripe redirect status
+D. Success URL status
+E. Cancel URL status
+F. UX quality
+G. Any blockers or remaining issues
+
+Classify each area as:
+- Working
+- Working but Weak
+- Broken
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster must support a clean end-to-end Premium checkout flow from inside the app to Stripe Checkout and back.
+
+The subscription purchase flow must feel:
+- real
+- smooth
+- trustworthy
+- production-ready

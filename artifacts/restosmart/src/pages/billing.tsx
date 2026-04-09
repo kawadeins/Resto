@@ -112,6 +112,7 @@ export default function Billing() {
   const handleCheckout = useCallback(async () => {
     setCheckoutLoading(true);
     track("checkout_started");
+    let redirecting = false;
     try {
       const res = await fetch(`${API_BASE}/api/billing/checkout`, {
         method: "POST",
@@ -130,12 +131,14 @@ export default function Billing() {
         return;
       }
       if (data.url) {
+        redirecting = true;
         window.location.href = data.url;
+        // Keep spinner active — page will navigate away. Do not reset loading state.
       }
     } catch {
       toast({ title: "Netzwerkfehler", description: "Bitte versuchen Sie es erneut.", variant: "destructive" });
     } finally {
-      setCheckoutLoading(false);
+      if (!redirecting) setCheckoutLoading(false);
     }
   }, [toast]);
 
@@ -280,7 +283,7 @@ export default function Billing() {
           <div>
             <p className="font-semibold text-sm text-amber-300 mb-1">Aufladung abgebrochen</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {"Die Wallet-Aufladung wurde abgebrochen. Ihr Guthaben wurde nicht \u00e4ndern."}
+              {"Die Wallet-Aufladung wurde abgebrochen. Ihr Guthaben wurde nicht ver\u00e4ndert."}
             </p>
           </div>
         </div>
