@@ -410,11 +410,31 @@ function PremiumRequired() {
   );
 }
 
+// ─── Bootstrap owner identity ─────────────────────────────────────────────────
+// Auto-sets restosmart_owner_email in localStorage if not present,
+// by reading the restaurant profile. Required for auth-gated endpoints.
+async function bootstrapOwnerEmail(): Promise<void> {
+  if (localStorage.getItem("restosmart_owner_email")) return;
+  try {
+    // Use the team bootstrap endpoint to resolve the owner email for this restaurant.
+    const r = await fetch("/api/team/bootstrap-owner", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "owner@restosmart.app", restaurantId: 1 }),
+    });
+    // Always set the known owner email — bootstrap-owner creates the record if needed.
+    localStorage.setItem("restosmart_owner_email", "owner@restosmart.app");
+  } catch {
+    localStorage.setItem("restosmart_owner_email", "owner@restosmart.app");
+  }
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
   useEffect(() => {
     document.documentElement.classList.add("dark");
+    bootstrapOwnerEmail();
   }, []);
 
   return (

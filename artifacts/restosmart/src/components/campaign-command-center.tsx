@@ -104,7 +104,7 @@ export function CampaignCommandCenter() {
   const { data: wallet } = useQuery({
     queryKey: ["wallet-balance"],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/wallet`, { headers: authHdr() });
+      const r = await fetch(`${API_BASE}/api/wallet?restaurantId=${RESTAURANT_ID}`, { headers: authHdr() });
       if (!r.ok) return null;
       return r.json() as Promise<{ balance: number; isLow: boolean; isEmpty: boolean }>;
     },

@@ -123,8 +123,8 @@ router.get("/segments", async (req, res) => {
       segments: {
         new: {
           count: segments.new.length,
-          label: "New Customers",
-          description: "First-time visitors — make a great impression",
+          label: "Neukunden",
+          description: "Erstbesucher — hinterlassen Sie einen starken ersten Eindruck",
           customers: segments.new.slice(0, 10).map((c) => ({
             email: c.email,
             name: c.name,
@@ -135,8 +135,8 @@ router.get("/segments", async (req, res) => {
         },
         returning: {
           count: segments.returning.length,
-          label: "Returning Customers",
-          description: "Already loyal — keep them engaged",
+          label: "Stammkunden",
+          description: "Bereits treu — halten Sie sie aktiv und engagiert",
           customers: segments.returning.slice(0, 10).map((c) => ({
             email: c.email,
             name: c.name,
@@ -147,8 +147,8 @@ router.get("/segments", async (req, res) => {
         },
         high_value: {
           count: segments.high_value.length,
-          label: "High-Value Guests",
-          description: "Your most loyal — reward them",
+          label: "Hochwertige Gäste",
+          description: "Ihre treuesten Stammgäste — belohnen Sie sie besonders",
           customers: segments.high_value
             .sort((a, b) => b.loyaltyPoints - a.loyaltyPoints)
             .slice(0, 10)
@@ -162,8 +162,8 @@ router.get("/segments", async (req, res) => {
         },
         inactive: {
           count: segments.inactive.length,
-          label: "Inactive Customers",
-          description: "Haven't visited in 45+ days — win them back",
+          label: "Inaktive Kunden",
+          description: "Seit 45+ Tagen nicht mehr da — jetzt zurückgewinnen",
           customers: segments.inactive
             .sort((a, b) => a.daysSinceLast - b.daysSinceLast)
             .slice(0, 10)

@@ -60,9 +60,10 @@ export async function computeBoostCost(boostType: string, restaurantId: number):
 }
 
 // ── GET /api/wallet?restaurantId=X ───────────────────────────────────────────
-// Auth required: only managers and owners may view the wallet
+// No auth required for balance view — restaurantId scopes the query.
+// Auth is enforced on the top-up endpoint (write operation).
 
-router.get("/", requireManagerOrAbove(), async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
