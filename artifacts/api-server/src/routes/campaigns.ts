@@ -464,7 +464,7 @@ router.get("/personalized", async (req, res) => {
 
     const loyalty = await db.execute(sql`
       SELECT points, total_earned FROM loyalty_points
-      WHERE customer_email = ${email} AND restaurant_id = ${restaurantId}
+      WHERE customer_email = ${email}
       LIMIT 1
     `);
 
@@ -492,8 +492,7 @@ router.get("/personalized", async (req, res) => {
     const flashDeals = await db.execute(sql`
       SELECT id, label, percentage, flash_expires_at
       FROM discounts
-      WHERE restaurant_id = ${restaurantId}
-        AND type = 'flash'
+      WHERE type = 'flash'
         AND enabled = TRUE
         AND flash_expires_at > ${now.toISOString()}
     `);

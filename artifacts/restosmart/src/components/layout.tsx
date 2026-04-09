@@ -365,14 +365,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
           );
         })}
-        {/* Mobile exit button */}
-        <button
-          onClick={exitToProfile}
+        {/* Mobile profile button */}
+        <Link
+          href="/profile"
           className="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
           <span className="text-[10px] font-medium">Profil</span>
-        </button>
+        </Link>
       </div>
     </div>
   );
