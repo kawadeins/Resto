@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -552,6 +553,7 @@ function AITimingStrip({ pricing }: { pricing: PricingData }) {
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function PromotionTools() {
+  const { csrfToken } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [launching, setLaunching]     = useState<string | null>(null);
@@ -617,7 +619,9 @@ export function PromotionTools() {
   const budgetMutation = useMutation({
     mutationFn: async ({ promoId, dailyBudget }: { promoId: number; dailyBudget: number }) => {
       const res = await fetch(`${API_BASE}/api/promotions/${promoId}/budget`, {
-        method: "PUT", headers: { "Content-Type": "application/json", "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}) },
         body: JSON.stringify({ dailyBudget }),
       });
       if (!res.ok) throw new Error("Fehler");
@@ -638,7 +642,9 @@ export function PromotionTools() {
     mutationFn: async (type: string) => {
       if (!restaurantId) throw new Error("Kein Restaurant");
       const res = await fetch(`${API_BASE}/api/promotions`, {
-        method: "POST", headers: { "Content-Type": "application/json", "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}) },
         body: JSON.stringify({ restaurantId, type }),
       });
       if (res.status === 402) {
@@ -687,10 +693,10 @@ export function PromotionTools() {
     },
   });
 
-  const authHdr = () => ({ "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" });
-  const pauseMutation  = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/pause`,  { method: "PUT", headers: authHdr() }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); } });
-  const resumeMutation = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT", headers: authHdr() }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); } });
-  const stopMutation   = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/stop`,   { method: "PUT", headers: authHdr() }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); } });
+  const promoAuthHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+  const pauseMutation  = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/pause`,  { method: "PUT", credentials: "include", headers: promoAuthHdr }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); } });
+  const resumeMutation = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT", credentials: "include", headers: promoAuthHdr }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); } });
+  const stopMutation   = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/stop`,   { method: "PUT", credentials: "include", headers: promoAuthHdr }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); } });
 
   // ── Wallet ──────────────────────────────────────────────────────────────────
   const { data: walletData } = useQuery<{ restaurantId: number; balance: number; isLow: boolean; isEmpty: boolean; transactions: unknown[] }>({
@@ -698,7 +704,7 @@ export function PromotionTools() {
     queryFn: async () => {
       if (!restaurantId) return { restaurantId: 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
       const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`, {
-        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+        credentials: "include",
       });
       if (!res.ok) return { restaurantId: restaurantId ?? 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
       return res.json();

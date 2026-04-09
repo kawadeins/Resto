@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "@/contexts/session-context";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const RESTAURANT_ID = 1;
-const authHeader = () => ({ "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" });
 
 const BOOST_META: Record<string, { label: string; emoji: string; window: string }> = {
   breakfast_boost:  { label: "Frühstücks-Boost",  emoji: "☕", window: "05:00–11:00 Uhr" },
@@ -36,6 +36,7 @@ interface AutoCampaignModeProps {
 }
 
 export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignModeProps) {
+  const { csrfToken } = useSession();
   const qc = useQueryClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editSettings, setEditSettings] = useState<any>(null);
@@ -83,11 +84,14 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
     ...overrides,
   });
 
+  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+
   const toggleMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
       const r = await fetch(`${API_BASE}/api/promotions/auto-budget-settings`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeader() },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify(buildPutBody({ enabled })),
       });
       return r.json();
@@ -100,7 +104,8 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
     mutationFn: async () => {
       const r = await fetch(`${API_BASE}/api/promotions/auto-budget-settings`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeader() },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify(buildPutBody()),
       });
       return r.json();
@@ -113,7 +118,8 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
     mutationFn: async () => {
       const r = await fetch(`${API_BASE}/api/promotions/auto-campaign/run`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeader() },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ restaurantId: RESTAURANT_ID }),
       });
       return r.json();

@@ -53,7 +53,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-user-email", "x-founder-key", "x-super-admin-key"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-user-email", "x-founder-key", "x-super-admin-key", "X-CSRF-Token"],
 }));
 
 // ── Stripe Webhook — MUST be registered BEFORE express.json() ────────────────
@@ -116,6 +116,37 @@ app.use(
 // ── Body parsing (2 MB limit) — registered AFTER the webhook route ────────────
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+
+// ── CSRF Protection ───────────────────────────────────────────────────────────
+// Synchronizer Token Pattern: every mutating API request from an authenticated
+// session must include an X-CSRF-Token header matching the session-bound token.
+//
+// Bypassed routes (no session / customer-facing):
+//   - /api/auth/*  (pre-auth — cannot have CSRF token yet)
+//   - /api/stripe/webhook  (handled by Stripe HMAC; raw body)
+//   - /api/campaigns/:id/mark-converted  (customer-facing booking event)
+//
+const CSRF_BYPASS = /^\/api\/(auth|stripe\/webhook)($|\/)|\/mark-converted$/;
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const MUTATING = ["POST", "PUT", "PATCH", "DELETE"];
+  if (!MUTATING.includes(req.method)) return next();
+  if (CSRF_BYPASS.test(req.path)) return next();
+
+  // Only enforce for authenticated sessions (unauthenticated mutations
+  // will be rejected by role guards later)
+  if (!req.session.userEmail) return next();
+
+  const sessionToken = req.session.csrfToken;
+  const requestToken = req.headers["x-csrf-token"] as string | undefined;
+
+  if (!sessionToken || !requestToken || sessionToken !== requestToken) {
+    logger.warn({ path: req.path, method: req.method }, "CSRF token mismatch");
+    return res.status(403).json({ error: "Ungültiger CSRF-Token. Bitte Seite neu laden." });
+  }
+
+  next();
+});
 
 // ── Global rate limiter — 300 req/min per IP ──────────────────────────────────
 app.use("/api", globalLimiter);

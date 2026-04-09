@@ -12,6 +12,7 @@ import {
   CheckCircle, ChevronDown, ChevronUp, Zap, Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSession } from "@/contexts/session-context";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -128,6 +129,7 @@ function getOwnerEmail(): string {
 
 export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps) {
   const { toast } = useToast();
+  const { csrfToken } = useSession();
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
   const [customAmount, setCustomAmount]     = useState<string>("");
   const [showHistory, setShowHistory]       = useState(false);
@@ -138,7 +140,7 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
     queryFn: async () => {
       if (!restaurantId) return { restaurantId: 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
       const res = await fetch(`${API_BASE}/api/wallet?restaurantId=${restaurantId}`, {
-        headers: { "x-user-email": getOwnerEmail() },
+        credentials: "include",
       });
       if (!res.ok) return { restaurantId: restaurantId ?? 0, balance: 0, isLow: false, isEmpty: true, transactions: [] };
       return res.json();
@@ -152,7 +154,11 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
     mutationFn: async (amount: number) => {
       const res = await fetch(`${API_BASE}/api/wallet/topup`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-email": getOwnerEmail() },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+        },
         body: JSON.stringify({ restaurantId, amount }),
       });
       const data = await res.json();

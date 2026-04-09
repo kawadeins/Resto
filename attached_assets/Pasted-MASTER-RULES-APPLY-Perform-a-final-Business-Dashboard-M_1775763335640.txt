@@ -1,0 +1,206 @@
+MASTER RULES APPLY
+
+Perform a final "Business Dashboard Multi-Tenant Hardening + Security Completion Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random features.
+Do NOT touch Founder dashboard in this pass.
+This pass is ONLY for closing the remaining risks identified in the final business dashboard hardening report.
+
+========================
+GOAL
+========================
+
+Eliminate the remaining architectural and security risks so the business dashboard becomes truly production-ready for:
+
+- many restaurants
+- many staff users
+- real money flows
+- future large-scale multi-tenant growth
+
+This pass must specifically fix the remaining gaps that prevent a true 100% launch-ready judgment.
+
+========================
+1. MULTI-TENANT CAMPAIGN HARDENING (CRITICAL)
+========================
+
+Audit the campaigns / promotions architecture and remove any remaining single-tenant assumptions.
+
+CRITICAL:
+The campaigns table and all related boost/campaign logic must become properly tenant-scoped.
+
+Requirements:
+- add restaurant_id to campaigns/promotions records where missing
+- backfill existing rows safely if needed
+- ensure every campaign belongs to exactly one business
+- ensure every campaign query is scoped by restaurant_id
+- ensure no restaurant can read or affect another restaurant’s campaigns
+- ensure campaign analytics, ROI, recommendations, auto mode, and command center all use tenant-scoped data
+
+This is the top priority.
+
+========================
+2. FULL TENANT ISOLATION AUDIT
+========================
+
+Run a strict audit across the full business dashboard and ensure every business-facing query and mutation is properly scoped by restaurant_id / business identity.
+
+Audit especially:
+- campaigns
+- wallet
+- wallet transactions
+- boosts
+- reviews
+- AI review tools
+- staff/team
+- analytics
+- schedule/planner
+- premium state
+- billing state
+
+Fix any endpoint, query, or mutation that still assumes a single global business.
+
+========================
+3. REMOVE x-user-email BUSINESS FLOW DEPENDENCY
+========================
+
+Remove or strictly isolate x-user-email fallback from normal business dashboard flows.
+
+Requirements:
+- normal dashboard requests must rely on authenticated session identity
+- x-user-email fallback must not be used as a primary auth path for business UI flows
+- if retained for internal tooling/dev utilities, isolate it clearly and prevent production business dashboard dependence on it
+
+The business dashboard should become session-auth-first and session-auth-only in normal use.
+
+========================
+4. REAL OTP DELIVERY HARDENING
+========================
+
+Complete the OTP authentication flow for real production use.
+
+Requirements:
+- integrate actual email OTP sending via Resend (or the configured provider)
+- use RESEND_API_KEY in production
+- ensure OTPs are not shown in UI outside development mode
+- production users must receive real OTP codes by email
+- keep OTP expiry / single-use / replay protection intact
+
+========================
+5. CSRF HARDENING
+========================
+
+Add proper CSRF protection for session-authenticated business dashboard mutations.
+
+Protect sensitive actions such as:
+- wallet top-up initiation
+- boost activation/pause/stop
+- team invite/remove/role change
+- review response actions
+- settings mutations
+- billing actions where relevant
+
+Use a practical CSRF strategy that fits the current architecture without breaking the UI.
+
+========================
+6. SESSION / COOKIE PRODUCTION HARDENING
+========================
+
+Review and harden production session behavior.
+
+Ensure:
+- secure cookies in production
+- sameSite configuration is appropriate
+- session expiration is enforced correctly
+- logout invalidates session reliably
+- session handling stays stable under multiple simultaneous users
+
+========================
+7. BUTTON / FLOW RE-VALIDATION AFTER HARDENING
+========================
+
+After applying all remaining fixes, re-test the full business dashboard flows.
+
+Verify:
+- login with OTP works
+- wallet works
+- boost works
+- reviews tools work
+- team/staff works
+- schedule tools work
+- campaign center works
+- analytics works
+- premium/billing works
+
+No hardening step should break usability.
+
+========================
+8. PERFORMANCE / SCALE RECHECK
+========================
+
+After tenant-scoping changes, re-check:
+- query performance
+- indexing
+- repeated fetches
+- payload size
+- campaign analytics performance
+- wallet and review query performance
+
+Add or adjust indexes if tenant-scoped queries need them.
+
+========================
+9. FINAL STRICT REPORT
+========================
+
+Produce a strict report with:
+
+A. Campaign multi-tenant status
+B. Full tenant isolation status
+C. x-user-email fallback status
+D. OTP production delivery status
+E. CSRF protection status
+F. Session/cookie hardening status
+G. Button/flow re-validation status
+H. Performance/indexing status
+I. Remaining risks if any
+
+For each category classify:
+- Ready
+- Ready with Minor Risk
+- Needs More Work
+- Critical Blocker
+
+========================
+10. FINAL VERDICT
+========================
+
+Give one final verdict for the BUSINESS DASHBOARD ONLY:
+
+- ✅ 100% READY FOR LAUNCH
+- ⚠️ READY WITH MINOR RISKS
+- ❌ NOT READY
+
+Only say "100% READY FOR LAUNCH" if:
+- campaign logic is fully tenant-scoped
+- business data is fully isolated
+- production OTP delivery is real
+- CSRF/session protection is complete enough
+- no single-tenant blocker remains
+- no normal business flow depends on x-user-email fallback
+- all key business actions still work after hardening
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster’s business dashboard must become fully secure, fully tenant-safe, and structurally ready for real multi-restaurant growth.
+
+The result must support:
+- real money
+- many restaurants
+- many users
+- strong isolation
+- future scale
+
+This is the final closure pass before declaring the business dashboard truly 100% launch-ready.

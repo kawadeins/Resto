@@ -90,7 +90,7 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
       if (!ownerEmail) return { role: "owner" as TeamRole, permissions: ALL_PERMISSIONS };
       try {
         const res = await fetch(`${API_BASE}/api/team/permissions`, {
-          headers: { "x-user-email": ownerEmail },
+          credentials: "include",
         });
         if (!res.ok) return { role: "owner" as TeamRole, permissions: ALL_PERMISSIONS };
         const json = await res.json();

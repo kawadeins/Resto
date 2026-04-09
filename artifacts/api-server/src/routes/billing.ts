@@ -160,7 +160,7 @@ router.post("/checkout", requireOwner(), async (req, res) => {
   try {
     const stripe = await getUncachableStripeClient();
     const frontendBase = getFrontendBase();
-    const ownerEmail = req.headers["x-user-email"] as string | undefined;
+    const ownerEmail = (req as any).userEmail as string | undefined;
 
     // Find or create Stripe customer linked to this restaurant
     const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));

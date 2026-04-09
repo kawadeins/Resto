@@ -6,6 +6,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useSession } from "@/contexts/session-context";
 import { AutoCampaignMode } from "./auto-campaign-mode";
 import { SmartBoostRecommendations } from "./smart-boost-recommendations";
 import { PromotionTools } from "./promotion-tools";
@@ -14,7 +15,6 @@ import { getBizType } from "@/lib/biz-copy";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const RESTAURANT_ID = 1;
-const authHdr = () => ({ "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" });
 
 // ── Boost label map ──────────────────────────────────────────────────────────
 const BOOST_LABELS: Record<string, string> = {
@@ -95,6 +95,7 @@ const BIZ_COPY: Record<string, { title: string; sub: string }> = {
 export function CampaignCommandCenter() {
   const biz = getBizType();
   const [, setLocation] = useLocation();
+  const { csrfToken: _csrfToken } = useSession(); // reserved for future mutations
   const premiumVal = typeof window !== "undefined" ? localStorage.getItem("restosmart_owner_premium") : null;
   const isPremium  = premiumVal === "true" || premiumVal === "trial";
 
@@ -104,7 +105,7 @@ export function CampaignCommandCenter() {
   const { data: wallet } = useQuery({
     queryKey: ["wallet-balance"],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/wallet?restaurantId=${RESTAURANT_ID}`, { headers: authHdr() });
+      const r = await fetch(`${API_BASE}/api/wallet?restaurantId=${RESTAURANT_ID}`, { credentials: "include" });
       if (!r.ok) return null;
       return r.json() as Promise<{ balance: number; isLow: boolean; isEmpty: boolean }>;
     },

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { employeesTable, inventoryTable, salesTable, reservationsTable, shiftsTable, discountsTable, restaurantsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -23,7 +24,7 @@ function timeToMinutes(time: string): number {
   return h * 60 + (m || 0);
 }
 
-router.get("/summary", async (req, res) => {
+router.get("/summary", requireManagerOrAbove(), async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const now = new Date();
@@ -150,7 +151,7 @@ router.get("/summary", async (req, res) => {
   }
 });
 
-router.get("/sales-chart", async (req, res) => {
+router.get("/sales-chart", requireManagerOrAbove(), async (req, res) => {
   try {
     const rows = await db.execute(sql`
       SELECT

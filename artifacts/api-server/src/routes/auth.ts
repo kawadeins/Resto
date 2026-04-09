@@ -17,6 +17,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { Resend } from "resend";
+import crypto from "crypto";
 import { otpRequestLimiter, otpVerifyLimiter } from "../middleware/rate-limiters";
 import { logger } from "../lib/logger";
 
@@ -194,9 +195,13 @@ router.post("/verify-otp", otpVerifyLimiter, async (req, res) => {
       .json({ error: "Kein aktives Konto für diese E-Mail-Adresse gefunden" });
   }
 
+  // Generate a fresh CSRF token for this session
+  const csrfToken = crypto.randomBytes(32).toString("hex");
+
   req.session.userEmail = email;
   req.session.role = identity.role;
   req.session.restaurantId = identity.restaurantId;
+  req.session.csrfToken = csrfToken;
 
   await new Promise<void>((resolve, reject) =>
     req.session.save((err) => (err ? reject(err) : resolve())),
@@ -206,6 +211,7 @@ router.post("/verify-otp", otpVerifyLimiter, async (req, res) => {
     email: req.session.userEmail,
     role: req.session.role,
     restaurantId: req.session.restaurantId,
+    csrfToken,
   });
 });
 
@@ -215,11 +221,17 @@ router.get("/session", (req, res) => {
   if (!req.session.userEmail) {
     return res.status(401).json({ authenticated: false });
   }
+  // Ensure every authenticated session has a CSRF token
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+    req.session.save(() => {});
+  }
   return res.json({
     authenticated: true,
     email: req.session.userEmail,
     role: req.session.role,
     restaurantId: req.session.restaurantId,
+    csrfToken: req.session.csrfToken,
   });
 });
 

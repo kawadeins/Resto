@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useListEmployees,
@@ -379,6 +380,7 @@ function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: s
 }
 
 export default function Staff() {
+  const { csrfToken } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -446,10 +448,8 @@ export default function Staff() {
     mutationFn: ({ employeeId, dayOfWeek }: { employeeId: number; dayOfWeek: string }) =>
       fetch(`${API_BASE}/api/employee-days/toggle`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
-        },
+        credentials: "include",
+        headers: getAuthHeaders(),
         body: JSON.stringify({ employeeId, dayOfWeek }),
       }).then((r) => r.json()),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["employee-days"] }),
@@ -459,10 +459,8 @@ export default function Staff() {
     mutationFn: (data: { employeeId: number; startDate: string; endDate: string; notes?: string }) =>
       fetch(`${API_BASE}/api/employee-vacations`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
-        },
+        credentials: "include",
+        headers: getAuthHeaders(),
         body: JSON.stringify(data),
       }).then(async (r) => {
         if (!r.ok) throw new Error("Fehler");
@@ -480,7 +478,8 @@ export default function Staff() {
     mutationFn: (id: number) =>
       fetch(`${API_BASE}/api/employee-vacations/${id}`, {
         method: "DELETE",
-        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+        credentials: "include",
+        headers: { ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}) },
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-vacations"] });
@@ -492,10 +491,8 @@ export default function Staff() {
     mutationFn: ({ id, startTime, endTime }: { id: number; startTime: string; endTime: string }) =>
       fetch(`${API_BASE}/api/shifts/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
-        },
+        credentials: "include",
+        headers: getAuthHeaders(),
         body: JSON.stringify({ startTime, endTime }),
       }).then(async (r) => {
         if (!r.ok) throw new Error("Update fehlgeschlagen");
@@ -509,10 +506,10 @@ export default function Staff() {
     onError: () => toast({ title: "Fehler beim Aktualisieren", variant: "destructive" }),
   });
 
-  const getAuthHeaders = () => ({
+  const getAuthHeaders = useCallback(() => ({
     "Content-Type": "application/json",
-    "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
-  });
+    ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+  }), [csrfToken]);
 
   const createEmployee = useMutation({
     mutationFn: (data: EmployeeFormValues) =>
@@ -536,7 +533,8 @@ export default function Staff() {
     mutationFn: (id: number) =>
       fetch(`${API_BASE}/api/employees/${id}`, {
         method: "DELETE",
-        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+        credentials: "include",
+        headers: { ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}) },
       }).then(async (r) => { if (!r.ok && r.status !== 204) throw new Error("Fehler"); }),
   });
 
@@ -553,7 +551,8 @@ export default function Staff() {
     mutationFn: (id: number) =>
       fetch(`${API_BASE}/api/shifts/${id}`, {
         method: "DELETE",
-        headers: { "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "" },
+        credentials: "include",
+        headers: { ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}) },
       }).then(async (r) => { if (!r.ok && r.status !== 204) throw new Error("Fehler"); }),
   });
 
@@ -736,10 +735,8 @@ export default function Staff() {
       try {
         const r = await fetch(`${API_BASE}/api/shifts`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-user-email": localStorage.getItem("restosmart_owner_email") ?? "",
-          },
+          credentials: "include",
+          headers: getAuthHeaders(),
           body: JSON.stringify(s),
         });
         if (r.ok) created++;

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useListReviews, getListReviewsQueryKey, useGetReviewStats, getGetReviewStatsQueryKey, useReplyToReview } from "@workspace/api-client-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -154,13 +155,15 @@ export default function Reviews() {
     onError: () => toast({ title: "Bewertungssynchronisierung fehlgeschlagen", variant: "destructive" }),
   });
 
-  const ownerEmail = () => localStorage.getItem("restosmart_owner_email") ?? "";
+  const { csrfToken } = useSession();
+  const csrfHeader = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
 
   const sendBusinessResponseMutation = useMutation({
     mutationFn: ({ id, response }: { id: number; response: string }) =>
       fetch(`${API_BASE}/api/reviews/${id}/business-response`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-email": ownerEmail() },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHeader },
         body: JSON.stringify({ response }),
       }).then(r => r.json()),
     onSuccess: (_, { id }) => {
@@ -181,7 +184,11 @@ export default function Reviews() {
     }
     setAiLoading(prev => ({ ...prev, [review.id]: true }));
     try {
-      const res = await fetch(`${API_BASE}/api/reviews/${review.id}/ai-suggest`, { method: "POST", headers: { "x-user-email": ownerEmail() } });
+      const res = await fetch(`${API_BASE}/api/reviews/${review.id}/ai-suggest`, {
+        method: "POST",
+        credentials: "include",
+        headers: { ...csrfHeader },
+      });
       const data = await res.json();
       const suggestion = data.suggestion ?? "";
       setAiSuggestions(prev => ({ ...prev, [review.id]: suggestion }));

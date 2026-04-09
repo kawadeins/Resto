@@ -77,7 +77,7 @@ function getUrlParams() {
 export default function Billing() {
   useEffect(() => { track("premium_page_opened"); }, []);
   const { toast } = useToast();
-  const { logout } = useSession();
+  const { logout, csrfToken } = useSession();
   const cancelSubscription = useCancelSubscription();
   const { data: subscription, refetch: refetchSubscription } = useGetSubscription({});
   const { data: promoData } = useTrialStats();
@@ -118,9 +118,10 @@ export default function Billing() {
     try {
       const res = await fetch(`${API_BASE}/api/billing/checkout`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "x-user-email": getOwnerEmail(),
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
         },
       });
       const data = await res.json();
@@ -148,7 +149,7 @@ export default function Billing() {
     setPortalLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/billing/portal`, {
-        headers: { "x-user-email": getOwnerEmail() },
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) {

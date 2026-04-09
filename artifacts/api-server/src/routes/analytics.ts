@@ -2,10 +2,11 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { salesTable, reservationsTable } from "@workspace/db";
 import { sql, gte } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
-router.get("/performance", async (req, res) => {
+router.get("/performance", requireManagerOrAbove(), async (req, res) => {
   try {
     const allSales = await db.select().from(salesTable).orderBy(salesTable.date);
 
@@ -67,7 +68,7 @@ router.get("/performance", async (req, res) => {
   }
 });
 
-router.get("/daily", async (req, res) => {
+router.get("/daily", requireManagerOrAbove(), async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

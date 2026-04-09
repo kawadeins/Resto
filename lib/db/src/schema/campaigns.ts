@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const campaignsTable = pgTable("campaigns", {
   id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull().default(1),
   type: text("type").notNull(), // win_back | thank_you | flash_blast | loyalty_reward
   name: text("name").notNull(),
   status: text("status").notNull().default("draft"), // draft | sent | completed
@@ -18,6 +19,7 @@ export const campaignsTable = pgTable("campaigns", {
 
 export const campaignSendsTable = pgTable("campaign_sends", {
   id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull().default(1),
   campaignId: integer("campaign_id").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerName: text("customer_name").notNull(),

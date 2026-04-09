@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, UserPlus, Shield, ShieldCheck, ShieldAlert, Mail, MoreVertical, Check, X, RefreshCw, Trash2, Copy, Info } from "lucide-react";
 
@@ -57,24 +58,22 @@ export default function Team() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [lastInviteToken, setLastInviteToken] = useState<string | null>(null);
 
-  const ownerEmail = getOwnerEmail();
+  const { csrfToken } = useSession();
+  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
 
   const { data, isLoading } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/api/team`, {
-        headers: { "x-user-email": ownerEmail },
-      });
+      const res = await fetch(`${API_BASE}/api/team`, { credentials: "include" });
       if (!res.ok) {
         if (res.status === 403) {
           await fetch(`${API_BASE}/api/team/bootstrap-owner`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: ownerEmail }),
+            credentials: "include",
+            headers: { "Content-Type": "application/json", ...csrfHdr },
+            body: JSON.stringify({}),
           });
-          const retry = await fetch(`${API_BASE}/api/team`, {
-            headers: { "x-user-email": ownerEmail },
-          });
+          const retry = await fetch(`${API_BASE}/api/team`, { credentials: "include" });
           if (!retry.ok) throw new Error("Failed to load team");
           return retry.json() as Promise<{ members: TeamMember[] }>;
         }
@@ -84,12 +83,11 @@ export default function Team() {
       if (json.needsOwnerSetup) {
         await fetch(`${API_BASE}/api/team/bootstrap-owner`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: ownerEmail }),
+          credentials: "include",
+          headers: { "Content-Type": "application/json", ...csrfHdr },
+          body: JSON.stringify({}),
         });
-        const retry = await fetch(`${API_BASE}/api/team`, {
-          headers: { "x-user-email": ownerEmail },
-        });
+        const retry = await fetch(`${API_BASE}/api/team`, { credentials: "include" });
         if (!retry.ok) throw new Error("Failed to load team");
         return retry.json() as Promise<{ members: TeamMember[] }>;
       }
@@ -101,7 +99,8 @@ export default function Team() {
     mutationFn: async (payload: { email: string; name: string; role: string }) => {
       const res = await fetch(`${API_BASE}/api/team/invite`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-email": ownerEmail },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify(payload),
       });
       const json = await res.json();
@@ -122,7 +121,8 @@ export default function Team() {
     mutationFn: async ({ id, role }: { id: number; role: string }) => {
       const res = await fetch(`${API_BASE}/api/team/${id}/role`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-user-email": ownerEmail },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ role }),
       });
       const json = await res.json();
@@ -139,7 +139,8 @@ export default function Team() {
     mutationFn: async (id: number) => {
       const res = await fetch(`${API_BASE}/api/team/${id}`, {
         method: "DELETE",
-        headers: { "x-user-email": ownerEmail },
+        credentials: "include",
+        headers: { ...csrfHdr },
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Fehler");
@@ -155,7 +156,8 @@ export default function Team() {
     mutationFn: async (memberId: number) => {
       const res = await fetch(`${API_BASE}/api/team/resend`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-email": ownerEmail },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ memberId }),
       });
       const json = await res.json();

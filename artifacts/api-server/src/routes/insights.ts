@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { reservationsTable, discountsTable, salesTable } from "@workspace/db";
 import { gte } from "drizzle-orm";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
@@ -75,7 +76,7 @@ function computeOverallAvg(matrix: Record<number, Record<number, number>>, weekC
 }
 
 // ─── GET /api/insights/heatmap ───────────────────────────────────────────────
-router.get("/heatmap", async (req, res) => {
+router.get("/heatmap", requireManagerOrAbove(), async (req, res) => {
   try {
     const { matrix, weekCounts } = await buildReservationMatrix();
 
@@ -98,7 +99,7 @@ router.get("/heatmap", async (req, res) => {
 });
 
 // ─── GET /api/insights/suggestions ──────────────────────────────────────────
-router.get("/suggestions", async (req, res) => {
+router.get("/suggestions", requireManagerOrAbove(), async (req, res) => {
   try {
     const { matrix, weekCounts } = await buildReservationMatrix();
     const overallAvg = computeOverallAvg(matrix, weekCounts);
@@ -164,7 +165,7 @@ router.get("/suggestions", async (req, res) => {
 });
 
 // ─── GET /api/insights/daily-summary ────────────────────────────────────────
-router.get("/daily-summary", async (req, res) => {
+router.get("/daily-summary", requireManagerOrAbove(), async (req, res) => {
   try {
     const { matrix, weekCounts } = await buildReservationMatrix();
     const overallAvg = computeOverallAvg(matrix, weekCounts);
@@ -230,7 +231,7 @@ router.get("/daily-summary", async (req, res) => {
 });
 
 // ─── GET /api/insights/outcomes ─────────────────────────────────────────────
-router.get("/outcomes", async (req, res) => {
+router.get("/outcomes", requireManagerOrAbove(), async (req, res) => {
   try {
     const { matrix, weekCounts, reservations: allReservations } = await buildReservationMatrix();
 

@@ -1,3 +1,11 @@
+/**
+ * Campaigns API — tenant-scoped email retention and customer segmentation.
+ *
+ * All queries are scoped to the authenticated restaurant_id.
+ * The restaurant_id is derived from the server session (req.session.restaurantId).
+ * No cross-tenant data leakage is possible.
+ */
+
 import { Router } from "express";
 import { db } from "@workspace/db";
 import {
@@ -14,7 +22,13 @@ import { EMAIL_ENABLED } from "../services/email";
 
 const router = Router();
 
-// ─── Segmentation engine ─────────────────────────────────────────────────────
+// ─── Tenant helper ────────────────────────────────────────────────────────────
+// Prefer session restaurantId; fall back to 1 for single-tenant compatibility.
+function getRestaurantId(req: any): number {
+  return req.session?.restaurantId ?? 1;
+}
+
+// ─── Segmentation engine (tenant-scoped) ──────────────────────────────────────
 
 interface CustomerProfile {
   email: string;
@@ -41,8 +55,8 @@ function classifySegment(
   return "new";
 }
 
-async function buildCustomerProfiles(): Promise<CustomerProfile[]> {
-  // Aggregate reservations by customer email
+async function buildCustomerProfiles(restaurantId: number): Promise<CustomerProfile[]> {
+  // Aggregate reservations by customer email — scoped to this restaurant
   const resRows = await db.execute(sql`
     SELECT
       customer_email,
@@ -51,12 +65,21 @@ async function buildCustomerProfiles(): Promise<CustomerProfile[]> {
       COUNT(CASE WHEN status = 'arrived' THEN 1 END)::int AS arrived_count,
       MAX(date) AS last_booking_date
     FROM reservations
+    WHERE restaurant_id = ${restaurantId}
     GROUP BY customer_email
   `);
 
-  // Get loyalty balances
-  const loyaltyRows = await db.select().from(loyaltyPointsTable);
-  const loyaltyMap = new Map(loyaltyRows.map((l) => [l.customerEmail, l]));
+  // Get loyalty balances for this restaurant
+  const loyaltyRows = await db.execute(sql`
+    SELECT customer_email, points, total_earned
+    FROM loyalty_points
+    WHERE restaurant_id = ${restaurantId}
+  `);
+  const loyaltyMap = new Map(
+    (loyaltyRows.rows as { customer_email: string; points: number; total_earned: number }[]).map(
+      (l) => [l.customer_email, l]
+    )
+  );
 
   const today = new Date();
   const profiles: CustomerProfile[] = [];
@@ -70,7 +93,7 @@ async function buildCustomerProfiles(): Promise<CustomerProfile[]> {
   }[]) {
     const loyalty = loyaltyMap.get(row.customer_email);
     const points = loyalty?.points ?? 0;
-    const totalEarned = loyalty?.totalEarned ?? 0;
+    const totalEarned = loyalty?.total_earned ?? 0;
     const tier = points >= 500 ? "Gold" : points >= 200 ? "Silver" : "Bronze";
 
     const lastDate = row.last_booking_date ? new Date(row.last_booking_date) : null;
@@ -98,14 +121,15 @@ async function buildCustomerProfiles(): Promise<CustomerProfile[]> {
 }
 
 // ─── GET /api/campaigns/status ───────────────────────────────────────────────
-router.get("/status", (_req, res) => {
+router.get("/status", requireManagerOrAbove(), (_req, res) => {
   res.json({ emailEnabled: EMAIL_ENABLED });
 });
 
 // ─── GET /api/campaigns/segments ─────────────────────────────────────────────
-router.get("/segments", async (req, res) => {
+router.get("/segments", requireManagerOrAbove(), async (req, res) => {
   try {
-    const profiles = await buildCustomerProfiles();
+    const restaurantId = getRestaurantId(req);
+    const profiles = await buildCustomerProfiles(restaurantId);
 
     const segments: Record<string, CustomerProfile[]> = {
       new: [],
@@ -185,27 +209,20 @@ router.get("/segments", async (req, res) => {
 });
 
 // ─── GET /api/campaigns/retention ────────────────────────────────────────────
-router.get("/retention", async (req, res) => {
+router.get("/retention", requireManagerOrAbove(), async (req, res) => {
   try {
-    const profiles = await buildCustomerProfiles();
+    const restaurantId = getRestaurantId(req);
+    const profiles = await buildCustomerProfiles(restaurantId);
     const total = profiles.length;
 
-    // Repeat customer rate: customers with 2+ bookings
     const repeaters = profiles.filter((p) => p.bookingCount >= 2).length;
     const repeatRate = total > 0 ? Math.round((repeaters / total) * 100) : 0;
-
-    // Inactive count
     const inactiveCount = profiles.filter((p) => p.segment === "inactive").length;
-
-    // At-risk: 21-44 days since last booking (about to go inactive)
     const atRiskCount = profiles.filter(
       (p) => p.daysSinceLast >= 21 && p.daysSinceLast <= 44
     ).length;
-
-    // High-value count
     const highValueCount = profiles.filter((p) => p.segment === "high_value").length;
 
-    // Top returning customers (by booking count)
     const topCustomers = [...profiles]
       .sort((a, b) => b.arrivedCount - a.arrivedCount || b.loyaltyPoints - a.loyaltyPoints)
       .slice(0, 5)
@@ -219,29 +236,36 @@ router.get("/retention", async (req, res) => {
         segment: c.segment,
       }));
 
-    // Campaign-driven bookings: bookings from customers who received a campaign in last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    // Campaign sends scoped to this restaurant
     const sends = await db
       .select()
       .from(campaignSendsTable)
-      .where(gte(campaignSendsTable.sentAt, thirtyDaysAgo));
+      .where(
+        and(
+          eq(campaignSendsTable.restaurantId, restaurantId),
+          gte(campaignSendsTable.sentAt, thirtyDaysAgo)
+        )
+      );
 
     const sentEmails = new Set(sends.map((s) => s.customerEmail));
 
-    const recentBookings = await db
-      .select()
-      .from(reservationsTable)
-      .where(gte(reservationsTable.createdAt, thirtyDaysAgo));
+    const recentBookings = await db.execute(sql`
+      SELECT customer_email, status FROM reservations
+      WHERE restaurant_id = ${restaurantId}
+        AND created_at >= ${thirtyDaysAgo.toISOString()}
+    `);
 
-    const campaignDrivenBookings = recentBookings.filter(
+    const campaignDrivenBookings = (
+      recentBookings.rows as { customer_email: string; status: string }[]
+    ).filter(
       (b) =>
-        sentEmails.has(b.customerEmail) &&
+        sentEmails.has(b.customer_email) &&
         ["pending", "confirmed", "arrived"].includes(b.status)
     ).length;
 
-    // Reward redemptions (proxy: Gold tier customers)
     const goldCount = profiles.filter((p) => p.loyaltyPoints >= 500).length;
 
     res.json({
@@ -262,39 +286,34 @@ router.get("/retention", async (req, res) => {
 });
 
 // ─── GET /api/campaigns ───────────────────────────────────────────────────────
-router.get("/", async (req, res) => {
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
+    const restaurantId = getRestaurantId(req);
     const campaigns = await db
       .select()
       .from(campaignsTable)
+      .where(eq(campaignsTable.restaurantId, restaurantId))
       .orderBy(sql`${campaignsTable.createdAt} DESC`);
 
-    // For each campaign, compute conversions from sends
     const results = await Promise.all(
       campaigns.map(async (c) => {
         if (c.status === "draft") {
-          return {
-            ...c,
-            totalSent: c.totalSent,
-            totalConverted: c.totalConverted,
-            conversionRate: 0,
-          };
+          return { ...c, totalSent: c.totalSent, totalConverted: c.totalConverted, conversionRate: 0 };
         }
 
-        // Count converted sends
         const sends = await db
           .select()
           .from(campaignSendsTable)
           .where(
             and(
               eq(campaignSendsTable.campaignId, c.id),
+              eq(campaignSendsTable.restaurantId, restaurantId),
               eq(campaignSendsTable.status, "converted")
             )
           );
 
         const converted = sends.length;
         const conversionRate = c.totalSent > 0 ? Math.round((converted / c.totalSent) * 100) : 0;
-
         return { ...c, totalConverted: converted, conversionRate };
       })
     );
@@ -318,9 +337,10 @@ const CreateCampaignBody = z.object({
 router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateCampaignBody.parse(req.body);
+    const restaurantId = getRestaurantId(req);
     const [campaign] = await db
       .insert(campaignsTable)
-      .values({ ...body, status: "draft" })
+      .values({ ...body, status: "draft", restaurantId })
       .returning();
     res.status(201).json(campaign);
   } catch (err) {
@@ -333,33 +353,38 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
 router.post("/:id/launch", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const restaurantId = getRestaurantId(req);
 
     const [campaign] = await db
       .select()
       .from(campaignsTable)
-      .where(eq(campaignsTable.id, id));
+      .where(
+        and(
+          eq(campaignsTable.id, id),
+          eq(campaignsTable.restaurantId, restaurantId) // Tenant isolation
+        )
+      );
 
-    if (!campaign) return void res.status(404).json({ error: "Campaign not found" });
+    if (!campaign) return void res.status(404).json({ error: "Campaign nicht gefunden" });
     if (campaign.status !== "draft") {
-      return void res.status(400).json({ error: "Campaign already launched" });
+      return void res.status(400).json({ error: "Kampagne wurde bereits gestartet" });
     }
 
-    const profiles = await buildCustomerProfiles();
+    const profiles = await buildCustomerProfiles(restaurantId);
 
-    // Filter to target segment
     const targets =
       campaign.targetSegment === "all"
         ? profiles
         : profiles.filter((p) => p.segment === campaign.targetSegment);
 
     if (targets.length === 0) {
-      return void res.status(400).json({ error: "No customers in target segment" });
+      return void res.status(400).json({ error: "Keine Kunden in dieser Zielgruppe" });
     }
 
-    // Create send records
     const now = new Date();
     await db.insert(campaignSendsTable).values(
       targets.map((t) => ({
+        restaurantId,
         campaignId: id,
         customerEmail: t.email,
         customerName: t.name,
@@ -369,11 +394,15 @@ router.post("/:id/launch", requireManagerOrAbove(), async (req, res) => {
       }))
     );
 
-    // Update campaign
     const [updated] = await db
       .update(campaignsTable)
       .set({ status: "sent", totalSent: targets.length, sentAt: now })
-      .where(eq(campaignsTable.id, id))
+      .where(
+        and(
+          eq(campaignsTable.id, id),
+          eq(campaignsTable.restaurantId, restaurantId)
+        )
+      )
       .returning();
 
     res.json(updated);
@@ -384,13 +413,32 @@ router.post("/:id/launch", requireManagerOrAbove(), async (req, res) => {
 });
 
 // ─── GET /api/campaigns/:id/sends ────────────────────────────────────────────
-router.get("/:id/sends", async (req, res) => {
+router.get("/:id/sends", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const restaurantId = getRestaurantId(req);
+
+    // Verify campaign belongs to this restaurant
+    const [campaign] = await db
+      .select({ id: campaignsTable.id })
+      .from(campaignsTable)
+      .where(
+        and(
+          eq(campaignsTable.id, id),
+          eq(campaignsTable.restaurantId, restaurantId)
+        )
+      );
+    if (!campaign) return void res.status(404).json({ error: "Campaign nicht gefunden" });
+
     const sends = await db
       .select()
       .from(campaignSendsTable)
-      .where(eq(campaignSendsTable.campaignId, id))
+      .where(
+        and(
+          eq(campaignSendsTable.campaignId, id),
+          eq(campaignSendsTable.restaurantId, restaurantId)
+        )
+      )
       .orderBy(sql`${campaignSendsTable.sentAt} DESC`);
 
     res.json(sends);
@@ -401,37 +449,38 @@ router.get("/:id/sends", async (req, res) => {
 });
 
 // ─── GET /api/campaigns/personalized ─────────────────────────────────────────
-// Customer-facing: personalized offers and loyalty status by email
+// Customer-facing: personalized offers and loyalty status by email.
+// Scoped to restaurant 1 (customer marketplace always shows single restaurant).
 router.get("/personalized", async (req, res) => {
   try {
     const email = req.query.email as string;
     if (!email) return void res.status(400).json({ error: "email query param required" });
+    const restaurantId = Number(req.query.restaurantId) || 1;
 
-    // Get this customer's profile
-    const resRows = await db
-      .select()
-      .from(reservationsTable)
-      .where(eq(reservationsTable.customerEmail, email));
+    const resRows = await db.execute(sql`
+      SELECT customer_email, status, date FROM reservations
+      WHERE customer_email = ${email} AND restaurant_id = ${restaurantId}
+    `);
 
-    const loyalty = await db
-      .select()
-      .from(loyaltyPointsTable)
-      .where(eq(loyaltyPointsTable.customerEmail, email));
+    const loyalty = await db.execute(sql`
+      SELECT points, total_earned FROM loyalty_points
+      WHERE customer_email = ${email} AND restaurant_id = ${restaurantId}
+      LIMIT 1
+    `);
 
-    const loyaltyData = loyalty[0];
+    const loyaltyData = loyalty.rows[0] as { points: number; total_earned: number } | undefined;
     const points = loyaltyData?.points ?? 0;
-    const totalEarned = loyaltyData?.totalEarned ?? 0;
+    const totalEarned = loyaltyData?.total_earned ?? 0;
     const tier = points >= 500 ? "Gold" : points >= 200 ? "Silver" : "Bronze";
     const pointsToGold = Math.max(0, 500 - points);
     const pointsToSilver = Math.max(0, 200 - points);
     const nextTier = tier === "Bronze" ? "Silver" : tier === "Silver" ? "Gold" : null;
     const pointsToNextTier = tier === "Bronze" ? pointsToSilver : tier === "Silver" ? pointsToGold : 0;
 
-    const bookingCount = resRows.length;
-    const arrivedCount = resRows.filter((r) => r.status === "arrived").length;
-    const lastBooking = resRows.length > 0
-      ? resRows.sort((a, b) => b.date.localeCompare(a.date))[0]
-      : null;
+    const rows = resRows.rows as { customer_email: string; status: string; date: string }[];
+    const bookingCount = rows.length;
+    const arrivedCount = rows.filter((r) => r.status === "arrived").length;
+    const lastBooking = rows.length > 0 ? rows.sort((a, b) => b.date.localeCompare(a.date))[0] : null;
     const today = new Date();
     const daysSinceLast = lastBooking
       ? Math.floor((today.getTime() - new Date(lastBooking.date + "T00:00:00").getTime()) / (1000 * 60 * 60 * 24))
@@ -439,56 +488,41 @@ router.get("/personalized", async (req, res) => {
 
     const segment = classifySegment(bookingCount, arrivedCount, daysSinceLast, points);
 
-    // Active flash deals
     const now = new Date();
-    const allDiscounts = await db.select().from(discountsTable);
-    const flashDeals = allDiscounts.filter(
-      (d) =>
-        d.type === "flash" &&
-        d.enabled &&
-        d.flashExpiresAt != null &&
-        new Date(d.flashExpiresAt) > now
-    );
+    const flashDeals = await db.execute(sql`
+      SELECT id, label, percentage, flash_expires_at
+      FROM discounts
+      WHERE restaurant_id = ${restaurantId}
+        AND type = 'flash'
+        AND enabled = TRUE
+        AND flash_expires_at > ${now.toISOString()}
+    `);
 
-    // Personalized message
     let personalizedMessage: string | null = null;
     let messageType: string | null = null;
-
     if (segment === "inactive") {
-      personalizedMessage = `We miss you! It's been ${daysSinceLast} days since your last visit. Come back and earn double loyalty points on your next booking.`;
+      personalizedMessage = `Wir vermissen Sie! Es ist ${daysSinceLast} Tage her. Kommen Sie zurück und sammeln Sie doppelte Treuepunkte.`;
       messageType = "win_back";
     } else if (segment === "high_value") {
-      personalizedMessage = `Thank you for being one of our most loyal guests! You have ${points} points — ${nextTier ? `only ${pointsToNextTier} more to reach ${nextTier}` : "you're at our top Gold tier"}.`;
+      personalizedMessage = `Danke, dass Sie einer unserer treuesten Gäste sind! Sie haben ${points} Punkte.`;
       messageType = "loyalty_reward";
     } else if (arrivedCount > 0 && daysSinceLast <= 7) {
-      personalizedMessage = `Thanks for your recent visit! Leave a review to earn 5 bonus loyalty points and help others discover us.`;
+      personalizedMessage = `Danke für Ihren letzten Besuch! Hinterlassen Sie eine Bewertung für 5 Bonuspunkte.`;
       messageType = "thank_you";
-    } else if (nextTier && pointsToNextTier <= 50) {
-      personalizedMessage = `You're only ${pointsToNextTier} points away from ${nextTier} tier! Book again to unlock your next reward.`;
-      messageType = "loyalty_reward";
     }
 
-    // Recommended (same restaurant with any active offers)
-    const recommendations = flashDeals.length > 0
-      ? [{ type: "flash_deal", message: `Active flash deal: ${flashDeals[0].percentage}% off — limited time` }]
+    const flashRows = flashDeals.rows as { id: number; label: string; percentage: string; flash_expires_at: string }[];
+    const recommendations = flashRows.length > 0
+      ? [{ type: "flash_deal", message: `Aktiver Flash-Deal: ${flashRows[0].percentage}% Rabatt — begrenzte Zeit` }]
       : [];
 
     res.json({
-      segment,
-      tier,
-      points,
-      totalEarned,
-      nextTier,
-      pointsToNextTier,
-      bookingCount,
-      arrivedCount,
-      personalizedMessage,
-      messageType,
-      activeFlashDeals: flashDeals.map((d) => ({
-        id: d.id,
-        label: d.label,
+      segment, tier, points, totalEarned, nextTier, pointsToNextTier,
+      bookingCount, arrivedCount, personalizedMessage, messageType,
+      activeFlashDeals: flashRows.map((d) => ({
+        id: d.id, label: d.label,
         percentage: parseFloat(d.percentage),
-        expiresAt: d.flashExpiresAt?.toISOString() ?? null,
+        expiresAt: d.flash_expires_at,
       })),
       recommendations,
     });
@@ -499,7 +533,7 @@ router.get("/personalized", async (req, res) => {
 });
 
 // ─── POST /api/campaigns/:id/mark-converted ──────────────────────────────────
-// Mark sends as converted when a booking is made
+// Customer-facing — no auth required (driven by booking confirmation event)
 router.post("/:id/mark-converted", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
