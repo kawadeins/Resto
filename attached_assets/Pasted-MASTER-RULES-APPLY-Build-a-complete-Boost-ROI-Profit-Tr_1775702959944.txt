@@ -1,0 +1,346 @@
+MASTER RULES APPLY
+
+Build a complete "Boost ROI + Profit Tracking System" inside the existing RestoMaster business dashboard.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT break the existing wallet, boost, or billing systems.
+Do NOT use fake analytics or fake revenue claims.
+This system must work with real boost spend data and real tracked performance data.
+
+This system must support:
+- restaurants
+- cafés / coffee shops
+- bars / nightlife venues
+
+========================
+GOAL
+========================
+
+Turn the boost system into a measurable profit engine.
+
+Every business owner should be able to clearly understand:
+
+- how much was spent
+- which boost performed best
+- what results each boost produced
+- whether the boost was worth it
+- where money is being wasted
+- where money should be invested more
+
+This system must feel:
+- clear
+- business-focused
+- trustworthy
+- valuable
+- premium
+
+========================
+1. TRACK BOOST SPEND PER CAMPAIGN (CRITICAL)
+========================
+
+For every boost activation, store and expose:
+
+- boost_id
+- restaurant_id / business_id
+- boost_type
+- exact wallet amount deducted
+- activation timestamp
+- start time
+- end time if relevant
+- current status (active / completed / paused / stopped)
+
+This spend value must come from the real wallet deduction flow.
+
+No fake cost values.
+No approximations for actual spend.
+
+========================
+2. TRACK REAL PERFORMANCE METRICS
+========================
+
+For every boost, track real measurable outcomes such as:
+
+- impressions / Einblendungen
+- clicks
+- profile views
+- map opens
+- favorites / saves if available
+- bookings if available
+- review-related traffic if relevant
+- visits / interactions if available
+
+Only use real data already tracked by the platform.
+If a metric is not available, do not invent it.
+
+========================
+3. BOOST RESULT SUMMARY
+========================
+
+Each boost should have its own summary card or detail view showing:
+
+- cost
+- impressions
+- clicks
+- bookings / conversions if available
+- current activity result
+- performance status
+
+The owner must be able to understand quickly:
+- what happened
+- whether the boost did anything useful
+
+========================
+4. ROI CALCULATION
+========================
+
+For each boost, calculate ROI in a reasonable and honest way.
+
+Preferred formula:
+ROI = (estimated value generated - cost) / cost
+
+If direct revenue is available:
+- use direct revenue
+
+If direct revenue is not available:
+- use conservative estimated value based on real signals such as:
+  - bookings
+  - clicks
+  - average order value
+  - profile actions
+  - business type behavior
+
+The estimate must remain conservative and honest.
+
+Store/display:
+- ROI %
+- estimated return range
+- cost per click
+- cost per booking (if applicable)
+- cost per meaningful interaction
+
+========================
+5. BUSINESS-TYPE ADAPTATION
+========================
+
+Adapt performance interpretation by business type:
+
+Restaurants:
+- bookings
+- lunch/dinner traffic
+- meal-related conversions
+
+Cafés:
+- visits
+- profile views
+- coffee-time demand
+- breakfast traffic
+
+Bars:
+- nightlife activity
+- evening traffic
+- map opens
+- group interest if relevant
+
+The analytics should feel relevant to the business type, not generic.
+
+========================
+6. BOOST ANALYTICS PANEL
+========================
+
+Inside the business dashboard, add a clear section such as:
+
+- "Boost-Analyse"
+- "Ergebnisse"
+- "Performance deiner Boosts"
+
+Show for each boost:
+- cost
+- reach
+- clicks
+- bookings
+- ROI
+- performance level
+
+Make it easy to scan.
+
+========================
+7. COLOR PERFORMANCE LOGIC
+========================
+
+Use performance colors carefully:
+
+Green:
+- profitable / strong performance
+
+Yellow:
+- mixed / average performance
+
+Red:
+- weak / underperforming
+
+This should help the owner understand quickly where money is working.
+
+Do NOT overuse alarming red.
+Stay professional.
+
+========================
+8. TOTAL SPEND VS TOTAL RETURN
+========================
+
+Show summary metrics such as:
+
+- total spent this week
+- total spent this month
+- total estimated return
+- best performing boost
+- weakest performing boost
+- net gain / loss estimate
+
+This should make the dashboard feel like a real money control center.
+
+========================
+9. SMART INSIGHTS (AI-LIKE BUT HONEST)
+========================
+
+Generate useful business insights like:
+
+- "Nachtleben-Boost performs better than Frühstücks-Boost"
+- "Your best time for boosts is 18:00–21:00"
+- "You are spending more on low-performing boosts"
+- "This boost produced high visibility but low interaction"
+- "This campaign generated strong local reach"
+
+These insights must be based on real tracked data, not fake AI claims.
+
+========================
+10. BOOST HISTORY
+========================
+
+Add boost performance history so the business can review past campaigns.
+
+For each past boost show:
+- date
+- type
+- cost
+- outcome
+- ROI/performance summary
+
+This should help businesses compare patterns over time.
+
+========================
+11. REPORTING
+========================
+
+Support simple reporting views such as:
+
+- this week
+- this month
+- last 30 days
+
+No need for enterprise analytics.
+Keep it useful and readable.
+
+========================
+12. PREMIUM GATING (IMPORTANT 💸)
+========================
+
+Basic boost metrics may remain visible to normal users if desired.
+
+Advanced analytics should be Premium-only, such as:
+- detailed ROI
+- performance comparison
+- smart insights
+- best-time recommendations
+- spend optimization suggestions
+
+If user is not Premium:
+show a clean upgrade prompt such as:
+- "Upgrade auf Premium für detaillierte Boost-Analysen"
+- "Mit Premium erhältst du ROI-Einblicke und Performance-Empfehlungen"
+
+========================
+13. DATA HONESTY RULES
+========================
+
+Do NOT:
+- fake impressions
+- fake clicks
+- fake ROI
+- exaggerate revenue
+- invent conversion values
+
+If a value is estimated:
+- make that clear
+- keep it conservative
+
+Trust is critical.
+
+========================
+14. UX / UI PRINCIPLES
+========================
+
+The analytics section must feel:
+- premium
+- readable
+- not cluttered
+- business-friendly
+- decision-oriented
+
+Use:
+- clean cards
+- clear labels
+- simple charts only if already supported cleanly
+- strong metric hierarchy
+
+========================
+15. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- boost spend is tracked correctly
+- performance metrics are real
+- ROI is calculated honestly
+- totals match historical campaign data
+- no fake values appear
+- premium gating works if added
+- owner can understand results easily
+
+========================
+16. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Boost spend tracking status
+B. Performance metric tracking status
+C. ROI calculation status
+D. Dashboard analytics status
+E. Smart insight status
+F. History/reporting status
+G. Premium gating status
+H. Remaining weak points if any
+
+========================
+FINAL GOAL
+========================
+
+RestoMaster should transform boost campaigns from:
+
+- "pay and hope"
+
+into:
+
+- "pay, track, measure, improve"
+
+The business owner should clearly understand:
+- where money is going
+- what is performing
+- what is not worth repeating
+- what drives the best results
+
+This system becomes:
+- a profit intelligence layer
+- a premium analytics engine
+- a stronger monetization driver
