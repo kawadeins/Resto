@@ -129,6 +129,7 @@ function getOwnerEmail(): string {
 export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps) {
   const { toast } = useToast();
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
+  const [customAmount, setCustomAmount]     = useState<string>("");
   const [showHistory, setShowHistory]       = useState(false);
   const [showTopup, setShowTopup]           = useState(false);
 

@@ -200,14 +200,15 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
         const newBalance = Math.round((currentBalance - boostCost) * 100) / 100;
         await tx.execute(sql`
           INSERT INTO wallet_transactions
-            (restaurant_id, type, amount, description, boost_type, balance_after)
+            (restaurant_id, type, amount, description, boost_type, balance_after, promotion_id)
           VALUES (
             ${body.restaurantId},
             'boost_spend',
             ${boostCost},
             ${"Boost aktiviert: " + boostLabel},
             ${body.type},
-            ${newBalance}
+            ${newBalance},
+            ${promotion.id}
           )
         `);
 
@@ -737,6 +738,217 @@ router.get("/:id/stats", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to fetch promotion stats");
     return res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
+// ─── GET /api/promotions/roi?restaurantId=:id&period=week|month ───────────────
+// Returns per-boost cost, ROI estimates, spend summary, and smart text insights.
+
+const CLICK_VALUE: Record<string, number>   = { restaurant: 3.00, cafe: 1.50, bar: 2.50 };
+const BOOKING_VALUE: Record<string, number> = { restaurant: 28.00, cafe: 11.00, bar: 20.00 };
+
+router.get("/roi", async (req, res) => {
+  try {
+    const restaurantId = Number(req.query.restaurantId);
+    if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+
+    const period = (req.query.period as string) ?? "month";
+    const interval = period === "week" ? "7 days" : "30 days";
+
+    // ── Fetch restaurant business type ────────────────────────────────────────
+    const restResult = await db.execute(sql`
+      SELECT business_type FROM restaurants WHERE id = ${restaurantId} LIMIT 1
+    `);
+    const bizType = (restResult.rows[0] as any)?.business_type ?? "restaurant";
+    const clickVal   = CLICK_VALUE[bizType]   ?? 2.50;
+    const bookingVal = BOOKING_VALUE[bizType] ?? 20.00;
+
+    // ── Fetch promotions in period ────────────────────────────────────────────
+    const promoResult = await db.execute(sql`
+      SELECT id, type, status, impressions, clicks, bookings_attributed,
+             heat_exposure, group_exposure, created_at, ends_at
+      FROM promotions
+      WHERE restaurant_id = ${restaurantId}
+        AND created_at   > NOW() - INTERVAL '${sql.raw(interval)}'
+      ORDER BY created_at DESC
+      LIMIT 50
+    `);
+    const promos = promoResult.rows as any[];
+
+    // ── Fetch spend linked to each promotion ───────────────────────────────────
+    // Prefers promotion_id link; falls back to boost_type + restaurant_id for old records.
+    const spendResult = await db.execute(sql`
+      SELECT promotion_id, boost_type, SUM(amount) AS total_cost
+      FROM wallet_transactions
+      WHERE restaurant_id = ${restaurantId}
+        AND type          = 'boost_spend'
+        AND created_at   > NOW() - INTERVAL '${sql.raw(interval)}'
+      GROUP BY promotion_id, boost_type
+    `);
+    const spendRows = spendResult.rows as { promotion_id: number | null; boost_type: string; total_cost: string }[];
+
+    // Map promotion_id → cost (prefer exact link)
+    const costByPromoId   = new Map<number, number>();
+    const costByBoostType = new Map<string, number>();
+    for (const row of spendRows) {
+      const cost = parseFloat(row.total_cost);
+      if (row.promotion_id) {
+        costByPromoId.set(row.promotion_id, (costByPromoId.get(row.promotion_id) ?? 0) + cost);
+      } else {
+        costByBoostType.set(row.boost_type, (costByBoostType.get(row.boost_type) ?? 0) + cost);
+      }
+    }
+
+    // ── Build per-boost ROI rows ───────────────────────────────────────────────
+    const LABELS: Record<string, string> = {
+      breakfast_boost: "Frühstücks-Boost", lunch_boost: "Mittags-Boost",
+      happy_hour_boost: "Happy Hour Boost",  nightlife_boost: "Nachtleben-Boost",
+      local_spotlight: "Local Spotlight",    local_heat_boost: "Heat-Map Boost",
+    };
+    const EMOJIS: Record<string, string> = {
+      breakfast_boost: "☕", lunch_boost: "🍽️",
+      happy_hour_boost: "🍹", nightlife_boost: "🌙",
+      local_spotlight: "⭐", local_heat_boost: "🔥",
+    };
+
+    let totalSpent = 0, totalEstReturn = 0;
+
+    const boostRows = promos.map((p: any) => {
+      const impressions = Number(p.impressions) || 0;
+      const clicks      = Number(p.clicks) || 0;
+      const bookings    = Number(p.bookings_attributed) || 0;
+
+      const cost = costByPromoId.get(p.id) ?? costByBoostType.get(p.type) ?? 0;
+      const estimatedRevenue = Math.round((clicks * clickVal + bookings * bookingVal) * 100) / 100;
+      const netProfit  = Math.round((estimatedRevenue - cost) * 100) / 100;
+      const roi        = cost > 0 ? Math.round((netProfit / cost) * 100) : null;
+      const cpc        = clicks > 0 && cost > 0 ? Math.round((cost / clicks) * 100) / 100 : null;
+      const cpb        = bookings > 0 && cost > 0 ? Math.round((cost / bookings) * 100) / 100 : null;
+      const ctr        = impressions > 0 ? Math.round((clicks / impressions) * 1000) / 10 : null;
+
+      let roiTier: "green" | "yellow" | "red" | "neutral" = "neutral";
+      if (roi !== null) {
+        roiTier = roi > 150 ? "green" : roi > 0 ? "yellow" : "red";
+      }
+
+      totalSpent     += cost;
+      totalEstReturn += estimatedRevenue;
+
+      return {
+        id:          p.id,
+        type:        p.type,
+        label:       LABELS[p.type] ?? p.type,
+        emoji:       EMOJIS[p.type] ?? "🚀",
+        status:      p.status,
+        createdAt:   p.created_at,
+        endsAt:      p.ends_at,
+        impressions, clicks, bookings,
+        heatExposure: Number(p.heat_exposure) || 0,
+        cost:        Math.round(cost * 100) / 100,
+        estimatedRevenue,
+        netProfit,
+        roi,
+        roiTier,
+        costPerClick:   cpc,
+        costPerBooking: cpb,
+        ctr,
+      };
+    });
+
+    // ── Smart insights ─────────────────────────────────────────────────────────
+    const insights: { icon: string; text: string; priority: "high" | "medium" | "low" }[] = [];
+
+    const activeRows   = boostRows.filter(b => b.status === "active");
+    const withCost     = boostRows.filter(b => b.cost > 0);
+    const profitable   = withCost.filter(b => (b.roi ?? 0) > 150);
+    const losing       = withCost.filter(b => b.roi !== null && b.roi < 0);
+
+    // Best performer
+    if (profitable.length > 0) {
+      const best = profitable.reduce((a, b) => (a.roi! > b.roi! ? a : b));
+      insights.push({
+        icon: "📈",
+        text: `${best.label} erzielt ${best.roi}% ROI — Ihr bester Boost. Weiter aktiv lassen.`,
+        priority: "high",
+      });
+    }
+
+    // Underperformer
+    if (losing.length > 0) {
+      const worst = losing.reduce((a, b) => (a.roi! < b.roi! ? a : b));
+      insights.push({
+        icon: "⚠️",
+        text: `${worst.label} erzielt negativen ROI (${worst.roi}%). Budget prüfen oder Boost pausieren.`,
+        priority: "high",
+      });
+    }
+
+    // High cost-per-click
+    const highCPC = withCost.filter(b => b.costPerClick !== null && b.costPerClick > 2.0);
+    if (highCPC.length > 0) {
+      const h = highCPC[0];
+      insights.push({
+        icon: "💸",
+        text: `${h.label} kostet €${h.costPerClick} pro Klick — optimieren Sie Ihr Profil für mehr organische Klicks.`,
+        priority: "medium",
+      });
+    }
+
+    // Great CTR
+    const greatCTR = boostRows.filter(b => b.ctr !== null && b.ctr > 4.0 && b.impressions > 20);
+    if (greatCTR.length > 0) {
+      const g = greatCTR[0];
+      insights.push({
+        icon: "🎯",
+        text: `${g.label} hat eine Klickrate von ${g.ctr}% — deutlich über dem Durchschnitt von 2–3%.`,
+        priority: "low",
+      });
+    }
+
+    // No bookings despite clicks
+    const noBookings = withCost.filter(b => b.clicks > 10 && b.bookings === 0);
+    if (noBookings.length > 0) {
+      insights.push({
+        icon: "🔍",
+        text: "Viele Klicks, keine Buchungen — starke Fotos und ein Flash Deal können die Konversion verdoppeln.",
+        priority: "medium",
+      });
+    }
+
+    // Wallet ROI summary
+    const netProfit = Math.round((totalEstReturn - totalSpent) * 100) / 100;
+    const overallROI = totalSpent > 0 ? Math.round((netProfit / totalSpent) * 100) : null;
+    if (overallROI !== null && overallROI > 200) {
+      insights.push({
+        icon: "🏆",
+        text: `Gesamt-ROI ${overallROI}% — Ihr Boost-Budget arbeitet effizient. Weiter so!`,
+        priority: "low",
+      });
+    }
+
+    if (insights.length === 0 && boostRows.length === 0) {
+      insights.push({
+        icon: "🚀",
+        text: "Aktivieren Sie Ihren ersten Boost, um ROI-Daten zu sammeln und Einblicke zu erhalten.",
+        priority: "high",
+      });
+    }
+
+    const summary = {
+      period,
+      totalSpent:     Math.round(totalSpent * 100) / 100,
+      totalEstReturn: Math.round(totalEstReturn * 100) / 100,
+      netProfit:      Math.round((totalEstReturn - totalSpent) * 100) / 100,
+      overallROI,
+      boostCount:     boostRows.length,
+      activeCount:    activeRows.length,
+      bizType,
+    };
+
+    return res.json({ summary, boosts: boostRows, insights });
+  } catch (err) {
+    req.log.error({ err }, "Failed to compute ROI");
+    return res.status(500).json({ error: "Failed to compute ROI" });
   }
 });
 

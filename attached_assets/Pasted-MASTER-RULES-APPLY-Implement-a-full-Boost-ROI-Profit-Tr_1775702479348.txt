@@ -1,0 +1,130 @@
+MASTER RULES APPLY
+
+Implement a full "Boost ROI + Profit Tracking System" for RestoMaster.
+
+This system must track:
+- money spent from wallet
+- boost performance
+- return on investment (ROI)
+- business insights
+
+========================
+GOAL
+========================
+
+Every boost must now answer:
+
+"Did this boost make money or waste money?"
+
+========================
+1. TRACK BOOST COST
+========================
+
+Each boost already deducts from wallet.
+
+Store per boost:
+- boost_id
+- boost_type
+- cost (exact deducted amount)
+- start_time
+- end_time
+- restaurant_id
+
+========================
+2. TRACK PERFORMANCE METRICS
+========================
+
+For each boost, track:
+
+- impressions
+- clicks
+- bookings (if applicable)
+- interactions (favorites / views / map clicks)
+
+These must be REAL — no fake data.
+
+========================
+3. CALCULATE ROI
+========================
+
+For each boost:
+
+ROI = (value_generated - cost) / cost
+
+If exact revenue not available:
+estimate using:
+- clicks × estimated value
+- bookings × average order value
+
+Store:
+- roi_percentage
+- cost_per_click
+- cost_per_booking
+
+========================
+4. BOOST ANALYTICS PANEL
+========================
+
+In dashboard:
+
+Show per boost:
+
+- 💸 cost
+- 👁 impressions
+- 🖱 clicks
+- 📅 bookings
+- 📈 ROI
+
+Color logic:
+- Green → profitable
+- Yellow → neutral
+- Red → loss
+
+========================
+5. SMART INSIGHTS (AI-LIKE)
+========================
+
+Generate insights like:
+
+- "Nachtleben-Boost performs 3x better than Happy Hour"
+- "Your best time is 18:00–21:00"
+- "You are overspending on low-performing boosts"
+
+========================
+6. TOTAL SPEND VS RETURN
+========================
+
+Show:
+
+- total spent this week/month
+- total estimated return
+- net profit/loss
+
+========================
+7. HISTORY + REPORTS
+========================
+
+Allow:
+- weekly report
+- monthly report
+
+========================
+8. PREMIUM FEATURE (IMPORTANT)
+========================
+
+Lock advanced analytics behind premium:
+
+- ROI insights
+- smart recommendations
+- detailed reports
+
+========================
+FINAL GOAL
+========================
+
+Transform RestoMaster from:
+"boost tool"
+
+into:
+
+"money-making engine with measurable results"
