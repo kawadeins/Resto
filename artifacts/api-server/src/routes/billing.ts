@@ -188,36 +188,14 @@ router.post("/checkout", requireOwner(), async (req, res) => {
       }
     }
 
-    // Look up the RestoSmart Business Premium price from Stripe
-    let priceId: string | null = null;
-    try {
-      const products = await stripe.products.search({
-        query: "name:'RestoSmart Business Premium' AND active:'true'",
-      });
-      if (products.data.length > 0) {
-        const prices = await stripe.prices.list({
-          product: products.data[0].id,
-          active: true,
-          recurring: { interval: "month" },
-        });
-        priceId = prices.data[0]?.id ?? null;
-      }
-    } catch (err) {
-      req.log.warn({ err }, "Could not look up Stripe price — proceeding without priceId");
-    }
-
-    if (!priceId) {
-      return void res.status(503).json({
-        error: "stripe_product_not_configured",
-        message: "Das Stripe-Produkt ist noch nicht eingerichtet. Bitte starten Sie zuerst das Seed-Skript.",
-      });
-    }
+    // Live Stripe price ID for RestoSmart Business Premium (€39.90/month)
+    const PREMIUM_PRICE_ID = "price_1TK7DxDq06OMDnUjYnSnpUY3";
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ["card"],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: PREMIUM_PRICE_ID, quantity: 1 }],
       mode: "subscription",
       success_url: `${frontendBase}/billing?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendBase}/billing?stripe=cancel`,
