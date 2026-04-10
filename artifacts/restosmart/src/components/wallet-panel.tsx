@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/contexts/session-context";
+import { getCsrfToken } from "@workspace/api-client-react";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -129,7 +130,7 @@ function getOwnerEmail(): string {
 
 export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps) {
   const { toast } = useToast();
-  const { csrfToken } = useSession();
+  const { csrfToken, refresh: refreshSession } = useSession();
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
   const [customAmount, setCustomAmount]     = useState<string>("");
   const [showHistory, setShowHistory]       = useState(false);
@@ -152,17 +153,18 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
 
   const topupMutation = useMutation({
     mutationFn: async (amount: number) => {
+      const token = getCsrfToken() ?? csrfToken;
       const res = await fetch(`${API_BASE}/api/wallet/topup`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+          ...(token ? { "X-CSRF-Token": token } : {}),
         },
         body: JSON.stringify({ restaurantId, amount }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message ?? "Aufladung fehlgeschlagen");
+      if (!res.ok) throw new Error(data.message ?? data.error ?? "Aufladung fehlgeschlagen");
       return data as { checkoutUrl: string; sessionId: string; amount: number };
     },
     onSuccess: (data) => {
@@ -361,8 +363,11 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
                   whileHover={{ boxShadow: "0 0 20px rgba(79,140,255,0.4)" }}
                   whileTap={{ scale: 0.97 }}
                   disabled={topupMutation.isPending || !selectedAmount}
-                  onClick={() => {
+                  onClick={async () => {
                     if (!restaurantId || !selectedAmount) return;
+                    if (!getCsrfToken() && !csrfToken) {
+                      await refreshSession();
+                    }
                     topupMutation.mutate(selectedAmount);
                   }}
                   style={{

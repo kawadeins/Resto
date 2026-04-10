@@ -2,7 +2,7 @@
 
 ## Overview
 
-RestoSmart is a full-stack SaaS web application providing a premium, information-dense dashboard for restaurant owners. It aims to centralize and optimize various aspects of restaurant management, including staff, inventory, finances, marketing, and customer interactions, to drive growth and operational excellence. Key capabilities include smart staff management, dynamic table availability, comprehensive review management, and advanced analytics. The platform also features a customer-facing marketplace for restaurant discovery, loyalty programs, and smart meal planning. Strategic growth initiatives include sophisticated growth loops, competitive intelligence, AI-driven self-healing operations, and a city expansion engine, with the ambition of market domination.
+RestoSmart is a full-stack SaaS web application designed to provide restaurant owners with a comprehensive, information-dense dashboard for optimizing operations. It centralizes management of staff, inventory, finances, marketing, and customer interactions to drive growth. Key features include smart staff management, dynamic table availability, review management, and advanced analytics. The platform also offers a customer-facing marketplace for restaurant discovery, loyalty programs, and meal planning. Strategic ambitions include competitive intelligence, AI-driven operations, and city expansion capabilities, aiming for market leadership.
 
 ## User Preferences
 
@@ -21,110 +21,50 @@ RestoSmart is a full-stack SaaS web application providing a premium, information
 
 **Core Features & Design Patterns:**
 
--   **Owner Dashboard (`artifacts/restosmart`):** Dark theme, professional aesthetic focusing on information density and actionable insights. Includes modules for KPIs, Staff Management, Table Availability, Reviews & Reputation, Inventory, Finances, Analytics, Marketing, POS, Menu, Billing, and Profile. Features a premium system with trial conversion mechanisms, ensuring all displayed data is truthful and not faked.
--   **Customer Marketplace (`artifacts/customer`):** Warm/foodie aesthetic emphasizing discovery and personalization. Modules include Home (flash deals), Explore (listings, map view), Near You Now (hyper-local scoring), Restaurant Detail (booking), My Bookings, Profile Hub, and Meal Plan.
--   **Premium Auto-Conversion Optimization Loop:** An A/B testing framework (`conversion_variants` table) designed to optimize conversion elements (headlines, CTAs) with auto-win logic for high-performing variants and in-app conversion tracking.
--   **Smart Dynamic Pricing System:** Computes real-time boost prices using demand, time, slot, location, and weekend multipliers. Includes AI suggestions for optimal pricing, an auto-optimize mode, and full transparency on multipliers and safety limits.
--   **Boost Wallet System:** Prepaid credit system for running boost campaigns. Table: `wallet_transactions` (type: topup/boost_spend/refund, amount, balance_after). API: `GET /api/wallet`, `POST /api/wallet/topup`, `GET /api/wallet/cost`. `POST /api/promotions` now gates activation behind wallet balance check (returns HTTP 402 if insufficient) and deducts cost on success. Frontend: `WalletPanel` component with top-up UI, transaction history, and low-balance warnings. Balance chip in Promotion Tools header toggles the panel. Base boost costs: breakfast €1.50, lunch/happy_hour €2.00, nightlife €2.50, spotlight/heat €1.80 — scaled by demand multiplier.
--   **Team Management & Access Control:**
-    -   **Table:** `team_members` — stores invited team members with email, name, role (owner/manager/staff), status (active/pending/removed), invite_token.
-    -   **Owner Bootstrap:** `POST /api/team/bootstrap-owner` — one-time owner email registration, idempotent (blocked if already set).
-    -   **Roles:** Owner = full access + billing + team mgmt. Manager = content + boost + analytics + premium control. Staff = view dashboard only.
-    -   **Invite Flow:** Owner invites via email → pending status with crypto token → invitee accepts with token → status becomes active.
-    -   **Security:** All mutating endpoints (invite, role change, remove, resend) require owner role. Team list requires authenticated team membership. Owner auto-takeover removed (must use explicit bootstrap). Unique index on (email, restaurant_id).
-    -   **API Routes:** `/api/team`, `/api/team/invite`, `/api/team/accept`, `/api/team/:id/role` (PATCH), `/api/team/:id` (DELETE), `/api/team/resend`, `/api/team/permissions`, `/api/team/bootstrap-owner`.
-    -   **Frontend:** `/team` page with role cards, invite form, member list with action menus, pending/active status indicators.
-    -   **Navigation:** "Team" nav item with UsersRound icon between Gehaltsabrechnung and Inventar.
--   **Role-Based UI Locking & Permission Enforcement:**
-    -   **Permission Hook:** `usePermissions()` fetches role/permissions from `/api/team/permissions`, provides `role`, `permissions`, `hasPermission()`, `isOwner`, `isManager`, `isStaff`. Frontend defaults to owner/ALL_PERMISSIONS (fail-open for UX); backend remains fail-closed (security boundary). When API returns a valid role+permissions for a team member, the frontend narrows accordingly.
-    -   **Route Protection:** `RoleGuard` component wraps protected routes in App.tsx — shows "Kein Zugriff" page (German) with role info when unauthorized.
-    -   **Navigation Filtering:** Sidebar and mobile nav hide items the user's role can't access. Staff sees only: Übersicht, Profil, Buchungen, Reservierungen, Tische, Kassenterminal, Bewertungen. Manager adds: Personal, Inventar, Speisekarte, Analyse, Boost, Marketing, Insights, Wachstum, Optimizer. Owner sees everything including Finanzen, Gehaltsabrechnung, Team, Abonnement.
-    -   **Server-Side Enforcement:** `requireOwner()` and `requireManagerOrAbove()` middleware on all sensitive API routes: billing (trial/checkout/cancel — owner only); promotions (create/pause/resume/stop/budget); employees (create/update/delete); profile (update); inventory (create/update/delete); sales (create); discounts (flash/scheduled/toggle/delete/blast); menu (create/update/delete/ingredients); shifts (create/delete); campaigns (create/launch); booking-plans (create/update/duplicate/delete); availability (settings/pause); employee-vacations (create/delete); employee-days (toggle/delete); performance (set-rate); onboarding (step/enable-bookings/complete/restaurant).
-    -   **Access Denied UI:** Clean German component with shield icon, role label, section name, and link back to overview.
-    -   **Key Files:** `hooks/use-permissions.tsx`, `components/access-denied.tsx`, `middleware/role-guard.ts`.
--   **Review Intelligence System (Negative Review Recovery + AI Smart Reply + Impact Tracking):**
-    -   **DB columns added:** `recovery_status` (null|pending|resolved|published|closed), `recovery_message`, `business_response`, `business_responded_at`, `ai_reply_suggestion`, `initial_rating`, `ai_used` (boolean), `response_time_hours` (numeric).
-    -   **Customer Flow:** Low-rating reviews (≤3 stars) are intercepted and show a choice dialog: "Problem klären" (sets `recovery_status=pending`, hidden from public) or "Trotzdem veröffentlichen" (publishes immediately). After the business responds (`resolved`), the customer can publish (optionally edit rating), or close the issue. A 20-second polling loop shows "Der Betrieb hat geantwortet" notification.
-    -   **Owner Dashboard — Kritisches Feedback:** Section in `/reviews` page showing all pending recovery cases. Each case shows the customer's message, star rating, and two action buttons.
-    -   **AI Smart Reply (Premium-only):** Button "KI-Antwort" calls `POST /api/reviews/:id/ai-suggest` → GPT-4o-mini generates a professional German reply (empathetic, solution-oriented). Sets `ai_used=true` in DB. Non-premium users see locked button + "Premium erforderlich" + "Upgrade auf Premium" inline CTA.
-    -   **Manual Reply (Free):** "Manuell antworten" button lets free users compose their own response. All users can reply manually.
-    -   **Impact Tracking:** `initial_rating` stored on recovery creation. `response_time_hours` computed on `POST /api/reviews/:id/business-response`. Rating improvement tracked on publish.
-    -   **Feedback-Analyse (Premium analytics):** Card below Kritisches Feedback section. Shows: % resolved cases, Ø Verbesserung (avg rating improvement), Ø Antwortzeit, KI-Erfolgsrate. Non-premium sees locked lock icon + upgrade prompt. Uses `recovery` object in insights API.
-    -   **Analytics API:** `GET /api/reviews/insights` returns `recovery: { totalCases, resolvedRate, avgRatingImprovement, avgResponseTimeHours, aiUsageRate, aiSuccessRate }`.
-    -   **AI Model:** GPT-4o-mini via Replit AI Integrations (`@workspace/integrations-openai-ai-server`). Note: gpt-5 uses reasoning tokens and returns empty content — use gpt-4o-mini.
-    -   **Fairness rules:** Reviews are never deleted or permanently hidden; "pending" is a temporary state. Users can always "Trotzdem veröffentlichen". No manipulation of ratings.
--   **Business Self-Serve Growth Loop:** Dedicated `/for-business` landing page for instant trial activation and an in-dashboard Growth Activation Hub with checklists and value signals for trial users.
--   **Business Competition Engine:** Provides owners with competitive insights via dashboard widgets (Visibility Strength, Demand/Competition Signal) and a founder panel for deeper analysis.
--   **AI Self-Healing Ops Layer v2 + Founder Alert System:** An `ops_incidents` database tracks and auto-heals incidents across various categories (billing, boost delivery, platform consistency). Features an auto-retry engine and billing reconciliation. The Founder Interface ("Mission Control") provides a comprehensive overview of system health, incident management, and audit trails.
--   **Master Brain + Auto Decision Engine v2:** A central intelligence system (`brain.ts`) that monitors 26 core systems, assesses their health, speed, and risk levels, and generates priority scores. Features a link verification layer, a Brain Mode Engine (monitoring, decision_support, safe_autonomous), and an Auto-Execution Engine that performs safe auto-actions. It also includes a risk classification layer for systems and priorities, providing a launch verdict (ready/ready_with_risks/not_ready).
--   **City Expansion Engine:** Provides health scores for cities based on business metrics, offering insights for expansion decisions to both owners and founders.
--   **Behavior Priority Engine (Ranking Brain + Sponsored Boost System):** A client-side ranking system for discovery surfaces based on relevance and boost scores, with transparent `isSponsored` indicators and daily budget tracking for promotions.
--   **Auto Revenue Optimization Engine (`/optimizer`):** Analyzes promotion data to generate business-type-aware recommendations and provides a dashboard with KPIs, ROI feedback, and strategy tips.
--   **Dynamic Pricing Engine:** Computes real-time impression costs based on various factors, with owner-facing panels and founder configuration controls, ensuring transparency of cost breakdowns.
+-   **Owner Dashboard:** Dark theme, professional aesthetic, focusing on actionable insights for KPIs, Staff Management, Table Availability, Reviews & Reputation, Inventory, Finances, Analytics, Marketing, POS, Menu, Billing, and Profile. Includes a premium system with trial conversion mechanisms.
+-   **Customer Marketplace:** Warm/foodie aesthetic for restaurant discovery, featuring modules for Home (deals), Explore (listings, map view), Near You Now (hyper-local scoring), Restaurant Detail (booking), My Bookings, Profile Hub, and Meal Plan.
+-   **Premium Auto-Conversion Optimization Loop:** A/B testing framework for optimizing conversion elements with auto-win logic and in-app conversion tracking.
+-   **Smart Dynamic Pricing System:** Computes real-time boost prices based on demand, time, slot, location, and weekend multipliers, with AI suggestions and auto-optimization.
+-   **Boost Wallet System:** Prepaid credit system for running boost campaigns, including top-up functionality, transaction history, and low-balance warnings.
+-   **Team Management & Access Control:** Supports owner, manager, and staff roles with granular permissions, invite flows, and role-based UI locking. All mutating endpoints are secured based on roles.
+-   **Review Intelligence System:** Features negative review recovery, AI-powered smart reply suggestions (premium only) for business responses, and impact tracking for rating improvements. Low-rated reviews are intercepted for private resolution before public posting.
+-   **Business Self-Serve Growth Loop:** Dedicated landing page (`/for-business`) for instant trial activation and an in-dashboard Growth Activation Hub with checklists.
+-   **Business Competition Engine:** Provides competitive insights via dashboard widgets (Visibility Strength, Demand/Competition Signal).
+-   **AI Self-Healing Ops Layer & Founder Alert System:** Tracks and auto-heals operational incidents (e.g., billing, boost delivery) with an auto-retry engine and a "Mission Control" interface for founders.
+-   **Master Brain + Auto Decision Engine:** Central intelligence system monitoring 26 core systems, assessing health, speed, and risk to generate priority scores and perform safe auto-actions.
+-   **City Expansion Engine:** Provides health scores for cities to guide expansion decisions.
+-   **Behavior Priority Engine:** Client-side ranking system for discovery surfaces based on relevance and sponsored boost scores, with transparent `isSponsored` indicators.
+-   **Auto Revenue Optimization Engine:** Analyzes promotion data to generate business-type-aware recommendations and provides a dashboard with KPIs and ROI feedback.
+-   **Dynamic Pricing Engine:** Computes real-time impression costs with owner-facing panels and founder configuration controls.
 
 **Authentication (Hardened — Production-Ready):**
--   **Two-Step OTP Login + PostgreSQL Sessions:**
-    -   `POST /api/auth/request-otp` — validates email vs DB, generates 6-digit code (10-min TTL) in `auth_otps` table. Dev mode: returns `devCode` + displays on login screen. Prod with RESEND: sends email only. Limit: 5 OTP requests/15 min/IP.
-    -   `POST /api/auth/verify-otp` — validates OTP (marks used immediately), re-validates identity, creates server session. Limit: 10 attempts/15 min/IP. Replay-safe.
-    -   `GET /api/auth/session` — returns `{ authenticated, email, role, restaurantId, csrfToken }` or 401.
-    -   `POST /api/auth/logout` — destroys session from PostgreSQL store, clears cookie.
-    -   **PostgreSQL session store** via `connect-pg-simple` (table: `sessions`, index: `idx_sessions_expire`). Survives restarts. Auto-pruned every 15 min. 7-day TTL.
-    -   `role-guard.ts` — session-first identity (`req.session.userEmail`), header fallback for API tooling. Both validated against DB.
-    -   Frontend: `SessionContext` with `requestOtp()` + `verifyOtp()` methods. Two-step login page shows dev code when RESEND not configured.
-    -   **Shared identity resolution:** `lib/identity.ts` — `resolveIdentity(email)` checks owner_email in restaurants table then active team_members; used by OTP + OAuth routes.
--   **Google OAuth 2.0 (optional — activated by env vars):**
-    -   `GET /api/auth/google` — generates state, stores in session, redirects to Google consent screen.
-    -   `GET /api/auth/google/callback` — verifies state, exchanges code for access_token, fetches email from userinfo endpoint, calls `resolveIdentity()`, creates identical session to OTP flow.
-    -   Required env vars: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
-    -   Authorized redirect URI to register: `{OAUTH_CALLBACK_BASE_URL}/api/auth/google/callback`.
--   **Apple Sign-In (optional — activated by env vars):**
-    -   `GET /api/auth/apple` — generates state, stores in session, redirects to Apple Sign-In.
-    -   `POST /api/auth/apple/callback` — Apple posts here; verifies id_token via Apple JWKS (`jose` library), resolves email (stored in `oauth_accounts` table after first sign-in — Apple only sends email once), calls `resolveIdentity()`, responds with HTML auto-redirect page (sets session cookie before redirect).
-    -   Required env vars: `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`.
-    -   **`oauth_accounts` table:** `(provider, provider_sub, email)` — maps Google/Apple user IDs → email for repeated logins.
-    -   `GET /api/auth/oauth/providers` — returns `{google: bool, apple: bool}` for frontend to conditionally render social buttons.
-    -   `jose` package used for Apple JWT signing (client_secret) and JWKS verification.
--   **Login page (`pages/login.tsx` — redesigned):** Shows Google/Apple buttons when providers configured (fetched from `/api/auth/providers`). Social buttons do full-page navigation to OAuth routes. Divider + "Mit E-Mail anmelden" toggle for OTP fallback. Handles `?login_error=` query params from OAuth callbacks with German error messages. OAUTH_CALLBACK_BASE_URL auto-detected from `REPLIT_DEV_DOMAIN` env var (set in code, not required as secret).
--   **Team routes (session-hardened):** `GET /team` → `requireManagerOrAbove()`. `/invite`, `/:id/role`, `/:id`, `/resend` → `requireOwner()` + `teamInviteLimiter`/`mutationLimiter`. `/permissions` → session email only, no auto-owner fallback.
--   **Rate Limiters:** `otpRequestLimiter` (5/15min), `otpVerifyLimiter` (10/15min), `walletTopupLimiter` (5/15min), `teamInviteLimiter` (20/hr), `boostActivationLimiter` (30/hr), `mutationLimiter` (100/15min), `aiLimiter` (30/hr), `globalLimiter` (300/min).
--   **DB Indexes (performance):** `idx_wallet_transactions_restaurant_id/created_at`, `idx_team_members_email/restaurant_id`, `idx_reviews_restaurant_id/created_at`, `idx_promotions_restaurant_id/status`, `idx_sessions_expire`, `idx_auth_otps_email_code/expires_at`.
--   **Super-admin:** `X-Super-Admin-Key` header.
--   **Founder:** `x-founder-key` header, localStorage `restosmart_founder_key`.
--   **Customer:** localStorage email (`restosmart_email`).
--   **Owner Premium:** localStorage flag (`restosmart_owner_premium`).
--   **Key files:** `artifacts/api-server/src/routes/auth.ts`, `artifacts/api-server/src/middleware/role-guard.ts`, `artifacts/api-server/src/middleware/rate-limiters.ts`, `artifacts/restosmart/src/contexts/session-context.tsx`, `artifacts/restosmart/src/pages/login.tsx`.
+-   **Two-Step OTP Login:** Email-based OTP authentication with PostgreSQL session storage, rate limiting, and replay protection.
+-   **Google OAuth 2.0 (optional):** Integration for Google Sign-In, creating identical sessions to OTP flow.
+-   **Apple Sign-In (optional):** Integration for Apple Sign-In, resolving identity and creating sessions. Uses `oauth_accounts` table to map provider IDs to emails.
+-   **Login Page:** Redesigned login page supporting OTP and conditional display of social login buttons.
+-   **Rate Limiters:** Comprehensive rate limiting applied to various endpoints (OTP, wallet top-up, team invites, AI requests, general mutations).
+-   **DB Indexes:** Optimized database performance with various indexes on critical tables.
+-   **Admin Access:** Support for Super-admin (`X-Super-Admin-Key`) and Founder (`x-founder-key`) access.
 
--   **Real Stripe Billing System (Production-Ready):**
-    -   **Stripe Integration:** Connected via Replit Stripe connector. Packages: `stripe@20.0.0` + `stripe-replit-sync@1.0.0` at workspace root.
-    -   **Hardcoded Stripe price IDs (environment-aware via `REPLIT_DEPLOYMENT === "1"`):**
-        -   Premium subscription — TEST: `price_1TK5gkAgY8yJ0qgTg1oAXFd6`, LIVE: `price_1TK7DxDq06OMDnUjYnSnpUY3` (€39.90/month)
-        -   Wallet €5  — TEST: `price_1TK5glAgY8yJ0qgTReaHz2z6`, LIVE: `price_1TK85zDq06OMDnUjwib9ALyb`
-        -   Wallet €10 — TEST: `price_1TK5gmAgY8yJ0qgT1fgsk1Q4`, LIVE: `price_1TK86iDq06OMDnUjlGz1JfYl`
-        -   Wallet €20 — TEST: `price_1TK5gmAgY8yJ0qgTox5IbVhe`, LIVE: `price_1TK87FDq06OMDnUjz3TfwCgI`
-        -   Wallet €50 — TEST: `price_1TK5gmAgY8yJ0qgTlTgR4k46`, LIVE: `price_1TK88CDq06OMDnUjiu6n5Sx7`
-        -   No dynamic Stripe product search — all price IDs are statically mapped in `billing.ts` and `wallet.ts`.
-    -   **Checkout flow:** `POST /api/billing/checkout` → creates real Stripe Checkout Session → returns `{url}` → frontend redirects. Premium is NOT activated by this route — only by webhook.
-    -   **Wallet topup flow:** `POST /api/wallet/topup` → creates real Stripe Checkout Session (one-time payment) → returns `{checkoutUrl}` → frontend redirects. Wallet credit is ONLY added after `checkout.session.completed` webhook with `payment_status=paid`. Only amounts [5, 10, 20, 50] EUR accepted (Zod enforced).
-    -   **Webhook:** Registered at `POST /api/stripe/webhook` with `express.raw()` BEFORE `express.json()`. Handled in `webhookHandlers.ts` using `stripe-replit-sync` for signature verification + custom business logic.
-    -   **Events handled:** `checkout.session.completed` (subscription + wallet topup), `invoice.paid` (renewal), `invoice.payment_failed` (past_due), `customer.subscription.updated/deleted` (state sync), `payment_intent.succeeded/failed` (logged).
-    -   **Idempotency:** `stripe_webhook_events` table prevents duplicate processing. Events are checked before processing.
-    -   **Stripe schema:** `stripe-replit-sync` manages 29 tables in `stripe` schema (products, prices, customers, subscriptions, etc.). Synced via `runMigrations()` + `syncBackfill()` on startup.
-    -   **Stripe init:** `initStripe()` in `index.ts` runs on startup: `runMigrations()` → `getStripeSync()` → `findOrCreateManagedWebhook()` → `syncBackfill()` (non-blocking).
-    -   **Cancel:** `POST /api/billing/cancel` cancels in Stripe (if subscription ID exists) + updates DB. Also accessible via Stripe Customer Portal.
-    -   **Portal:** `GET /api/billing/portal` creates Stripe Billing Portal session for managing payment method, invoices, and subscriptions.
-    -   **Return URLs:** Success → `/restosmart/billing?stripe=success`, Cancel → `/restosmart/billing?stripe=cancel`. Wallet: `?topup=success/cancel`. Billing page polls DB status after return.
-    -   **Frontend:** billing.tsx shows real-time status banners (payment pending, activated, cancelled, past_due). All checkout buttons redirect to Stripe. "Zahlungsdetails & Rechnungen verwalten" links to Stripe Portal.
-    -   **Seed script:** `pnpm --filter @workspace/scripts run seed-products` creates Stripe products/prices.
-    -   **Key files:** `artifacts/api-server/src/stripeClient.ts`, `webhookHandlers.ts`, `routes/billing.ts`, `routes/wallet.ts`, `scripts/src/seed-products.ts`.
+**Real Stripe Billing System (Production-Ready):**
+-   **Stripe Integration:** Uses `stripe` and `stripe-replit-sync` for managing subscriptions and wallet top-ups.
+-   **Hardcoded Stripe price IDs:** Statically mapped price IDs for premium subscription and various wallet top-up amounts.
+-   **Checkout Flow:** Initiates Stripe Checkout sessions for subscriptions and one-time wallet payments, redirecting users to Stripe.
+-   **Webhooks:** Processes Stripe webhooks (`checkout.session.completed`, `invoice.paid`, `customer.subscription.updated/deleted`) for real-time state synchronization.
+-   **Idempotency:** Prevents duplicate webhook processing using `stripe_webhook_events` table.
+-   **Stripe Schema:** `stripe-replit-sync` manages 29 tables in the `stripe` schema.
+-   **Cancellation & Portal:** Functionality for cancelling subscriptions and accessing the Stripe Billing Portal.
+-   **Frontend:** Displays real-time billing status banners and redirects to Stripe for payment actions.
 
-**Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant auth, email delivery disabled by default without `RESEND_API_KEY`.
+**Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant authentication, email delivery disabled by default without `RESEND_API_KEY`.
 
 ## External Dependencies
 
 -   **Database:** PostgreSQL
 -   **ORM:** Drizzle ORM
--   **Email Service:** Resend (requires `RESEND_API_KEY` for activation)
+-   **Email Service:** Resend (requires `RESEND_API_KEY`)
 -   **UI Components:** Radix UI (via Shadcn/ui), Lucide icons
 -   **Charting:** Recharts
 -   **Mapping:** Leaflet/OpenStreetMap
--   **Payment Gateway:** Mock Stripe (no real payment integration)
+-   **Payment Gateway:** Stripe
+-   **AI Model:** GPT-4o-mini (via Replit AI Integrations)
