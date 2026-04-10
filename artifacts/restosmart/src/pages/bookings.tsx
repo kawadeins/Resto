@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListReservations,
@@ -709,6 +710,8 @@ function PlanCard({
 
 function BookingPlansTab() {
   const { toast } = useToast();
+  const { csrfToken } = useSession();
+  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
   const qc = useQC();
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -739,7 +742,8 @@ function BookingPlansTab() {
       const method = data.id ? "PATCH" : "POST";
       const r = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ ...data, tags: data.tags ?? [] }),
       });
       if (!r.ok) throw new Error("Save failed");
@@ -755,7 +759,11 @@ function BookingPlansTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const r = await fetch(`${API_BASE}/api/booking-plans/${id}`, { method: "DELETE" });
+      const r = await fetch(`${API_BASE}/api/booking-plans/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { ...csrfHdr },
+      });
       if (!r.ok) throw new Error("Delete failed");
     },
     onSuccess: () => { toast({ title: "Plan gelöscht." }); invalidate(); },
@@ -764,7 +772,11 @@ function BookingPlansTab() {
 
   const duplicateMutation = useMutation({
     mutationFn: async (id: number) => {
-      const r = await fetch(`${API_BASE}/api/booking-plans/${id}/duplicate`, { method: "POST" });
+      const r = await fetch(`${API_BASE}/api/booking-plans/${id}/duplicate`, {
+        method: "POST",
+        credentials: "include",
+        headers: { ...csrfHdr },
+      });
       if (!r.ok) throw new Error("Duplicate failed");
       return r.json();
     },
@@ -775,7 +787,8 @@ function BookingPlansTab() {
   const patchStatus = async (id: number, status: BookingPlan["status"]) => {
     const r = await fetch(`${API_BASE}/api/booking-plans/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: { "Content-Type": "application/json", ...csrfHdr },
       body: JSON.stringify({ status }),
     });
     if (r.ok) { invalidate(); toast({ title: `Status geändert: ${PLAN_STATUS_CONFIG[status]?.label}` }); }

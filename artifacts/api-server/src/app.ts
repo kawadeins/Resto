@@ -39,7 +39,7 @@ app.use(
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // Allow credentials from any Replit preview/dev domain and the production domain.
-const ALLOWED_ORIGIN_PATTERN = /\.repl(it|\.co|\.dev)\.com$|\.replit\.app$|^http:\/\/localhost/;
+const ALLOWED_ORIGIN_PATTERN = /\.replit\.(com|app|dev)$|\.worf\.replit\.dev$|^http:\/\/localhost/;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -126,7 +126,7 @@ app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 //   - /api/stripe/webhook  (handled by Stripe HMAC; raw body)
 //   - /api/campaigns/:id/mark-converted  (customer-facing booking event)
 //
-const CSRF_BYPASS = /^\/api\/(auth|stripe\/webhook)($|\/)|\/mark-converted$/;
+const CSRF_BYPASS = /^\/api\/(auth|stripe\/webhook|conversion\/event)($|\/)|\/mark-converted$/;
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const MUTATING = ["POST", "PUT", "PATCH", "DELETE"];

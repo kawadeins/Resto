@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from "react";
+import { getCsrfToken } from "@workspace/api-client-react";
+import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +61,14 @@ function useProfile() {
 async function uploadFile(file: File): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
-  const r = await fetch(`${API_BASE}/api/profile/upload`, { method: "POST", body: fd });
+  const csrfToken = getCsrfToken();
+  const csrfHeaders: Record<string, string> = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+  const r = await fetch(`${API_BASE}/api/profile/upload`, {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders,
+    body: fd,
+  });
   if (!r.ok) throw new Error("Upload failed");
   const { url } = await r.json();
   return `${API_BASE}${url}`;
@@ -280,6 +289,7 @@ export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { csrfToken } = useSession();
   const [form, setForm] = useState<Partial<RestaurantProfile>>({});
   const [initialized, setInitialized] = useState(false);
 
@@ -294,9 +304,11 @@ export default function ProfilePage() {
 
   const save = useMutation({
     mutationFn: async (data: Partial<RestaurantProfile>) => {
+      const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
       const r = await fetch(`${API_BASE}/api/profile`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify(data),
       });
       if (!r.ok) throw new Error("Failed to save");

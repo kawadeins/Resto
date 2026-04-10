@@ -69,11 +69,10 @@ async function buildCustomerProfiles(restaurantId: number): Promise<CustomerProf
     GROUP BY customer_email
   `);
 
-  // Get loyalty balances for this restaurant
+  // Get loyalty balances (single-restaurant system — no restaurant_id column on loyalty_points)
   const loyaltyRows = await db.execute(sql`
     SELECT customer_email, points, total_earned
     FROM loyalty_points
-    WHERE restaurant_id = ${restaurantId}
   `);
   const loyaltyMap = new Map(
     (loyaltyRows.rows as { customer_email: string; points: number; total_earned: number }[]).map(

@@ -1,0 +1,347 @@
+MASTER RULES APPLY
+
+Perform a full "Business Dashboard Emergency Audit + Repair + Reconnect Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random new features.
+Do NOT focus on Founder dashboard.
+This pass is ONLY for fixing the business dashboard because multiple buttons, loading flows, payment flows, and page actions are currently broken or disconnected.
+
+This is an emergency stabilization and repair pass.
+
+========================
+GOAL
+========================
+
+Fully inspect, repair, reconnect, and stabilize the entire business dashboard so that:
+
+- all major pages load correctly
+- all important buttons work
+- all money/payment flows work
+- all wallet/boost actions work
+- all login/session-related dashboard actions work
+- all sections are connected to real backend logic
+- no dead buttons remain
+- no broken loading states remain
+- no obvious dashboard errors remain
+
+The dashboard must become:
+- stable
+- clickable
+- connected
+- trustworthy
+- usable for real testing
+
+========================
+1. GLOBAL ERROR AUDIT (CRITICAL)
+========================
+
+Inspect the full business dashboard and identify all current errors, including:
+
+- first dashboard load errors
+- broken page loads
+- failing API requests
+- wallet load failures
+- payment/top-up failures
+- boost activation failures
+- broken reply buttons
+- dead action buttons
+- route errors
+- session/auth issues
+- components that render but do nothing
+
+Collect all major failures first before changing code.
+
+========================
+2. FIRST DASHBOARD LOAD FIX
+========================
+
+Fix the initial dashboard entry flow so that when the business user enters the dashboard:
+
+- the page loads cleanly
+- no critical API errors appear
+- no broken widgets fail visibly
+- no wallet crash occurs
+- no missing auth state breaks the screen
+- no section remains permanently loading
+
+The first dashboard impression must be stable.
+
+========================
+3. BUTTON-BY-BUTTON AUDIT
+========================
+
+Inspect ALL important buttons and action controls across the business dashboard.
+
+This includes, but is not limited to:
+- login-related buttons
+- premium / upgrade buttons
+- wallet top-up buttons
+- boost activate buttons
+- pause / stop boost buttons
+- campaign controls
+- AI reply buttons
+- review response buttons
+- team invite buttons
+- role update buttons
+- schedule actions
+- PDF export / print / share buttons
+- save buttons
+- toggle buttons
+- retry / refresh buttons
+
+For each button verify:
+- it is clickable
+- it triggers the correct backend/frontend action
+- it has proper loading state
+- it does not silently fail
+- it does not produce dead UI
+
+Fix every broken button.
+
+========================
+4. PAYMENT / WALLET / TOP-UP REPAIR
+========================
+
+Audit and repair all money-related actions.
+
+Verify and fix:
+- wallet balance load
+- wallet panel rendering
+- top-up button actions
+- Stripe checkout redirect creation
+- success/cancel return states
+- transaction history load
+- no fake success states
+- no broken payment error handling
+
+If a user tries to load money into wallet and gets an error:
+- identify exact cause
+- fix it
+- make the flow work end-to-end
+
+========================
+5. BOOST / PROMOTION REPAIR
+========================
+
+Audit and repair all boost-related flows:
+
+- boost card rendering
+- cost display
+- wallet balance check
+- activation
+- pause
+- stop
+- auto mode toggle
+- campaign center controls
+- ROI / stats display
+- recommendation cards
+
+Ensure:
+- no dead boost buttons
+- no fake activation state
+- no broken loading state
+- no missing backend connection
+- wallet deduction and boost state stay connected
+
+========================
+6. LOGIN / SESSION / AUTH REPAIR
+========================
+
+Because broken login/auth often causes half the dashboard to fail, audit all session-dependent business flows.
+
+Verify and fix:
+- authenticated dashboard load
+- session check
+- OTP flow if used
+- Google/Apple login if configured
+- role resolution
+- owner/manager/staff access
+- authenticated API calls
+- logout flow
+
+Ensure dashboard requests do not fail because of broken auth wiring.
+
+========================
+7. REVIEWS / AI / FEEDBACK REPAIR
+========================
+
+Audit and repair:
+- review list loading
+- critical feedback loading
+- AI reply suggestion
+- manual business response
+- publish/resolve/recovery flows
+- feedback analytics if present
+
+Fix all broken buttons, invalid IDs, auth problems, or missing backend links.
+
+========================
+8. TEAM / STAFF / PLANNER REPAIR
+========================
+
+Audit and repair:
+- team page load
+- staff list
+- invites
+- role changes
+- removal
+- shift planner
+- share / email / WhatsApp / PDF / print actions
+- AI schedule if present
+
+Fix every action that fails, loads wrong, or is disconnected.
+
+========================
+9. ROUTE / PAGE CONNECTION REPAIR
+========================
+
+Inspect all business dashboard routes and sections.
+
+Verify:
+- each page opens correctly
+- no blank screen
+- no wrong redirect
+- no component mounted without data wiring
+- no section hidden incorrectly
+- no page depends on broken assumptions
+
+Reconnect any route/page that is partially wired or broken.
+
+========================
+10. API FAILURE REPAIR
+========================
+
+Audit all relevant business dashboard API calls and fix failing ones.
+
+Check for:
+- 401 / 403 / 404 / 409 / 500 failures
+- missing auth/session
+- wrong request body
+- wrong parameter parsing
+- invalid IDs
+- missing CSRF token
+- missing credentials: include
+- stale frontend assumptions
+
+Fix root causes instead of patching symptoms.
+
+========================
+11. LOADING / SPINNER / EMPTY STATE REPAIR
+========================
+
+Fix broken loading behavior.
+
+Ensure:
+- no spinner hangs forever
+- no page flashes fake data
+- no stuck loading state
+- empty states are honest
+- failed requests show clear German message
+- retry works where appropriate
+
+========================
+12. FULL SYSTEM RECONNECTION
+========================
+
+Reconnect all important business systems so they work together properly:
+
+- login/session ↔ dashboard
+- wallet ↔ top-up ↔ history
+- wallet ↔ boost
+- premium ↔ locked features
+- campaign center ↔ promotion tools
+- reviews ↔ AI ↔ feedback flow
+- team ↔ roles ↔ planner
+- billing ↔ premium state
+- analytics ↔ real tracked data
+
+No important system should remain partially disconnected.
+
+========================
+13. AUTO FIX PASS
+========================
+
+After the audit, directly fix all broken or weak areas within scope.
+
+Examples:
+- repair broken API calls
+- reconnect button handlers
+- add missing CSRF/session headers
+- fix wrong route params
+- fix auth/session usage
+- fix broken loading states
+- restore missing wallet calls
+- reconnect boost/payment logic
+- correct broken German UI messages
+
+Do NOT just report.
+Actually repair.
+
+========================
+14. FINAL CLICK-THROUGH VALIDATION
+========================
+
+After repairs, perform a full click-through validation of the business dashboard.
+
+At minimum test:
+- login
+- first dashboard load
+- wallet open
+- top-up action
+- premium page
+- boost activation
+- pause/stop boost
+- reviews reply
+- team page
+- role change
+- shift/share/export
+- campaign center
+- analytics pages
+- logout
+
+Everything important must work.
+
+========================
+15. FINAL REPORT
+========================
+
+Produce a structured final report with:
+
+A. Initial dashboard load status
+B. Broken buttons found
+C. Buttons fixed
+D. Payment/wallet status
+E. Boost/promotion status
+F. Login/session status
+G. Reviews/AI status
+H. Team/staff/planner status
+I. Route/page status
+J. API failures fixed
+K. Remaining risks if any
+
+For each area classify:
+- Working
+- Working but Weak
+- Broken before / Fixed now
+- Still needs follow-up
+
+========================
+FINAL GOAL
+========================
+
+The business dashboard must stop feeling broken.
+
+It must become:
+- fully testable
+- fully clickable
+- properly connected
+- money-safe
+- session-safe
+- stable enough for real use
+
+No dead buttons.
+No obvious broken sections.
+No failed top-up path.
+No broken first dashboard load.

@@ -515,6 +515,7 @@ export default function Staff() {
     mutationFn: (data: EmployeeFormValues) =>
       fetch(`${API_BASE}/api/employees`, {
         method: "POST",
+        credentials: "include",
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
       }).then(async (r) => { if (!r.ok) throw new Error("Fehler"); return r.json(); }),
@@ -524,6 +525,7 @@ export default function Staff() {
     mutationFn: ({ id, data }: { id: number; data: EmployeeFormValues }) =>
       fetch(`${API_BASE}/api/employees/${id}`, {
         method: "PUT",
+        credentials: "include",
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
       }).then(async (r) => { if (!r.ok) throw new Error("Fehler"); return r.json(); }),
@@ -542,6 +544,7 @@ export default function Staff() {
     mutationFn: (data: { employeeId: number; dayOfWeek: string; startTime: string; endTime: string }) =>
       fetch(`${API_BASE}/api/shifts`, {
         method: "POST",
+        credentials: "include",
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
       }).then(async (r) => { if (!r.ok) throw new Error("Fehler"); return r.json(); }),

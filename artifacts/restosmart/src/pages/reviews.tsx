@@ -124,13 +124,17 @@ export default function Reviews() {
     refetchInterval: 60_000,
   });
 
+  const { csrfToken } = useSession();
+  const csrfHeader = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+
   const replyMutation = useReplyToReview();
 
   const sendRequestMutation = useMutation({
     mutationFn: (reservationId: number) =>
       fetch(`${API_BASE}/api/reviews/send-request`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHeader },
         body: JSON.stringify({ reservationId }),
       }).then(r => r.json()),
     onSuccess: (_, reservationId) => {
@@ -142,7 +146,11 @@ export default function Reviews() {
 
   const ratingSyncMutation = useMutation({
     mutationFn: () =>
-      fetch(`${API_BASE}/api/reviews/rating-sync`, { method: "POST" }).then(r => r.json()),
+      fetch(`${API_BASE}/api/reviews/rating-sync`, {
+        method: "POST",
+        credentials: "include",
+        headers: { ...csrfHeader },
+      }).then(r => r.json()),
     onSuccess: (data) => {
       if (data.skipped) {
         toast({ title: "Keine Bewertungen zum Synchronisieren" });
@@ -154,9 +162,6 @@ export default function Reviews() {
     },
     onError: () => toast({ title: "Bewertungssynchronisierung fehlgeschlagen", variant: "destructive" }),
   });
-
-  const { csrfToken } = useSession();
-  const csrfHeader = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
 
   const sendBusinessResponseMutation = useMutation({
     mutationFn: ({ id, response }: { id: number; response: string }) =>

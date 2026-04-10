@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSession } from "@/contexts/session-context";
 import { format } from "date-fns";
 import { Armchair, Users, Clock, TrendingUp, PauseCircle, PlayCircle, Save, Settings, BarChart2, Calendar, Zap, AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,8 @@ function StatusBadge({ status }: { status: AvailabilityStatus }) {
 
 export default function Tables() {
   const { toast } = useToast();
+  const { csrfToken } = useSession();
+  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
   const today = format(new Date(), "yyyy-MM-dd");
   const [selectedDate, setSelectedDate] = useState(today);
 
@@ -131,7 +134,8 @@ export default function Tables() {
     try {
       const res = await fetch(`${API}/api/availability/settings`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({
           tableCapacity: form.tableCapacity,
           seatingCapacity: form.seatingCapacity,
@@ -157,7 +161,8 @@ export default function Tables() {
     try {
       const res = await fetch(`${API}/api/availability/pause`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ paused: pause, durationMinutes: pause ? parseInt(pauseDuration) : 0 }),
       });
       if (res.ok) {

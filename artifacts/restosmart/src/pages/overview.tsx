@@ -17,6 +17,7 @@ import {
   getGetInsightsDailySummaryQueryKey,
 } from "@workspace/api-client-react";
 import { PromotionTools } from "@/components/promotion-tools";
+import { useSession } from "@/contexts/session-context";
 import { useState, useEffect } from "react";
 import { track } from "@/lib/conversion-tracking";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -63,8 +64,10 @@ export default function Overview() {
     }
   }, []);
   const { toast } = useToast();
+  const { csrfToken } = useSession();
   const queryClient = useQueryClient();
   const bizPossessive = BIZ_POSSESSIVE[getBizType()];
+  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackCategory, setFeedbackCategory] = useState<"bookings" | "revenue" | "marketing" | "general">("general");
@@ -80,7 +83,8 @@ export default function Overview() {
     mutationFn: async () => {
       const res = await fetch("/api/pilot/feedback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ message: feedbackText, rating: feedbackRating || undefined, category: feedbackCategory }),
       });
       if (!res.ok) throw new Error("Fehler");
@@ -187,7 +191,8 @@ export default function Overview() {
     mutationFn: (attendanceId: number) =>
       fetch("/api/attendance/confirm", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ attendanceId }),
       }).then((r) => r.json()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["attendance-today"] }); },
@@ -195,7 +200,11 @@ export default function Overview() {
 
   const sendReminders = useMutation({
     mutationFn: () =>
-      fetch("/api/attendance/send-reminders", { method: "POST" }).then((r) => r.json()),
+      fetch("/api/attendance/send-reminders", {
+        method: "POST",
+        credentials: "include",
+        headers: { ...csrfHdr },
+      }).then((r) => r.json()),
     onSuccess: (data) => {
       toast({ title: `Erinnerungen gesendet (${data.remindersSent ?? 0} von ${data.totalShifts ?? 0} Mitarbeitern)` });
       queryClient.invalidateQueries({ queryKey: ["attendance-today"] });

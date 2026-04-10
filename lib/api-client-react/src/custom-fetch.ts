@@ -17,6 +17,23 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _csrfToken: string | null = null;
+
+/**
+ * Set the CSRF token that will be attached to all mutating requests
+ * (POST, PUT, PATCH, DELETE) as the X-CSRF-Token header.
+ *
+ * Call this from the SessionContext whenever the CSRF token is received
+ * from the server (on login or session restore).
+ */
+export function setCsrfToken(token: string | null): void {
+  _csrfToken = token;
+}
+
+/** Read the current module-level CSRF token (for use in non-hook contexts). */
+export function getCsrfToken(): string | null {
+  return _csrfToken;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -358,9 +375,15 @@ export async function customFetch<T = unknown>(
     }
   }
 
+  // Attach CSRF token for mutating requests when one has been registered.
+  const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+  if (_csrfToken && MUTATING_METHODS.has(method) && !headers.has("x-csrf-token")) {
+    headers.set("x-csrf-token", _csrfToken);
+  }
+
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const response = await fetch(input, { credentials: "include", ...init, method, headers });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

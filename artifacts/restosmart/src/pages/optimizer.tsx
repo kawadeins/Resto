@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -122,14 +123,17 @@ function RecommendationCard({
   onActivated: () => void;
 }) {
   const { toast } = useToast();
+  const { csrfToken } = useSession();
   const queryClient = useQueryClient();
 
   const activateMutation = useMutation({
     mutationFn: async (boostType: string) => {
       if (!restaurantId) throw new Error("No restaurant");
+      const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
       const res = await fetch(`${API_BASE}/api/promotions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ restaurantId, type: boostType }),
       });
       if (!res.ok) throw new Error("Failed");

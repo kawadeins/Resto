@@ -27,6 +27,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { setCsrfToken as setGlobalCsrfToken } from "@workspace/api-client-react";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const LS_KEY = "restosmart_owner_email";
@@ -120,6 +121,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchSession();
   }, [fetchSession]);
+
+  // Sync CSRF token to the global customFetch module so auto-generated
+  // API hooks automatically include it in all mutating requests.
+  useEffect(() => {
+    setGlobalCsrfToken(csrfToken);
+  }, [csrfToken]);
 
   const requestOtp = useCallback(
     async (email: string): Promise<OtpRequestResult> => {

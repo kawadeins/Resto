@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ function AttendanceBar({ rate }: { rate: number | null }) {
 
 export default function Payroll() {
   const { toast } = useToast();
+  const { csrfToken } = useSession();
   const queryClient = useQueryClient();
   const [editingRate, setEditingRate] = useState<number | null>(null);
   const [rateInput, setRateInput] = useState("");
@@ -77,12 +79,15 @@ export default function Payroll() {
   });
 
   const setRateMutation = useMutation({
-    mutationFn: (vars: { employeeId: number; hourlyRate: number }) =>
-      fetch(`${API_BASE}/api/performance/set-rate`, {
+    mutationFn: (vars: { employeeId: number; hourlyRate: number }) => {
+      const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+      return fetch(`${API_BASE}/api/performance/set-rate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify(vars),
-      }).then(r => r.json()),
+      }).then(r => r.json());
+    },
     onSuccess: () => {
       toast({ title: "Stundenlohn aktualisiert" });
       setEditingRate(null);

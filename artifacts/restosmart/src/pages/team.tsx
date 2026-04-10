@@ -61,38 +61,17 @@ export default function Team() {
   const { csrfToken } = useSession();
   const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/team`, { credentials: "include" });
       if (!res.ok) {
-        if (res.status === 403) {
-          await fetch(`${API_BASE}/api/team/bootstrap-owner`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json", ...csrfHdr },
-            body: JSON.stringify({}),
-          });
-          const retry = await fetch(`${API_BASE}/api/team`, { credentials: "include" });
-          if (!retry.ok) throw new Error("Failed to load team");
-          return retry.json() as Promise<{ members: TeamMember[] }>;
-        }
-        throw new Error("Failed to load team");
+        if (res.status === 403) throw new Error("auth_required");
+        throw new Error("Fehler beim Laden des Teams");
       }
-      const json = await res.json() as { members: TeamMember[]; needsOwnerSetup?: boolean };
-      if (json.needsOwnerSetup) {
-        await fetch(`${API_BASE}/api/team/bootstrap-owner`, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json", ...csrfHdr },
-          body: JSON.stringify({}),
-        });
-        const retry = await fetch(`${API_BASE}/api/team`, { credentials: "include" });
-        if (!retry.ok) throw new Error("Failed to load team");
-        return retry.json() as Promise<{ members: TeamMember[] }>;
-      }
-      return json;
+      return res.json() as Promise<{ members: TeamMember[] }>;
     },
+    retry: false,
   });
 
   const inviteMutation = useMutation({
@@ -176,6 +155,16 @@ export default function Team() {
   const members = data?.members?.filter((m) => m.status !== "removed") ?? [];
   const activeCount = members.filter((m) => m.status === "active").length;
   const pendingCount = members.filter((m) => m.status === "pending").length;
+
+  if (error && (error as Error).message === "auth_required") {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center space-y-2">
+          <p className="text-gray-400 text-sm">Bitte anmelden, um das Team zu verwalten.</p>
+        </div>
+      </div>
+    );
+  }
 
   function copyToken(token: string) {
     navigator.clipboard.writeText(token).then(() => {
