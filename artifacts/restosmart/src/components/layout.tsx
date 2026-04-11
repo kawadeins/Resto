@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
   UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
   Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
-  Clock, X, Flame, UsersRound,
+  Clock, X, Flame, UsersRound, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -11,7 +11,7 @@ import { track } from "@/lib/conversion-tracking";
 import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 import { usePermissions, type TeamRole } from "@/hooks/use-permissions";
 import { useSession } from "@/contexts/session-context";
-import { LogOut } from "lucide-react";
+import { RestoLogo } from "@/components/resto-logo";
 
 function getTrialState() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -271,14 +271,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Seitenleiste */}
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50 border-r border-border bg-sidebar">
         <div className="flex h-16 shrink-0 items-center px-6 border-b border-sidebar-border bg-sidebar-primary/5">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
-              R
-            </div>
-            <span className="text-xl font-bold tracking-tight text-sidebar-foreground">
-              RestoSmart
-            </span>
-          </div>
+          <RestoLogo size="md" />
         </div>
         <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6">
           <nav className="flex-1 space-y-1">

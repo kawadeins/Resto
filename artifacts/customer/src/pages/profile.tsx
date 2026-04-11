@@ -31,6 +31,7 @@ import { useSeo } from "@/hooks/use-seo";
 import { ProfileFeedbackWidget } from "@/components/app-rating-prompt";
 import { useHabitLoop } from "@/hooks/use-habit-loop";
 import { getActivityFeed, activityLabel, timeAgo, type SocialActivity } from "@/lib/social-api";
+import { RestoLogo } from "@/components/resto-logo";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -354,11 +355,12 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
       <div className="relative w-full max-w-sm mx-auto px-6 flex flex-col items-center gap-8">
         {/* Logo */}
         <div className="flex flex-col items-center gap-4">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/30">
-            <span className="text-4xl font-black text-white tracking-tighter select-none">R</span>
-          </div>
+          <RestoLogo size="xl" showText={false} />
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">RestoSmart</h1>
+            <div className="text-3xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Resto</span>
+              <span className="text-foreground">Smart</span>
+            </div>
             <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed max-w-[220px]">
               Dein persönliches Restauranterlebnis — entdecke, buche, genieße.
             </p>

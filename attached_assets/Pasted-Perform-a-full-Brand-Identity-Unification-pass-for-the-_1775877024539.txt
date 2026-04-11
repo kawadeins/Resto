@@ -1,0 +1,131 @@
+Perform a full Brand Identity Unification pass for the entire RestoSmart application.
+
+This is NOT a feature task.
+This is NOT a redesign.
+This is a strict visual consistency enforcement task.
+
+========================
+GOAL
+========================
+
+Make the RestoSmart logo, colors, and typography the SINGLE source of truth across the entire app.
+
+The official brand identity is:
+
+- Logo: fork + knife icon inside purple/pink gradient circle
+- Name: "RestoSmart"
+- Color style:
+  - "Resto" in purple
+  - "Smart" in black
+- Gradient: purple → pink
+
+This must be used EVERYWHERE with ZERO variation.
+
+========================
+1. CREATE GLOBAL BRAND SYSTEM
+========================
+
+Create a centralized brand config (design system):
+
+- colors.ts or theme.ts:
+  - primary gradient
+  - primary color
+  - secondary color
+  - text colors
+
+- typography:
+  - consistent font family
+  - consistent weights
+
+- logo component:
+  Create a reusable <RestoLogo /> component:
+  - icon + text
+  - exact spacing
+  - exact colors
+
+========================
+2. REPLACE ALL LOGOS
+========================
+
+Find and replace ALL instances of:
+- old logos
+- duplicated logo code
+- inconsistent headers
+
+Replace with <RestoLogo /> ONLY.
+
+NO exceptions.
+
+========================
+3. UNIFY COLORS
+========================
+
+Audit entire UI and replace:
+
+- any random purple/pink values
+- any inline styles
+- any inconsistent gradients
+
+Use ONLY:
+- brand gradient
+- brand color tokens
+
+========================
+4. BUTTON SYSTEM
+========================
+
+Unify all buttons:
+
+Primary button:
+- gradient purple → pink
+- white text
+- same border radius
+- same hover effect
+
+Secondary button:
+- outline or soft background
+- same spacing and typography
+
+========================
+5. APPLY TO ALL SCREENS
+========================
+
+Ensure brand consistency across:
+
+- Business Dashboard (all pages)
+- Customer App
+- Login screen
+- Premium / Billing
+- Wallet / Checkout
+- Campaigns
+- Reviews
+- Profile pages
+
+========================
+6. REMOVE INCONSISTENCIES
+========================
+
+Remove:
+- duplicate logo implementations
+- inline color definitions
+- inconsistent font usage
+- mismatched spacing around logo/text
+
+========================
+7. FINAL VALIDATION
+========================
+
+Verify:
+
+- same logo everywhere
+- same colors everywhere
+- same typography everywhere
+- no visual inconsistency remains
+
+========================
+FINAL RESULT
+========================
+
+RestoSmart must feel like a single premium European product with a strong, consistent identity.
+
+No visual fragmentation allowed.

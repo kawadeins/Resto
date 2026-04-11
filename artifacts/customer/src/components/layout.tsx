@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays, Users, Building2 } from "lucide-react";
+import { RestoLogo } from "@/components/resto-logo";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -18,14 +19,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Desktop header */}
       <header className="hidden md:flex sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md shadow-primary/25">
-              <UtensilsCrossed className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">
-              <span className="gradient-text">Resto</span>
-              <span className="text-foreground">Smart</span>
-            </span>
+          <Link href="/">
+            <RestoLogo size="md" />
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((item) => {
@@ -104,11 +99,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="py-8 px-6">
           <div className="container mx-auto text-center text-muted-foreground text-sm">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <UtensilsCrossed className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="font-bold text-base text-foreground">RestoSmart</span>
+            <div className="flex items-center justify-center mb-3">
+              <RestoLogo size="sm" />
             </div>
             <div className="flex items-center justify-center gap-4 mb-2 flex-wrap text-xs">
               <Link href="/for-business" className="text-primary font-semibold hover:underline flex items-center gap-1">

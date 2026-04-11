@@ -125,29 +125,31 @@ function ShareCard({ plan }: { plan: BookingPlan }) {
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #1a1107 0%, #2d1e0f 50%, #1a1107 100%)",
-        border: "1px solid rgba(224,124,58,0.2)",
+        background: "linear-gradient(135deg, #0f0a1e 0%, #1a0d36 50%, #0f0a1e 100%)",
+        border: "1px solid rgba(139,92,246,0.2)",
         fontFamily: "'Inter', system-ui, sans-serif",
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 4, background: "linear-gradient(90deg, #e07c3a, #c05a1a, #e07c3a)" }} />
+      <div style={{ height: 4, background: "linear-gradient(90deg, #8b5cf6, #ec4899, #8b5cf6)" }} />
 
       <div style={{ padding: "28px 32px" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: "linear-gradient(135deg, #e07c3a, #c05a1a)",
+              width: 36, height: 36, borderRadius: 10,
+              background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 16, fontWeight: 700, color: "white",
-            }}>R</div>
-            <span style={{ color: "#e07c3a", fontWeight: 700, fontSize: 15, letterSpacing: "-0.02em" }}>RestoSmart</span>
+              fontSize: 18, color: "white",
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+            </div>
+            <span style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: 700, fontSize: 15, letterSpacing: "-0.02em" }}>RestoSmart</span>
           </div>
           <span style={{
-            fontSize: 11, fontWeight: 600, color: "#e07c3a",
-            background: "rgba(224,124,58,0.12)", border: "1px solid rgba(224,124,58,0.25)",
+            fontSize: 11, fontWeight: 600, color: "#a78bfa",
+            background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)",
             borderRadius: 20, padding: "3px 10px", letterSpacing: "0.05em", textTransform: "uppercase",
           }}>
             Buchungsplan
@@ -204,9 +206,9 @@ function ShareCard({ plan }: { plan: BookingPlan }) {
             Erstellt von {plan.createdBy}
           </span>
           <span style={{
-            fontSize: 11, fontWeight: 600, color: plan.status === "finalized" ? "#e07c3a" : "rgba(255,255,255,0.4)",
-            background: plan.status === "finalized" ? "rgba(224,124,58,0.1)" : "transparent",
-            border: plan.status === "finalized" ? "1px solid rgba(224,124,58,0.2)" : "none",
+            fontSize: 11, fontWeight: 600, color: plan.status === "finalized" ? "#a78bfa" : "rgba(255,255,255,0.4)",
+            background: plan.status === "finalized" ? "rgba(139,92,246,0.1)" : "transparent",
+            border: plan.status === "finalized" ? "1px solid rgba(139,92,246,0.2)" : "none",
             borderRadius: 20, padding: plan.status === "finalized" ? "2px 8px" : 0,
           }}>
             {PLAN_STATUS_CONFIG[plan.status]?.label ?? plan.status}

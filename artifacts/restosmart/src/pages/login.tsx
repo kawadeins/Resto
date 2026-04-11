@@ -13,6 +13,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "@/contexts/session-context";
+import { RestoLogo } from "@/components/resto-logo";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -128,25 +129,9 @@ export default function Login() {
 
         {/* ── Logo + Branding ── */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-            fontSize: 26,
-            color: "#fff",
-            fontWeight: 800,
-            boxShadow: "0 8px 32px rgba(139,92,246,0.35)",
-          }}>
-            R
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+            <RestoLogo size="lg" inverted />
           </div>
-          <h1 style={{ color: "#f9fafb", fontSize: 26, fontWeight: 700, margin: "0 0 6px", letterSpacing: "-0.5px" }}>
-            RestoSmart
-          </h1>
           <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>
             {step === "otp" ? "Einmalcode eingeben" : "Zum Business-Dashboard anmelden"}
           </p>
