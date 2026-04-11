@@ -446,7 +446,7 @@ function btnStyle(variant: "primary", disabled: boolean): React.CSSProperties {
     border: "none",
     background: disabled
       ? "rgba(139,92,246,0.25)"
-      : "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+      : "linear-gradient(135deg, #8b5cf6, #ec4899)",
     color: disabled ? "#6b7280" : "#fff",
     fontSize: 15,
     fontWeight: 600,

@@ -16,7 +16,7 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const C = {
   card:   "#121826",
   border: "rgba(255,255,255,0.06)",
-  grad:   "linear-gradient(135deg,#4F8CFF,#7B5CFF)",
+  grad:   "linear-gradient(135deg,#8b5cf6,#ec4899)",
   active: "#22C55E",
   text:   "#FFFFFF",
   muted:  "#9CA3AF",
@@ -65,7 +65,7 @@ function ConversionFunnel({ impressions, clicks, bookings }: {
         item.arrow ? (
           <div key={i} className="flex flex-col items-center gap-1 px-2 shrink-0">
             <ArrowRight style={{ width: 13, height: 13, color: C.muted }} />
-            <span className="text-[10px] font-semibold" style={{ color: "#7B8CFF" }}>{item.label}</span>
+            <span className="text-[10px] font-semibold" style={{ color: "#a78bfa" }}>{item.label}</span>
           </div>
         ) : (
           <motion.div
@@ -180,7 +180,7 @@ export function PromotionPerformance() {
           </div>
         </div>
         <div className="flex gap-2">
-          <span style={{ color: "#7B8CFF", backgroundColor: "rgba(79,140,255,0.1)", border: "1px solid rgba(79,140,255,0.2)" }}
+          <span style={{ color: "#a78bfa", backgroundColor: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}
             className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full">
             CTR {overallCTR}%
           </span>
@@ -259,8 +259,8 @@ export function PromotionPerformance() {
                     }}
                     cursor={{ fill: "rgba(255,255,255,0.03)" }}
                   />
-                  <Bar dataKey="Einbl"  name="Einblendungen" fill="#4F8CFF" radius={[4,4,0,0]} maxBarSize={22} opacity={0.9} />
-                  <Bar dataKey="Klicks" name="Klicks"        fill="#7B5CFF" radius={[4,4,0,0]} maxBarSize={22} opacity={0.9} />
+                  <Bar dataKey="Einbl"  name="Einblendungen" fill="#8b5cf6" radius={[4,4,0,0]} maxBarSize={22} opacity={0.9} />
+                  <Bar dataKey="Klicks" name="Klicks"        fill="#a855f7" radius={[4,4,0,0]} maxBarSize={22} opacity={0.9} />
                   <Bar dataKey="Buch"   name="Buchungen"     fill="#22C55E" radius={[4,4,0,0]} maxBarSize={22} opacity={0.9} />
                 </BarChart>
               </ResponsiveContainer>

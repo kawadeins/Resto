@@ -24,13 +24,13 @@ const C = {
   card:      "#121826",
   border:    "rgba(255,255,255,0.06)",
   borderGold:"rgba(245,158,11,0.2)",
-  grad:      "linear-gradient(135deg,#4F8CFF,#7B5CFF)",
+  grad:      "linear-gradient(135deg,#8b5cf6,#ec4899)",
   gradGold:  "linear-gradient(135deg,#F59E0B,#f97316)",
   gradGreen: "linear-gradient(135deg,#22C55E,#16A34A)",
   green:     "#22C55E",
   amber:     "#F59E0B",
   red:       "#EF4444",
-  blue:      "#7B8CFF",
+  blue:      "#a78bfa",
   text:      "#FFFFFF",
   textSoft:  "#E5E7EB",
   muted:     "#9CA3AF",
@@ -241,7 +241,7 @@ function RecoCard({ rec, rank, isPremium }: { rec: Recommendation; rank: number;
               {/* Reason */}
               {isPremium ? (
                 <div className="rounded-xl px-3 py-2.5"
-                  style={{ backgroundColor: "rgba(79,140,255,0.05)", border: "1px solid rgba(79,140,255,0.14)" }}>
+                  style={{ backgroundColor: "rgba(79,140,255,0.05)", border: "1px solid rgba(139,92,246,0.14)" }}>
                   <div className="flex items-start gap-2">
                     <BrainCircuit style={{ width: 13, height: 13, color: C.blue, flexShrink: 0, marginTop: 1 }} />
                     <p style={{ color: C.textSoft, fontSize: 12, lineHeight: 1.55 }}>

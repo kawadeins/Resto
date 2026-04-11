@@ -38,20 +38,20 @@ function clientBoostCost(boostType: string, pricing: PricingData | undefined): n
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const C = {
-  card:      "#121826",
-  border:    "rgba(255,255,255,0.06)",
+  card:      "#0f0a1e",
+  border:    "rgba(255,255,255,0.08)",
   borderAct: "rgba(34,197,94,0.22)",
   borderPau: "rgba(245,158,11,0.20)",
-  grad:      "linear-gradient(135deg,#4F8CFF,#7B5CFF)",
+  grad:      "linear-gradient(135deg,#8b5cf6,#ec4899)",
   gradAmber: "linear-gradient(135deg,#F59E0B,#f97316)",
   active:    "#22C55E",
   paused:    "#F59E0B",
   danger:    "#EF4444",
   text:      "#FFFFFF",
-  muted:     "#9CA3AF",
-  shadow:    "0 10px 30px rgba(0,0,0,0.35)",
-  glowAct:   "0 10px 30px rgba(0,0,0,0.35),0 0 24px rgba(34,197,94,0.14)",
-  glowOppty: "0 0 28px rgba(79,140,255,0.35)",
+  muted:     "#A1A1AA",
+  shadow:    "0 10px 30px rgba(0,0,0,0.4)",
+  glowAct:   "0 10px 30px rgba(0,0,0,0.4),0 0 24px rgba(34,197,94,0.14)",
+  glowOppty: "0 0 28px rgba(139,92,246,0.35)",
 } as const;
 
 // ── Shared interfaces ─────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ function GradBtn({ onClick, disabled, children, full = true, urgent = false }: {
       disabled={disabled}
       whileHover={disabled ? {} : { boxShadow: urgent ? "0 0 28px rgba(79,140,255,0.6)" : "0 0 22px rgba(79,140,255,0.45)", scale: 1.01 }}
       whileTap={disabled ? {} : { scale: 0.97 }}
-      animate={urgent && !disabled ? { boxShadow: ["0 0 0px rgba(79,140,255,0)", "0 0 20px rgba(79,140,255,0.35)", "0 0 0px rgba(79,140,255,0)"] } : {}}
+      animate={urgent && !disabled ? { boxShadow: ["0 0 0px rgba(79,140,255,0)", "0 0 20px rgba(139,92,246,0.35)", "0 0 0px rgba(79,140,255,0)"] } : {}}
       transition={urgent ? { duration: 2.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.15 }}
       style={{
         background: disabled ? "rgba(255,255,255,0.08)" : C.grad,
@@ -207,7 +207,7 @@ function SecBtn({ onClick, children, danger = false }: {
 function DemandChip({ level }: { level: PricingData["demandLevel"] }) {
   const map: Record<PricingData["demandLevel"], { label: string; bg: string; color: string; border: string }> = {
     low:       { label: "Niedrig",   color: C.active, bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.22)"  },
-    normal:    { label: "Normal",    color: "#7B8CFF", bg: "rgba(79,140,255,0.1)", border: "rgba(79,140,255,0.22)" },
+    normal:    { label: "Normal",    color: "#a78bfa", bg: "rgba(139,92,246,0.1)", border: "rgba(139,92,246,0.22)" },
     high:      { label: "Hoch",      color: C.paused,  bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.22)" },
     very_high: { label: "Sehr hoch", color: C.danger,  bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.22)"  },
   };
@@ -303,7 +303,7 @@ function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportun
     { label: "Potentieller Umsatz", value: `\u20AC${roi.revenueLow}–\u20AC${roi.revenueHigh}`, highlight: true },
   ];
 
-  const roiColor = roi.isStrongROI ? C.active : roi.roiMultiple >= 3 ? "#7B8CFF" : C.muted;
+  const roiColor = roi.isStrongROI ? C.active : roi.roiMultiple >= 3 ? "#a78bfa" : C.muted;
 
   return (
     <motion.div
@@ -427,10 +427,10 @@ function SmartRevenueTrigger({
         transition={{ duration: 0.35 }}
         style={{
           borderRadius: 16,
-          border: urgent ? "1px solid rgba(245,158,11,0.35)" : "1px solid rgba(79,140,255,0.25)",
+          border: urgent ? "1px solid rgba(245,158,11,0.35)" : "1px solid rgba(139,92,246,0.25)",
           background: urgent
             ? "linear-gradient(135deg,rgba(245,158,11,0.08),rgba(249,115,22,0.06))"
-            : "linear-gradient(135deg,rgba(79,140,255,0.08),rgba(123,92,255,0.06))",
+            : "linear-gradient(135deg,rgba(139,92,246,0.08),rgba(123,92,255,0.06))",
           padding: "18px 20px",
           display: "flex",
           flexDirection: "column" as const,
@@ -494,7 +494,7 @@ function SmartRevenueTrigger({
         {topSuggestion && (
           <div className="flex items-start gap-2.5 text-[11px] rounded-xl px-3 py-2.5"
             style={{ backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}` }}>
-            <BrainCircuit style={{ width: 13, height: 13, color: "#7B8CFF", flexShrink: 0, marginTop: 1 }} />
+            <BrainCircuit style={{ width: 13, height: 13, color: "#a78bfa", flexShrink: 0, marginTop: 1 }} />
             <span style={{ color: C.muted }}>
               <strong style={{ color: C.text }}>{topSuggestion.title}: </strong>
               {topSuggestion.description}
@@ -535,7 +535,7 @@ function AITimingStrip({ pricing }: { pricing: PricingData }) {
       {items.map((item, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", flex: "0 0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 12px" }}>
-            <item.icon style={{ width: 12, height: 12, color: "#7B8CFF", flexShrink: 0 }} />
+            <item.icon style={{ width: 12, height: 12, color: "#a78bfa", flexShrink: 0 }} />
             <div>
               <div className="text-[9px] uppercase tracking-wider" style={{ color: C.muted }}>{item.label}</div>
               <div className="text-xs font-bold" style={{ color: C.text }}>{item.value}</div>
@@ -875,7 +875,7 @@ export function PromotionTools() {
                   boxShadow: isLive
                     ? "0 16px 40px rgba(0,0,0,0.45),0 0 28px rgba(34,197,94,0.18)"
                     : cardOppty
-                    ? "0 16px 40px rgba(0,0,0,0.45),0 0 28px rgba(79,140,255,0.25)"
+                    ? "0 16px 40px rgba(0,0,0,0.45),0 0 28px rgba(139,92,246,0.25)"
                     : "0 16px 40px rgba(0,0,0,0.45)",
                 }}
                 style={{
@@ -938,7 +938,7 @@ export function PromotionTools() {
                     <motion.div
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       className="flex items-center gap-1.5 text-[10px] font-semibold w-fit px-2.5 py-1 rounded-full"
-                      style={{ color: "#7B8CFF", backgroundColor: "rgba(79,140,255,0.08)", border: "1px solid rgba(79,140,255,0.2)" }}
+                      style={{ color: "#a78bfa", backgroundColor: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)" }}
                     >
                       <TrendingUp style={{ width: 10, height: 10 }} />
                       Top Sichtbarkeit jetzt
@@ -1051,7 +1051,7 @@ export function PromotionTools() {
         {budgets.length > 0 && (
           <div style={{ backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 16, border: `1px solid ${C.border}`, padding: 20 }} className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <Wallet style={{ width: 16, height: 16, color: "#7B8CFF" }} />
+              <Wallet style={{ width: 16, height: 16, color: "#a78bfa" }} />
               <span className="font-semibold text-sm" style={{ color: C.text }}>Tagesbudget</span>
               <span className="text-xs ml-auto flex items-center gap-1" style={{ color: C.muted }}>
                 <Info style={{ width: 12, height: 12 }} />
@@ -1079,7 +1079,7 @@ export function PromotionTools() {
                       </span>
                       <button
                         className="text-[11px] font-semibold"
-                        style={{ color: "#7B8CFF", background: "none", border: "none", cursor: "pointer" }}
+                        style={{ color: "#a78bfa", background: "none", border: "none", cursor: "pointer" }}
                         onClick={() => {
                           setEditingBudget(isEditing ? null : b.id);
                           setBudgetInput(prev => ({ ...prev, [b.id]: String(b.dailyBudget) }));
@@ -1136,7 +1136,7 @@ export function PromotionTools() {
                             placeholder={`Eigener Betrag (\u20AC)`}
                           />
                           <motion.button
-                            whileHover={{ boxShadow: "0 0 16px rgba(79,140,255,0.35)" }} whileTap={{ scale: 0.97 }}
+                            whileHover={{ boxShadow: "0 0 16px rgba(139,92,246,0.35)" }} whileTap={{ scale: 0.97 }}
                             onClick={() => {
                               const val = parseFloat(budgetInput[b.id] ?? "0") || 0;
                               budgetMutation.mutate({ promoId: b.id, dailyBudget: val });
@@ -1155,7 +1155,7 @@ export function PromotionTools() {
             </div>
 
             <div className="flex items-start gap-2.5 text-[11px] rounded-xl px-3 py-2.5"
-              style={{ color: C.muted, backgroundColor: "rgba(79,140,255,0.07)", border: "1px solid rgba(79,140,255,0.14)" }}>
+              style={{ color: C.muted, backgroundColor: "rgba(79,140,255,0.07)", border: "1px solid rgba(139,92,246,0.14)" }}>
               <span className="text-sm mt-0.5">{"\u2139\uFE0F"}</span>
               <span>
                 {"Boosted Lokale erhalten das Label "}
@@ -1171,7 +1171,7 @@ export function PromotionTools() {
           <div className="pt-2" style={{ borderTop: `1px solid ${C.border}` }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-semibold flex items-center gap-2" style={{ color: C.text }}>
-                <TrendingUp style={{ width: 15, height: 15, color: "#7B8CFF" }} />
+                <TrendingUp style={{ width: 15, height: 15, color: "#a78bfa" }} />
                 Gesamtperformance
               </span>
               <span className="text-xs" style={{ color: C.muted }}>Alle Boosts kombiniert</span>
@@ -1206,7 +1206,7 @@ export function PromotionTools() {
 function SuggestionIcon({ type }: { type: string }) {
   const iconMap: Record<string, React.ElementType> = { timing: Clock, budget: BarChart3, opportunity: Sparkles, savings: Shield };
   const Icon = iconMap[type] ?? Lightbulb;
-  return <Icon style={{ width: 14, height: 14, color: "#7B8CFF", flexShrink: 0, marginTop: 1 }} />;
+  return <Icon style={{ width: 14, height: 14, color: "#a78bfa", flexShrink: 0, marginTop: 1 }} />;
 }
 
 function SmartPricingDashboard({ businessType, restaurantId }: { businessType: string; restaurantId: number | null }) {
@@ -1284,7 +1284,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
         {/* Header */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2.5">
-            <Activity style={{ width: 15, height: 15, color: "#7B8CFF" }} />
+            <Activity style={{ width: 15, height: 15, color: "#a78bfa" }} />
             <span className="font-semibold text-sm" style={{ color: C.text }}>Smart Pricing</span>
             <DemandChip level={pricing.demandLevel} />
           </div>
@@ -1325,7 +1325,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
         {/* AI suggestion */}
         <div className="flex items-start gap-2.5 rounded-xl px-4 py-3"
           style={{ backgroundColor: "rgba(79,140,255,0.07)", border: "1px solid rgba(79,140,255,0.15)" }}>
-          <Zap style={{ width: 13, height: 13, color: "#7B8CFF", flexShrink: 0, marginTop: 1 }} />
+          <Zap style={{ width: 13, height: 13, color: "#a78bfa", flexShrink: 0, marginTop: 1 }} />
           <p className="text-xs leading-relaxed" style={{ color: "#a5b4fc" }}>{pricing.suggestion}</p>
         </div>
 
@@ -1339,11 +1339,11 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
               {pricing.slotTiers.map((slot, idx) => (
                 <div key={slot.tier} style={{
                   borderRadius: 12, padding: 10, textAlign: "center",
-                  border: idx === 0 ? "1px solid rgba(245,158,11,0.28)" : idx === 1 ? "1px solid rgba(79,140,255,0.22)" : `1px solid ${C.border}`,
+                  border: idx === 0 ? "1px solid rgba(245,158,11,0.28)" : idx === 1 ? "1px solid rgba(139,92,246,0.22)" : `1px solid ${C.border}`,
                   backgroundColor: idx === 0 ? "rgba(245,158,11,0.06)" : idx === 1 ? "rgba(79,140,255,0.05)" : "rgba(255,255,255,0.02)",
                 }}>
                   <p className="text-[10px] font-medium mb-1" style={{ color: C.muted }}>{slot.label.split(" — ")[0]}</p>
-                  <p className="text-sm font-bold" style={{ color: idx === 0 ? C.paused : idx === 1 ? "#7B8CFF" : C.text }}>
+                  <p className="text-sm font-bold" style={{ color: idx === 0 ? C.paused : idx === 1 ? "#a78bfa" : C.text }}>
                     {"\u20AC"}{slot.pricePer1000.toFixed(2)}
                   </p>
                   <p className="text-[9px] mt-0.5" style={{ color: C.muted }}>{slot.label.split(" — ")[1]}</p>
@@ -1357,7 +1357,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
         {suggestions.length > 0 && (
           <div className="space-y-2.5">
             <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: C.muted }}>
-              <Sparkles style={{ width: 13, height: 13, color: "#7B8CFF" }} /> KI-Empfehlungen
+              <Sparkles style={{ width: 13, height: 13, color: "#a78bfa" }} /> KI-Empfehlungen
             </p>
             <div className="space-y-2">
               {suggestions.slice(0, 3).map((s, i) => (

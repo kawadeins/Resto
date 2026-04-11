@@ -58,6 +58,23 @@ RestoSmart is a full-stack SaaS web application designed to provide restaurant o
 
 **Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant authentication, email delivery disabled by default without `RESEND_API_KEY`.
 
+## Brand Identity System
+
+**Color tokens (both apps):**
+- Primary: `hsl(263 70% 52%)` — deep violet (dark: `263 70% 65%`)
+- Accent: `hsl(330 85% 58%)` — vibrant pink (dark: `330 85% 65%`)
+- Brand gradient: `linear-gradient(135deg, #8b5cf6, #ec4899)` (violet → pink)
+
+**CSS utilities available in both apps:** `.gradient-text`, `.gradient-btn`, `.press-scale`, `.scrollbar-hide`, `.glass`
+
+**Typography:** Inter (body) + Plus Jakarta Sans (headings)
+
+**Sidebar (restosmart):** Always dark — `sidebar: 240 15% 8%` — layout wrapper locked to `.dark`
+
+**Logo:** `RestoLogo` component in both apps: `from-primary to-accent` gradient circle icon + "Resto" gradient text + "Smart" foreground text. Sizes: sm/md/lg/xl. `inverted` prop for dark backgrounds.
+
+**Promotion components:** All `C.grad` uses brand violet→pink; all blue hex colors (#4F8CFF, #7B5CFF, #7B8CFF) replaced with brand equivalents.
+
 ## Known Bug Fixes Applied
 
 - **Meal-plan URL mismatch (FIXED):** `home.tsx` and `smart-reminders.tsx` previously called `/api/meal-plan?email=…` (query param) but the API only accepts `/api/meal-plan/:email` (path param). Both now use the correct path-param URL.

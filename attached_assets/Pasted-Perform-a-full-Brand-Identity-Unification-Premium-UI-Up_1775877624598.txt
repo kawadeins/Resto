@@ -1,0 +1,233 @@
+Perform a full Brand Identity Unification + Premium UI Upgrade pass for the entire RestoSmart application.
+
+This is NOT a feature task.
+This is NOT a redesign from scratch.
+This is a high-end polish + consistency + SaaS premium transformation.
+
+========================
+PRIMARY GOAL
+========================
+
+Transform RestoSmart into a visually consistent, premium European SaaS product (Stripe / Notion / Revolut level).
+
+- Strong brand identity
+- Perfect visual consistency
+- Premium UI feel
+- Clean, fast, modern UX
+
+========================
+1. BRAND SYSTEM (MANDATORY)
+========================
+
+Create a SINGLE source of truth for branding.
+
+Create:
+
+/theme/brand.ts (or equivalent)
+
+Define:
+
+- PRIMARY_GRADIENT: purple → pink
+- PRIMARY: #7C3AED
+- SECONDARY: #EC4899
+- BACKGROUND: #0B0B0F (dark)
+- SURFACE: #111118
+- TEXT_PRIMARY: #FFFFFF
+- TEXT_SECONDARY: #A1A1AA
+- BORDER: rgba(255,255,255,0.08)
+
+Typography:
+- One font family globally
+- Clean SaaS style (Inter-like)
+- Consistent weights only
+
+========================
+2. LOGO SYSTEM (CRITICAL)
+========================
+
+Create reusable component:
+
+<RestoLogo />
+
+Includes:
+- fork + knife icon inside gradient circle
+- text: "RestoSmart"
+  - "Resto" = gradient or purple
+  - "Smart" = white or black (depending on background)
+
+Rules:
+- NO duplicate logo code anywhere
+- Replace ALL logo usages with this component
+
+========================
+3. COLOR CONSISTENCY
+========================
+
+Audit entire codebase and REMOVE:
+- inline colors
+- random hex values
+- inconsistent gradients
+
+Use ONLY:
+- brand tokens from theme
+
+========================
+4. BUTTON SYSTEM
+========================
+
+Create unified button system:
+
+Primary Button:
+- gradient purple → pink
+- white text
+- smooth hover (slight glow)
+- consistent radius
+
+Secondary Button:
+- subtle background
+- soft border
+- same spacing
+
+Danger Button:
+- red but aligned with theme
+
+All buttons must:
+- use same height
+- same font
+- same spacing
+- same hover animation
+
+========================
+5. CARD SYSTEM (VERY IMPORTANT)
+========================
+
+All panels/cards must be unified:
+
+- background: SURFACE
+- border: soft (rgba white 0.08)
+- radius: consistent
+- padding: consistent
+- shadow: subtle (not heavy)
+
+Remove:
+- inconsistent shadows
+- mismatched spacing
+
+========================
+6. LAYOUT POLISH
+========================
+
+Fix across all pages:
+
+- consistent spacing (8px grid)
+- aligned sections
+- no random margins
+- clean hierarchy
+
+Improve:
+- header spacing
+- section grouping
+- visual balance
+
+========================
+7. PREMIUM FEEL (UPGRADE)
+========================
+
+Apply subtle premium touches:
+
+- smooth transitions (150–250ms)
+- hover states everywhere
+- slight glow on primary actions
+- soft gradients (NOT overused)
+- skeleton loaders instead of empty flashes
+
+Make UI feel:
+- fast
+- responsive
+- alive
+
+========================
+8. DASHBOARDS (ALL)
+========================
+
+Apply system to:
+
+Business Dashboard:
+- Overview
+- Billing
+- Wallet
+- Campaigns
+- Reviews
+- Team
+
+Customer App:
+- Restaurant page
+- Profile
+- Booking
+- Reviews
+
+Ensure:
+- same design language everywhere
+
+========================
+9. PREMIUM / BILLING UI
+========================
+
+Make billing look high-trust:
+
+- clean pricing card
+- strong CTA (Upgrade)
+- clear hierarchy
+- no clutter
+
+Stripe-level clarity.
+
+========================
+10. REMOVE UI DEBT
+========================
+
+Clean:
+- duplicate components
+- inconsistent styles
+- dead CSS
+- unused classes
+
+========================
+11. PERFORMANCE AWARE
+========================
+
+Do NOT:
+- add heavy animations
+- break performance
+
+Keep:
+- smooth
+- lightweight
+- fast
+
+========================
+12. FINAL VALIDATION
+========================
+
+Verify:
+
+- same logo everywhere
+- same colors everywhere
+- same buttons everywhere
+- same spacing system
+- no visual inconsistency
+- premium feel across all pages
+
+========================
+FINAL RESULT
+========================
+
+RestoSmart must feel like:
+
+- a funded European startup
+- a product users trust instantly
+- a system worth paying for
+
+No visual fragmentation.
+No amateur UI.
+Only clean, premium SaaS quality.
