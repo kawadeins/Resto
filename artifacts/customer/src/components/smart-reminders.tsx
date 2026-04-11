@@ -179,7 +179,7 @@ export function SmartReminders({ email }: { email: string }) {
     // ── 3. Meal plan reminder ──────────────────────────────────────────────
     const mealRid = "meal-plan-today";
     if (!seen.has(mealRid)) {
-      fetch(`${API_BASE}/api/meal-plan?email=${encodeURIComponent(email)}`)
+      fetch(`${API_BASE}/api/meal-plan/${encodeURIComponent(email)}`)
         .then((r) => r.json())
         .then((data) => {
           const plans: Array<{ date: string; restaurantName?: string }> =

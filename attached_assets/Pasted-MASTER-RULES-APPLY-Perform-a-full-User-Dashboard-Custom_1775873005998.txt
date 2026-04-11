@@ -1,0 +1,306 @@
+MASTER RULES APPLY
+
+Perform a full "User Dashboard / Customer App Audit + Repair + Reconnect Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the whole app.
+Do NOT focus on the Business Dashboard.
+Do NOT focus on Founder Dashboard.
+This pass is ONLY for the normal user-facing dashboard / customer app.
+
+========================
+GOAL
+========================
+
+Fully inspect, validate, repair, and reconnect the entire user dashboard so it becomes:
+
+- stable
+- fully clickable
+- connected
+- honest
+- smooth to use
+- ready for real users
+
+This pass must identify and fix:
+- broken buttons
+- broken pages
+- broken loading states
+- fake/demo logic
+- missing connections
+- weak UX
+- route issues
+- auth/session issues on the user side
+
+========================
+1. FULL USER DASHBOARD AUDIT
+========================
+
+Inspect all major user-facing sections, including but not limited to:
+
+- homepage
+- search
+- categories
+- filters
+- restaurant/place detail page
+- map
+- heat map
+- offers
+- instant plans
+- auto plans
+- bookings / reservations
+- favorites / saved places
+- reviews
+- profile
+- settings
+- onboarding
+- notifications
+- friends / social features if present
+
+For each section classify:
+- fully working
+- partially working
+- broken
+- UI only
+- fake/demo only
+- disconnected
+- hidden incorrectly
+
+========================
+2. FULL BUTTON AUDIT
+========================
+
+Inspect ALL important user-facing buttons and actions.
+
+Verify for each:
+- clickable
+- correct action
+- no dead button
+- no silent failure
+- no broken loading state
+- no wrong redirect
+
+Examples:
+- search
+- filter apply/reset
+- save/favorite
+- book/reserve
+- review submit
+- map actions
+- offer activate/view
+- plan create/join
+- profile save
+- onboarding continue
+- notification actions
+- login/logout buttons if present
+
+Fix every broken button.
+
+========================
+3. PAGE / ROUTE AUDIT
+========================
+
+Verify all user-facing routes/pages:
+
+- open correctly
+- do not show blank screens
+- do not redirect incorrectly
+- are connected to real data
+- do not depend on broken assumptions
+
+Fix route/page issues.
+
+========================
+4. USER AUTH / SESSION CHECK
+========================
+
+Audit the user-side auth/session flow.
+
+Verify:
+- user login works
+- session persists correctly
+- logout works
+- protected actions fail cleanly when unauthenticated
+- no broken auth-dependent requests
+
+Fix all session-related user-side issues.
+
+========================
+5. SEARCH / DISCOVERY REPAIR
+========================
+
+Inspect and fix:
+- search results
+- search filters
+- sorting
+- empty states
+- location-based discovery
+- category browsing
+
+Ensure search/discovery feels real, relevant, and connected.
+
+========================
+6. BOOKINGS / RESERVATIONS REPAIR
+========================
+
+Inspect and fix:
+- booking buttons
+- reservation flow
+- success/failure states
+- booking history
+- booking detail views
+
+No fake booking success.
+No dead booking buttons.
+
+========================
+7. REVIEWS / RATINGS REPAIR
+========================
+
+Inspect and fix:
+- review submission
+- rating selection
+- review list loading
+- review edit/update if present
+- user-side feedback flow
+
+No broken review actions.
+
+========================
+8. MAP / LOCATION / OFFERS REPAIR
+========================
+
+Inspect and fix:
+- map loading
+- marker behavior
+- offer cards
+- open/detail actions
+- location usage
+- heat map if present
+
+No fake map or broken offer flow.
+
+========================
+9. PROFILE / SETTINGS / SAVED CONTENT REPAIR
+========================
+
+Inspect and fix:
+- profile page
+- settings changes
+- saved places
+- favorites
+- notifications settings
+- account actions
+
+Everything must save and load correctly.
+
+========================
+10. LOADING / EMPTY / ERROR STATES
+========================
+
+Fix:
+- stuck spinners
+- broken skeletons
+- bad empty states
+- raw technical errors
+- unclear user messages
+
+User-facing messages must be clean and understandable.
+
+========================
+11. DATA HONESTY AUDIT
+========================
+
+Verify:
+- no fake metrics
+- no fake offers
+- no fake availability
+- no fake review counts
+- no fake active states
+- no fake recommendation logic
+
+If data is unavailable:
+- show honest fallback
+- do NOT invent values
+
+========================
+12. FULL SYSTEM RECONNECTION
+========================
+
+Reconnect all important user systems so they work together:
+
+- auth/session ↔ user actions
+- search ↔ detail pages
+- offers ↔ places
+- map ↔ locations
+- reviews ↔ places
+- bookings ↔ profile/history
+- favorites ↔ saved content
+- notifications ↔ relevant actions
+
+No important user flow should remain partially disconnected.
+
+========================
+13. AUTO FIX PASS
+========================
+
+Where issues are found, fix them directly.
+
+Examples:
+- reconnect dead button handlers
+- fix broken API calls
+- repair bad route usage
+- fix auth/session breakage
+- remove fake/demo logic
+- restore missing UI states
+- reconnect real data sources
+
+Do NOT overbuild.
+Do NOT redesign.
+Just make the current user dashboard fully functional and ready.
+
+========================
+14. FINAL CLICK-THROUGH VALIDATION
+========================
+
+Perform a real click-through validation of the user app:
+
+- open homepage
+- search
+- open place details
+- save/favorite
+- attempt booking
+- interact with offers
+- submit review
+- open profile
+- change settings
+- logout/login if applicable
+
+Everything important must work.
+
+========================
+15. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Fully working sections
+B. Broken sections found
+C. Buttons fixed
+D. Routes fixed
+E. Search/discovery status
+F. Booking status
+G. Reviews status
+H. Profile/settings status
+I. Data honesty status
+J. Remaining risks if any
+
+Final verdict:
+- 100% READY
+- READY WITH MINOR RISKS
+- NOT READY
+
+========================
+FINAL GOAL
+========================
+
+The user dashboard must become a real, smooth, fully clickable customer experience with no dead sections, no broken actions, and no fake behavior.

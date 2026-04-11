@@ -58,6 +58,31 @@ RestoSmart is a full-stack SaaS web application designed to provide restaurant o
 
 **Architectural Limitations (by design):** Single-tenant (hardcoded restaurant ID 1), no real multi-tenant authentication, email delivery disabled by default without `RESEND_API_KEY`.
 
+## Known Bug Fixes Applied
+
+- **Meal-plan URL mismatch (FIXED):** `home.tsx` and `smart-reminders.tsx` previously called `/api/meal-plan?email=…` (query param) but the API only accepts `/api/meal-plan/:email` (path param). Both now use the correct path-param URL.
+- **Wallet top-up CSRF (FIXED):** `wallet-panel.tsx` uses `getCsrfToken()` global getter as primary CSRF source, with session refresh fallback.
+
+## Data State
+
+- **Restaurants:** 41 total, all with Unsplash hero images (5 cuisine types: French/brasserie, Italian pizza, Japanese sushi/ramen, vegetarian, Austrian Heuriger, café, cocktail/bar).
+- **Flash Deals:** 2 active demo deals seeded (20% Mittagstisch Flash Deal and 15% Happy Hour Special with countdown timers visible on homepage and restaurant cards).
+- **Bookings:** Booking for `max@test.at` on 2026-04-20 at 19:00 (restaurant id=1) — visible in My Bookings after email lookup.
+
+## Customer App Audit (COMPLETE)
+
+All 8 pages verified:
+- `/` Home — lifestyle mode, flash deals, personalized offers, restaurant cards ✅
+- `/explore` — 41 restaurants, filters (cuisine, price, rating, type), list/map toggle ✅
+- `/restaurant/:id` — hero image, booking form, reviews, map, recovery flow ✅
+- `/my-bookings` — email lookup, booking display, cancel, inline review form ✅
+- `/meal-plan` — weekly food-type planner, restaurant suggestions ✅
+- `/friends` — social friend management (empty for new users) ✅
+- `/profile` — Apple/Google demo login, loyalty points, food preferences ✅
+- `/for-business` — landing page, business claim form, growth signals ✅
+
+All critical API endpoints return 200 and correct data.
+
 ## External Dependencies
 
 -   **Database:** PostgreSQL

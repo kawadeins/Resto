@@ -349,7 +349,7 @@ export default function Home() {
   const { data: mealPlanData } = useQuery<{ plans?: Array<{ date: string }>; } | Array<{ date: string }>>({
     queryKey: ["meal-plan-home", customerEmail],
     queryFn: () =>
-      fetch(`${API_BASE}/api/meal-plan?email=${encodeURIComponent(customerEmail)}`)
+      fetch(`${API_BASE}/api/meal-plan/${encodeURIComponent(customerEmail)}`)
         .then((r) => r.json()),
     enabled: !!customerEmail,
     staleTime: 5 * 60 * 1000,
