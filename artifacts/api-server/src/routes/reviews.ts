@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { reviewsTable, loyaltyPointsTable, reservationsTable, restaurantsTable } from "@workspace/db";
-import { eq, desc, avg, count, and, isNull, or, ne } from "drizzle-orm";
+import { eq, desc, avg, count, and, isNull, or, ne, lte, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { sendEmail } from "../lib/email.js";
 import { openai } from "@workspace/integrations-openai-ai-server";
@@ -281,21 +281,103 @@ router.post("/rating-sync", async (req, res) => {
   }
 });
 
+// GET /api/reviews/eligibility?restaurantId=X&customerEmail=Y
+// Returns eligible booking IDs for review submission (past, non-cancelled, not yet reviewed)
+router.get("/eligibility", async (req, res) => {
+  try {
+    const restaurantId = parseInt(req.query.restaurantId as string) || 1;
+    const customerEmail = ((req.query.customerEmail as string) ?? "").trim().toLowerCase();
+    if (!customerEmail) return void res.status(400).json({ error: "customerEmail required" });
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const bookings = await db
+      .select({ id: reservationsTable.id, date: reservationsTable.date, time: reservationsTable.time, restaurantId: reservationsTable.restaurantId })
+      .from(reservationsTable)
+      .where(
+        and(
+          eq(reservationsTable.customerEmail, customerEmail),
+          eq(reservationsTable.restaurantId, restaurantId),
+          ne(reservationsTable.status, "cancelled"),
+          lte(reservationsTable.date, today),
+        )
+      );
+
+    const reviewedBookingIds = new Set(
+      (await db
+        .select({ bookingId: reviewsTable.bookingId })
+        .from(reviewsTable)
+        .where(
+          and(
+            eq(reviewsTable.customerEmail, customerEmail),
+            eq(reviewsTable.restaurantId, restaurantId),
+            isNotNull(reviewsTable.bookingId),
+          )
+        )
+      ).map((r) => r.bookingId).filter(Boolean)
+    );
+
+    const eligible = bookings.filter((b) => !reviewedBookingIds.has(b.id));
+
+    return res.json({ eligible: eligible.length > 0, bookings: eligible });
+  } catch (err) {
+    req.log.error({ err }, "Failed to check review eligibility");
+    res.status(500).json({ error: "Failed to check eligibility" });
+  }
+});
+
 const CreateReviewBody = z.object({
   restaurantId: z.number().optional(),
-  customerName: z.string().min(1),
+  customerName: z.string().min(1).max(100),
   customerEmail: z.string().email(),
-  bookingId: z.number().optional(),
+  bookingId: z.number().int().positive(),
   rating: z.number().int().min(1).max(5),
-  comment: z.string().min(3),
+  comment: z.string().min(5).max(2000),
   startRecovery: z.boolean().optional(),
 });
 
-// POST /api/reviews — rate limited to prevent spam
+// POST /api/reviews — requires a valid, eligible booking reference
 router.post("/", reviewSubmitLimiter, async (req, res) => {
   try {
-    const body = CreateReviewBody.parse(req.body);
+    const parsed = CreateReviewBody.safeParse(req.body);
+    if (!parsed.success) {
+      return void res.status(400).json({ error: "Ungültige Eingabe. Für eine Bewertung ist eine gültige Reservierung erforderlich.", details: parsed.error.flatten().fieldErrors });
+    }
+    const body = parsed.data;
     const restaurantId = body.restaurantId ?? 1;
+
+    // Validate booking belongs to this customer and restaurant, date is in the past
+    const today = new Date().toISOString().split("T")[0];
+    const [booking] = await db
+      .select({ id: reservationsTable.id, customerEmail: reservationsTable.customerEmail, restaurantId: reservationsTable.restaurantId, date: reservationsTable.date, status: reservationsTable.status })
+      .from(reservationsTable)
+      .where(eq(reservationsTable.id, body.bookingId));
+
+    if (!booking) {
+      return void res.status(400).json({ error: "Reservierung nicht gefunden." });
+    }
+    if (booking.customerEmail.toLowerCase() !== body.customerEmail.toLowerCase()) {
+      return void res.status(403).json({ error: "Diese Reservierung gehört nicht zu dieser E-Mail-Adresse." });
+    }
+    if (booking.restaurantId !== restaurantId) {
+      return void res.status(400).json({ error: "Diese Reservierung gehört zu einem anderen Restaurant." });
+    }
+    if (booking.date > today) {
+      return void res.status(400).json({ error: "Du kannst nur abgeschlossene Reservierungen bewerten." });
+    }
+    if (booking.status === "cancelled") {
+      return void res.status(400).json({ error: "Stornierte Reservierungen können nicht bewertet werden." });
+    }
+
+    // Prevent duplicate review for the same booking
+    const [existingReview] = await db
+      .select({ id: reviewsTable.id })
+      .from(reviewsTable)
+      .where(and(eq(reviewsTable.bookingId, body.bookingId), eq(reviewsTable.customerEmail, body.customerEmail)));
+
+    if (existingReview) {
+      return void res.status(409).json({ error: "Du hast diese Reservierung bereits bewertet." });
+    }
 
     const isLowRating = body.rating <= 3;
     const startRecovery = body.startRecovery === true && isLowRating;
@@ -304,7 +386,7 @@ router.post("/", reviewSubmitLimiter, async (req, res) => {
       restaurantId,
       customerName: body.customerName,
       customerEmail: body.customerEmail,
-      bookingId: body.bookingId ?? null,
+      bookingId: body.bookingId,
       rating: body.rating,
       comment: body.comment,
       recoveryStatus: startRecovery ? "pending" : null,

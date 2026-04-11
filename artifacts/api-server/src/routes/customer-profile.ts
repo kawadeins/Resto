@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { db } from "@workspace/db";
 import {
   customerProfilesTable,
@@ -26,8 +26,21 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// GET /api/customer-profile/:email — get full profile + stats
-router.get("/:email", async (req, res) => {
+// ── Auth guard: only the authenticated customer can access their own profile ──
+function requireSelfAccess(req: Request, res: Response, next: NextFunction) {
+  const sessionEmail = req.session?.customerEmail;
+  if (!sessionEmail) {
+    return res.status(401).json({ error: "Anmeldung erforderlich. Bitte melde dich an, um dein Profil zu sehen." });
+  }
+  const paramEmail = decodeURIComponent(req.params.email ?? "").trim().toLowerCase();
+  if (sessionEmail.toLowerCase() !== paramEmail) {
+    return res.status(403).json({ error: "Du kannst nur dein eigenes Profil anzeigen." });
+  }
+  next();
+}
+
+// GET /api/customer-profile/:email — get full profile + stats (self only)
+router.get("/:email", requireSelfAccess, async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email);
 
@@ -119,8 +132,8 @@ const UpdateBody = z.object({
   favoriteRestaurantIds: z.array(z.string()).optional(),
 });
 
-// PATCH /api/customer-profile/:email — upsert profile
-router.patch("/:email", async (req, res) => {
+// PATCH /api/customer-profile/:email — upsert profile (self only)
+router.patch("/:email", requireSelfAccess, async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email);
     const body = UpdateBody.parse(req.body);
@@ -155,7 +168,7 @@ router.patch("/:email", async (req, res) => {
   }
 });
 
-// POST /api/customer-profile/upload — avatar upload
+// POST /api/customer-profile/upload — avatar upload (public — no PII returned)
 router.post("/upload", upload.single("file"), (req, res) => {
   try {
     if (!req.file) return void res.status(400).json({ error: "No file" });

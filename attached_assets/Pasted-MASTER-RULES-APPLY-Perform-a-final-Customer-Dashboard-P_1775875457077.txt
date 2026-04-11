@@ -1,0 +1,184 @@
+MASTER RULES APPLY
+
+Perform a final "Customer Dashboard Privacy + Review Integrity Hardening Pass" inside the existing RestoMaster platform.
+
+IMPORTANT:
+Do NOT redesign the app.
+Do NOT add random features.
+Do NOT touch Business Dashboard or Founder Dashboard in this pass.
+This pass is ONLY for closing the final remaining medium risks on the customer/user side.
+
+========================
+GOAL
+========================
+
+Eliminate the remaining privacy and trust risks on the customer-facing side so the customer app becomes truly production-ready.
+
+Specifically fix:
+
+1. Customer Profile IDOR / privacy exposure
+2. Unverified review submission
+
+========================
+1. CUSTOMER PROFILE PRIVACY HARDENING (CRITICAL)
+========================
+
+Audit and secure all customer profile endpoints, especially any route like:
+
+- /api/customer-profile/:email
+- or equivalent profile routes keyed by email
+
+Current issue:
+The endpoint returns private customer data based only on a known email address.
+
+This must be fixed.
+
+Requirements:
+- do NOT allow profile lookup by arbitrary email from unauthenticated or unrelated users
+- customer profile access must require real authenticated customer identity
+- the authenticated user must only be able to access their own profile
+- no other customer can read another customer's preferences, allergies, loyalty status, or booking history
+- remove any email-keyed insecure direct object reference pattern
+
+If customer auth/session is missing, implement the minimum secure identity layer needed for customer self-access only.
+
+At minimum:
+- self-only access
+- no arbitrary email lookup
+- no public profile data exposure
+
+========================
+2. CUSTOMER PROFILE DATA MINIMIZATION
+========================
+
+For customer-facing APIs, only return the minimum required fields.
+
+Do NOT expose:
+- internal-only notes
+- unnecessary booking history detail
+- unnecessary dietary/allergy detail in public contexts
+- loyalty/internal status unless explicitly needed for that logged-in customer
+
+Reduce data exposure to only what the current authenticated customer truly needs.
+
+========================
+3. REVIEW SUBMISSION INTEGRITY (CRITICAL)
+========================
+
+Harden review submission so users cannot freely post reviews without proof of real interaction.
+
+Current issue:
+Reviews can be submitted without proving the user had a valid booking/visit.
+
+Requirements:
+- require a valid booking or visit reference before allowing review submission
+OR
+- require the review to be linked to a completed booking for that restaurant
+- ensure the booking belongs to the same authenticated customer
+- ensure the booking is actually completed / eligible for review
+- prevent duplicate abuse for the same booking if needed
+
+Do NOT rely only on rate limiting.
+
+========================
+4. REVIEW ELIGIBILITY RULES
+========================
+
+Implement clear review eligibility rules such as:
+
+- booking exists
+- booking belongs to logged-in customer
+- booking is for that restaurant/business
+- booking date/time is valid for review
+- booking status is completed / attended / eligible
+- optional: one review per booking
+
+If a user is not eligible, return a clean message instead of accepting the review.
+
+========================
+5. KEEP FAIRNESS
+========================
+
+Do NOT make reviews impossible to leave.
+
+The goal is:
+- real reviews from real customers
+- less spam
+- better trust
+
+Maintain a clean and fair customer experience.
+
+========================
+6. AUTH / SESSION INTEGRATION FOR CUSTOMER SIDE
+========================
+
+If the customer app still lacks proper authenticated self-identity for protected customer actions, add the minimum production-safe auth/session support required for:
+
+- self profile access
+- verified review submission
+- self-only protected customer actions
+
+Do NOT use insecure email-only lookup.
+
+========================
+7. ERROR HANDLING / UX
+========================
+
+Use clear user-facing messages when blocked, such as:
+
+- "Du kannst nur dein eigenes Profil anzeigen."
+- "Für diese Bewertung ist eine gültige Reservierung erforderlich."
+- "Du kannst nur abgeschlossene Reservierungen bewerten."
+
+No raw technical errors.
+No confusing privacy failures.
+
+========================
+8. PRIVACY / GDPR SAFETY
+========================
+
+Re-audit customer-facing endpoints for privacy after the fixes.
+
+Ensure:
+- no customer PII leaks
+- no sensitive preference/allergy leakage to unrelated users
+- no unsafe email-based lookup patterns remain
+- no public endpoint returns customer-private data
+
+========================
+9. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- customer cannot fetch another customer profile by email
+- authenticated customer can access only their own profile
+- review submission requires valid customer eligibility
+- fake/unverified review attempts are rejected cleanly
+- no regressions appear in normal customer UX
+
+========================
+10. FINAL REPORT
+========================
+
+Produce a strict final report with:
+
+A. Customer profile privacy status
+B. IDOR exposure status
+C. Review submission integrity status
+D. Booking-linked review validation status
+E. Remaining privacy/trust risks if any
+
+Final verdict for the customer side only:
+- 100% READY
+- READY WITH MINOR RISKS
+- NOT READY
+
+========================
+FINAL GOAL
+========================
+
+The customer-facing side of RestoMaster must become privacy-safe, review-trustworthy, and production-ready.
+
+No customer should be able to access another customer's private profile.
+No user should be able to submit an unverified review without a real eligible booking.

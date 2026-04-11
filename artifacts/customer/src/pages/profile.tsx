@@ -305,12 +305,15 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
   const [signingIn, setSigningIn] = useState<"apple" | "google" | null>(null);
   const [showEmailFallback, setShowEmailFallback] = useState(false);
   const [draft, setDraft] = useState("");
+  const [otpStep, setOtpStep] = useState<"email" | "code">("email");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [devCode, setDevCode] = useState<string | null>(null);
 
   const handleSocialLogin = async (provider: "apple" | "google") => {
     setSigningIn(provider);
     await new Promise((r) => setTimeout(r, 1600));
-    // Generate a stable per-device demo identity so every user
-    // gets their own isolated profile, bookings and social data.
     let deviceId = localStorage.getItem("restosmart_device_id");
     if (!deviceId) {
       deviceId = crypto.randomUUID();
@@ -321,6 +324,17 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
       provider === "apple"
         ? `demo-${shortId}@icloud.com`
         : `demo-${shortId}@gmail.com`;
+    // Create server-side session so API endpoints can authenticate this customer
+    try {
+      await fetch(`${API_BASE}/api/auth/customer-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: demoEmail, deviceToken: deviceId }),
+      });
+    } catch {
+      // Non-fatal — local fallback still works
+    }
     setSigningIn(null);
     onEnter(demoEmail);
   };
@@ -396,7 +410,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
           <span>Keine Werbung</span>
         </div>
 
-        {/* Email fallback */}
+        {/* Email fallback — two-step OTP flow for real email addresses */}
         {!showEmailFallback ? (
           <button
             onClick={() => setShowEmailFallback(true)}
@@ -404,9 +418,29 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
           >
             Andere E-Mail-Adresse verwenden
           </button>
-        ) : (
+        ) : otpStep === "email" ? (
           <form
-            onSubmit={(e) => { e.preventDefault(); if (draft.includes("@")) onEnter(draft); }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!draft.includes("@")) return;
+              setOtpLoading(true);
+              setOtpError(null);
+              try {
+                const res = await fetch(`${API_BASE}/api/auth/customer-otp-request`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ email: draft.trim().toLowerCase() }),
+                });
+                const data = await res.json();
+                if (data.devCode) setDevCode(data.devCode);
+                setOtpStep("code");
+              } catch {
+                setOtpError("Fehler beim Senden. Bitte versuche es erneut.");
+              } finally {
+                setOtpLoading(false);
+              }
+            }}
             className="w-full space-y-2"
           >
             <Input
@@ -418,9 +452,69 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
               autoComplete="email"
               autoFocus
             />
-            <Button type="submit" variant="outline" className="w-full h-11 rounded-xl" disabled={!draft.includes("@")}>
-              Weiter
+            {otpError && <p className="text-xs text-destructive text-center">{otpError}</p>}
+            <Button type="submit" variant="outline" className="w-full h-11 rounded-xl" disabled={!draft.includes("@") || otpLoading}>
+              {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Code senden"}
             </Button>
+          </form>
+        ) : (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (otpCode.length !== 6) return;
+              setOtpLoading(true);
+              setOtpError(null);
+              try {
+                const res = await fetch(`${API_BASE}/api/auth/customer-otp-verify`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ email: draft.trim().toLowerCase(), code: otpCode }),
+                });
+                if (!res.ok) {
+                  const data = await res.json();
+                  setOtpError(data.error ?? "Ungültiger Code.");
+                  return;
+                }
+                onEnter(draft.trim().toLowerCase());
+              } catch {
+                setOtpError("Fehler beim Verifizieren. Bitte erneut versuchen.");
+              } finally {
+                setOtpLoading(false);
+              }
+            }}
+            className="w-full space-y-2"
+          >
+            <p className="text-sm text-center text-muted-foreground">
+              {"Code gesendet an "}<span className="font-medium text-foreground">{draft}</span>
+            </p>
+            {devCode && (
+              <p className="text-xs text-center text-primary font-mono bg-primary/10 rounded-lg py-2">
+                {"DEV: "}{devCode}
+              </p>
+            )}
+            <Input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              placeholder="6-stelliger Code"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="h-11 text-center rounded-xl tracking-[0.4em] text-lg font-mono"
+              autoFocus
+            />
+            {otpError && <p className="text-xs text-destructive text-center">{otpError}</p>}
+            <Button type="submit" className="w-full h-11 rounded-xl" disabled={otpCode.length !== 6 || otpLoading}>
+              {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verifizieren"}
+            </Button>
+            <button
+              type="button"
+              onClick={() => { setOtpStep("email"); setOtpCode(""); setOtpError(null); setDevCode(null); }}
+              className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Andere E-Mail verwenden
+            </button>
           </form>
         )}
       </div>
@@ -1056,6 +1150,7 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
+    fetch(`${API_BASE}/api/auth/customer-logout`, { method: "POST", credentials: "include" }).catch(() => {});
     localStorage.removeItem("restosmart_email");
     setEmail("");
   };

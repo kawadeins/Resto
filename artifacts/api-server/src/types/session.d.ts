@@ -7,5 +7,6 @@ declare module "express-session" {
     restaurantId?: number;
     csrfToken?: string;
     oauthState?: string;
+    customerEmail?: string;
   }
 }

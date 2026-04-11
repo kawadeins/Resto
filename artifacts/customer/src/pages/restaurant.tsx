@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store, MessageCircle, Send, Edit2, XCircle, AlertTriangle } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store, MessageCircle, Send, Edit2, XCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
@@ -254,6 +254,9 @@ export default function Restaurant() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
+  const [reviewEligibility, setReviewEligibility] = useState<{
+    loading: boolean; checked: boolean; eligible: boolean; bookingId: number | null;
+  }>({ loading: false, checked: false, eligible: false, bookingId: null });
   const [recoveryDialog, setRecoveryDialog] = useState<{ open: boolean; formData: ReviewFormValues | null }>({ open: false, formData: null });
   const [recoverySubmitting, setRecoverySubmitting] = useState(false);
   const [recoveryReview, setRecoveryReview] = useState<{ id: number; status: string; businessResponse: string | null; rating: number } | null>(null);
@@ -392,11 +395,15 @@ export default function Restaurant() {
 
   const onReviewSubmit = (data: ReviewFormValues) => {
     const ratingToUse = reviewRating;
+    if (!reviewEligibility.bookingId) {
+      toast({ title: "Reservierung erforderlich", description: "Für eine Bewertung ist eine abgeschlossene Reservierung notwendig.", variant: "destructive" });
+      return;
+    }
     if (ratingToUse <= 3) {
       setRecoveryDialog({ open: true, formData: { ...data, rating: ratingToUse } });
       return;
     }
-    createReview.mutate({ data: { ...data, rating: ratingToUse, restaurantId } });
+    createReview.mutate({ data: { ...data, rating: ratingToUse, restaurantId, bookingId: reviewEligibility.bookingId } });
   };
 
   const submitWithRecovery = useCallback(async (startRecovery: boolean) => {
@@ -406,7 +413,8 @@ export default function Restaurant() {
       const res = await fetch(`${API_BASE}/api/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...recoveryDialog.formData, restaurantId, startRecovery }),
+        credentials: "include",
+        body: JSON.stringify({ ...recoveryDialog.formData, restaurantId, startRecovery, bookingId: reviewEligibility.bookingId }),
       });
       const data = await res.json();
       setRecoveryDialog({ open: false, formData: null });
@@ -427,7 +435,7 @@ export default function Restaurant() {
     } finally {
       setRecoverySubmitting(false);
     }
-  }, [recoveryDialog.formData, restaurantId, reviewForm, queryClient]);
+  }, [recoveryDialog.formData, restaurantId, reviewForm, queryClient, reviewEligibility.bookingId]);
 
   const pollRecoveryStatus = useCallback(async (id: number) => {
     try {
@@ -980,10 +988,48 @@ export default function Restaurant() {
             {/* Write a Review Form */}
             <div className="pt-4 border-t border-dashed">
               {!showReviewForm ? (
-                <Button variant="outline" className="w-full h-12 rounded-full font-medium" onClick={() => setShowReviewForm(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full h-12 rounded-full font-medium"
+                  disabled={reviewEligibility.loading}
+                  onClick={async () => {
+                    const customerEmail = savedEmail;
+                    if (!customerEmail) {
+                      toast({ title: "Anmeldung erforderlich", description: "Bitte melde dich an, um eine Bewertung zu schreiben.", variant: "destructive" });
+                      return;
+                    }
+                    setReviewEligibility({ loading: true, checked: false, eligible: false, bookingId: null });
+                    try {
+                      const res = await fetch(
+                        `${API_BASE}/api/reviews/eligibility?restaurantId=${restaurantId}&customerEmail=${encodeURIComponent(customerEmail)}`,
+                        { credentials: "include" }
+                      );
+                      const data = await res.json();
+                      const firstBooking = data.bookings?.[0];
+                      setReviewEligibility({
+                        loading: false,
+                        checked: true,
+                        eligible: data.eligible === true,
+                        bookingId: firstBooking?.id ?? null,
+                      });
+                      if (data.eligible) {
+                        setShowReviewForm(true);
+                      }
+                    } catch {
+                      setReviewEligibility({ loading: false, checked: true, eligible: false, bookingId: null });
+                    }
+                  }}
+                >
+                  {reviewEligibility.loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                   Bewertung schreiben
                 </Button>
-              ) : (
+              ) : null}
+              {reviewEligibility.checked && !reviewEligibility.eligible && !showReviewForm && (
+                <div className="mt-3 rounded-xl bg-muted/60 border border-border px-4 py-3 text-sm text-muted-foreground text-center">
+                  {"Für eine Bewertung ist eine abgeschlossene Reservierung in diesem Restaurant erforderlich."}
+                </div>
+              )}
+              {showReviewForm && (
                 <div className="bg-muted/30 p-6 rounded-2xl border">
                   <h3 className="font-serif text-xl font-bold mb-4">Teilen Sie Ihre Erfahrung</h3>
                   <form onSubmit={reviewForm.handleSubmit(onReviewSubmit)} className="space-y-4">
