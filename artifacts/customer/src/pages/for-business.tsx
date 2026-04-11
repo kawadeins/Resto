@@ -256,11 +256,22 @@ export default function ForBusiness() {
 
         <div className="relative container mx-auto px-4 pt-12 pb-10">
           {/* Label */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-7">
             <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-3.5 py-1.5 text-xs font-bold">
               <Building2 className="w-3 h-3" />
-              Für Betriebe — Restaurants, Cafés & Bars
+              Für Betriebe — Restaurants, Cafés &amp; Bars in Wien
             </div>
+          </div>
+
+          {/* Master headline */}
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.05] mb-5 text-foreground">
+              <span className="gradient-text">Mehr Gäste. Mehr Sichtbarkeit.</span>
+              <br />Mehr Kontrolle.
+            </h1>
+            <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
+              RestoSmart hilft Restaurants, Cafés und Bars, mehr Reservierungen und mehr Umsatz zu gewinnen — Sichtbarkeit, Bewertungen, Kampagnen und Buchungen alles in einem System.
+            </p>
           </div>
 
           {/* Business type tabs */}
@@ -298,11 +309,11 @@ export default function ForBusiness() {
               transition={{ duration: 0.25 }}
               className="text-center max-w-2xl mx-auto"
             >
-              <div className="text-5xl mb-5">{cfg.emoji}</div>
-              <h1 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight mb-4 leading-tight">
+              <div className="text-5xl mb-4">{cfg.emoji}</div>
+              <h2 className="text-2xl md:text-4xl font-extrabold text-foreground tracking-tight mb-4 leading-tight">
                 {cfg.heroTitle}
-              </h1>
-              <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
+              </h2>
+              <p className="text-muted-foreground text-base md:text-lg mb-7 leading-relaxed max-w-lg mx-auto">
                 {cfg.heroSub}
               </p>
 
@@ -329,7 +340,7 @@ export default function ForBusiness() {
               <div className="flex flex-wrap gap-3 justify-center">
                 <Button
                   size="lg"
-                  className={`h-13 px-8 rounded-2xl bg-gradient-to-r ${cfg.gradient} text-white border-0 shadow-lg font-bold text-base`}
+                  className="h-13 px-8 rounded-2xl bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg shadow-primary/25 font-bold text-base hover:opacity-90 transition-opacity"
                   onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
                 >
                   14 Tage kostenlos testen
@@ -338,12 +349,22 @@ export default function ForBusiness() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-13 px-6 rounded-2xl font-semibold"
+                  className="h-13 px-6 rounded-2xl font-semibold border-border hover:border-primary/40 hover:bg-primary/5"
                   onClick={() => document.getElementById("value-section")?.scrollIntoView({ behavior: "smooth" })}
                 >
                   Mehr erfahren
                   <ChevronDown className="w-4 h-4 ml-1" />
                 </Button>
+              </div>
+
+              {/* Trust pills */}
+              <div className="flex items-center justify-center gap-5 mt-4 flex-wrap">
+                {["14 Tage kostenlos", "Keine Kreditkarte", "In 2 Min. live"].map(t => (
+                  <span key={t} className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    {t}
+                  </span>
+                ))}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -511,6 +532,80 @@ export default function ForBusiness() {
         </div>
       </section>
 
+      {/* ── FEATURE PREVIEW ──────────────────────────────────────────────────── */}
+      <section className="py-16 px-4 bg-muted/20 border-y border-border/50">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Das Dashboard</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
+              Alles in einem System — ohne Komplexität
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm">
+              Sichtbarkeit, Bewertungen, Kampagnen und Buchungen in einem modernen Business-Dashboard, das in Minuten eingerichtet ist.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              {
+                icon: Star,
+                gradient: "from-primary to-accent",
+                shadow: "shadow-primary/20",
+                title: "KI-Bewertungsantworten",
+                desc: "Antworten Sie auf Gästebewertungen in Sekunden — mit vorgeschlagenen, anpassbaren Texten direkt im Dashboard.",
+                tag: "KI-gestützt",
+              },
+              {
+                icon: Zap,
+                gradient: "from-amber-400 to-orange-500",
+                shadow: "shadow-amber-400/20",
+                title: "Kampagnen-Center",
+                desc: "Erstellen Sie Boosts und Kampagnen mit einem Klick. Volle Kostenkontrolle, sofort aktiv, jederzeit pausierbar.",
+                tag: "Boost-Feature",
+              },
+              {
+                icon: BarChart3,
+                gradient: "from-emerald-500 to-teal-500",
+                shadow: "shadow-emerald-500/20",
+                title: "Analytics & Umsatz-Muster",
+                desc: "Verstehen Sie wann Ihre Gäste kommen, was funktioniert und wo Potenzial liegt — mit klaren, echten Daten.",
+                tag: "Premium",
+              },
+              {
+                icon: Shield,
+                gradient: "from-primary to-accent",
+                shadow: "shadow-primary/20",
+                title: "Boost-Wallet transparent",
+                desc: "Laden Sie Ihr Werbebudget auf und sehen Sie jeden ausgegebenen Cent — kein versteckter Algorithmus.",
+                tag: "Transparent",
+              },
+            ].map(({ icon: Icon, gradient, shadow, title, desc, tag }) => (
+              <div key={title} className="rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200">
+                <div className="flex items-start gap-4">
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0 shadow-lg ${shadow}`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <h3 className="font-bold text-sm text-foreground">{title}</h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/15 shrink-0">{tag}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity"
+            >
+              Jetzt kostenlos testen <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* ── 6. PREMIUM + BOOST ───────────────────────────────────────────────── */}
       <section className="py-14 px-4 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="container mx-auto max-w-5xl">
@@ -605,16 +700,64 @@ export default function ForBusiness() {
         </div>
       </section>
 
+      {/* ── TRUST STRIP ──────────────────────────────────────────────────────── */}
+      <div className="border-y border-border/50 bg-card py-5 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            {[
+              { icon: CheckCircle, text: "14 Tage kostenlos", sub: "Kein Risiko" },
+              { icon: Shield,      text: "Keine versteckten Kosten", sub: "Transparente Preise" },
+              { icon: Clock,       text: "In 2 Minuten live", sub: "Keine Kreditkarte" },
+              { icon: Award,       text: "Jederzeit kündbar", sub: "Ohne Bindung" },
+            ].map(({ icon: Icon, text, sub }) => (
+              <div key={text} className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground leading-tight">{text}</p>
+                  <p className="text-[11px] text-muted-foreground">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── FINAL CTA BANNER ─────────────────────────────────────────────────── */}
+      <div className="px-4 py-10">
+        <div className="container mx-auto max-w-3xl">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-accent py-12 px-6 text-center shadow-2xl shadow-primary/25">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(236,72,153,0.3),transparent_60%)] pointer-events-none" />
+            <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3">Kostenlos starten</p>
+            <h2 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">
+              Ihr Betrieb. Sichtbar. Gebucht.
+            </h2>
+            <p className="text-white/80 text-sm md:text-base max-w-md mx-auto mb-7 leading-relaxed">
+              14 Tage voller Zugang — Boosts, Analytics, KI-Antworten und mehr. Keine Kreditkarte. Keine Bindung.
+            </p>
+            <button
+              onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white text-primary font-extrabold text-sm shadow-xl hover:shadow-2xl hover:opacity-95 transition-all"
+            >
+              Jetzt Betrieb eintragen <ArrowRight className="w-4 h-4" />
+            </button>
+            <p className="text-white/50 text-xs mt-4">14 Tage gratis · keine Kreditkarte · sofort aktiv</p>
+          </div>
+        </div>
+      </div>
+
       {/* ── 7. CLAIM FORM ────────────────────────────────────────────────────── */}
-      <section id="claim-form" className="py-16 px-4">
+      <section id="claim-form" className="py-10 px-4">
         <div className="container mx-auto max-w-xl">
           <div className="text-center mb-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Kostenlos starten</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Betrieb eintragen</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              Jetzt Betrieb eintragen
+              In 2 Minuten live
             </h2>
             <p className="text-muted-foreground mt-2 text-sm max-w-md mx-auto">
-              In 2 Minuten eingetragen — sofort aktiv. 14 Tage voller Zugang, keine Kreditkarte.
+              Betrieb eintragen — 14 Tage voller Premium-Zugang, keine Kreditkarte erforderlich.
             </p>
           </div>
 

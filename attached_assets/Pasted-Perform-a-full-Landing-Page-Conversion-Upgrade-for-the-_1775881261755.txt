@@ -1,0 +1,282 @@
+Perform a full Landing Page Conversion Upgrade for the RestoSmart homepage / entry page.
+
+IMPORTANT:
+Do NOT redesign the entire app.
+Do NOT touch Business Dashboard internals in this pass.
+Do NOT break login or app routing.
+This pass is ONLY for transforming the landing / entry page into a high-conversion page that convinces restaurants, cafés, and bars to start immediately.
+
+========================
+PRIMARY GOAL
+========================
+
+Turn the current homepage into a premium SaaS landing page that clearly communicates value and increases conversion.
+
+The page must:
+- feel premium
+- explain the product quickly
+- build trust
+- push the right action
+- make restaurants want to start
+
+This is NOT just visual polish.
+This is a conversion-focused landing page pass.
+
+========================
+1. HERO SECTION UPGRADE (CRITICAL)
+========================
+
+Keep the strong nightlife / hospitality vibe, but make the hero more conversion-oriented.
+
+The hero must include:
+
+A. Strong headline
+B. Short subheadline
+C. Clear primary CTA
+D. Optional secondary CTA
+E. Dynamic rotating hero text if already added
+
+The hero must answer within seconds:
+- what is RestoSmart?
+- who is it for?
+- why should they care?
+
+========================
+2. HEADLINE / COPY IMPROVEMENT
+========================
+
+Use business-focused, high-conversion German copy.
+
+Examples of acceptable direction:
+- Mehr Gäste. Mehr Sichtbarkeit. Mehr Kontrolle.
+- RestoSmart hilft Restaurants, Cafés und Bars, mehr Reservierungen und mehr Umsatz zu gewinnen.
+- Sichtbarkeit, Bewertungen, Kampagnen und Buchungen – alles in einem System.
+
+Do NOT use vague generic startup text.
+Copy must feel premium, direct, and useful.
+
+========================
+3. ROTATING HERO TEXT (IF NOT FINISHED)
+========================
+
+Implement or refine the rotating hero text system.
+
+Use 4 strong rotating lines such as:
+1. Wien schläft nicht. Die Nacht gehört Ihnen.
+2. Entdecken Sie Wiens verborgene Nächte. Jeder Moment zählt.
+3. Wo andere schließen, beginnt Ihr Geschäft. Willkommen in der Nacht.
+4. Mehr Gäste. Mehr Umsatz. Die Nacht arbeitet für Sie.
+
+Behavior:
+- one line at a time
+- 3–4 seconds visible
+- smooth fade/slide transition
+- premium feel
+- no layout jump
+
+========================
+4. PRIMARY CTA OPTIMIZATION
+========================
+
+Make the main action extremely clear.
+
+Primary CTA examples:
+- Jetzt kostenlos starten
+- Business-Dashboard öffnen
+- 14 Tage kostenlos testen
+
+Secondary CTA examples:
+- Demo ansehen
+- Mehr erfahren
+
+The primary CTA must stand out visually and textually.
+It must be obvious what to do next.
+
+========================
+5. VALUE PROPOSITION SECTION
+========================
+
+Below the hero, add a clean section explaining the main business value.
+
+Possible content:
+- Mehr Sichtbarkeit in deiner Stadt
+- Mehr Reservierungen und Laufkundschaft
+- Bessere Bewertungen und schnellere Antworten
+- Smarte Kampagnen mit vollem Kostenüberblick
+
+Use 3–4 compact value cards or bullets with icons.
+
+This section must help the owner immediately understand why the app is valuable.
+
+========================
+6. WHO IT IS FOR SECTION
+========================
+
+Add a section that clearly states the target businesses.
+
+Examples:
+- Für Restaurants
+- Für Cafés
+- Für Bars & Nightlife
+
+For each:
+- one short sentence about the specific value
+
+Example:
+- Restaurants: Mehr Reservierungen und bessere Auslastung
+- Cafés: Sichtbarkeit zu den richtigen Tageszeiten
+- Bars: Mehr Gäste am Abend und in der Nacht
+
+========================
+7. PREMIUM / TRUST SECTION
+========================
+
+Add a trust-building section for Premium and paid usage.
+
+Clarify:
+- 14 Tage kostenlos testen
+- klare Preise
+- kein versteckter Aufwand
+- Guthaben und Kampagnen immer transparent
+- Premium nur dort, wo es echten Mehrwert bringt
+
+This section should reduce hesitation around paying.
+
+========================
+8. FEATURE PREVIEW SECTION
+========================
+
+Add a clean preview section showing what the business gets.
+
+Examples:
+- Bewertungen intelligent verwalten
+- Kampagnen mit einem Klick starten
+- Guthaben und Ausgaben im Blick behalten
+- KI-gestützte Antworten und Empfehlungen
+
+Do NOT overload the page.
+This should feel like a high-value product preview.
+
+========================
+9. SOCIAL / TRUST SIGNALS
+========================
+
+If appropriate, add lightweight trust signals such as:
+- Für Restaurants, Cafés und Bars entwickelt
+- Mehr Kontrolle über Sichtbarkeit und Gästegewinnung
+- Transparent, modern, schnell
+
+Do NOT fake testimonials or fake customer counts.
+No fake logos.
+No fake “trusted by” section.
+
+========================
+10. VISUAL HIERARCHY FOR CONVERSION
+========================
+
+Make the page flow like a real landing page:
+
+1. Hero
+2. CTA
+3. Core value
+4. Business types
+5. Feature preview
+6. Premium/trust reassurance
+7. Final CTA
+
+The user should be guided naturally toward action.
+
+========================
+11. BUTTON / CTA CONSISTENCY
+========================
+
+All landing page buttons must follow the unified premium brand system:
+- gradient primary button
+- clean secondary button
+- same radius
+- same spacing
+- same typography
+
+No inconsistent CTA styling.
+
+========================
+12. COPY TONE
+========================
+
+Tone must be:
+- premium
+- clear
+- modern
+- business-friendly
+- slightly aspirational
+- not aggressive
+- not cheesy
+
+Avoid:
+- exaggerated marketing hype
+- vague startup buzzwords
+- fake urgency
+
+========================
+13. MOBILE / RESPONSIVE QUALITY
+========================
+
+Ensure the landing page remains strong on mobile:
+- hero text readable
+- CTA visible above the fold
+- no broken spacing
+- rotating text works
+- sections stack cleanly
+
+========================
+14. NO DARK PATTERNS
+========================
+
+Do NOT:
+- fake urgency
+- hide pricing
+- over-promise results
+- push deceptive UI tricks
+
+Conversion must come from clarity and value, not manipulation.
+
+========================
+15. FINAL VALIDATION
+========================
+
+After implementation, verify:
+
+- the page clearly explains the product
+- the page looks premium
+- the main CTA is obvious
+- the page is more persuasive than before
+- the content is consistent with the brand
+- the flow guides the user toward starting
+
+========================
+16. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Hero upgrade status
+B. CTA improvement status
+C. Value proposition section status
+D. Business-type section status
+E. Feature preview status
+F. Premium/trust section status
+G. Mobile/responsive status
+H. Remaining weak conversion points if any
+
+========================
+FINAL RESULT
+========================
+
+The RestoSmart landing page must feel like a premium European SaaS homepage that convinces restaurants, cafés, and bars to start.
+
+It should not feel like a simple intro screen anymore.
+
+It should feel like:
+- a real product
+- a real business tool
+- a page that drives action
