@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "wouter";
 import {
   Timer, ArrowRight, Compass, Gift, Star, Zap, RefreshCw,
@@ -250,19 +251,66 @@ function DynamicSection({
   );
 }
 
-// ─── Hero headline ────────────────────────────────────────────────────────────
+// ─── Rotating hero headline ───────────────────────────────────────────────────
 
-function HeroHeadlineHighlight({ text, highlight }: { text: string; highlight: string }) {
-  return <>{text}{" "}<span className="gradient-text">{highlight}</span></>;
+type HeadlineSegment = { text: string; gradient?: boolean };
+
+const ROTATING_HEADLINES: HeadlineSegment[][] = [
+  [
+    { text: "Wien schläft nicht. " },
+    { text: "Die Nacht gehört Ihnen.", gradient: true },
+  ],
+  [
+    { text: "Entdecken Sie Wiens verborgene Nächte. " },
+    { text: "Jeder Moment zählt.", gradient: true },
+  ],
+  [
+    { text: "Wo andere schließen, beginnt Ihr Geschäft. " },
+    { text: "Willkommen in der Nacht.", gradient: true },
+  ],
+  [
+    { text: "Mehr Gäste. Mehr Umsatz.", gradient: true },
+    { text: " Die Nacht arbeitet für Sie." },
+  ],
+];
+
+function RotatingHeroHeadline() {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      setIndex((prev) => (prev + 1) % ROTATING_HEADLINES.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [paused]);
+
+  return (
+    <div
+      className="overflow-x-clip"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <AnimatePresence mode="wait">
+        <motion.h1
+          key={index}
+          initial={{ x: -56, opacity: 0, filter: "blur(8px)" }}
+          animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
+          exit={{ x: 56, opacity: 0, filter: "blur(8px)" }}
+          transition={{ duration: 0.48, ease: [0.4, 0, 0.2, 1] }}
+          className="text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight text-foreground"
+        >
+          {ROTATING_HEADLINES[index].map((seg, i) =>
+            seg.gradient
+              ? <span key={i} className="gradient-text">{seg.text}</span>
+              : <span key={i}>{seg.text}</span>
+          )}
+        </motion.h1>
+      </AnimatePresence>
+    </div>
+  );
 }
-
-const HEADLINE_MAP: Record<string, { pre: string; highlight: string }> = {
-  morning:   { pre: "Guten Morgen Wien —", highlight: "Ihr Kaffee wartet." },
-  lunch:     { pre: "Was isst Wien gerade?", highlight: "Finden Sie es heraus." },
-  afternoon: { pre: "Die besten Spots", highlight: "Wiens für Sie." },
-  evening:   { pre: "Was geht heute Abend", highlight: "in Wien?" },
-  night:     { pre: "Wien schläft nicht.", highlight: "Die Nacht gehört Ihnen." },
-};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -273,7 +321,6 @@ export default function Home() {
   });
 
   const { mode, config, track, interactions } = useLifestyleMode();
-  const hl = HEADLINE_MAP[mode];
 
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [manualCity, setManualCity] = useState("");
@@ -453,9 +500,7 @@ export default function Home() {
                 </div>
               )}
 
-              <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight text-foreground transition-all duration-500">
-                <HeroHeadlineHighlight text={hl.pre} highlight={hl.highlight} />
-              </h1>
+              <RotatingHeroHeadline />
 
               <p className="text-muted-foreground text-lg max-w-md mx-auto md:mx-0 leading-relaxed transition-all duration-500">
                 {config.subline}
