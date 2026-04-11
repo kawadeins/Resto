@@ -36,7 +36,7 @@ export const BOOST_TYPES = {
 export type BoostType = keyof typeof BOOST_TYPES;
 
 // ─── GET /api/promotions?restaurantId=:id ─────────────────────────────────────
-router.get("/", async (req, res) => {
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
@@ -66,7 +66,7 @@ router.get("/", async (req, res) => {
 
 // ─── GET /api/promotions/my — promotions for the owner's own restaurant ────────
 // Single-tenant: the admin always owns the first active restaurant.
-router.get("/my", async (req, res) => {
+router.get("/my", requireManagerOrAbove(), async (req, res) => {
   try {
     const restResult = await db.execute(sql`
       SELECT id, name, business_type FROM restaurants WHERE is_active = true ORDER BY id ASC LIMIT 1
@@ -299,7 +299,7 @@ router.put("/:id/stop", requireManagerOrAbove(), async (req, res) => {
 
 // ─── GET /api/promotions/analysis — revenue optimization engine ───────────────
 // Single-tenant: always analyzes the first active restaurant.
-router.get("/analysis", async (req, res) => {
+router.get("/analysis", requireManagerOrAbove(), async (req, res) => {
   try {
     const restResult = await db.execute(sql`
       SELECT id, name, business_type FROM restaurants WHERE is_active = true ORDER BY id ASC LIMIT 1
@@ -528,7 +528,7 @@ router.get("/analysis", async (req, res) => {
 });
 
 // ─── GET /api/promotions/budget?restaurantId=:id — get budget state ───────────
-router.get("/budget", async (req, res) => {
+router.get("/budget", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
@@ -712,7 +712,7 @@ router.post("/:id/event", async (req, res) => {
 });
 
 // ─── GET /api/promotions/:id/stats ────────────────────────────────────────────
-router.get("/:id/stats", async (req, res) => {
+router.get("/:id/stats", requireManagerOrAbove(), async (req, res) => {
   try {
     const promoId = Number(req.params.id);
 
@@ -780,7 +780,7 @@ const BOOST_LABELS: Record<string, string> = {
   local_spotlight: "Local Spotlight", local_heat_boost: "Heat-Map Boost",
 };
 
-router.get("/recommendations", async (req, res) => {
+router.get("/recommendations", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
@@ -944,7 +944,7 @@ router.get("/recommendations", async (req, res) => {
 });
 
 // ─── GET /api/promotions/auto-budget-settings?restaurantId=:id ───────────────
-router.get("/auto-budget-settings", async (req, res) => {
+router.get("/auto-budget-settings", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
@@ -1020,7 +1020,7 @@ router.put("/auto-budget-settings", requireManagerOrAbove(), async (req, res) =>
 const CLICK_VALUE: Record<string, number>   = { restaurant: 3.00, cafe: 1.50, bar: 2.50 };
 const BOOKING_VALUE: Record<string, number> = { restaurant: 28.00, cafe: 11.00, bar: 20.00 };
 
-router.get("/roi", async (req, res) => {
+router.get("/roi", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
@@ -1230,7 +1230,7 @@ router.get("/roi", async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 // ── GET /api/promotions/auto-campaign/log ─────────────────────────────────────
-router.get("/auto-campaign/log", async (req, res) => {
+router.get("/auto-campaign/log", requireManagerOrAbove(), async (req, res) => {
   try {
     const restaurantId = Number(req.query.restaurantId);
     if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });

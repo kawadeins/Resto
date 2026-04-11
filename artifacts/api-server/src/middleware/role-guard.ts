@@ -1,12 +1,8 @@
 /**
  * Role-guard middleware — validates business user identity and role.
  *
- * Identity resolution priority (most trusted → least trusted):
- *   1. Server-side session (req.session.userEmail) — set by POST /api/auth/login
- *   2. x-user-email request header — accepted as fallback for API tooling / dev
- *
- * Both paths validate the resolved email against the database (restaurants +
- * team_members tables), so neither can be spoofed without a real DB record.
+ * Identity resolution: server-side session only (req.session.userEmail).
+ * Client-supplied headers are never trusted for auth decisions.
  */
 
 import { Request, Response, NextFunction } from "express";
@@ -44,9 +40,7 @@ async function resolveRole(email: string): Promise<TeamRole | null> {
 
 export function requireRole(...allowed: TeamRole[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const sessionEmail = req.session?.userEmail ?? "";
-    const headerEmail = (req.headers["x-user-email"] as string) ?? "";
-    const email = sessionEmail || headerEmail;
+    const email = req.session?.userEmail ?? "";
 
     const role = await resolveRole(email);
 

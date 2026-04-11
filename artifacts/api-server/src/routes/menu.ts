@@ -81,7 +81,7 @@ async function buildMenuItemResponse(item: typeof menuItemsTable.$inferSelect) {
   };
 }
 
-router.get("/analytics", async (req, res) => {
+router.get("/analytics", requireManagerOrAbove(), async (req, res) => {
   try {
     const items = await db.select().from(menuItemsTable);
 
@@ -121,7 +121,7 @@ router.get("/analytics", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const items = await db.select().from(menuItemsTable).orderBy(menuItemsTable.category, menuItemsTable.name);
     const results = await Promise.all(items.map(buildMenuItemResponse));
@@ -149,7 +149,7 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const [item] = await db.select().from(menuItemsTable).where(eq(menuItemsTable.id, id));
@@ -191,7 +191,7 @@ router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   }
 });
 
-router.get("/:id/ingredients", async (req, res) => {
+router.get("/:id/ingredients", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const rows = await db

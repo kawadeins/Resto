@@ -5,11 +5,10 @@ function safeIpKey(req: Request): string {
   return ipKeyGenerator(req.ip ?? "unknown");
 }
 
-// Session-aware key generator: prefer session email → header email → IP
+// Session-aware key generator: prefer session email → IP
 function sessionOrIpKey(req: Request): string {
   const sessionEmail = (req as any).session?.userEmail as string | undefined;
-  const headerEmail = req.headers["x-user-email"] as string | undefined;
-  return (sessionEmail || headerEmail)?.trim() || safeIpKey(req);
+  return sessionEmail?.trim() || safeIpKey(req);
 }
 
 // ── Global limiter — 300 requests/min per IP ─────────────────────────────────
@@ -100,4 +99,24 @@ export const mutationLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Zu viele Aktionen. Bitte kurz warten." },
   keyGenerator: sessionOrIpKey,
+});
+
+// ── Review submission limiter — 5 reviews per 10 min per IP (anti-spam) ──────
+export const reviewSubmitLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Bewertungen. Bitte 10 Minuten warten." },
+  keyGenerator: safeIpKey,
+});
+
+// ── Business claim limiter — 3 claims per hour per IP ────────────────────────
+export const businessClaimLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Zu viele Anfragen. Bitte später erneut versuchen." },
+  keyGenerator: safeIpKey,
 });

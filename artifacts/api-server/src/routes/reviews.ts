@@ -6,7 +6,7 @@ import { z } from "zod";
 import { sendEmail } from "../lib/email.js";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { requireManagerOrAbove } from "../middleware/role-guard";
-import { aiLimiter } from "../middleware/rate-limiters";
+import { aiLimiter, reviewSubmitLimiter } from "../middleware/rate-limiters";
 
 const router = Router();
 
@@ -40,19 +40,34 @@ function mapReview(r: ReviewRow) {
   };
 }
 
+function mapPublicReview(r: ReviewRow) {
+  return {
+    id: r.id,
+    restaurantId: r.restaurantId,
+    customerName: r.customerName,
+    rating: r.rating,
+    comment: r.comment,
+    ownerReply: r.ownerReply ?? null,
+    ownerRepliedAt: r.ownerRepliedAt?.toISOString() ?? null,
+    createdAt: r.createdAt.toISOString(),
+    businessResponse: r.businessResponse ?? null,
+    businessRespondedAt: r.businessRespondedAt?.toISOString() ?? null,
+  };
+}
+
 // Publicly visible: exclude reviews that are "In Klärung" (pending recovery, not yet published)
 function isPubliclyVisible(r: ReviewRow) {
   return r.recoveryStatus === null || r.recoveryStatus === "published";
 }
 
-// GET /api/reviews?restaurantId=1
+// GET /api/reviews?restaurantId=1  — public endpoint, strips PII
 router.get("/", async (req, res) => {
   try {
     const restaurantId = parseInt((req.query.restaurantId as string) ?? "1") || 1;
     const rows = await db.select().from(reviewsTable)
       .where(eq(reviewsTable.restaurantId, restaurantId))
       .orderBy(desc(reviewsTable.createdAt));
-    res.json(rows.filter(isPubliclyVisible).map(mapReview));
+    res.json(rows.filter(isPubliclyVisible).map(mapPublicReview));
   } catch (err) {
     req.log.error({ err }, "Failed to list reviews");
     res.status(500).json({ error: "Failed to list reviews" });
@@ -276,8 +291,8 @@ const CreateReviewBody = z.object({
   startRecovery: z.boolean().optional(),
 });
 
-// POST /api/reviews
-router.post("/", async (req, res) => {
+// POST /api/reviews — rate limited to prevent spam
+router.post("/", reviewSubmitLimiter, async (req, res) => {
   try {
     const body = CreateReviewBody.parse(req.body);
     const restaurantId = body.restaurantId ?? 1;

@@ -11,6 +11,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+import { businessClaimLimiter } from "../middleware/rate-limiters";
 
 const router = Router();
 
@@ -114,7 +115,7 @@ const ClaimSchema = z.object({
   source:       z.string().optional().default("for_business_page"),
 });
 
-router.post("/", async (req, res) => {
+router.post("/", businessClaimLimiter, async (req, res) => {
   const parsed = ClaimSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "Ungültige Daten", details: parsed.error.flatten() });

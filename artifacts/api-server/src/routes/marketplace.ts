@@ -400,19 +400,23 @@ router.get("/flash-deals", async (req, res) => {
 });
 
 const CreateBookingBody = z.object({
-  customerName: z.string().min(1),
+  customerName: z.string().min(1).max(100),
   customerEmail: z.string().email(),
-  customerPhone: z.string().min(1),
-  date: z.string(),
-  time: z.string(),
-  partySize: z.number().int().min(1),
-  notes: z.string().optional(),
-  restaurantId: z.number().optional(),
+  customerPhone: z.string().min(1).max(30),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  time: z.string().regex(/^\d{2}:\d{2}$/),
+  partySize: z.number().int().min(1).max(20),
+  notes: z.string().max(500).optional(),
+  restaurantId: z.number().int().positive().optional(),
 });
 
 router.post("/bookings", async (req, res) => {
   try {
-    const body = CreateBookingBody.parse(req.body);
+    const parsed = CreateBookingBody.safeParse(req.body);
+    if (!parsed.success) {
+      return void res.status(400).json({ error: "Ungültige Eingabe", details: parsed.error.flatten().fieldErrors });
+    }
+    const body = parsed.data;
 
     const restaurantId = body.restaurantId ?? 1;
     const [restaurant] = await db
@@ -433,6 +437,24 @@ router.post("/bookings", async (req, res) => {
       if (!until || until > new Date()) {
         return void res.status(409).json({ error: "The restaurant is temporarily not accepting new bookings right now. Please try again later or call us." });
       }
+    }
+
+    // Deduplication: prevent double-booking within 60 seconds for same slot
+    const existing = await db.select({ id: reservationsTable.id })
+      .from(reservationsTable)
+      .where(
+        and(
+          eq(reservationsTable.customerEmail, body.customerEmail),
+          eq(reservationsTable.restaurantId, restaurantId),
+          eq(reservationsTable.date, body.date),
+          eq(reservationsTable.time, body.time),
+          gte(reservationsTable.createdAt, new Date(Date.now() - 60_000)),
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      return void res.status(409).json({ error: "Eine Buchung für diesen Zeitraum existiert bereits." });
     }
 
     const [created] = await db.insert(reservationsTable).values({
