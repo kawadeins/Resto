@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { format, isPast, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
-import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star, MessageSquare } from "lucide-react";
+import { CalendarCheck, Mail, MapPin, Clock, Users, ArrowRight, Award, Trophy, Star, MessageSquare, ShieldCheck } from "lucide-react";
 import { useListMyBookings, useGetLoyaltyBalance } from "@workspace/api-client-react";
 import { getListMyBookingsQueryKey, getGetLoyaltyBalanceQueryKey } from "@workspace/api-client-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -172,9 +172,21 @@ export default function MyBookings() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full h-12 rounded-full font-bold">
+            <Button type="submit" className="w-full h-12 rounded-full font-bold bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-opacity shadow-md">
+              <CalendarCheck className="w-4 h-4 mr-2" />
               Meine Buchungen finden
             </Button>
+            <div className="flex items-center justify-center gap-3 pt-1">
+              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                Keine Registrierung
+              </span>
+              <span className="text-muted-foreground/40 text-[11px]">·</span>
+              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                Nur Ihre Buchungen
+              </span>
+            </div>
           </form>
         </div>
       </div>
@@ -420,10 +432,13 @@ export default function MyBookings() {
                         {isCompleted && !hasReviewed && !isReviewing && booking.status !== "cancelled" && booking.status !== "rejected" && (
                           <button
                             onClick={() => { setReviewingBookingId(booking.id); setReviewRating(5); setReviewComment(""); }}
-                            className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
+                            className="shrink-0 flex flex-col items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
                           >
-                            <Star className="w-3.5 h-3.5" />
-                            Bewertung schreiben
+                            <span className="flex items-center gap-1">
+                              <Star className="w-3.5 h-3.5" />
+                              Bewertung
+                            </span>
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full px-1.5 py-0.5">+5 Pkt.</span>
                           </button>
                         )}
                         {hasReviewed && (

@@ -3,7 +3,7 @@ import { useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store, MessageCircle, Send, Edit2, XCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar, Users, ChevronLeft, CheckCircle2, CalendarCheck, User as UserIcon, Instagram, Facebook, Globe, ExternalLink, PlayCircle, ChevronRight, X, ShieldCheck, Store, MessageCircle, Send, Edit2, XCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
@@ -989,8 +989,7 @@ export default function Restaurant() {
             <div className="pt-4 border-t border-dashed">
               {!showReviewForm ? (
                 <Button
-                  variant="outline"
-                  className="w-full h-12 rounded-full font-medium"
+                  className="w-full h-12 rounded-full font-semibold gap-2 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-opacity shadow-md"
                   disabled={reviewEligibility.loading}
                   onClick={async () => {
                     const customerEmail = savedEmail;
@@ -1020,13 +1019,18 @@ export default function Restaurant() {
                     }
                   }}
                 >
-                  {reviewEligibility.loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  {reviewEligibility.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}
                   Bewertung schreiben
+                  <span className="ml-1 text-xs font-bold bg-white/20 rounded-full px-2 py-0.5">+5 Punkte</span>
                 </Button>
               ) : null}
               {reviewEligibility.checked && !reviewEligibility.eligible && !showReviewForm && (
-                <div className="mt-3 rounded-xl bg-muted/60 border border-border px-4 py-3 text-sm text-muted-foreground text-center">
-                  {"Für eine Bewertung ist eine abgeschlossene Reservierung in diesem Restaurant erforderlich."}
+                <div className="mt-3 rounded-xl bg-muted/50 border border-border px-4 py-4 text-sm text-muted-foreground text-center space-y-2">
+                  <p>{"Für eine Bewertung ist eine abgeschlossene Reservierung hier erforderlich."}</p>
+                  <a href="/my-bookings" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                    <CalendarCheck className="w-3.5 h-3.5" />
+                    Meine Buchungen ansehen
+                  </a>
                 </div>
               )}
               {showReviewForm && (
@@ -1297,14 +1301,31 @@ export default function Restaurant() {
 
                     <Button 
                       type="submit" 
-                      className="w-full rounded-full h-12 text-lg font-medium shadow-md mt-4"
+                      className="w-full rounded-full h-13 text-base font-bold shadow-lg mt-4 bg-gradient-to-r from-primary to-accent text-white border-0 hover:opacity-90 transition-opacity"
                       disabled={createBooking.isPending}
                     >
-                      {createBooking.isPending ? "Wird bestätigt..." : "Reservierung bestätigen"}
+                      {createBooking.isPending ? (
+                        <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Wird bestätigt...</span>
+                      ) : (
+                        <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />Tisch jetzt kostenlos reservieren</span>
+                      )}
                     </Button>
-                    <p className="text-center text-xs text-muted-foreground mt-4">
-                      Mit dem Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.
-                    </p>
+                    <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        Kostenlos
+                      </span>
+                      <span className="text-muted-foreground/40 text-[11px]">·</span>
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        Keine Kreditkarte
+                      </span>
+                      <span className="text-muted-foreground/40 text-[11px]">·</span>
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        Bestätigung per E-Mail
+                      </span>
+                    </div>
                   </form>
                 )}
               </div>

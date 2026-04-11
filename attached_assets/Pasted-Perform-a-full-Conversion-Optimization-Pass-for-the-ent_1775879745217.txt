@@ -1,0 +1,301 @@
+Perform a full Conversion Optimization Pass for the entire RestoSmart application.
+
+This is NOT a redesign from scratch.
+This is NOT a feature-expansion task.
+This is a product-growth and monetization optimization pass.
+
+========================
+PRIMARY GOAL
+========================
+
+Increase trust, clarity, and conversion across the app so that:
+
+- more business users start Premium
+- more business users top up wallet
+- more business users activate boosts
+- more customer users complete bookings / reviews / actions
+- fewer users drop off during important flows
+
+The app should feel:
+- clear
+- high-trust
+- valuable
+- easy to act on
+- easy to pay inside
+
+========================
+1. FIND ALL HIGH-VALUE CONVERSION POINTS
+========================
+
+Audit all important monetization and action points, including:
+
+Business side:
+- Premium upgrade CTA
+- free trial CTA
+- wallet top-up CTA
+- boost activation CTA
+- campaign recommendations CTA
+- auto mode CTA
+- AI reply / premium feature lock prompts
+
+Customer side:
+- booking CTA
+- save/favorite CTA
+- review CTA
+- account/login CTA
+- onboarding CTA
+
+For each one:
+- evaluate clarity
+- evaluate trust
+- evaluate friction
+- evaluate drop-off risk
+
+========================
+2. IMPROVE CTA CLARITY
+========================
+
+Make sure all high-value CTAs are:
+
+- visible
+- understandable
+- specific
+- action-oriented
+
+Examples:
+- "Jetzt Premium starten"
+- "Jetzt Guthaben aufladen"
+- "Boost jetzt aktivieren"
+- "Reservierung abschließen"
+- "Mit Premium mehr Sichtbarkeit erhalten"
+
+Remove vague button copy.
+
+========================
+3. REDUCE FRICTION
+========================
+
+Simplify important flows:
+
+- Premium signup
+- wallet top-up
+- boost activation
+- booking flow
+- review flow
+
+Reduce:
+- unnecessary clicks
+- unclear steps
+- confusing states
+- hidden requirements
+
+Make the path from intent → action as short as possible.
+
+========================
+4. TRUST OPTIMIZATION
+========================
+
+Improve trust signals at key payment/action points.
+
+Examples:
+- clear pricing
+- clear wallet balance
+- clear boost cost
+- clear subscription status
+- clear success / cancel states
+- clear review eligibility
+- no fake urgency
+- no misleading analytics
+
+The app should feel safe to pay in.
+
+========================
+5. PREMIUM CONVERSION IMPROVEMENT
+========================
+
+Optimize all Premium upgrade surfaces.
+
+Requirements:
+- clear value proposition
+- clean pricing hierarchy
+- show what unlocks with Premium
+- show why it matters
+- place upgrade prompts at meaningful moments
+
+Examples:
+- when viewing locked analytics
+- when trying AI reply
+- when trying smart recommendations
+- when opening auto campaign mode
+
+Do NOT spam.
+Use contextual upgrade prompts.
+
+========================
+6. WALLET / TOP-UP CONVERSION IMPROVEMENT
+========================
+
+Optimize the wallet funding flow.
+
+Requirements:
+- current balance always visible where relevant
+- insufficient balance state must clearly guide next action
+- top-up CTA should be obvious
+- quick amounts (5/10/20/50) should feel easy
+- success/cancel states must reassure the user
+
+The wallet flow should feel frictionless and trustworthy.
+
+========================
+7. BOOST ACTIVATION CONVERSION IMPROVEMENT
+========================
+
+Optimize boost activation so users feel confident paying.
+
+Show clearly:
+- boost type
+- exact cost
+- wallet balance
+- expected value / visibility
+- why the boost matters
+
+Reduce uncertainty before activation.
+
+========================
+8. BOOKING CONVERSION IMPROVEMENT
+========================
+
+On the customer side, improve booking completion rate.
+
+Requirements:
+- booking CTA should be obvious
+- booking steps should be clear
+- errors should be understandable
+- no confusing field validation
+- confirmation should feel trustworthy
+
+========================
+9. CONTEXTUAL MICROCOPY
+========================
+
+Improve explanatory microcopy around key actions.
+
+Examples:
+- "Nur für Premium verfügbar"
+- "Aus deinem Guthaben bezahlt"
+- "Für diesen Boost werden 5€ benötigt"
+- "Du kannst diese Reservierung jetzt bewerten"
+- "Diese Funktion spart dir Zeit und erhöht deine Sichtbarkeit"
+
+Use short, helpful, high-trust language.
+
+========================
+10. EMPTY / ERROR / SUCCESS STATES
+========================
+
+Improve conversion around state transitions.
+
+Requirements:
+- empty states should guide the next step
+- errors should explain what to do next
+- success states should reinforce confidence
+
+Examples:
+- low wallet → "Jetzt Guthaben aufladen"
+- no campaigns → "Ersten Boost starten"
+- booking success → clear confirmation
+- premium success → clear unlocked value
+
+========================
+11. PREMIUM LOCKED-FEATURE UX
+========================
+
+Improve locked feature handling.
+
+Requirements:
+- locked features should feel aspirational, not annoying
+- explain value clearly
+- include a strong but elegant upgrade CTA
+- no aggressive upsell spam
+
+========================
+12. VISUAL HIERARCHY FOR CONVERSION
+========================
+
+Across important screens, ensure:
+
+- primary action is visually dominant
+- secondary actions do not compete too much
+- important metrics are visible
+- paid actions feel trustworthy
+- clutter is reduced around conversion points
+
+========================
+13. BUSINESS-FOCUSED VALUE MESSAGING
+========================
+
+For business users, reinforce outcomes such as:
+
+- more visibility
+- better reputation
+- smarter spending
+- higher ROI
+- saved time
+
+For customer users, reinforce:
+- faster discovery
+- easier booking
+- better recommendations
+- trustworthy reviews
+
+========================
+14. NO DARK PATTERNS
+========================
+
+Do NOT:
+- fake urgency
+- manipulate users unfairly
+- hide prices
+- make cancellation unclear
+- make wallet deductions unclear
+- force reviews or ratings
+
+Optimize conversion through clarity and value, not tricks.
+
+========================
+15. FINAL VALIDATION
+========================
+
+After optimization, verify:
+
+- Premium upgrade path is clearer
+- wallet top-up path is smoother
+- boost activation is easier to understand
+- booking flow is cleaner
+- important CTAs are stronger
+- trust is improved
+- no core flows became more complex
+
+========================
+16. FINAL REPORT
+========================
+
+Produce a structured report with:
+
+A. Premium conversion improvements
+B. Wallet/top-up conversion improvements
+C. Boost conversion improvements
+D. Booking conversion improvements
+E. CTA clarity improvements
+F. Trust/microcopy improvements
+G. Remaining weak conversion points if any
+
+========================
+FINAL RESULT
+========================
+
+RestoSmart must not only work technically.
+
+It must also guide users smoothly toward high-value actions with trust, clarity, and premium product quality.
+
+The product should feel easier to use, easier to trust, and easier to pay inside.

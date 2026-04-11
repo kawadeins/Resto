@@ -161,9 +161,9 @@ function GradBtn({ onClick, disabled, children, full = true, urgent = false }: {
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      whileHover={disabled ? {} : { boxShadow: urgent ? "0 0 28px rgba(79,140,255,0.6)" : "0 0 22px rgba(79,140,255,0.45)", scale: 1.01 }}
+      whileHover={disabled ? {} : { boxShadow: urgent ? "0 0 28px rgba(139,92,246,0.6)" : "0 0 22px rgba(139,92,246,0.45)", scale: 1.01 }}
       whileTap={disabled ? {} : { scale: 0.97 }}
-      animate={urgent && !disabled ? { boxShadow: ["0 0 0px rgba(79,140,255,0)", "0 0 20px rgba(139,92,246,0.35)", "0 0 0px rgba(79,140,255,0)"] } : {}}
+      animate={urgent && !disabled ? { boxShadow: ["0 0 0px rgba(139,92,246,0)", "0 0 20px rgba(139,92,246,0.35)", "0 0 0px rgba(139,92,246,0)"] } : {}}
       transition={urgent ? { duration: 2.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.15 }}
       style={{
         background: disabled ? "rgba(255,255,255,0.08)" : C.grad,
@@ -315,12 +315,12 @@ function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportun
         border: roi.isStrongROI
           ? "1px solid rgba(34,197,94,0.2)"
           : isOpportunity
-          ? "1px solid rgba(79,140,255,0.18)"
+          ? "1px solid rgba(139,92,246,0.18)"
           : `1px solid ${C.border}`,
         backgroundColor: roi.isStrongROI
           ? "rgba(34,197,94,0.04)"
           : isOpportunity
-          ? "rgba(79,140,255,0.04)"
+          ? "rgba(139,92,246,0.04)"
           : "rgba(255,255,255,0.02)",
         padding: "11px 13px",
         display: "flex",
@@ -445,7 +445,7 @@ function SmartRevenueTrigger({
             style={{
               width: 38, height: 38, borderRadius: 12, flexShrink: 0,
               background: urgent ? C.gradAmber : C.grad,
-              boxShadow: urgent ? "0 4px 16px rgba(245,158,11,0.3)" : "0 4px 16px rgba(79,140,255,0.3)",
+              boxShadow: urgent ? "0 4px 16px rgba(245,158,11,0.3)" : "0 4px 16px rgba(139,92,246,0.25)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -761,7 +761,7 @@ export function PromotionTools() {
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ scale: 1.05 }}
-            style={{ background: C.grad, borderRadius: 12, width: 40, height: 40, flexShrink: 0, boxShadow: "0 4px 16px rgba(79,140,255,0.3)" }}
+            style={{ background: C.grad, borderRadius: 12, width: 40, height: 40, flexShrink: 0, boxShadow: "0 4px 16px rgba(139,92,246,0.25)" }}
             className="flex items-center justify-center"
           >
             <Zap style={{ width: 18, height: 18, color: "#fff" }} />
@@ -855,12 +855,12 @@ export function PromotionTools() {
               : isPaused
               ? `1px solid ${C.borderPau}`
               : cardOppty
-              ? "1px solid rgba(79,140,255,0.3)"
+              ? "1px solid rgba(139,92,246,0.25)"
               : `1px solid ${C.border}`;
             const cardShadow = isLive
               ? C.glowAct
               : cardOppty
-              ? "0 10px 30px rgba(0,0,0,0.35),0 0 20px rgba(79,140,255,0.12)"
+              ? "0 10px 30px rgba(0,0,0,0.35),0 0 20px rgba(139,92,246,0.12)"
               : C.shadow;
 
             return (
@@ -1155,7 +1155,7 @@ export function PromotionTools() {
             </div>
 
             <div className="flex items-start gap-2.5 text-[11px] rounded-xl px-3 py-2.5"
-              style={{ color: C.muted, backgroundColor: "rgba(79,140,255,0.07)", border: "1px solid rgba(139,92,246,0.14)" }}>
+              style={{ color: C.muted, backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.14)" }}>
               <span className="text-sm mt-0.5">{"\u2139\uFE0F"}</span>
               <span>
                 {"Boosted Lokale erhalten das Label "}
@@ -1324,7 +1324,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
 
         {/* AI suggestion */}
         <div className="flex items-start gap-2.5 rounded-xl px-4 py-3"
-          style={{ backgroundColor: "rgba(79,140,255,0.07)", border: "1px solid rgba(79,140,255,0.15)" }}>
+          style={{ backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.15)" }}>
           <Zap style={{ width: 13, height: 13, color: "#a78bfa", flexShrink: 0, marginTop: 1 }} />
           <p className="text-xs leading-relaxed" style={{ color: "#a5b4fc" }}>{pricing.suggestion}</p>
         </div>
@@ -1340,7 +1340,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
                 <div key={slot.tier} style={{
                   borderRadius: 12, padding: 10, textAlign: "center",
                   border: idx === 0 ? "1px solid rgba(245,158,11,0.28)" : idx === 1 ? "1px solid rgba(139,92,246,0.22)" : `1px solid ${C.border}`,
-                  backgroundColor: idx === 0 ? "rgba(245,158,11,0.06)" : idx === 1 ? "rgba(79,140,255,0.05)" : "rgba(255,255,255,0.02)",
+                  backgroundColor: idx === 0 ? "rgba(245,158,11,0.06)" : idx === 1 ? "rgba(139,92,246,0.05)" : "rgba(255,255,255,0.02)",
                 }}>
                   <p className="text-[10px] font-medium mb-1" style={{ color: C.muted }}>{slot.label.split(" — ")[0]}</p>
                   <p className="text-sm font-bold" style={{ color: idx === 0 ? C.paused : idx === 1 ? "#a78bfa" : C.text }}>
@@ -1367,8 +1367,8 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
                   style={{
                     borderRadius: 12, padding: "10px 14px",
                     display: "flex", alignItems: "flex-start", gap: 10,
-                    border: s.priority === "high" ? "1px solid rgba(245,158,11,0.22)" : s.priority === "medium" ? "1px solid rgba(79,140,255,0.18)" : `1px solid ${C.border}`,
-                    backgroundColor: s.priority === "high" ? "rgba(245,158,11,0.05)" : s.priority === "medium" ? "rgba(79,140,255,0.04)" : "rgba(255,255,255,0.02)",
+                    border: s.priority === "high" ? "1px solid rgba(245,158,11,0.22)" : s.priority === "medium" ? "1px solid rgba(139,92,246,0.18)" : `1px solid ${C.border}`,
+                    backgroundColor: s.priority === "high" ? "rgba(245,158,11,0.05)" : s.priority === "medium" ? "rgba(139,92,246,0.04)" : "rgba(255,255,255,0.02)",
                   }}
                 >
                   <SuggestionIcon type={s.type} />
@@ -1406,7 +1406,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
             </div>
           </div>
           <motion.button
-            whileHover={{ boxShadow: autoOptEnabled ? undefined : "0 0 16px rgba(79,140,255,0.3)", scale: 1.02 }}
+            whileHover={{ boxShadow: autoOptEnabled ? undefined : "0 0 16px rgba(139,92,246,0.25)", scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => autoOptMutation.mutate(!autoOptEnabled)}
             disabled={autoOptMutation.isPending}

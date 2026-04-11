@@ -354,6 +354,17 @@ export function WalletPanel({ restaurantId, compact = false }: WalletPanelProps)
                     </>
                   )}
                 </motion.button>
+                <p className="text-center text-[10px] text-muted-foreground flex items-center justify-center gap-3 pt-1">
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3 text-emerald-400" />
+                    Sichere Zahlung via Stripe
+                  </span>
+                  <span className="opacity-40">·</span>
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3 text-emerald-400" />
+                    Guthaben sofort gutgeschrieben
+                  </span>
+                </p>
               </div>
             </motion.div>
           )}
