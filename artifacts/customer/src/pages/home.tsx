@@ -257,20 +257,20 @@ type HeadlineSegment = { text: string; gradient?: boolean };
 
 const ROTATING_HEADLINES: HeadlineSegment[][] = [
   [
-    { text: "Wien schläft nicht. " },
-    { text: "Die Nacht gehört Ihnen.", gradient: true },
+    { text: "Wien entdecken." },
+    { text: " Die Nacht gehört Ihnen.", gradient: true },
   ],
   [
-    { text: "Entdecken Sie Wiens verborgene Nächte. " },
-    { text: "Jeder Moment zählt.", gradient: true },
+    { text: "Heute Abend." },
+    { text: " Wiens beste Lokale warten.", gradient: true },
   ],
   [
-    { text: "Wo andere schließen, beginnt Ihr Geschäft. " },
-    { text: "Willkommen in der Nacht.", gradient: true },
+    { text: "Reservieren." },
+    { text: " Exklusive Deals sichern.", gradient: true },
   ],
   [
-    { text: "Mehr Gäste. Mehr Umsatz.", gradient: true },
-    { text: " Die Nacht arbeitet für Sie." },
+    { text: "Jetzt buchen." },
+    { text: " Smart entdecken, mehr erleben.", gradient: true },
   ],
 ];
 
@@ -282,24 +282,24 @@ function RotatingHeroHeadline() {
     if (paused) return;
     const id = setInterval(() => {
       setIndex((prev) => (prev + 1) % ROTATING_HEADLINES.length);
-    }, 3500);
+    }, 4500);
     return () => clearInterval(id);
   }, [paused]);
 
   return (
     <div
-      className="overflow-x-clip"
+      className="overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       <AnimatePresence mode="wait">
         <motion.h1
           key={index}
-          initial={{ x: -56, opacity: 0, filter: "blur(8px)" }}
-          animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
-          exit={{ x: 56, opacity: 0, filter: "blur(8px)" }}
-          transition={{ duration: 0.48, ease: [0.4, 0, 0.2, 1] }}
-          className="text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight text-foreground"
+          initial={{ y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -12, opacity: 0 }}
+          transition={{ duration: 0.58, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-[40px] md:text-[56px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground"
         >
           {ROTATING_HEADLINES[index].map((seg, i) =>
             seg.gradient
@@ -480,7 +480,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-10 items-center">
 
             {/* Left */}
-            <div className="space-y-6 text-center md:text-left">
+            <div className="space-y-7 text-center md:text-left">
               <div className="flex items-center gap-3 justify-center md:justify-start">
                 <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
                   <UtensilsCrossed className="w-5.5 h-5.5 text-white" style={{ width: "22px", height: "22px" }} />
@@ -502,7 +502,7 @@ export default function Home() {
 
               <RotatingHeroHeadline />
 
-              <p className="text-muted-foreground text-lg max-w-md mx-auto md:mx-0 leading-relaxed transition-all duration-500">
+              <p className="text-muted-foreground/85 text-base md:text-[17px] max-w-[520px] mx-auto md:mx-0 leading-[1.65] transition-all duration-500">
                 {config.subline}
               </p>
 

@@ -1,0 +1,200 @@
+Perform a FULL Hero Section UI/UX Refinement for the RestoSmart landing page.
+
+This is NOT a redesign.
+This is a precision polish pass to make the UI premium, modern, and consistent.
+
+========================
+PRIMARY GOAL
+========================
+
+Fix:
+- typography (fonts, sizes, spacing)
+- color consistency
+- animation timing
+- visual hierarchy
+
+The result must feel like:
+Stripe / Notion / Apple-level quality
+
+========================
+1. TYPOGRAPHY FIX (CRITICAL)
+========================
+
+Current issues:
+- text too large
+- font feels outdated
+- poor spacing
+- heavy weight
+
+Fix:
+
+- Use a modern font:
+  Inter / SF Pro / Poppins
+
+- Headline:
+  font-weight: 600 (NOT 800/900)
+  line-height: 1.1–1.2
+  letter-spacing: slight negative (-0.5px)
+
+- Reduce size:
+  Desktop: ~48–64px max
+  Mobile: ~32–40px
+
+- Improve spacing:
+  margin between lines
+  no text overlap
+
+========================
+2. COLOR SYSTEM FIX
+========================
+
+Use ONE consistent brand gradient:
+
+Primary gradient:
+purple → pink
+
+Example:
+#7C3AED → #EC4899
+
+Rules:
+- Gradient ONLY on key words (not whole text)
+- Rest of text = near-black (#111) or white (dark mode)
+- Remove random colors
+
+Background:
+- soft gradient OR clean neutral
+- NO busy or mixed-color backgrounds
+
+========================
+3. HEADLINE STRUCTURE FIX
+========================
+
+Correct structure:
+
+Line 1:
+neutral color
+
+Line 2:
+highlight key words in gradient
+
+Example:
+
+Mehr Gäste.
+Mehr Umsatz.
+
+OR
+
+Die Nacht gehört Ihnen.
+
+NO random punctuation
+NO broken alignment
+
+========================
+4. SUBTEXT FIX
+========================
+
+Fix the smaller text below:
+
+- remove unnecessary punctuation
+- align center
+- use lighter color (#666 or #888)
+- max width (600px)
+- better spacing
+
+Example:
+Mehr Sichtbarkeit, bessere Bewertungen und mehr Buchungen – alles in einem System.
+
+========================
+5. ANIMATION FIX (VERY IMPORTANT)
+========================
+
+Current issue:
+animation too fast
+
+Fix:
+
+- duration per text: 4–5 seconds
+- transition: 500–700ms
+- easing: ease-in-out
+
+Animation:
+- fade + slight vertical movement (NOT aggressive slide)
+- opacity 0 → 1
+- translateY(10px → 0)
+
+Add:
+- pause on hover
+- smooth loop
+
+NO flashing
+NO fast transitions
+
+========================
+6. VISUAL BALANCE
+========================
+
+- center everything
+- consistent spacing between:
+  logo
+  headline
+  subtext
+  buttons
+
+- increase whitespace
+- remove clutter
+
+========================
+7. BACKGROUND FIX
+========================
+
+Current background is inconsistent.
+
+Fix:
+
+Option A:
+- soft dark gradient
+
+Option B:
+- clean light neutral
+
+DO NOT:
+- mix random images
+- use noisy visuals
+
+========================
+8. CONSISTENCY CHECK
+========================
+
+Ensure:
+- same font everywhere
+- same color system
+- same spacing system
+- no random styles
+
+========================
+9. FINAL VALIDATION
+========================
+
+After changes verify:
+
+- text readable instantly
+- UI feels calm, premium
+- no visual chaos
+- animation smooth and slow
+- colors unified
+
+========================
+FINAL RESULT
+========================
+
+The hero must feel:
+- modern
+- minimal
+- premium
+- clean
+- confident
+
+NOT:
+- loud
+- messy
+- outdated
