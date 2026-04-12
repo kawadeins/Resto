@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
   Bell, X, CheckCheck, Calendar, Users, Star, AlertTriangle,
   CheckCircle2, XCircle, Zap, Info, ChevronRight, Wallet,
+  TrendingDown, Clock, MessageSquare, BarChart2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "@/contexts/session-context";
@@ -22,17 +23,33 @@ interface SmartNotification {
 }
 
 const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
-  new_reservation:       { icon: Calendar,      color: "text-blue-400",    bg: "bg-blue-500/10"    },
-  new_group_request:     { icon: Users,         color: "text-violet-400",  bg: "bg-violet-500/10"  },
-  new_review:            { icon: Star,          color: "text-amber-400",   bg: "bg-amber-500/10"   },
-  critical_review:       { icon: AlertTriangle, color: "text-rose-400",    bg: "bg-rose-500/10"    },
-  wallet_low:            { icon: Wallet,        color: "text-orange-400",  bg: "bg-orange-500/10"  },
-  campaign_action:       { icon: Zap,           color: "text-primary",     bg: "bg-primary/10"     },
-  reservation_confirmed: { icon: CheckCircle2,  color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  new_reservation:              { icon: Calendar,       color: "text-blue-400",    bg: "bg-blue-500/10"    },
+  new_group_request:            { icon: Users,          color: "text-violet-400",  bg: "bg-violet-500/10"  },
+  new_review:                   { icon: Star,           color: "text-amber-400",   bg: "bg-amber-500/10"   },
+  critical_review:              { icon: AlertTriangle,  color: "text-rose-400",    bg: "bg-rose-500/10"    },
+  wallet_low:                   { icon: Wallet,         color: "text-orange-400",  bg: "bg-orange-500/10"  },
+  campaign_action:              { icon: Zap,            color: "text-primary",     bg: "bg-primary/10"     },
+  campaign_underperforming:     { icon: TrendingDown,   color: "text-amber-400",   bg: "bg-amber-500/10"   },
+  reservation_confirmed:        { icon: CheckCircle2,   color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  reservation_load:             { icon: Clock,          color: "text-blue-400",    bg: "bg-blue-500/10"    },
+  boost_suggestion:             { icon: Zap,            color: "text-primary",     bg: "bg-primary/10"     },
+  review_reply_pending:         { icon: MessageSquare,  color: "text-rose-400",    bg: "bg-rose-500/10"    },
+  performance_alert:            { icon: BarChart2,      color: "text-amber-400",   bg: "bg-amber-500/10"   },
 };
 
 function getMeta(type: string) {
   return TYPE_META[type] ?? { icon: Info, color: "text-muted-foreground", bg: "bg-muted/30" };
+}
+
+const PRIORITY_LABEL: Record<string, { label: string; dot: string }> = {
+  critical:      { label: "Kritisch",  dot: "bg-rose-500"   },
+  important:     { label: "Wichtig",   dot: "bg-sidebar-primary" },
+  informational: { label: "Info",      dot: "bg-blue-400"   },
+  suggestion:    { label: "Vorschlag", dot: "bg-amber-400"  },
+};
+
+function priorityOrder(p: string) {
+  return { critical: 0, important: 1, informational: 2, suggestion: 3 }[p] ?? 4;
 }
 
 function relativeTime(iso: string): string {
@@ -46,7 +63,19 @@ function relativeTime(iso: string): string {
   return `vor ${d} Tag${d > 1 ? "en" : ""}`;
 }
 
-const RESTAURANT_ID = 1; // single-tenant; extend when multi-tenant
+function groupByPriority(notifications: SmartNotification[]) {
+  const sorted = [...notifications].sort((a, b) =>
+    priorityOrder(a.priority) - priorityOrder(b.priority)
+  );
+  const groups = new Map<string, SmartNotification[]>();
+  for (const n of sorted) {
+    if (!groups.has(n.priority)) groups.set(n.priority, []);
+    groups.get(n.priority)!.push(n);
+  }
+  return groups;
+}
+
+const RESTAURANT_ID = 1;
 
 export function OwnerNotificationBell() {
   const [open, setOpen] = useState(false);
@@ -54,14 +83,26 @@ export function OwnerNotificationBell() {
   const { csrfToken } = useSession();
   const qc = useQueryClient();
 
+  // ── Auto-trigger prediction on mount ──────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API}/smart-notifications/predict/business`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ restaurantId: RESTAURANT_ID }),
+    })
+      .then(() => qc.invalidateQueries({ queryKey: ["sn-count-business"] }))
+      .catch(() => {/* silent */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const { data: countData } = useQuery({
     queryKey: ["sn-count-business"],
     queryFn: async () => {
       const r = await fetch(`${API}/smart-notifications/unread-count?userType=business&restaurantId=${RESTAURANT_ID}`);
       return r.ok ? r.json() : { count: 0 };
     },
-    refetchInterval: 60000,
-    staleTime: 30000,
+    refetchInterval: 120000,
+    staleTime: 60000,
   });
 
   const { data: notifications = [] } = useQuery<SmartNotification[]>({
@@ -109,6 +150,7 @@ export function OwnerNotificationBell() {
   };
 
   const unread = countData?.count ?? 0;
+  const groups = groupByPriority(notifications);
 
   return (
     <>
@@ -174,39 +216,56 @@ export function OwnerNotificationBell() {
                 {notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-sidebar-foreground/40 py-20">
                     <Bell className="w-10 h-10 opacity-20" />
-                    <p className="text-sm">Keine Benachrichtigungen</p>
+                    <p className="text-sm font-medium text-sidebar-foreground/50">Alles im grünen Bereich</p>
+                    <p className="text-xs text-sidebar-foreground/30 text-center max-w-[200px] leading-relaxed">
+                      Wir informieren dich bei Reservierungen, Bewertungen und Wallet-Ereignissen.
+                    </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-sidebar-border">
-                    {notifications.map((n) => {
-                      const { icon: Icon, color, bg } = getMeta(n.type);
-                      const pCls =
-                        n.priority === "critical" ? "border-l-2 border-rose-500" :
-                        n.priority === "important" && !n.isRead ? "border-l-2 border-sidebar-primary" :
-                        "";
+                  <div>
+                    {Array.from(groups.entries()).map(([priority, items]) => {
+                      const meta = PRIORITY_LABEL[priority] ?? { label: priority, dot: "bg-muted" };
                       return (
-                        <button
-                          key={n.id}
-                          onClick={() => handleClickNotification(n)}
-                          className={`w-full text-left flex items-start gap-3 px-5 py-4 transition-colors hover:bg-sidebar-accent/40 ${!n.isRead ? "bg-sidebar-primary/5" : ""} ${pCls}`}
-                        >
-                          <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
-                            <Icon className={`w-[18px] h-[18px] ${color}`} />
+                        <div key={priority}>
+                          <div className="flex items-center gap-2 px-5 py-2 bg-sidebar-accent/30 sticky top-0 z-10">
+                            <div className={`w-2 h-2 rounded-full ${meta.dot}`} />
+                            <span className="text-[11px] font-bold text-sidebar-foreground/40 uppercase tracking-wide">{meta.label}</span>
+                            <span className="text-[11px] text-sidebar-foreground/25">· {items.length}</span>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className={`text-sm font-semibold leading-snug ${!n.isRead ? "text-sidebar-foreground" : "text-sidebar-foreground/60"}`}>
-                                {n.title}
-                              </p>
-                              {n.link && <ChevronRight className="w-3.5 h-3.5 text-sidebar-foreground/30 shrink-0" />}
-                            </div>
-                            <p className="text-xs text-sidebar-foreground/50 mt-0.5 leading-snug line-clamp-2">{n.message}</p>
-                            <p className="text-[10px] text-sidebar-foreground/30 mt-1">{relativeTime(n.createdAt)}</p>
+                          <div className="divide-y divide-sidebar-border">
+                            {items.map((n) => {
+                              const { icon: Icon, color, bg } = getMeta(n.type);
+                              const borderCls =
+                                priority === "critical" ? "border-l-[3px] border-rose-500" :
+                                priority === "important" && !n.isRead ? "border-l-[3px] border-sidebar-primary" :
+                                "";
+                              return (
+                                <button
+                                  key={n.id}
+                                  onClick={() => handleClickNotification(n)}
+                                  className={`w-full text-left flex items-start gap-3 px-5 py-4 transition-colors hover:bg-sidebar-accent/40 ${!n.isRead ? "bg-sidebar-primary/5" : ""} ${borderCls}`}
+                                >
+                                  <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                                    <Icon className={`w-[18px] h-[18px] ${color}`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <p className={`text-sm font-semibold leading-snug ${!n.isRead ? "text-sidebar-foreground" : "text-sidebar-foreground/60"}`}>
+                                        {n.title}
+                                      </p>
+                                      {n.link && <ChevronRight className="w-3.5 h-3.5 text-sidebar-foreground/30 shrink-0 mt-0.5" />}
+                                    </div>
+                                    <p className="text-xs text-sidebar-foreground/50 mt-0.5 leading-snug line-clamp-2">{n.message}</p>
+                                    <p className="text-[10px] text-sidebar-foreground/30 mt-1">{relativeTime(n.createdAt)}</p>
+                                  </div>
+                                  {!n.isRead && (
+                                    <div className="w-2 h-2 rounded-full bg-sidebar-primary mt-2 shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
                           </div>
-                          {!n.isRead && (
-                            <div className="w-2 h-2 rounded-full bg-sidebar-primary mt-2 shrink-0" />
-                          )}
-                        </button>
+                        </div>
                       );
                     })}
                   </div>

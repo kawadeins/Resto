@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
   Bell, X, CheckCheck, Calendar, Users, Star, AlertTriangle,
-  CheckCircle2, XCircle, Zap, Info, ChevronRight,
+  CheckCircle2, XCircle, Zap, Info, ChevronRight, Coffee,
+  MessageSquare, Clock, TrendingUp, UtensilsCrossed,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,18 +21,39 @@ interface SmartNotification {
   createdAt: string;
 }
 
+// ── Type → visual meta ────────────────────────────────────────────────────────
 const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
-  group_reservation_confirmed: { icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
-  group_reservation_rejected:  { icon: XCircle,       color: "text-rose-500",    bg: "bg-rose-50"    },
-  group_reservation_cancelled: { icon: XCircle,       color: "text-slate-400",   bg: "bg-slate-50"   },
-  new_reservation:             { icon: Calendar,      color: "text-blue-500",    bg: "bg-blue-50"    },
-  reservation_confirmed:       { icon: CheckCircle2,  color: "text-emerald-500", bg: "bg-emerald-50" },
-  suggestion:                  { icon: Zap,           color: "text-primary",     bg: "bg-primary/10" },
-  reminder:                    { icon: Bell,          color: "text-amber-500",   bg: "bg-amber-50"   },
+  group_reservation_confirmed: { icon: CheckCircle2,     color: "text-emerald-500", bg: "bg-emerald-50" },
+  group_reservation_rejected:  { icon: XCircle,          color: "text-rose-500",    bg: "bg-rose-50"    },
+  group_reservation_cancelled: { icon: XCircle,          color: "text-slate-400",   bg: "bg-slate-50"   },
+  new_reservation:             { icon: Calendar,         color: "text-blue-500",    bg: "bg-blue-50"    },
+  reservation_confirmed:       { icon: CheckCircle2,     color: "text-emerald-500", bg: "bg-emerald-50" },
+  reservation_reminder:        { icon: Clock,            color: "text-amber-500",   bg: "bg-amber-50"   },
+  reservation_soon:            { icon: AlertTriangle,    color: "text-rose-500",    bg: "bg-rose-50"    },
+  review_prompt:               { icon: Star,             color: "text-amber-400",   bg: "bg-amber-50"   },
+  group_plan_reminder:         { icon: Users,            color: "text-violet-500",  bg: "bg-violet-50"  },
+  trending_suggestion:         { icon: TrendingUp,       color: "text-primary",     bg: "bg-primary/10" },
+  suggestion:                  { icon: Zap,              color: "text-primary",     bg: "bg-primary/10" },
+  reminder:                    { icon: Bell,             color: "text-amber-500",   bg: "bg-amber-50"   },
+  message:                     { icon: MessageSquare,    color: "text-blue-500",    bg: "bg-blue-50"    },
+  cafe_suggestion:             { icon: Coffee,           color: "text-orange-400",  bg: "bg-orange-50"  },
+  plan_action:                 { icon: UtensilsCrossed,  color: "text-primary",     bg: "bg-primary/10" },
 };
 
 function getMeta(type: string) {
   return TYPE_META[type] ?? { icon: Info, color: "text-muted-foreground", bg: "bg-muted/50" };
+}
+
+// ── Priority label ────────────────────────────────────────────────────────────
+const PRIORITY_LABEL: Record<string, { label: string; dot: string }> = {
+  critical:      { label: "Kritisch",  dot: "bg-rose-500" },
+  important:     { label: "Wichtig",   dot: "bg-primary"  },
+  informational: { label: "Info",      dot: "bg-blue-400" },
+  suggestion:    { label: "Vorschlag", dot: "bg-amber-400" },
+};
+
+function priorityOrder(p: string) {
+  return { critical: 0, important: 1, informational: 2, suggestion: 3 }[p] ?? 4;
 }
 
 function relativeTime(iso: string): string {
@@ -45,10 +67,38 @@ function relativeTime(iso: string): string {
   return `vor ${d} Tag${d > 1 ? "en" : ""}`;
 }
 
+// ── Group notifications by priority ──────────────────────────────────────────
+function groupByPriority(notifications: SmartNotification[]) {
+  const sorted = [...notifications].sort((a, b) =>
+    priorityOrder(a.priority) - priorityOrder(b.priority)
+  );
+  const groups = new Map<string, SmartNotification[]>();
+  for (const n of sorted) {
+    const key = n.priority;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(n);
+  }
+  return groups;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export function CustomerNotificationBell({ email }: { email: string }) {
   const [open, setOpen] = useState(false);
   const [, navigate] = useLocation();
   const qc = useQueryClient();
+
+  // ── Auto-trigger prediction on mount ──────────────────────────────────────
+  useEffect(() => {
+    if (!email) return;
+    fetch(`${API}/smart-notifications/predict/customer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+      .then(() => qc.invalidateQueries({ queryKey: ["sn-count-customer", email] }))
+      .catch(() => {/* silent */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email]);
 
   const { data: countData } = useQuery({
     queryKey: ["sn-count-customer", email],
@@ -58,8 +108,8 @@ export function CustomerNotificationBell({ email }: { email: string }) {
       return r.ok ? r.json() : { count: 0 };
     },
     enabled: !!email,
-    refetchInterval: 60000,
-    staleTime: 30000,
+    refetchInterval: 120000,
+    staleTime: 60000,
   });
 
   const { data: notifications = [] } = useQuery<SmartNotification[]>({
@@ -103,6 +153,7 @@ export function CustomerNotificationBell({ email }: { email: string }) {
   };
 
   const unread = countData?.count ?? 0;
+  const groups = groupByPriority(notifications);
 
   if (!email) return null;
 
@@ -131,14 +182,11 @@ export function CustomerNotificationBell({ email }: { email: string }) {
       <AnimatePresence>
         {open && (
           <>
-            {/* Backdrop */}
             <motion.div
               className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
             />
-
-            {/* Panel */}
             <motion.div
               className="fixed right-0 top-0 bottom-0 z-[90] w-full max-w-sm bg-background border-l border-border shadow-2xl flex flex-col"
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
@@ -173,44 +221,58 @@ export function CustomerNotificationBell({ email }: { email: string }) {
                 {notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground py-20">
                     <Bell className="w-10 h-10 opacity-20" />
-                    <p className="text-sm">Keine Benachrichtigungen</p>
+                    <p className="text-sm font-medium">Alles auf dem neuesten Stand</p>
+                    <p className="text-xs text-muted-foreground/60 text-center max-w-[200px]">
+                      Wir informieren dich über Reservierungen, Pläne und Vorschläge.
+                    </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-border">
-                    {notifications.map((n) => {
-                      const { icon: Icon, color, bg } = getMeta(n.type);
-                      const priority = n.priority;
+                  <div>
+                    {Array.from(groups.entries()).map(([priority, items]) => {
+                      const meta = PRIORITY_LABEL[priority] ?? { label: priority, dot: "bg-muted" };
                       return (
-                        <button
-                          key={n.id}
-                          onClick={() => handleClickNotification(n)}
-                          className={`w-full text-left flex items-start gap-3 px-5 py-4 transition-colors hover:bg-muted/40 ${!n.isRead ? "bg-primary/3" : ""}`}
-                        >
-                          {/* Priority stripe */}
-                          {!n.isRead && (
-                            <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${
-                              priority === "critical" ? "bg-rose-500" :
-                              priority === "important" ? "bg-primary" :
-                              "bg-muted"
-                            }`} style={{ position: "relative", marginLeft: -20, width: 3, borderRadius: 2, flexShrink: 0 }} />
-                          )}
-                          <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
-                            <Icon className={`w-4.5 h-4.5 ${color}`} />
+                        <div key={priority}>
+                          {/* Priority section header */}
+                          <div className="flex items-center gap-2 px-5 py-2 bg-muted/30 sticky top-0 z-10">
+                            <div className={`w-2 h-2 rounded-full ${meta.dot}`} />
+                            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{meta.label}</span>
+                            <span className="text-[11px] text-muted-foreground/50">· {items.length}</span>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className={`text-sm font-semibold leading-snug ${!n.isRead ? "text-foreground" : "text-muted-foreground"}`}>
-                                {n.title}
-                              </p>
-                              {n.link && <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-0.5 leading-snug line-clamp-2">{n.message}</p>
-                            <p className="text-[10px] text-muted-foreground/60 mt-1">{relativeTime(n.createdAt)}</p>
+
+                          <div className="divide-y divide-border">
+                            {items.map((n) => {
+                              const { icon: Icon, color, bg } = getMeta(n.type);
+                              const borderCls =
+                                priority === "critical" ? "border-l-[3px] border-rose-500" :
+                                priority === "important" && !n.isRead ? "border-l-[3px] border-primary" :
+                                "";
+                              return (
+                                <button
+                                  key={n.id}
+                                  onClick={() => handleClickNotification(n)}
+                                  className={`w-full text-left flex items-start gap-3 px-5 py-4 transition-colors hover:bg-muted/40 ${!n.isRead ? "bg-primary/[0.03]" : ""} ${borderCls}`}
+                                >
+                                  <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                                    <Icon className={`w-[18px] h-[18px] ${color}`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <p className={`text-sm font-semibold leading-snug ${!n.isRead ? "text-foreground" : "text-muted-foreground"}`}>
+                                        {n.title}
+                                      </p>
+                                      {n.link && <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0 mt-0.5" />}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug line-clamp-2">{n.message}</p>
+                                    <p className="text-[10px] text-muted-foreground/50 mt-1">{relativeTime(n.createdAt)}</p>
+                                  </div>
+                                  {!n.isRead && (
+                                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
                           </div>
-                          {!n.isRead && (
-                            <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                          )}
-                        </button>
+                        </div>
                       );
                     })}
                   </div>

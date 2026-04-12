@@ -1,0 +1,173 @@
+Implement a full "Predictive Notifications Engine" for both the customer app and business dashboard.
+
+IMPORTANT:
+- Do NOT redesign the app
+- Do NOT break existing notifications, chat, plans, bookings, or business dashboard logic
+- This is an intelligence + timing layer
+- Notifications must feel useful, not spammy
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Build a smart notification system that predicts relevant moments and sends useful reminders/suggestions before the user has to think about them.
+
+Support BOTH:
+A. customer users
+B. restaurant owners / business dashboard users
+
+==================================================
+1. CUSTOMER PREDICTIVE NOTIFICATIONS
+==================================================
+
+Send useful notifications for things like:
+- upcoming group plan tomorrow
+- reservation in 2 hours
+- restaurant accepted/rejected a request
+- a place matching the user's behavior is trending tonight
+- relevant offer/discount based on preferences
+- reminder to review a completed booking
+- reminder to finish/share a saved plan
+
+Examples:
+- "Erinnerung: Dein Dinner ist morgen um 19:00"
+- "Heute Abend passt dieses Restaurant perfekt zu dir"
+- "Deine Reservierung wurde bestätigt"
+- "Du kannst diese Reservierung jetzt bewerten"
+
+==================================================
+2. BUSINESS PREDICTIVE NOTIFICATIONS
+==================================================
+
+Send useful dashboard/business alerts such as:
+- low wallet before a planned campaign
+- boost likely useful at a specific time
+- upcoming reservation load tomorrow
+- new group request arrived
+- critical review needs reply
+- campaign underperforming
+- scheduled action approaching
+
+Examples:
+- "Dein Guthaben reicht bald nicht mehr für geplante Kampagnen"
+- "Heute könnte ein Abend-Boost sinnvoll sein"
+- "Du hast morgen 5 Reservierungen"
+- "Eine neue Gruppenanfrage wartet auf Bestätigung"
+
+==================================================
+3. USER BEHAVIOR-BASED LOGIC
+==================================================
+
+Use real behavior/history where available:
+- nightlife preference
+- café/food style
+- plan habits
+- booking habits
+- saved places
+- business campaign usage
+- wallet usage
+- review/booking patterns
+
+Do NOT send random suggestions.
+
+==================================================
+4. TIME-BASED REMINDERS
+==================================================
+
+Support scheduled reminders such as:
+- 24 hours before
+- 3 hours before
+- 2 hours before
+- morning-of reminder
+- planned send time for group reservation requests
+
+==================================================
+5. ACTIONABLE NOTIFICATIONS
+==================================================
+
+Notifications must be clickable and useful.
+
+Examples:
+- reservation accepted → opens booking
+- group request response → opens plan/chat
+- low wallet → opens top-up
+- critical review → opens reviews
+- recommended place → opens restaurant page
+
+==================================================
+6. PRIORITY LEVELS
+==================================================
+
+Classify notifications into:
+- kritisch
+- wichtig
+- Info
+- Vorschlag
+
+Use this for:
+- visual hierarchy
+- badges
+- notification center grouping
+
+==================================================
+7. BADGES + IN-APP CENTER
+==================================================
+
+Support:
+- unread counters
+- relevant badges
+- notification center entries
+- read/unread state
+
+Applies to:
+- customer side
+- business dashboard side
+
+==================================================
+8. NO-SPAM RULES
+==================================================
+
+Prevent spam:
+- deduplicate similar notifications
+- do not send repeated weak suggestions
+- suppress noisy low-value alerts
+- prioritize useful, timely items only
+
+==================================================
+9. GERMAN UX COPY
+==================================================
+
+Use labels like:
+- Erinnerung
+- Bestätigt
+- Abgelehnt
+- Vorschlag für dich
+- Heute besonders passend
+- Aktion erforderlich
+- Dein Guthaben ist fast leer
+
+==================================================
+10. FINAL VALIDATION
+==================================================
+
+Verify:
+A. customer reminders work
+B. customer suggestions feel relevant
+C. business alerts are useful
+D. low-value spam is avoided
+E. notification click-through opens correct destination
+F. no existing flows break
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart should feel proactive and alive.
+
+The user should feel:
+- "The app reminds me at the right time"
+- "The app suggests useful things"
+
+The business owner should feel:
+- "The dashboard warns me before problems happen"
+- "The system helps me act earlier"
