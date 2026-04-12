@@ -10,6 +10,7 @@ import {
   Users, FileText, Megaphone, Zap, Shield, Lock, Bell, Trash2,
   CheckCircle2, ExternalLink, Building2, ChevronLeft,
   Eye, EyeOff, Smartphone, Globe, Flame, Target, Activity,
+  MapPin, CalendarDays, Plus, UserPlus, BookOpen, Bookmark, Compass,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,8 +31,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 import { ProfileFeedbackWidget } from "@/components/app-rating-prompt";
 import { useHabitLoop } from "@/hooks/use-habit-loop";
-import { getActivityFeed, activityLabel, timeAgo, type SocialActivity } from "@/lib/social-api";
+import { getActivityFeed, getFriends, activityLabel, timeAgo, type SocialActivity, type FriendProfile } from "@/lib/social-api";
 import { RestoLogo } from "@/components/resto-logo";
+import { FriendsPanel } from "@/components/friends-panel";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -114,6 +116,36 @@ const TIER_CONFIG = {
   Silver: { color: "text-slate-700", bg: "bg-slate-200/60", border: "border-slate-300/60", gradient: "from-slate-300/50 via-slate-100/30 to-blue-50/10", icon: "🥈" },
   Gold:   { color: "text-yellow-700", bg: "bg-yellow-100/80", border: "border-yellow-400/50", gradient: "from-yellow-300/50 via-amber-200/30 to-orange-100/20", icon: "🥇" },
 };
+
+// ─── Level / XP System ────────────────────────────────────────────────────────
+
+interface LevelInfo {
+  level: number;
+  title: string;
+  emoji: string;
+  xp: number;
+  nextXP: number;
+  pct: number;
+  color: string;
+}
+
+const LEVELS = [
+  { level: 1, title: "Neuer Entdecker",  emoji: "🔍", minXP: 0,   maxXP: 49,  color: "text-slate-600"  },
+  { level: 2, title: "Food Explorer",    emoji: "🍕", minXP: 50,  maxXP: 149, color: "text-emerald-600" },
+  { level: 3, title: "City Insider",     emoji: "🏙️", minXP: 150, maxXP: 349, color: "text-blue-600"   },
+  { level: 4, title: "Social Planner",   emoji: "🎉", minXP: 350, maxXP: 699, color: "text-violet-600" },
+  { level: 5, title: "Wiener Kenner",    emoji: "🌟", minXP: 700, maxXP: 9999,color: "text-yellow-600" },
+];
+
+function computeLevel(bookings: number, reviews: number, friendCount: number): LevelInfo {
+  const xp = bookings * 10 + reviews * 5 + friendCount * 3;
+  const cur = LEVELS.slice().reverse().find((l) => xp >= l.minXP) ?? LEVELS[0];
+  const next = LEVELS.find((l) => l.level === cur.level + 1);
+  const rangeStart = cur.minXP;
+  const rangeEnd   = next ? next.minXP : cur.maxXP;
+  const pct = Math.min(100, Math.round(((xp - rangeStart) / (rangeEnd - rangeStart)) * 100));
+  return { level: cur.level, title: cur.title, emoji: cur.emoji, xp, nextXP: rangeEnd, pct: isNaN(pct) ? 100 : pct, color: cur.color };
+}
 
 // ─── Premium plan features ────────────────────────────────────────────────────
 
@@ -1168,6 +1200,13 @@ export default function Profile() {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: friends = [] } = useQuery<FriendProfile[]>({
+    queryKey: ["friends", email],
+    queryFn: () => getFriends(email),
+    enabled: !!email,
+    staleTime: 60 * 1000,
+  });
+
   if (!email) return <LoginScreen onEnter={handleEnterEmail} />;
 
   if (isLoading) {
@@ -1182,6 +1221,10 @@ export default function Profile() {
 
   const tierCfg = TIER_CONFIG[profile.loyalty.tier];
   const insight = getInsight(profile);
+  const levelInfo = computeLevel(profile.stats.totalBookings, profile.stats.totalReviews, friends.length);
+  const visitedRestaurants = profile.recentBookings.filter((b) =>
+    b.status === "completed" || b.status === "confirmed"
+  );
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -1239,7 +1282,7 @@ export default function Profile() {
               </div>
             </div>
             {/* Stats row */}
-            <div className="flex gap-6 text-center shrink-0">
+            <div className="flex gap-5 text-center shrink-0">
               <div>
                 <div className="text-xl font-bold font-serif">{profile.stats.totalBookings}</div>
                 <div className="text-[11px] text-muted-foreground">Buchungen</div>
@@ -1249,8 +1292,12 @@ export default function Profile() {
                 <div className="text-[11px] text-muted-foreground">Bewertungen</div>
               </div>
               <div>
+                <div className="text-xl font-bold font-serif">{friends.length}</div>
+                <div className="text-[11px] text-muted-foreground">Freunde</div>
+              </div>
+              <div>
                 <div className="text-xl font-bold font-serif">{profile.loyalty.totalEarned}</div>
-                <div className="text-[11px] text-muted-foreground">Verdient</div>
+                <div className="text-[11px] text-muted-foreground">Punkte</div>
               </div>
             </div>
           </div>
@@ -1349,6 +1396,56 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* ── Level / XP card ─────────────────────────── */}
+            <div className="bg-gradient-to-br from-primary/8 via-violet-500/5 to-accent/8 border border-primary/15 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{levelInfo.emoji}</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-bold text-base ${levelInfo.color}`}>{levelInfo.title}</span>
+                      <span className="text-xs font-extrabold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">Lv. {levelInfo.level}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {levelInfo.xp} XP {levelInfo.level < 5 ? `· noch ${levelInfo.nextXP - levelInfo.xp} bis Level ${levelInfo.level + 1}` : "· Höchstes Level erreicht!"}
+                    </p>
+                  </div>
+                </div>
+                <TrendingUp className="w-5 h-5 text-primary/50" />
+              </div>
+              <Progress value={levelInfo.pct} className="h-2" />
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                <span>{levelInfo.xp} XP</span>
+                {levelInfo.level < 5 && <span>{levelInfo.nextXP} XP</span>}
+              </div>
+              <div className="flex gap-3 mt-3 pt-3 border-t border-primary/10 text-[11px] text-muted-foreground">
+                <span>+10 XP pro Buchung</span>
+                <span>·</span>
+                <span>+5 XP pro Bewertung</span>
+                <span>·</span>
+                <span>+3 XP pro Freund</span>
+              </div>
+            </div>
+
+            {/* ── Quick actions ─────────────────────────── */}
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { icon: Plus,         label: "Plan erstellen",   href: "/meal-plan",    color: "bg-primary/10 text-primary" },
+                { icon: Users,        label: "Freunde",          href: "/friends",      color: "bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400" },
+                { icon: CalendarDays, label: "Buchungen",        href: "/my-bookings",  color: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400" },
+                { icon: Compass,      label: "Entdecken",        href: "/explore",      color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400" },
+              ].map((a) => (
+                <Link key={a.label} href={a.href}>
+                  <div className="flex flex-col items-center gap-2 py-4 bg-card border rounded-2xl hover:border-primary/40 transition-colors cursor-pointer text-center">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${a.color}`}>
+                      <a.icon className="w-4.5 h-4.5 w-[18px] h-[18px]" />
+                    </div>
+                    <span className="text-[11px] font-medium leading-tight">{a.label}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
             {/* Quick stats */}
             <div className="grid grid-cols-3 gap-4">
               {[
@@ -1364,6 +1461,34 @@ export default function Profile() {
                   </div>
                 </Link>
               ))}
+            </div>
+
+            {/* ── Plans preview ─────────────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-primary" /> Meine Pläne
+                </h3>
+                <Link href="/meal-plan" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Alle ansehen <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/meal-plan">
+                  <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-primary/5 border border-primary/15 hover:border-primary/40 transition-colors cursor-pointer">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    <div className="text-sm font-semibold">Solo-Pläne</div>
+                    <div className="text-[11px] text-muted-foreground">Wochenplan & Slots</div>
+                  </div>
+                </Link>
+                <Link href="/meal-plan">
+                  <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-accent/5 border border-accent/15 hover:border-accent/40 transition-colors cursor-pointer">
+                    <Users className="w-5 h-5 text-accent" />
+                    <div className="text-sm font-semibold">Gruppenpläne</div>
+                    <div className="text-[11px] text-muted-foreground">Gemeinsam planen</div>
+                  </div>
+                </Link>
+              </div>
             </div>
 
             {/* Food identity summary */}
@@ -1406,6 +1531,107 @@ export default function Profile() {
                 </div>
               </div>
             )}
+
+            {/* ── Visited restaurants / Food Journey ─────── */}
+            {visitedRestaurants.length > 0 && (
+              <div className="bg-card border rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-rose-500" /> Deine Food Journey
+                  </h3>
+                  <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
+                    Alle <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+                <div className="space-y-2.5">
+                  {visitedRestaurants.slice(0, 4).map((b) => (
+                    <div key={b.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
+                        <MapPin className="w-4 h-4 text-rose-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{b.restaurantName}</div>
+                        <div className="text-[11px] text-muted-foreground">{b.date} · {b.partySize} Pers.</div>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 font-medium shrink-0">
+                        Besucht
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Friends mini-section ─────────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" /> Freunde
+                  {friends.length > 0 && (
+                    <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">{friends.length}</span>
+                  )}
+                </h3>
+                <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Verwalten <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              {friends.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <UserPlus className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Noch keine Freunde</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Lade Freunde ein und plane gemeinsam</p>
+                  </div>
+                  <Link href="/friends">
+                    <button className="text-xs font-semibold text-white bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+                      + Freund hinzufügen
+                    </button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex -space-x-2 mb-3">
+                    {friends.slice(0, 6).map((f) => (
+                      <div key={f.email} className="w-9 h-9 rounded-full ring-2 ring-background overflow-hidden bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
+                        {f.photoUrl ? (
+                          <img src={f.photoUrl} alt={f.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white font-bold text-xs">{(f.name || f.email).charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                    ))}
+                    {friends.length > 6 && (
+                      <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-muted-foreground">+{friends.length - 6}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    {friends.slice(0, 3).map((f) => (
+                      <div key={f.email} className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-muted/40 transition-colors">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 overflow-hidden">
+                          {f.photoUrl ? (
+                            <img src={f.photoUrl} alt={f.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-white text-[10px] font-bold">{(f.name || f.email).charAt(0).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium truncate">{f.name || f.email.split("@")[0]}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {friends.length > 3 && (
+                    <Link href="/friends">
+                      <button className="w-full mt-2 text-xs font-semibold text-primary py-2 rounded-xl hover:bg-primary/5 transition-colors">
+                        Alle {friends.length} Freunde ansehen
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Recent bookings */}
             {profile.recentBookings.length > 0 && (
@@ -1757,6 +1983,20 @@ export default function Profile() {
 
           {/* ═══ TAB: SOZIAL ══════════════════════════════════════════════ */}
           <TabsContent value="social" className="space-y-5">
+
+            {/* ── Friends management ──────────────────────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" /> Freunde verwalten
+                </h3>
+                <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Freunde-Seite <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              <FriendsPanel email={email} compact />
+            </div>
+
             {/* Activity feed */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">

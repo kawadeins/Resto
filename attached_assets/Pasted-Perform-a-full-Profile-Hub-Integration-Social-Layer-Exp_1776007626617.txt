@@ -1,0 +1,346 @@
+Perform a full "Profile Hub Integration + Social Layer Expansion" pass for the customer app.
+
+IMPORTANT:
+- Do NOT remove existing sections
+- Do NOT delete existing tabs
+- Do NOT break current functionality
+- This is NOT a redesign from scratch
+- This is a smart integration pass
+
+The goal is to keep all existing systems working, while also integrating them beautifully into the Profile section so the user profile becomes a true personal hub.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Transform the customer profile into a rich social hub that unifies the user's identity, plans, friends, visited places, and activity — WITHOUT removing the existing standalone sections.
+
+The user should still be able to use:
+- Freunde
+- Plans
+- Group Plans
+- bookings
+- favorites
+
+But the Profile page should ALSO become the central place where all of these appear in one beautiful, organized way.
+
+==================================================
+1. DO NOT REMOVE EXISTING TABS / SECTIONS
+==================================================
+
+Keep all current sections working as they are:
+- friends
+- solo plans
+- group plans
+- bookings
+- profile
+- other current user flows
+
+Do NOT delete them.
+Do NOT break their routes.
+
+Instead:
+- integrate their most important data and actions into the Profile page as a unified profile hub
+
+==================================================
+2. TURN PROFILE INTO A "PROFILE HUB"
+==================================================
+
+Upgrade the Profile page so it becomes the user's main personal space.
+
+The profile should show:
+
+A. identity
+- profile picture
+- display name
+- optional username
+- short bio/status if appropriate
+- level / progress if available
+
+B. social summary
+- number of friends
+- plans created
+- places visited
+- reviews written
+- followers/following only if appropriate for scope
+
+C. quick access modules
+- meine Pläne
+- Gruppenpläne
+- Freunde
+- besuchte Restaurants
+- gespeicherte Orte
+- letzte Aktivitäten
+
+The profile should feel alive and personal.
+
+==================================================
+3. FRIENDS INTEGRATION
+==================================================
+
+Integrate the Friends system into the Profile Hub.
+
+Inside profile, show:
+- friend list preview
+- friend requests
+- add friend CTA
+- mutual/social connection summary if available
+
+Keep the existing Freunde section working, but also expose it inside profile.
+
+Examples:
+- "Freunde"
+- "Freundschaftsanfragen"
+- "+ Freund hinzufügen"
+
+==================================================
+4. SOLO PLAN + GROUP PLAN INTEGRATION
+==================================================
+
+Integrate both solo plans and group plans into the Profile Hub.
+
+Inside profile, show:
+- my recent plans
+- saved plans
+- group plans I created
+- group plans I joined
+- ability to reopen/edit/share from profile
+
+Keep the existing Plan/Gruppenplan screens working too.
+
+Examples:
+- "Meine Pläne"
+- "Gruppenpläne"
+- "Zuletzt erstellt"
+- "Bearbeiten"
+- "Teilen"
+
+==================================================
+5. AUTO ACTIVITY SYSTEM
+==================================================
+
+Create a personal activity feed on the profile.
+
+When the user:
+- makes a booking
+- visits a restaurant
+- creates a group plan
+- joins a plan
+- writes a review
+- saves a place
+
+That activity can appear inside the profile feed.
+
+Examples:
+- "Hat ein Gruppenessen geplant"
+- "Hat Restaurant X besucht"
+- "Hat eine Bewertung geschrieben"
+- "Hat Restaurant Y gespeichert"
+
+This feed should make the profile feel social and real.
+
+Do NOT fake activity.
+Use real platform actions only.
+
+==================================================
+6. VISITED RESTAURANTS / FOOD JOURNEY
+==================================================
+
+Add a "visited places" or "food journey" section inside the profile.
+
+If the user has booked / attended / reviewed a restaurant:
+- add it to the profile history
+- show restaurant name
+- optional image
+- optional date
+- optional tag like "Besucht"
+
+This should happen automatically from real usage where possible.
+
+Examples:
+- "Besuchte Orte"
+- "Zuletzt besucht"
+- "Deine Food Journey"
+
+==================================================
+7. LEVEL / PROFILE STRENGTH
+==================================================
+
+Add a lightweight profile progression system if appropriate.
+
+Possible signals:
+- bookings completed
+- reviews written
+- plans created
+- restaurants visited
+- friends added
+
+Display:
+- level
+- progress bar
+- small badge/title
+
+Examples:
+- "Food Explorer"
+- "Social Planner"
+- "City Insider"
+
+Keep this elegant, not game-like overload.
+
+==================================================
+8. PROFILE POSTS / TASTES / FAVORITES
+==================================================
+
+Allow the profile to reflect the user's taste.
+
+Examples:
+- favorite restaurant tags
+- favorite cuisine types
+- recently liked places
+- short notes/tags like:
+  - "Sehr gutes Sushi"
+  - "Perfekt für Gruppen"
+  - "Top für Dates"
+
+Do NOT turn this into a full social network post composer unless already justified.
+Keep it lightweight and useful.
+
+==================================================
+9. SHAREABLE PROFILE FEEL
+==================================================
+
+Make the profile feel like a real identity page.
+
+The user should feel:
+- this is my page
+- this shows my food style
+- this shows where I went
+- this shows my plans and social activity
+
+But keep privacy in mind:
+- no oversharing of private booking details
+- no leaking sensitive info
+- no exposing hidden/internal data
+
+==================================================
+10. ORGANIZATION / READABILITY (VERY IMPORTANT)
+==================================================
+
+The profile must remain easy to understand.
+
+Organize it into clean sections, for example:
+
+1. Header / identity
+2. Stats summary
+3. Quick actions
+4. My plans
+5. Friends
+6. Visited restaurants
+7. Activity feed
+
+Use strong visual grouping.
+Do NOT dump everything into one messy screen.
+
+The user must not get lost.
+
+==================================================
+11. QUICK ACTIONS INSIDE PROFILE
+==================================================
+
+Add useful quick actions inside profile:
+
+- Plan erstellen
+- Gruppenplan öffnen
+- Freunde verwalten
+- Gespeicherte Orte ansehen
+- Bewertungen ansehen
+
+These should open the existing related sections/routes.
+
+==================================================
+12. KEEP ROUTES CONNECTED
+==================================================
+
+Make sure the standalone sections still exist and still work.
+
+Profile should become the hub, not the only access point.
+
+Examples:
+- user can still open Freunde tab directly
+- user can still open Plan tab directly
+- user can still open Group Plan flow directly
+
+But profile also surfaces them intelligently.
+
+==================================================
+13. SOCIAL + BOOKING CONNECTION
+==================================================
+
+If a user books a restaurant or creates a plan:
+- that should enrich the profile automatically where appropriate
+
+Examples:
+- booking → appears in activity or visited places
+- group plan → appears in plans
+- restaurant review → appears in activity feed
+- saved favorite → appears in favorites/taste section
+
+==================================================
+14. GERMAN UX COPY
+==================================================
+
+Use clean German labels, such as:
+
+- Profil
+- Meine Pläne
+- Gruppenpläne
+- Freunde
+- Besuchte Orte
+- Gespeichert
+- Aktivitäten
+- Plan erstellen
+- Freund hinzufügen
+- Zuletzt besucht
+- Level
+- Deine Food Journey
+
+==================================================
+15. PRIVACY / DATA SAFETY
+==================================================
+
+Do NOT expose:
+- private booking details publicly
+- customer-sensitive data
+- hidden profile data to other users without permission
+
+Keep the profile primarily user-owned and safe.
+
+==================================================
+16. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. Existing tabs still work
+B. Profile now shows plans, friends, activity, and visited places
+C. Group plans can be reopened from profile
+D. Friends can be managed from profile
+E. Booking/visit activity appears appropriately
+F. User does not get lost
+G. Screen remains readable and organized
+H. No existing feature breaks
+
+==================================================
+FINAL RESULT
+==================================================
+
+The customer profile must become a true Profile Hub.
+
+It should feel like:
+- the user's personal home inside the app
+- a social food identity page
+- a smart summary of plans, friends, activity, and places
+
+WITHOUT removing existing sections.
+
+The app should feel richer, more social, and more alive — while staying clear and usable.
