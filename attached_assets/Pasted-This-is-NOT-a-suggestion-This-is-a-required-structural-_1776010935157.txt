@@ -1,0 +1,137 @@
+This is NOT a suggestion. This is a required structural UI change.
+
+You must IMPLEMENT the following changes in the actual codebase, not just describe them.
+
+==================================================
+CRITICAL ISSUE
+==================================================
+
+The previous Profile restructuring was NOT applied.
+The navigation still shows the old structure and no real changes are visible.
+
+You must now FIX and APPLY the restructuring.
+
+==================================================
+REQUIRED IMPLEMENTATION
+==================================================
+
+1. CREATE A NEW "Profil" PAGE (USER PROFILE HUB)
+
+- Create a completely NEW page/component for:
+  Profil (customer profile)
+
+- This must be separate from the old profile/account page
+
+- This page must include:
+  - user avatar
+  - name
+  - stats (friends, plans, visited places)
+  - sections:
+    - Meine Pläne
+    - Gruppenpläne
+    - Freunde
+    - Besuchte Orte
+    - Aktivitäten
+
+- This is NOT settings
+- This is a SOCIAL USER PROFILE
+
+==================================================
+2. CONVERT OLD PROFILE INTO "SETTINGS"
+==================================================
+
+- Find the existing profile/account page
+- Rename it to: Einstellungen
+
+- Move ALL account-related logic there:
+  - logout
+  - privacy
+  - notifications
+  - legal
+  - account settings
+
+- Remove any "social/profile" UI from it
+
+==================================================
+3. UPDATE NAVIGATION (CRITICAL)
+==================================================
+
+You MUST update the navigation so the user can actually see the changes.
+
+Current nav is still:
+Startseite / Entdecken / Essensplan / Buchungen / Freunde / Profil
+
+CHANGE IT:
+
+- Add a REAL new "Profil" route
+- Add a REAL new "Einstellungen" route
+
+Example target:
+
+Startseite
+Entdecken
+Essensplan
+Freunde
+Profil (NEW - social hub)
+Einstellungen (NEW - settings)
+
+IMPORTANT:
+- Profil must open the NEW profile hub
+- Einstellungen must open the old profile (now settings)
+
+==================================================
+4. ROUTING (MANDATORY)
+==================================================
+
+You MUST:
+- create new route: /profile (or /profil)
+- create new route: /settings (or /einstellungen)
+
+And ensure:
+- clicking "Profil" opens the new profile page
+- clicking "Einstellungen" opens settings
+
+==================================================
+5. VERIFY UI CHANGE
+==================================================
+
+After implementation:
+
+- Profil tab MUST show:
+  → social sections (plans, friends, activity)
+
+- Einstellungen MUST show:
+  → logout, privacy, account
+
+If both look the same → YOU FAILED THE TASK
+
+==================================================
+6. DO NOT JUST MODIFY TEXT
+==================================================
+
+This is NOT:
+- renaming labels
+- or changing strings
+
+This is:
+- new component
+- new structure
+- new routing
+- real UI change
+
+==================================================
+7. FINAL CHECK
+==================================================
+
+Confirm:
+
+- new Profil page exists and is visible in navigation
+- settings page exists separately
+- old profile logic moved to settings
+- social content is inside Profil
+
+If not visible in UI → fix until it is.
+
+==================================================
+END
+==================================================
