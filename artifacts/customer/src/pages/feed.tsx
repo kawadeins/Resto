@@ -471,7 +471,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                   disabled={!image}
                   onClick={() => setStep("preview")}
                 >
-                  {"Weiter"} <ChevronRight className="w-4 h-4" />
+                  {"Vorschau"} <ChevronRight className="w-4 h-4" />
                 </button>
               ) : step === "preview" ? (
                 <button
@@ -480,7 +480,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                   disabled={loading || !image}
                   onClick={submit}
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Teilen"}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Veröffentlichen"}
                 </button>
               ) : (
                 <div className="w-16" />
@@ -489,28 +489,62 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
 
             {/* ── Step: upload ── */}
             {step === "upload" && (
-              <div
-                className="flex-1 flex flex-col items-center justify-center gap-5 px-6 py-10 cursor-pointer"
-                onClick={() => fileRef.current?.click()}
-                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) handleFile(f); }}
-                onDragOver={e => e.preventDefault()}
-              >
-                <div className="w-24 h-24 rounded-3xl flex items-center justify-center" style={{ background: GRAD_SOFT }}>
-                  <Camera className="w-10 h-10 text-primary" />
+              <div className="flex-1 flex flex-col items-center justify-center gap-4 px-5 py-6">
+                {/* Step dots */}
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
+                  <div className="w-2 h-2 rounded-full bg-muted" />
+                  <div className="w-2 h-2 rounded-full bg-muted" />
                 </div>
-                <div className="text-center">
-                  <p className="font-bold text-lg">{"Foto hinzufügen"}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{"Tippe oder ziehe ein Bild hierher"}</p>
+
+                {/* Required badge */}
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  <span className="text-[11px] font-semibold text-amber-600">{"Foto erforderlich zum Posten"}</span>
                 </div>
-                <div className="text-sm font-bold text-white px-6 py-3 rounded-2xl hover:opacity-90 active:scale-95 transition-all" style={{ background: GRAD }}>
+
+                {/* Upload zone with dashed border */}
+                <button
+                  type="button"
+                  className="w-full border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 py-10 px-6 hover:bg-primary/[0.03] active:scale-[0.98] transition-all"
+                  style={{ borderColor: "hsl(263,70%,52%,0.35)", background: "hsl(263,70%,52%,0.025)" }}
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) handleFile(f); }}
+                >
+                  <div className="w-20 h-20 rounded-3xl flex items-center justify-center" style={{ background: GRAD_SOFT }}>
+                    <Camera className="w-10 h-10 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-[17px]">{"Foto hinzufügen"}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{"Tippe, um ein Foto auszuwählen"}</p>
+                  </div>
+                </button>
+
+                {/* Primary CTA */}
+                <button
+                  type="button"
+                  className="w-full font-bold text-white py-3.5 rounded-2xl hover:opacity-90 active:scale-[0.97] transition-all text-[15px]"
+                  style={{ background: GRAD }}
+                  onClick={() => fileRef.current?.click()}
+                >
                   {"Foto auswählen"}
-                </div>
+                </button>
+
+                <p className="text-[11px] text-muted-foreground">{"JPG, PNG oder HEIC · max. 10 MB"}</p>
               </div>
             )}
 
             {/* ── Step: compose ── */}
             {step === "compose" && (
               <div className="flex-1 overflow-y-auto">
+                {/* Step dots */}
+                <div className="flex items-center justify-center gap-1.5 pt-3 pb-1">
+                  <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
+                  <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
+                  <div className="w-2 h-2 rounded-full bg-muted" />
+                </div>
+
                 {/* Preview strip */}
                 {preview && (
                   <div className="relative w-full shrink-0" style={{ aspectRatio: "4/5", maxHeight: 260 }}>
@@ -519,22 +553,34 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                     <button
                       className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white hover:bg-black/80 transition-colors"
                       onClick={() => { setImage(null); setPreview(null); setStep("upload"); }}
+                      title={"Foto ändern"}
                     >
                       <X className="w-4 h-4" />
                     </button>
+                    <span className="absolute bottom-2.5 left-3 text-[11px] font-semibold text-white/80 flex items-center gap-1">
+                      <Camera className="w-3 h-3" /> {"Foto ändern"}
+                    </span>
                   </div>
                 )}
 
                 <div className="px-5 py-4 space-y-4">
                   {/* Caption */}
-                  <div className="flex gap-3 items-start">
-                    <Avatar photoUrl={userPhoto} name={userName} />
-                    <Textarea
-                      value={caption}
-                      onChange={e => setCaption(e.target.value)}
-                      placeholder={"Was erlebst du? Schreib etwas…"}
-                      className="flex-1 resize-none min-h-[80px] rounded-2xl text-sm border-border/60 focus:border-primary/50"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{"Beschriftung"}</label>
+                    <div className="flex gap-3 items-start">
+                      <Avatar photoUrl={userPhoto} name={userName} />
+                      <Textarea
+                        autoFocus
+                        value={caption}
+                        onChange={e => setCaption(e.target.value.slice(0, 500))}
+                        maxLength={500}
+                        placeholder={"Was erlebst du? Schreib etwas…"}
+                        className="flex-1 resize-none min-h-[90px] rounded-2xl text-sm border-border/60 focus:border-primary/50"
+                      />
+                    </div>
+                    <p className={`text-right text-[11px] pr-1 transition-colors ${caption.length >= 450 ? "text-amber-500 font-semibold" : "text-muted-foreground"}`}>
+                      {caption.length}/500
+                    </p>
                   </div>
 
                   {/* Restaurant picker */}
@@ -547,7 +593,13 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
             {step === "preview" && (
               <div className="flex-1 overflow-y-auto">
                 <div className="px-4 py-4">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{"Vorschau"}</p>
+                  {/* Step dots */}
+                  <div className="flex items-center justify-center gap-1.5 mb-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
+                    <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
+                    <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
+                  </div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{"So sieht dein Beitrag aus"}</p>
 
                   {/* Preview card */}
                   <div className="bg-card rounded-2xl overflow-hidden border" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
@@ -591,7 +643,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground text-center mt-4">{"So sieht dein Beitrag im Feed aus."}</p>
+                  <p className="text-xs text-muted-foreground text-center mt-4">{"Alles gut? Drücke oben auf »Veröffentlichen«."}</p>
                 </div>
               </div>
             )}
