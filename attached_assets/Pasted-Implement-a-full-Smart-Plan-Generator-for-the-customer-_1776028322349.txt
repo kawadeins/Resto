@@ -1,0 +1,175 @@
+Implement a full "Smart Plan Generator" for the customer app.
+
+IMPORTANT:
+- Do NOT redesign the whole app
+- Do NOT break existing plan/group plan systems
+- This is a smart generation layer on top of existing plan tools
+- Mobile-first, premium UX
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Allow users to generate useful plans automatically instead of building every plan manually.
+
+The system should generate dining/outing plans such as:
+- dinner plan
+- brunch plan
+- nightlife plan
+- date plan
+- café plan
+- group dinner plan
+
+==================================================
+1. PLAN GENERATOR ENTRY POINT
+==================================================
+
+Add a clear CTA in relevant places:
+- Plan page
+- Group plan flow
+- Home suggestions
+- Chat / group plan coordination if appropriate
+
+Examples:
+- "Plan automatisch erstellen"
+- "Smart Plan erzeugen"
+- "Vorschlag generieren"
+
+==================================================
+2. PLAN INPUTS
+==================================================
+
+Allow the system to use inputs such as:
+- plan type (Dinner / Brunch / Nightlife / Date / Group)
+- date
+- time
+- group size
+- preferred vibe
+- location / city
+- user taste
+- budget if available
+
+Keep it simple and elegant.
+
+==================================================
+3. PLAN GENERATION LOGIC
+==================================================
+
+Generate a full plan suggestion based on:
+- restaurants matching the mood
+- user preferences
+- group size
+- time of day
+- restaurant quality / suitability
+- nightlife or follow-up activity if appropriate
+
+Examples:
+- Dinner at Restaurant X → drinks nearby
+- Brunch at Café Y
+- Night out at Restaurant Z + Bar option
+
+==================================================
+4. PLAN OUTPUT
+==================================================
+
+Each generated plan should include:
+- plan title
+- recommended place(s)
+- date/time
+- reason/explanation
+- optional restaurant image
+- optional backup option
+
+Examples:
+- "Freitagabend-Plan"
+- "Brunch-Vorschlag für Sonntag"
+- "Date Night Empfehlung"
+
+==================================================
+5. GROUP PLAN INTEGRATION
+==================================================
+
+If the plan is for a group:
+- optimize for group-friendly restaurants
+- respect participant count
+- allow sharing directly into group plan flow
+- allow sending to group chat
+
+==================================================
+6. PERSONALIZATION
+==================================================
+
+Use the recommendation engine and user behavior signals.
+
+Examples:
+- if user likes nightlife, generate stronger evening plans
+- if user prefers cafés, generate brunch or coffee plans
+- if user saves sushi restaurants, bias toward sushi suggestions
+
+==================================================
+7. PLAN VARIANTS
+==================================================
+
+Allow:
+- regenerate plan
+- show alternative option
+- switch mood/type
+- save generated plan
+- convert generated plan into group plan
+
+==================================================
+8. RESTAURANT TAGGING
+==================================================
+
+Generated plan must clearly show:
+- selected restaurant name
+- address
+- why it fits
+- optional cuisine tag
+
+==================================================
+9. SHARE + CHAT INTEGRATION
+==================================================
+
+Allow generated plans to be:
+- saved
+- shared
+- turned into group plan
+- sent in chat
+- used for reservation flow
+
+==================================================
+10. GERMAN UX COPY
+==================================================
+
+Use labels such as:
+- Plan automatisch erstellen
+- Vorschlag generieren
+- Alternative anzeigen
+- Für Gruppen geeignet
+- Perfekt für heute Abend
+- Als Gruppenplan verwenden
+- Plan speichern
+
+==================================================
+11. FINAL VALIDATION
+==================================================
+
+Verify:
+A. user can generate a plan easily
+B. generated plan uses real restaurant data
+C. group scenarios work
+D. save/share/convert actions work
+E. no dead ends remain
+F. generated results feel useful and relevant
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart should be able to help users decide faster.
+
+The user should feel:
+- "I don’t have to think too much"
+- "The app gave me a good plan"
+- "This saves time and feels smart"

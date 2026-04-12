@@ -7,6 +7,7 @@ import {
   CheckCircle, Building2,
 } from "lucide-react";
 import { Link } from "wouter";
+import { SmartPlanGenerator, SmartPlanTriggerButton } from "@/components/smart-plan-generator";
 
 const API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
 
@@ -1308,6 +1309,7 @@ export default function MealPlan() {
   const [activeTab, setActiveTab] = useState<"personal" | "group">("personal");
   const [selectedDay, setSelectedDay] = useState(TODAY_EN);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [smartPlanOpen, setSmartPlanOpen] = useState(false);
   const [editPlan, setEditPlan] = useState<GroupPlan | null>(null);
   const qc = useQueryClient();
 
@@ -1452,6 +1454,11 @@ export default function MealPlan() {
             <p className="text-xs text-muted-foreground">Hallo, {userName} 👋</p>
           </div>
         </div>
+      </div>
+
+      {/* Smart Plan CTA */}
+      <div className="mb-5">
+        <SmartPlanTriggerButton onOpen={() => setSmartPlanOpen(true)} variant="card" />
       </div>
 
       {/* Tab switcher */}
@@ -1697,6 +1704,18 @@ export default function MealPlan() {
           }}
         />
       )}
+
+      {/* ── SMART PLAN GENERATOR MODAL ── */}
+      <SmartPlanGenerator
+        open={smartPlanOpen}
+        onClose={() => setSmartPlanOpen(false)}
+        email={email}
+        onConvertToGroupPlan={() => {
+          setSmartPlanOpen(false);
+          setActiveTab("group");
+          setShowCreateGroup(true);
+        }}
+      />
     </div>
   );
 }

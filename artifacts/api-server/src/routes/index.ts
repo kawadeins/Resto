@@ -53,6 +53,7 @@ import publicProfileRouter from "./public-profile";
 import messagesRouter from "./messages";
 import moderationAdminRouter from "./moderation-admin";
 import recommendationsRouter from "./recommendations";
+import smartPlanRouter from "./smart-plan";
 
 const router: IRouter = Router();
 
@@ -110,5 +111,6 @@ router.use("/public-profile", publicProfileRouter);
 router.use("/messages", messagesRouter);
 router.use("/moderation", moderationAdminRouter);
 router.use("/recommendations", recommendationsRouter);
+router.use("/smart-plan", smartPlanRouter);
 
 export default router;

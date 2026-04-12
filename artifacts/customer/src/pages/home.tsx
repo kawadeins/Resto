@@ -38,6 +38,7 @@ import type { UserContext } from "@/lib/smart-offers";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
 import { VibeOnboarding } from "@/components/vibe-onboarding";
 import { SmartRecommendationsSection } from "@/components/smart-recommendations";
+import { SmartPlanGenerator, SmartPlanTriggerButton } from "@/components/smart-plan-generator";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -328,6 +329,7 @@ export default function Home() {
   const [showCityFallback, setShowCityFallback] = useState(false);
   const [modeBannerDismissed, setModeBannerDismissed] = useState(false);
   const [friendCount, setFriendCount] = useState(0);
+  const [smartPlanOpen, setSmartPlanOpen] = useState(false);
   const geo = useGeolocation();
 
   // ── Social cues from context ─────────────────────────────────────────────
@@ -780,6 +782,13 @@ export default function Home() {
         <SmartRecommendationsSection email={customerEmail} />
       )}
 
+      {/* ── SMART PLAN CTA ── */}
+      <section className="px-4 pb-2">
+        <div className="container mx-auto max-w-6xl">
+          <SmartPlanTriggerButton onOpen={() => setSmartPlanOpen(true)} variant="card" />
+        </div>
+      </section>
+
       {/* ── DYNAMIC MODE SECTIONS ── */}
       {config.sections.map((section) => (
         <DynamicSection
@@ -958,6 +967,13 @@ export default function Home() {
           variant="fab"
         />
       )}
+
+      {/* ── SMART PLAN GENERATOR MODAL ── */}
+      <SmartPlanGenerator
+        open={smartPlanOpen}
+        onClose={() => setSmartPlanOpen(false)}
+        email={customerEmail}
+      />
 
     </div>
   );
