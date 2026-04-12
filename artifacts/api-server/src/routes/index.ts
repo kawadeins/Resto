@@ -52,6 +52,7 @@ import postsRouter from "./posts";
 import publicProfileRouter from "./public-profile";
 import messagesRouter from "./messages";
 import moderationAdminRouter from "./moderation-admin";
+import recommendationsRouter from "./recommendations";
 
 const router: IRouter = Router();
 
@@ -108,5 +109,6 @@ router.use("/posts", postsRouter);
 router.use("/public-profile", publicProfileRouter);
 router.use("/messages", messagesRouter);
 router.use("/moderation", moderationAdminRouter);
+router.use("/recommendations", recommendationsRouter);
 
 export default router;

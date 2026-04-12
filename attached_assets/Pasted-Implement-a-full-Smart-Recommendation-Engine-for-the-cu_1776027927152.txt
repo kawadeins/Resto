@@ -1,0 +1,192 @@
+Implement a full "Smart Recommendation Engine" for the customer app.
+
+IMPORTANT:
+- Do NOT redesign the whole app
+- Do NOT break existing feed, profile, plans, bookings, or restaurant pages
+- This is a recommendation intelligence layer
+- Keep mobile-first UX
+- Keep premium visual consistency
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Build a smart recommendation system that suggests restaurants, plans, and nightlife/café options based on real user behavior.
+
+The app should begin to understand:
+- what the user likes
+- what kind of places they visit
+- what time they usually go out
+- whether they prefer nightlife / cafés / dates / brunch / sushi / etc.
+
+==================================================
+1. USER BEHAVIOR SIGNALS
+==================================================
+
+Use real signals where available, such as:
+- liked/saved restaurants
+- visited restaurants
+- bookings
+- reviews
+- posts/feed interactions
+- group plan activity
+- nightlife interactions
+- category clicks
+- cuisine preferences
+- time-of-day behavior
+
+Do NOT invent fake preference data.
+
+==================================================
+2. RECOMMENDATION OUTPUT TYPES
+==================================================
+
+Generate smart recommendations for:
+
+A. Restaurants
+B. Group/Solo plans
+C. Nightlife / late-night suggestions
+D. Café / brunch suggestions
+E. Date-friendly places
+F. Trending places matching the user taste
+
+==================================================
+3. WHERE TO SHOW RECOMMENDATIONS
+==================================================
+
+Surface recommendations in key places:
+
+- Home page
+- Discover page
+- Profile hub
+- Feed side modules if appropriate
+- Plan creation flow
+- Before/after booking
+- Smart suggestions cards
+
+==================================================
+4. EXPLANATION LAYER
+==================================================
+
+Each recommendation should explain WHY it is shown.
+
+Examples:
+- "Passend zu deinen letzten Café-Besuchen"
+- "Beliebt bei Nachtleben-Fans"
+- "Ähnlich zu Orten, die du gespeichert hast"
+- "Gut für Gruppen geeignet"
+
+This makes the system feel intelligent and trustworthy.
+
+==================================================
+5. RECOMMENDATION CATEGORIES
+==================================================
+
+Support useful recommendation labels such as:
+- Für dich
+- Beliebt heute
+- Passend zu deinem Geschmack
+- Gute Wahl für Gruppen
+- Perfekt für heute Abend
+- Ideal für Brunch
+- Gut für ein Date
+
+==================================================
+6. PROFILE TASTE INTEGRATION
+==================================================
+
+Integrate recommendation logic with the user's taste/profile identity.
+
+Examples:
+- Sushi-Fan
+- Nightlife Lover
+- Brunch Lover
+- Café-Hopper
+- Fine Dining
+- Vegan / Healthy if available
+
+Recommendations should feel personal.
+
+==================================================
+7. FEED INTEGRATION
+==================================================
+
+Use feed interactions as recommendation signals.
+
+Examples:
+- user likes posts from sushi restaurants
+- user saves nightlife posts
+- user comments on café content
+
+Then surface more relevant places.
+
+==================================================
+8. PLAN INTEGRATION
+==================================================
+
+When user is creating a plan:
+- suggest restaurants that fit the plan type
+- suggest time-appropriate options
+- suggest places based on group size / mood / history
+
+Examples:
+- "Empfohlen für Gruppen"
+- "Gut für Freitagabend"
+- "Passt zu eurem Stil"
+
+==================================================
+9. SMART FALLBACKS
+==================================================
+
+If user has little behavior history:
+- use trending nearby
+- use high-quality popular places
+- use soft onboarding preferences if available
+
+Do NOT leave recommendations empty.
+
+==================================================
+10. NO FAKE AI
+==================================================
+
+Do NOT pretend to use advanced AI if logic is rule-based.
+Recommendations must be:
+- real
+- data-based
+- honest
+- useful
+
+==================================================
+11. GERMAN UX COPY
+==================================================
+
+Use clean German labels such as:
+- Für dich
+- Passend zu deinem Geschmack
+- Beliebt in deiner Umgebung
+- Gut für Gruppen
+- Perfekt für heute Abend
+- Warum wir das empfehlen
+
+==================================================
+12. FINAL VALIDATION
+==================================================
+
+Verify:
+A. recommendations appear in app
+B. they adapt to user behavior
+C. fallback works for new users
+D. explanation text is meaningful
+E. no existing flows break
+F. recommendations feel useful, not random
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart should begin to feel like a smart dining assistant.
+
+The user should feel:
+- "This app understands my style"
+- "These suggestions fit me"
+- "I discover better places faster"

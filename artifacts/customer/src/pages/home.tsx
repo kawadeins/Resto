@@ -37,6 +37,7 @@ import { getTwin } from "@/lib/digital-twin";
 import type { UserContext } from "@/lib/smart-offers";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
 import { VibeOnboarding } from "@/components/vibe-onboarding";
+import { SmartRecommendationsSection } from "@/components/smart-recommendations";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -772,6 +773,11 @@ export default function Home() {
             </div>
           </div>
         </section>
+      )}
+
+      {/* ── SMART RECOMMENDATIONS ── */}
+      {customerEmail && (
+        <SmartRecommendationsSection email={customerEmail} />
       )}
 
       {/* ── DYNAMIC MODE SECTIONS ── */}
