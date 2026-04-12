@@ -50,6 +50,7 @@ import groupReservationsRouter from "./group-reservations";
 import smartNotificationsRouter from "./smart-notifications";
 import postsRouter from "./posts";
 import publicProfileRouter from "./public-profile";
+import messagesRouter from "./messages";
 
 const router: IRouter = Router();
 
@@ -104,5 +105,6 @@ router.use("/group-reservations", groupReservationsRouter);
 router.use("/smart-notifications", smartNotificationsRouter);
 router.use("/posts", postsRouter);
 router.use("/public-profile", publicProfileRouter);
+router.use("/messages", messagesRouter);
 
 export default router;

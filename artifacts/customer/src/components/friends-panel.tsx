@@ -4,11 +4,13 @@
  */
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { UserPlus, UserCheck, UserX, X, Check, Search, Users, ChevronRight } from "lucide-react";
+import { UserPlus, UserCheck, UserX, X, Check, Search, Users, ChevronRight, MessageCircle } from "lucide-react";
+import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+
 import {
   getFriends,
   getFriendRequests,
@@ -54,13 +56,7 @@ function FriendRow({ friend, email, onRemove }: { friend: FriendProfile; email: 
       </div>
       {confirming ? (
         <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            variant="destructive"
-            className="h-7 text-xs rounded-xl"
-            onClick={() => remove.mutate()}
-            disabled={remove.isPending}
-          >
+          <Button size="sm" variant="destructive" className="h-7 text-xs rounded-xl" onClick={() => remove.mutate()} disabled={remove.isPending}>
             Entfernen
           </Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl" onClick={() => setConfirming(false)}>
@@ -68,9 +64,21 @@ function FriendRow({ friend, email, onRemove }: { friend: FriendProfile; email: 
           </Button>
         </div>
       ) : (
-        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-destructive" onClick={() => setConfirming(true)}>
-          <UserX className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Link href={`/u/${encodeURIComponent(friend.email)}`}>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-primary" title="Profil ansehen">
+              <Users className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Link href="/messages">
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-primary" title="Nachricht senden">
+              <MessageCircle className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-destructive" onClick={() => setConfirming(true)}>
+            <UserX className="w-4 h-4" />
+          </Button>
+        </div>
       )}
     </div>
   );

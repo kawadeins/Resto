@@ -1,0 +1,321 @@
+Implement a full "Social Privacy + Friends + Messaging System Upgrade" for the customer app.
+
+IMPORTANT:
+- This is a REAL implementation task
+- Do NOT just describe changes
+- Do NOT redesign the whole app from scratch
+- Do NOT break the existing feed/profile/social work
+- Keep mobile-first UX
+- Keep premium visual consistency
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Complete the social layer so it becomes truly usable and privacy-safe.
+
+This pass must include:
+
+1. Fix broken profile images / avatars
+2. Add multiple friend request entry points
+3. Add public/private profile control
+4. Add direct messaging after friendship is accepted
+5. Add group chat support
+6. Add user moderation controls:
+   - block
+   - mute
+   - privacy-safe behavior
+
+==================================================
+1. FIX PROFILE IMAGE / AVATAR SYSTEM (CRITICAL)
+==================================================
+
+Current issue:
+Profile images are not loading correctly or not showing reliably.
+
+You must fix the full avatar/profile image pipeline.
+
+Requirements:
+- avatar upload works
+- avatar preview works
+- saved avatar appears correctly everywhere
+- avatar loads correctly in:
+  - own profile
+  - public profile
+  - feed posts
+  - comments
+  - friends list
+  - chat
+- fallback avatar with initials if image missing
+- no broken image icons
+- no empty/failed rendering
+
+Check:
+- upload path
+- persisted URL storage
+- image loading state
+- fallback behavior
+- cache busting if needed
+
+==================================================
+2. MULTIPLE WAYS TO ADD FRIENDS
+==================================================
+
+Friend requests must not depend on email only.
+
+Add these friend request entry points:
+
+A. By email
+- keep existing email add flow if present
+
+B. From user profile
+- when visiting another user's public profile, show:
+  "Freund hinzufügen"
+  or equivalent button
+
+C. From feed posts
+- if user opens another user's post/profile, they can send friend request from there too
+
+D. Optional search/discovery if already possible
+- support friend add from user search results if available
+
+The system should feel easy and natural.
+
+==================================================
+3. PUBLIC / PRIVATE PROFILE TOGGLE
+==================================================
+
+Add profile privacy controls so each user can choose:
+
+- Öffentliches Profil
+- Privates Profil
+
+Behavior:
+
+If profile is PUBLIC:
+- other users can open public profile
+- see allowed public data (avatar, name, bio, posts, etc.)
+
+If profile is PRIVATE:
+- public access is restricted
+- depending on your product logic:
+  - only friends can view full public-facing profile
+  OR
+  - non-friends see a limited locked profile
+
+At minimum:
+- enforce privacy cleanly
+- make behavior consistent
+
+Add this control inside profile settings.
+
+German labels:
+- "Profil öffentlich"
+- "Profil privat"
+
+==================================================
+4. PUBLIC PROFILE PRIVACY ENFORCEMENT
+==================================================
+
+Keep the previously defined separation:
+
+A. My Profile (owner view)
+- full private sections
+- saved places
+- plans
+- visited places
+- private tools
+
+B. Other User's Profile (public view)
+- only safe public data
+
+Now add privacy-aware behavior:
+- if target profile is private, restrict the public view accordingly
+- do NOT leak private sections through API
+- do NOT only hide visually — enforce via fetched data too
+
+==================================================
+5. DIRECT MESSAGING AFTER FRIEND ACCEPTANCE
+==================================================
+
+When a friend request is accepted:
+- users should be able to start a direct chat
+
+Required:
+- one-to-one conversation
+- message sending
+- message list
+- timestamps
+- sender identity
+- unread state if possible
+
+Entry points:
+- from friends list
+- from accepted friend profile
+- from social/profile area
+
+German labels:
+- "Nachricht senden"
+- "Chat öffnen"
+
+==================================================
+6. GROUP CHAT SUPPORT
+==================================================
+
+Add support for group conversations.
+
+At minimum allow:
+- create a group chat
+- choose participants from accepted friends
+- give group a name
+- send messages in group
+
+This should be especially useful for:
+- group plan coordination
+- dinner planning
+- outing coordination
+
+Examples:
+- user creates group chat from friends
+- user creates group chat from a group plan
+- participants can chat together
+
+==================================================
+7. MESSAGING MODERATION / SAFETY
+==================================================
+
+Inside messaging system add user controls:
+
+A. Block user
+- blocked user cannot message me
+- blocked user should not keep unrestricted access
+
+B. Mute conversation
+- hide/silence chat notifications
+- keep chat but reduce interruption
+
+C. Optional report placeholder if appropriate
+- only if easy and safe to add
+
+German labels:
+- "Blockieren"
+- "Stummschalten"
+
+==================================================
+8. CHAT UX REQUIREMENTS
+==================================================
+
+Messaging must feel modern and usable.
+
+Requirements:
+- clean chat bubbles
+- message timestamps
+- input field always reachable on mobile
+- no overlap with keyboard
+- clear sender/receiver distinction
+- conversation list view
+- unread indicator if possible
+- empty state if no chats
+
+If group chat:
+- show group name
+- show member preview if useful
+
+==================================================
+9. GROUP PLAN + CHAT CONNECTION
+==================================================
+
+If possible, connect group plans with chat:
+
+- when a group plan exists, allow opening/creating a related group chat
+- participants can discuss the plan
+- plan owner can coordinate timing, restaurant, changes
+
+This can be simple but should feel connected.
+
+==================================================
+10. PROFILE SETTINGS UPGRADE
+==================================================
+
+Inside user profile settings, include:
+- avatar/image update
+- display name
+- bio
+- city/country if already supported
+- profile public/private toggle
+- friend/privacy preferences if needed
+
+This is user profile settings only, not general app settings.
+
+==================================================
+11. API / DATA MODEL SAFETY
+==================================================
+
+Implement data structures safely for:
+- friend requests
+- accepted friendships
+- privacy status
+- direct messages
+- group chats
+- muted chats
+- blocked users
+
+Ensure:
+- blocked users cannot bypass via UI only
+- private profile restrictions are enforced server-side
+- friend requests cannot duplicate endlessly
+- messaging access is limited appropriately
+
+==================================================
+12. GERMAN UX COPY
+==================================================
+
+Use clean German labels such as:
+- Freund hinzufügen
+- Anfrage gesendet
+- Anfrage annehmen
+- Anfrage ablehnen
+- Nachricht senden
+- Chat
+- Gruppenchat
+- Blockieren
+- Stummschalten
+- Profil privat
+- Profil öffentlich
+
+==================================================
+13. FINAL VALIDATION
+==================================================
+
+Verify all of the following:
+
+A. Profile images upload and render correctly everywhere
+B. Users can add friends:
+   - by email
+   - from profile
+   - from feed/public post context
+C. Users can switch profile:
+   - public
+   - private
+D. Public/private behavior is enforced correctly
+E. After friendship is accepted, direct messaging works
+F. Group chat can be created and used
+G. Block and mute work correctly
+H. No private profile data leaks
+I. No existing feed/profile logic breaks
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart’s social layer must now feel complete, private, and real.
+
+Users should be able to:
+- present themselves with a working avatar/profile
+- add friends naturally
+- control privacy
+- chat after connecting
+- create group conversations
+- manage safety with block/mute
+
+This must feel like a premium social food platform, not a half-finished social add-on.

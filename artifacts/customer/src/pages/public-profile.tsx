@@ -1,13 +1,17 @@
 /**
  * Public Profile Page — /u/:userEmail
- * Shows ONLY public-safe data. No private saves, plans, or preferences.
+ * Shows ONLY public-safe data. Enforces is_private server-side.
  * Used when tapping an author from the social feed.
  */
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Grid3X3, MessageCircle, Heart, ImageOff } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowLeft, MapPin, Grid3X3, MessageCircle, Heart,
+  ImageOff, UserPlus, UserCheck, Clock, Lock, Send
+} from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
+import { useToast } from "@/hooks/use-toast";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const GRAD = "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))";
@@ -23,18 +27,13 @@ function Avatar({ photoUrl, name, size = "lg" }: { photoUrl?: string | null; nam
     const src = photoUrl.startsWith("/api") ? `${API_BASE}${photoUrl}` : photoUrl;
     return (
       <img
-        src={src}
-        alt={name}
-        onError={() => setErr(true)}
+        src={src} alt={name} onError={() => setErr(true)}
         className={`${dim} rounded-full object-cover border-2 border-white/80 shadow-md`}
       />
     );
   }
   return (
-    <div
-      className={`${dim} rounded-full flex items-center justify-center border-2 border-white/30 shadow-md`}
-      style={{ background: GRAD }}
-    >
+    <div className={`${dim} rounded-full flex items-center justify-center border-2 border-white/30 shadow-md`} style={{ background: GRAD }}>
       <span className={`font-bold text-white ${txt}`}>{initials}</span>
     </div>
   );
@@ -46,10 +45,7 @@ function LevelBadge({ postCount }: { postCount: number }) {
   const emoji = level === "Gold" ? "⭐" : level === "Silver" ? "🥈" : "🥉";
   const color = level === "Gold" ? "hsl(45,90%,50%)" : level === "Silver" ? "hsl(220,15%,55%)" : "hsl(30,60%,55%)";
   return (
-    <span
-      className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
-      style={{ background: `${color}18`, color }}
-    >
+    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: `${color}18`, color }}>
       {emoji} {level}
     </span>
   );
@@ -67,12 +63,9 @@ function PostGridItem({ post }: { post: PublicPost }) {
         <>
           {!imgLoaded && <div className="absolute inset-0 bg-muted/40 animate-pulse" />}
           <img
-            src={src}
-            alt=""
-            loading="lazy"
+            src={src} alt="" loading="lazy"
             className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-            onLoad={() => setImgLoaded(true)}
-            onError={() => setImgErr(true)}
+            onLoad={() => setImgLoaded(true)} onError={() => setImgErr(true)}
           />
         </>
       ) : (
@@ -80,46 +73,127 @@ function PostGridItem({ post }: { post: PublicPost }) {
           <ImageOff className="w-5 h-5 text-muted-foreground/30" />
         </div>
       )}
-      {/* Hover overlay with stats */}
       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-        <span className="flex items-center gap-1 text-white text-xs font-bold">
-          <Heart className="w-4 h-4 fill-white" /> {post.like_count ?? 0}
-        </span>
-        <span className="flex items-center gap-1 text-white text-xs font-bold">
-          <MessageCircle className="w-4 h-4 fill-white" /> {post.comment_count ?? 0}
-        </span>
+        <span className="flex items-center gap-1 text-white text-xs font-bold"><Heart className="w-4 h-4 fill-white" /> {post.like_count ?? 0}</span>
+        <span className="flex items-center gap-1 text-white text-xs font-bold"><MessageCircle className="w-4 h-4 fill-white" /> {post.comment_count ?? 0}</span>
       </div>
     </div>
   );
 }
 
+// ── Friend Button ──────────────────────────────────────────────────────────────
+function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
+  viewerEmail: string; targetEmail: string;
+  status: FriendshipStatus; onStatusChange: (s: FriendshipStatus) => void;
+}) {
+  const { toast } = useToast();
+
+  const sendRequest = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`${API_BASE}/api/social/request`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requesterEmail: viewerEmail, recipientEmail: targetEmail }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
+      return r.json();
+    },
+    onSuccess: () => onStatusChange("pending_sent"),
+    onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
+  });
+
+  if (status === "accepted") {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-2xl">
+          <UserCheck className="w-4 h-4" /> {"Befreundet"}
+        </span>
+      </div>
+    );
+  }
+
+  if (status === "pending_sent") {
+    return (
+      <span className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground bg-muted/50 px-4 py-2 rounded-2xl">
+        <Clock className="w-4 h-4" /> {"Anfrage gesendet"}
+      </span>
+    );
+  }
+
+  if (status === "pending_received") {
+    return (
+      <span className="flex items-center gap-1.5 text-sm font-semibold text-primary bg-primary/10 px-4 py-2 rounded-2xl">
+        <Clock className="w-4 h-4" /> {"Anfrage erhalten"}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => sendRequest.mutate()}
+      disabled={sendRequest.isPending}
+      className="flex items-center gap-1.5 text-sm font-bold text-white px-5 py-2.5 rounded-2xl active:scale-95 transition-all disabled:opacity-60"
+      style={{ background: GRAD }}
+    >
+      <UserPlus className="w-4 h-4" /> {"Freund hinzufügen"}
+    </button>
+  );
+}
+
+// ── Message Button ─────────────────────────────────────────────────────────────
+function MessageButton({ viewerEmail, targetEmail }: { viewerEmail: string; targetEmail: string }) {
+  const { toast } = useToast();
+
+  const startDM = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`${API_BASE}/api/messages/start-dm`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderEmail: viewerEmail, recipientEmail: targetEmail }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
+      return r.json();
+    },
+    onSuccess: (d) => {
+      window.location.href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/messages/${d.conversationId}`;
+    },
+    onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
+  });
+
+  return (
+    <button
+      onClick={() => startDM.mutate()}
+      disabled={startDM.isPending}
+      className="flex items-center gap-1.5 text-sm font-bold text-primary bg-primary/10 px-5 py-2.5 rounded-2xl active:scale-95 transition-all disabled:opacity-60"
+    >
+      <Send className="w-4 h-4" /> {"Nachricht"}
+    </button>
+  );
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────────
+type FriendshipStatus = "none" | "pending_sent" | "pending_received" | "accepted";
+
 interface PublicPost {
-  id: number;
-  image_url: string;
-  caption: string | null;
-  restaurant_name: string | null;
-  created_at: string;
-  like_count: number;
-  comment_count: number;
+  id: number; image_url: string; caption: string | null;
+  restaurant_name: string | null; created_at: string;
+  like_count: number; comment_count: number;
 }
 
 interface PublicProfileData {
-  name: string | null;
-  photoUrl: string | null;
-  bio: string | null;
-  city: string | null;
-  country: string | null;
-  postCount: number;
-  posts: PublicPost[];
+  name: string | null; photoUrl: string | null;
+  bio: string | null; city: string | null; country: string | null;
+  isPrivate: boolean; postCount: number; posts: PublicPost[];
+  friendshipStatus: FriendshipStatus;
 }
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function PublicProfilePage() {
   const [, params] = useRoute("/u/:userEmail");
   const userEmail = params?.userEmail ? decodeURIComponent(params.userEmail) : "";
-
   const currentEmail = localStorage.getItem("restosmart_email") ?? "";
+
+  const [friendStatus, setFriendStatus] = useState<FriendshipStatus>("none");
 
   // Redirect to own profile if viewing self
   useEffect(() => {
@@ -129,16 +203,21 @@ export default function PublicProfilePage() {
   }, [userEmail, currentEmail]);
 
   const { data, isLoading, isError } = useQuery<PublicProfileData>({
-    queryKey: ["public-profile", userEmail],
+    queryKey: ["public-profile", userEmail, currentEmail],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/public-profile/${encodeURIComponent(userEmail)}`);
+      const qs = currentEmail ? `?viewer=${encodeURIComponent(currentEmail)}` : "";
+      const r = await fetch(`${API_BASE}/api/public-profile/${encodeURIComponent(userEmail)}${qs}`);
       if (!r.ok) throw new Error("not found");
       return r.json();
     },
     enabled: !!userEmail,
   });
 
-  useSeo({ title: data?.name ? `${data.name} – RestoSmart` : "Profil – RestoSmart" });
+  useEffect(() => {
+    if (data?.friendshipStatus) setFriendStatus(data.friendshipStatus);
+  }, [data?.friendshipStatus]);
+
+  useSeo({ title: data?.name ? `${data.name} – RestoSmart` : "Profil – RestoSmart", description: data?.bio ?? "RestoSmart Nutzerprofil" });
 
   const displayName = data?.name || userEmail.split("@")[0] || "Nutzer";
 
@@ -168,9 +247,7 @@ export default function PublicProfilePage() {
             <div className="h-3.5 w-48 rounded-lg bg-muted/40 animate-pulse" />
           </div>
           <div className="grid grid-cols-3 gap-1 mt-6">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-muted/40 animate-pulse" />
-            ))}
+            {Array.from({ length: 9 }).map((_, i) => <div key={i} className="aspect-square rounded-xl bg-muted/40 animate-pulse" />)}
           </div>
         </div>
       )}
@@ -181,9 +258,7 @@ export default function PublicProfilePage() {
           <p className="text-4xl mb-4">{"👤"}</p>
           <p className="font-bold text-lg mb-1">{"Profil nicht gefunden"}</p>
           <p className="text-sm text-muted-foreground mb-6">{"Dieses Profil existiert nicht oder ist nicht öffentlich."}</p>
-          <button onClick={() => window.history.back()} className="text-sm text-primary hover:underline">
-            {"← Zurück"}
-          </button>
+          <button onClick={() => window.history.back()} className="text-sm text-primary hover:underline">{"← Zurück"}</button>
         </div>
       )}
 
@@ -193,10 +268,7 @@ export default function PublicProfilePage() {
           {/* ── Hero ── */}
           <div className="flex flex-col items-center px-5 pt-6 pb-5 text-center">
             <div className="relative mb-4">
-              <div
-                className="absolute inset-0 rounded-full blur-xl opacity-30 scale-110"
-                style={{ background: GRAD }}
-              />
+              <div className="absolute inset-0 rounded-full blur-xl opacity-30 scale-110" style={{ background: GRAD }} />
               <div className="relative">
                 <Avatar photoUrl={data.photoUrl} name={displayName} size="lg" />
               </div>
@@ -204,50 +276,71 @@ export default function PublicProfilePage() {
 
             <h1 className="text-xl font-black tracking-tight mb-0.5">{displayName}</h1>
 
-            {/* Location */}
-            {(data.city || data.country) && (
+            {(data.city || data.country) && !data.isPrivate && (
               <p className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
                 <MapPin className="w-3.5 h-3.5 shrink-0" />
                 {[data.city, data.country].filter(Boolean).join(", ")}
               </p>
             )}
 
-            {/* Level badge */}
-            <div className="mt-2">
-              <LevelBadge postCount={data.postCount} />
-            </div>
+            {!data.isPrivate && <div className="mt-2"><LevelBadge postCount={data.postCount} /></div>}
 
-            {/* Bio */}
-            {data.bio && (
-              <p className="text-sm text-foreground/80 mt-3 max-w-xs leading-relaxed">
-                {data.bio}
-              </p>
+            {data.bio && !data.isPrivate && (
+              <p className="text-sm text-foreground/80 mt-3 max-w-xs leading-relaxed">{data.bio}</p>
             )}
 
-            {/* Post count stat */}
-            <div className="mt-4 flex items-center gap-1.5 text-sm">
-              <Grid3X3 className="w-4 h-4 text-muted-foreground" />
-              <span className="font-bold">{data.postCount}</span>
-              <span className="text-muted-foreground">{"Beiträge"}</span>
-            </div>
+            {/* Action buttons */}
+            {currentEmail && currentEmail !== userEmail && (
+              <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
+                <FriendButton
+                  viewerEmail={currentEmail}
+                  targetEmail={userEmail}
+                  status={friendStatus}
+                  onStatusChange={setFriendStatus}
+                />
+                {friendStatus === "accepted" && (
+                  <MessageButton viewerEmail={currentEmail} targetEmail={userEmail} />
+                )}
+              </div>
+            )}
+
+            {!data.isPrivate && (
+              <div className="mt-4 flex items-center gap-1.5 text-sm">
+                <Grid3X3 className="w-4 h-4 text-muted-foreground" />
+                <span className="font-bold">{data.postCount}</span>
+                <span className="text-muted-foreground">{"Beiträge"}</span>
+              </div>
+            )}
           </div>
 
-          {/* ── Divider ── */}
-          <div className="h-px bg-border/60 mx-4 mb-4" />
-
-          {/* ── Posts grid ── */}
-          {data.posts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-              <p className="text-4xl mb-3">{"📸"}</p>
-              <p className="font-bold text-base mb-1">{"Noch keine Beiträge"}</p>
-              <p className="text-sm text-muted-foreground">{"Dieser Nutzer hat noch nichts gepostet."}</p>
+          {/* ── Private profile lock screen ── */}
+          {data.isPrivate && friendStatus !== "accepted" ? (
+            <div className="flex flex-col items-center justify-center py-12 px-8 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+                <Lock className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="font-bold text-base mb-1">{"Privates Profil"}</p>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                {"Dieses Profil ist privat. Füge "}
+                {displayName}
+                {" als Freund hinzu, um Beiträge zu sehen."}
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-1 px-1 pb-4">
-              {data.posts.map(post => (
-                <PostGridItem key={post.id} post={post} />
-              ))}
-            </div>
+            <>
+              <div className="h-px bg-border/60 mx-4 mb-4" />
+              {data.posts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+                  <p className="text-4xl mb-3">{"📸"}</p>
+                  <p className="font-bold text-base mb-1">{"Noch keine Beiträge"}</p>
+                  <p className="text-sm text-muted-foreground">{"Dieser Nutzer hat noch nichts gepostet."}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-1 px-1 pb-4">
+                  {data.posts.map(post => <PostGridItem key={post.id} post={post} />)}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

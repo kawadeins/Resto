@@ -18,6 +18,7 @@ import Feed from "@/pages/feed";
 import ForBusiness from "@/pages/for-business";
 import PlanDetail from "@/pages/plan-detail";
 import PublicProfile from "@/pages/public-profile";
+import Messages from "@/pages/messages";
 import { AppRatingPrompt } from "@/components/app-rating-prompt";
 import { SmartReminders } from "@/components/smart-reminders";
 import { SocialProvider } from "@/contexts/social-context";
@@ -36,6 +37,8 @@ function Router() {
       <Route path="/feed" component={Feed} />
       <Route path="/profile" component={Profile} />
       <Route path="/u/:userEmail" component={PublicProfile} />
+      <Route path="/messages" component={Messages} />
+      <Route path="/messages/:convId" component={Messages} />
       <Route path="/settings" component={Settings} />
       <Route path="/for-business" component={ForBusiness} />
       <Route path="/plan/:id" component={PlanDetail} />

@@ -92,6 +92,7 @@ router.get("/:email", requireSelfAccess, async (req, res) => {
       city: (profile as any)?.city ?? null,
       country: (profile as any)?.country ?? null,
       age: (profile as any)?.age ?? null,
+      isPrivate: profile?.isPrivate ?? false,
       favoriteCuisines: profile?.favoriteCuisines ?? [],
       dietaryStyle: profile?.dietaryStyle ?? "no_preference",
       allergies: profile?.allergies ?? [],
@@ -133,6 +134,7 @@ const UpdateBody = z.object({
   city: z.string().nullable().optional(),
   country: z.string().nullable().optional(),
   age: z.number().nullable().optional(),
+  isPrivate: z.boolean().optional(),
   favoriteCuisines: z.array(z.string()).optional(),
   dietaryStyle: z.string().optional(),
   allergies: z.array(z.string()).optional(),
@@ -158,6 +160,7 @@ router.patch("/:email", requireSelfAccess, async (req, res) => {
     if (body.city !== undefined) updates.city = body.city;
     if (body.country !== undefined) updates.country = body.country;
     if (body.age !== undefined) updates.age = body.age;
+    if (body.isPrivate !== undefined) updates.isPrivate = body.isPrivate;
     if (body.favoriteCuisines !== undefined) updates.favoriteCuisines = body.favoriteCuisines;
     if (body.dietaryStyle !== undefined) updates.dietaryStyle = body.dietaryStyle;
     if (body.allergies !== undefined) updates.allergies = body.allergies;

@@ -47,6 +47,7 @@ interface CustomerProfile {
   city: string | null;
   country: string | null;
   age: number | null;
+  isPrivate: boolean;
   favoriteCuisines: string[];
   dietaryStyle: string;
   allergies: string[];
@@ -1129,6 +1130,7 @@ function EditProfileSheet({
     photoUrl: profile.photoUrl,
     favoriteCuisines: [...profile.favoriteCuisines],
     dietaryStyle: profile.dietaryStyle,
+    isPrivate: profile.isPrivate ?? false,
   });
 
   useEffect(() => {
@@ -1142,6 +1144,7 @@ function EditProfileSheet({
         photoUrl: profile.photoUrl,
         favoriteCuisines: [...profile.favoriteCuisines],
         dietaryStyle: profile.dietaryStyle,
+        isPrivate: profile.isPrivate ?? false,
       });
     }
   }, [open]);
@@ -1155,6 +1158,7 @@ function EditProfileSheet({
       age: draft.age ? parseInt(draft.age) : null,
       favoriteCuisines: draft.favoriteCuisines,
       dietaryStyle: draft.dietaryStyle,
+      isPrivate: draft.isPrivate,
     };
     if (draft.photoUrl !== profile.photoUrl && draft.photoUrl) {
       updates.photoUrl = draft.photoUrl;
@@ -1315,6 +1319,33 @@ function EditProfileSheet({
                 );
               })}
             </div>
+          </div>
+
+          {/* ── Privacy toggle ─────────── */}
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Datenschutz"}</Label>
+            <button
+              type="button"
+              onClick={() => setDraft(d => ({ ...d, isPrivate: !d.isPrivate }))}
+              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all text-left ${
+                draft.isPrivate
+                  ? "bg-muted/60 border-border/60"
+                  : "bg-emerald-50 border-emerald-200"
+              }`}
+            >
+              <span className="text-xl">{draft.isPrivate ? "🔒" : "🌍"}</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold">{draft.isPrivate ? "Profil privat" : "Profil öffentlich"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {draft.isPrivate
+                    ? "Nur Freunde können deine Beiträge sehen"
+                    : "Alle können dein Profil und deine Beiträge sehen"}
+                </p>
+              </div>
+              <div className={`w-11 h-6 rounded-full transition-all relative ${draft.isPrivate ? "bg-muted-foreground/30" : "bg-emerald-500"}`}>
+                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${draft.isPrivate ? "left-0.5" : "left-5"}`} />
+              </div>
+            </button>
           </div>
 
           <div className="pb-2" />
