@@ -1,0 +1,217 @@
+Implement a strict "Public Profile Privacy Separation" for the customer social/profile system.
+
+IMPORTANT:
+- Do NOT redesign the whole app
+- Do NOT break the new social feed/profile system
+- This is a privacy and profile-visibility control task
+- The goal is to clearly separate what the profile owner sees vs what other users see
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+When a normal user clicks on another user's profile from the feed:
+
+They should ONLY see the public version of that profile.
+
+They must NOT see private personal data such as:
+- saved restaurants
+- visited places
+- plans
+- group plans
+- restaurant saves
+- personal food preferences
+- private activity
+- internal stats that belong only to the profile owner
+
+Public viewers should only see safe public profile information.
+
+==================================================
+1. CREATE TWO PROFILE VIEWS
+==================================================
+
+Separate the profile system into:
+
+A. Owner View (self profile)
+B. Public View (other people's profile)
+
+A. Owner View:
+The logged-in user viewing their OWN profile can see:
+- all personal profile data
+- saved restaurants
+- visited places
+- plans
+- friends tools
+- profile settings/edit controls
+- private activity where appropriate
+
+B. Public View:
+A user viewing SOMEONE ELSE'S profile can only see public-safe data.
+
+==================================================
+2. PUBLIC PROFILE MUST ONLY SHOW SAFE DATA
+==================================================
+
+When viewing another user's profile from the feed, show only:
+
+- profile picture
+- display name / username
+- optional short bio
+- public posts / photos
+- maybe simple public stats if allowed (for example post count)
+
+Allowed public sections:
+- Beiträge / Posts
+- optional public badge/level if harmless
+- optional friend/follow button if supported
+
+Do NOT show:
+- Gespeichert / saved restaurants
+- Besuchte Orte if private
+- private plans
+- private group plans
+- internal profile settings
+- personal taste/preferences unless intentionally public
+- hidden/private activity
+- owner-only stats
+
+==================================================
+3. FEED → PROFILE CLICK BEHAVIOR
+==================================================
+
+When a user taps on the author of a post in the public feed:
+
+- open the PUBLIC profile view for that user
+- not the self-owner profile structure
+- not the editable version
+- not the private profile hub
+
+This route should be safe for public viewing.
+
+==================================================
+4. HIDE PRIVATE SECTIONS FROM OTHER USERS
+==================================================
+
+If the profile currently contains sections like:
+- saved restaurants
+- plans
+- visited restaurants
+- food preference tags
+- internal activity summaries
+
+Then for public profile view:
+- hide them completely
+OR
+- show only if they are explicitly marked public-safe
+
+Default behavior should be privacy-safe.
+
+==================================================
+5. SELF PROFILE STILL REMAINS FULL
+==================================================
+
+Do NOT remove features from the owner's own profile.
+
+The profile owner should still be able to see:
+- their private sections
+- saved places
+- plans
+- visited places
+- editable data
+- profile settings
+- private tools
+
+Only the public viewer must be restricted.
+
+==================================================
+6. PUBLIC PROFILE LAYOUT
+==================================================
+
+Public profile should feel simple and clean.
+
+Suggested public layout:
+1. avatar
+2. name / username
+3. short bio
+4. posts grid or posts list
+
+Optional:
+- small public stat like "Beiträge"
+- follow/friend button if supported
+
+No settings.
+No private cards.
+No saved restaurant blocks.
+
+==================================================
+7. ROUTING / ACCESS LOGIC
+==================================================
+
+Implement correct routing logic so the system knows:
+
+- if current logged-in user is viewing their own profile → show owner view
+- if current logged-in user is viewing another person's profile → show public view
+
+This must be enforced in UI and data fetching.
+
+==================================================
+8. DATA FETCHING PRIVACY
+==================================================
+
+Do NOT just hide the private sections visually.
+
+Also make sure the public profile endpoint / data fetch does NOT return private profile data unnecessarily.
+
+Public profile API should only return:
+- public name
+- avatar
+- bio
+- public posts
+- other truly public-safe fields
+
+Private profile API can still return richer owner-only data.
+
+==================================================
+9. GERMAN UX COPY
+==================================================
+
+Use clear labels such as:
+- Profil
+- Beiträge
+- Über mich
+- Freund hinzufügen / Folgen (if supported)
+
+Do NOT show private labels like:
+- Gespeichert
+- Meine Pläne
+- Besuchte Orte
+to other users unless explicitly intended public
+
+==================================================
+10. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. When user opens their OWN profile:
+- all owner features still visible
+
+B. When user opens ANOTHER USER'S profile from the feed:
+- only public-safe data is shown
+- saved restaurants are hidden
+- private plans are hidden
+- private profile tools are hidden
+- only posts, name, avatar, and bio are shown
+
+C. No private profile data is leaked through the public profile API
+
+==================================================
+FINAL RESULT
+==================================================
+
+Profiles must now have two clear modes:
+
+1. My Profile = full personal/private hub
+2. Public Profile = safe public identity page
+
+Clicking a user from the feed must never expose their private restaurant saves, plans, or other personal profile data.

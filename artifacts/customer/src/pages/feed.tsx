@@ -658,6 +658,8 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
   const displayName = post.user_name || post.user_email?.split("@")[0] || "?";
   const caption = post.caption || "";
   const isLong = caption.length > 100;
+  const isOwnPost = email && post.user_email && email.toLowerCase() === post.user_email.toLowerCase();
+  const authorHref = isOwnPost ? "/profile" : `/u/${encodeURIComponent(post.user_email || "")}`;
 
   return (
     <article
@@ -675,11 +677,11 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
     >
       {/* ── Header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <Link href="/profile">
+        <Link href={authorHref}>
           <Avatar photoUrl={post.user_photo} name={displayName} />
         </Link>
         <div className="flex-1 min-w-0">
-          <Link href="/profile">
+          <Link href={authorHref}>
             <p className="text-[15px] font-bold truncate hover:text-primary transition-colors leading-tight">{displayName}</p>
           </Link>
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">

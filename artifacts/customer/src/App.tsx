@@ -17,6 +17,7 @@ import Friends from "@/pages/friends";
 import Feed from "@/pages/feed";
 import ForBusiness from "@/pages/for-business";
 import PlanDetail from "@/pages/plan-detail";
+import PublicProfile from "@/pages/public-profile";
 import { AppRatingPrompt } from "@/components/app-rating-prompt";
 import { SmartReminders } from "@/components/smart-reminders";
 import { SocialProvider } from "@/contexts/social-context";
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/friends" component={Friends} />
       <Route path="/feed" component={Feed} />
       <Route path="/profile" component={Profile} />
+      <Route path="/u/:userEmail" component={PublicProfile} />
       <Route path="/settings" component={Settings} />
       <Route path="/for-business" component={ForBusiness} />
       <Route path="/plan/:id" component={PlanDetail} />
