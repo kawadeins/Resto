@@ -11,6 +11,7 @@ import Explore from "@/pages/explore";
 import Restaurant from "@/pages/restaurant";
 import MyBookings from "@/pages/my-bookings";
 import Profile from "@/pages/profile";
+import Settings from "@/pages/settings";
 import MealPlan from "@/pages/meal-plan";
 import Friends from "@/pages/friends";
 import ForBusiness from "@/pages/for-business";
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/meal-plan" component={MealPlan} />
       <Route path="/friends" component={Friends} />
       <Route path="/profile" component={Profile} />
+      <Route path="/settings" component={Settings} />
       <Route path="/for-business" component={ForBusiness} />
       <Route path="/plan/:id" component={PlanDetail} />
       <Route component={NotFound} />

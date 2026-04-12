@@ -1240,6 +1240,10 @@ export default function Profile() {
         {ownerPremium && (
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
         )}
+        {/* Settings gear icon */}
+        <Link href="/settings" className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-background/60 hover:bg-background/80 border border-border/50 flex items-center justify-center transition-colors z-10" title="Einstellungen">
+          <Settings className="w-4 h-4 text-muted-foreground" />
+        </Link>
         <div className="container mx-auto px-4 max-w-4xl py-8 md:py-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
             <AvatarUpload
@@ -1306,12 +1310,6 @@ export default function Profile() {
 
       <div className="container mx-auto px-4 max-w-4xl py-6 space-y-5">
 
-        {/* ── Owner Premium Card (always at top) ──────── */}
-        <OwnerPremiumCard
-          isPremium={ownerPremium}
-          onOpenModal={() => setShowPremiumModal(true)}
-        />
-
         {/* ── Smart Insight card ──────────────────────── */}
         <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="p-2.5 rounded-xl bg-primary/10 shrink-0 self-start sm:self-auto">
@@ -1337,15 +1335,13 @@ export default function Profile() {
         {/* ── Main Tabs ───────────────────────────────── */}
         <Tabs defaultValue="overview">
           <TabsList className="flex overflow-x-auto gap-1 w-full mb-6 h-auto p-1 scrollbar-hide">
-            <TabsTrigger value="overview" className="shrink-0 text-xs sm:text-sm">Übersicht</TabsTrigger>
-            <TabsTrigger value="security" className="shrink-0 text-xs sm:text-sm">Konto</TabsTrigger>
-            <TabsTrigger id="tab-food" value="food" className="shrink-0 text-xs sm:text-sm">Geschmack</TabsTrigger>
-            <TabsTrigger value="activity" className="shrink-0 text-xs sm:text-sm">Verlauf</TabsTrigger>
-            <TabsTrigger value="social" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
-              <Activity className="w-3 h-3" /> Sozial
+            <TabsTrigger value="overview" className="shrink-0 text-xs sm:text-sm">{"Übersicht"}</TabsTrigger>
+            <TabsTrigger id="tab-food" value="food" className="shrink-0 text-xs sm:text-sm">{"Geschmack"}</TabsTrigger>
+            <TabsTrigger value="friends" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
+              <Users className="w-3 h-3" /> {"Freunde"}
             </TabsTrigger>
-            <TabsTrigger value="habits" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
-              <Flame className="w-3 h-3" /> Habits
+            <TabsTrigger value="aktivitaet" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
+              <Activity className="w-3 h-3" /> {"Aktivität"}
             </TabsTrigger>
           </TabsList>
 
@@ -1800,18 +1796,49 @@ export default function Profile() {
             )}
           </TabsContent>
 
+          {/* ═══ TAB: FREUNDE ══════════════════════════════════════════════ */}
+          <TabsContent value="friends" className="space-y-5">
+
+            {/* Friends management */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" /> {"Freunde verwalten"}
+                </h3>
+                <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  {"Freunde-Seite"} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              <FriendsPanel email={email} compact />
+            </div>
+
+            {/* CTA to standalone friends page */}
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
+              <UserPlus className="w-5 h-5 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">{"Gemeinsam ausgehen"}</p>
+                <p className="text-xs text-muted-foreground">{"Lade Freunde ein und plant gemeinsame Abende"}</p>
+              </div>
+              <Button asChild size="sm" variant="outline" className="rounded-xl shrink-0">
+                <Link href="/friends"><ChevronRight className="w-4 h-4" /></Link>
+              </Button>
+            </div>
+          </TabsContent>
+
           {/* ═══ TAB: AKTIVITÄT ══════════════════════════════════════════ */}
-          <TabsContent value="activity" className="space-y-5">
+          <TabsContent value="aktivitaet" className="space-y-5">
+
+            {/* Booking history */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" /> Buchungsverlauf
+                <Calendar className="w-4 h-4 text-primary" /> {"Buchungsverlauf"}
               </h3>
               {profile.recentBookings.length === 0 ? (
                 <div className="text-center py-10 space-y-3">
                   <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto" />
-                  <p className="text-muted-foreground text-sm">Noch keine Buchungen</p>
+                  <p className="text-muted-foreground text-sm">{"Noch keine Buchungen"}</p>
                   <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link href="/explore">Jetzt Tisch reservieren</Link>
+                    <Link href="/explore">{"Jetzt Tisch reservieren"}</Link>
                   </Button>
                 </div>
               ) : (
@@ -1821,32 +1848,32 @@ export default function Profile() {
                       <div>
                         <div className="font-medium text-sm">{b.restaurantName}</div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          {format(parseISO(b.date), "dd.MM.yyyy")} · {b.time} · {b.partySize} {b.partySize === 1 ? "Person" : "Personen"}
+                          {format(parseISO(b.date), "dd.MM.yyyy")} {" · "} {b.time} {" · "} {b.partySize} {b.partySize === 1 ? "Person" : "Personen"}
                         </div>
                       </div>
                       <StatusBadge status={b.status} />
                     </div>
                   ))}
                   <Link href="/my-bookings" className="flex items-center justify-center gap-1.5 mt-4 text-sm text-primary font-medium hover:underline">
-                    Alle Buchungen ansehen <ChevronRight className="w-4 h-4" />
+                    {"Alle Buchungen ansehen"} <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Loyalty history */}
+            {/* Loyalty points overview */}
             <div className={`bg-card border rounded-2xl p-5 bg-gradient-to-br ${tierCfg.gradient}`}>
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Award className="w-4 h-4 text-primary" /> Punkte-Übersicht
+                <Award className="w-4 h-4 text-primary" /> {"Punkte-Übersicht"}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl bg-background/60 p-4 text-center">
                   <div className="text-3xl font-serif font-bold text-primary">{profile.loyalty.points}</div>
-                  <div className="text-xs text-muted-foreground mt-1">Aktuelle Punkte</div>
+                  <div className="text-xs text-muted-foreground mt-1">{"Aktuelle Punkte"}</div>
                 </div>
                 <div className="rounded-xl bg-background/60 p-4 text-center">
                   <div className="text-3xl font-serif font-bold">{profile.loyalty.totalEarned}</div>
-                  <div className="text-xs text-muted-foreground mt-1">Gesamt verdient</div>
+                  <div className="text-xs text-muted-foreground mt-1">{"Gesamt verdient"}</div>
                 </div>
               </div>
               <div className="mt-4 space-y-2">
@@ -1857,157 +1884,25 @@ export default function Profile() {
                 <Progress value={profile.loyalty.tierPct} className="h-3" />
                 {profile.loyalty.nextTier ? (
                   <p className="text-xs text-center text-muted-foreground">
-                    {profile.loyalty.pointsToNext} Punkte bis {profile.loyalty.nextTier}
+                    {profile.loyalty.pointsToNext} {"Punkte bis"} {profile.loyalty.nextTier}
                   </p>
                 ) : (
-                  <p className="text-xs text-center text-yellow-600 font-medium">Gold-Status erreicht 🌟</p>
+                  <p className="text-xs text-center text-yellow-600 font-medium">{"Gold-Status erreicht ⭐"}</p>
                 )}
               </div>
             </div>
-          </TabsContent>
 
-          {/* ═══ TAB: KONTO & SICHERHEIT ════════════════════════════════ */}
-          <TabsContent value="security" className="space-y-5">
-
-            {/* 1. Privacy & Security — most important, shown first */}
-            <PrivacySecuritySection onLogout={handleLogout} />
-
-            {/* 2. Personal identity data */}
-            <div className="bg-card border rounded-2xl p-5 md:p-6 space-y-5">
-              <h3 className="font-bold text-base flex items-center gap-2">
-                <User className="w-4 h-4 text-primary" /> Meine Identität
-              </h3>
-
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Profilbild</label>
-                  <div className="flex items-center gap-4">
-                    <AvatarUpload
-                      photoUrl={profile.photoUrl}
-                      name={profile.name}
-                      email={profile.email}
-                      onUpload={(url) => save({ photoUrl: url } as any)}
-                      size="sm"
-                    />
-                    <div className="text-xs text-muted-foreground">Tippen zum Ändern</div>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Anzeigename</label>
-                  <EditableField
-                    value={profile.name}
-                    onChange={(v) => save({ name: v } as any)}
-                    placeholder="Deinen Namen eingeben…"
-                    icon={User}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Anmelde-E-Mail</label>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="w-4 h-4 shrink-0" />
-                    <span>{profile.email}</span>
-                    <Badge variant="secondary" className="text-[10px] ml-auto flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Verifiziert
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Restaurant owner access */}
+            {/* Social activity feed */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Crown className="w-4 h-4 text-primary" /> Restaurant-Bereich
-              </h3>
-              {ownerPremium ? (
-                <button
-                  onClick={() => { window.location.href = window.location.origin + "/restosmart/"; }}
-                  className="flex items-center gap-3 w-full p-3 rounded-xl bg-primary/5 hover:bg-primary/10 border border-primary/20 transition-colors text-left"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
-                    <Building2 className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold">Zum Restaurant-Dashboard</div>
-                    <div className="text-xs text-muted-foreground">Premium aktiv · Alle Module verfügbar</div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowPremiumModal(true)}
-                  className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                    <Store className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">Business Premium freischalten</div>
-                    <div className="text-xs text-muted-foreground">Für Restaurant-, Café- und Barbesitzer</div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-
-            {/* 4. Feedback & Bewertung */}
-            <div className="bg-card border rounded-2xl p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <Star className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base leading-none">Feedback & Bewertung</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Teile deine Erfahrung mit RestoSmart</p>
-                </div>
-              </div>
-              <ProfileFeedbackWidget email={email} />
-            </div>
-
-            {/* 5. Sign out — lowest priority */}
-            <div className="bg-card border rounded-2xl p-5">
-              <h3 className="font-bold text-base mb-3 text-muted-foreground/70 text-sm">Sitzung</h3>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-muted/50 transition-colors text-left text-sm text-muted-foreground hover:text-foreground"
-              >
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  <X className="w-4 h-4" />
-                </div>
-                Abmelden / Konto wechseln
-              </button>
-            </div>
-          </TabsContent>
-
-          {/* ═══ TAB: SOZIAL ══════════════════════════════════════════════ */}
-          <TabsContent value="social" className="space-y-5">
-
-            {/* ── Friends management ──────────────────────────────────── */}
-            <div className="bg-card border rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-base flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" /> Freunde verwalten
-                </h3>
-                <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  Freunde-Seite <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-              <FriendsPanel email={email} compact />
-            </div>
-
-            {/* Activity feed */}
-            <div className="bg-card border rounded-2xl p-5">
-              <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-primary" /> Meine Aktivitäten
+                <Activity className="w-4 h-4 text-primary" /> {"Meine Aktivitäten"}
               </h3>
               {activityFeed.length === 0 ? (
                 <div className="text-center py-10 space-y-3">
-                  <Users className="w-10 h-10 text-muted-foreground/40 mx-auto" />
-                  <p className="text-muted-foreground text-sm">Noch keine öffentlichen Aktivitäten</p>
+                  <Activity className="w-10 h-10 text-muted-foreground/40 mx-auto" />
+                  <p className="text-muted-foreground text-sm">{"Noch keine Aktivitäten"}</p>
                   <p className="text-xs text-muted-foreground/60">
-                    Buche ein Restaurant oder schreibe eine Bewertung — deine Aktivitäten erscheinen dann hier
+                    {"Buche ein Restaurant oder schreibe eine Bewertung — deine Aktivitäten erscheinen dann hier"}
                   </p>
                 </div>
               ) : (
@@ -2021,7 +1916,7 @@ export default function Profile() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium leading-snug">
-                            Du {label.verb} bei <span className="text-primary">{a.restaurantName}</span>
+                            {"Du"} {label.verb} {"bei"} <span className="text-primary">{a.restaurantName}</span>
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(a.createdAt)}</p>
                         </div>
@@ -2041,156 +1936,18 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Social privacy notice */}
+            {/* Privacy notice */}
             <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex items-start gap-3">
               <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-semibold text-foreground mb-1">Datenschutz-Tipp</p>
+                <p className="text-xs font-semibold text-foreground mb-1">{"Datenschutz-Tipp"}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Du kannst in den Konto-Einstellungen festlegen, ob deine Aktivitäten öffentlich, nur für Freunde oder privat sichtbar sind.
+                  {"Gehe zu Einstellungen, um festzulegen ob deine Aktivitäten öffentlich, nur für Freunde oder privat sichtbar sind."}
                 </p>
+                <Link href="/settings" className="text-xs text-primary font-medium mt-1.5 inline-flex items-center gap-1 hover:underline">
+                  {"Einstellungen"} <ChevronRight className="w-3 h-3" />
+                </Link>
               </div>
-            </div>
-          </TabsContent>
-
-          {/* ═══ TAB: HABITS ══════════════════════════════════════════════ */}
-          <TabsContent value="habits" className="space-y-5">
-            {/* Streak card */}
-            <div className="bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-transparent border border-orange-500/20 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-bold text-base flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-500" /> Tages-Streak
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Täglich einloggen um deinen Streak zu halten</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-serif font-black text-orange-500">{habit.data.currentStreak}</div>
-                  <div className="text-xs text-muted-foreground">Tage</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                <div className="bg-background/60 rounded-xl p-3 text-center">
-                  <div className="text-xl font-bold">{habit.data.longestStreak}</div>
-                  <div className="text-xs text-muted-foreground">Bester Streak</div>
-                </div>
-                <div className="bg-background/60 rounded-xl p-3 text-center">
-                  <div className="text-xl font-bold">{habit.data.totalPoints}</div>
-                  <div className="text-xs text-muted-foreground">Habit-Punkte</div>
-                </div>
-              </div>
-              {habit.nextMilestone && (
-                <div className="mt-3 text-xs text-muted-foreground text-center">
-                  Nächster Meilenstein bei <strong>{habit.nextMilestone.target} Tagen</strong>: {habit.nextMilestone.reward}
-                </div>
-              )}
-            </div>
-
-            {/* Daily missions */}
-            {habit.dailyMissions.length > 0 && (
-              <div className="bg-card border rounded-2xl p-5">
-                <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-primary" /> Tagesmissionen
-                </h3>
-                <div className="space-y-3">
-                  {habit.dailyMissions.map((m) => (
-                    <div key={m.id} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-2">
-                          <span className="text-base">{m.icon}</span>
-                          <span className="font-medium">{m.label}</span>
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {Math.min(m.progress, m.target)}/{m.target}
-                          {m.completed && <span className="ml-1 text-green-600 font-bold">✓</span>}
-                        </span>
-                      </div>
-                      <Progress value={Math.min((m.progress / m.target) * 100, 100)} className="h-2" />
-                      {m.completed && (
-                        <p className="text-xs text-green-600 font-medium">+{m.reward} Punkte erzielt!</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Weekly missions */}
-            {habit.weeklyMissions.length > 0 && (
-              <div className="bg-card border rounded-2xl p-5">
-                <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-accent" /> Wochenmissionen
-                </h3>
-                <div className="space-y-3">
-                  {habit.weeklyMissions.map((m) => (
-                    <div key={m.id} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-2">
-                          <span className="text-base">{m.icon}</span>
-                          <span className="font-medium">{m.label}</span>
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {Math.min(m.progress, m.target)}/{m.target}
-                          {m.completed && <span className="ml-1 text-green-600 font-bold">✓</span>}
-                        </span>
-                      </div>
-                      <Progress value={Math.min((m.progress / m.target) * 100, 100)} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Achievements */}
-            <div className="bg-card border rounded-2xl p-5">
-              <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-500" /> Errungenschaften
-              </h3>
-              {habit.unlockedAchievements.length === 0 ? (
-                <div className="text-center py-6 space-y-2">
-                  <Trophy className="w-8 h-8 text-muted-foreground/30 mx-auto" />
-                  <p className="text-sm text-muted-foreground">Noch keine Errungenschaften</p>
-                  <p className="text-xs text-muted-foreground/60">Buche Restaurants & pflege deinen Streak um Abzeichen zu verdienen</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {habit.unlockedAchievements.map((ach) => (
-                    <div key={ach.id} className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                      <span className="text-2xl shrink-0">{ach.icon}</span>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold leading-snug truncate">{ach.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{ach.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* All locked achievements preview */}
-              {habit.allAchievements && Object.values(habit.allAchievements).filter((a: any) => !a.unlockedAt).length > 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-xs text-muted-foreground mb-3 font-medium">Noch zu freischalten</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {Object.values(habit.allAchievements).filter((a: any) => !a.unlockedAt).slice(0, 4).map((ach: any) => (
-                      <div key={ach.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/50 opacity-50">
-                        <span className="text-2xl shrink-0 grayscale">{ach.icon}</span>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold leading-snug truncate">{ach.label}</p>
-                          <p className="text-[10px] text-muted-foreground">{ach.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Local-only notice */}
-            <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex items-start gap-3">
-              <Smartphone className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Deine Habit-Daten werden lokal auf diesem Gerät gespeichert. Sie werden nicht mit anderen Geräten synchronisiert.
-              </p>
             </div>
           </TabsContent>
         </Tabs>

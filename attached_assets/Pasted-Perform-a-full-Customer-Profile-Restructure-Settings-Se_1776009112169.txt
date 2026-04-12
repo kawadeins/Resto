@@ -1,0 +1,264 @@
+Perform a full "Customer Profile Restructure + Settings Separation" pass.
+
+IMPORTANT:
+- Do NOT redesign the entire app from scratch
+- Do NOT remove existing systems
+- Do NOT break current customer flows
+- This is a structural reorganization pass with clear separation of responsibilities
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Restructure the customer-side navigation and user account experience so that:
+
+1. A NEW dedicated "Profil" section becomes the user's social/personal hub
+2. The OLD profile/account page is converted into a proper "Settings / Einstellungen" section
+3. Business owner / restaurant-owner identity remains separate and does NOT mix with the customer social profile
+4. Existing systems (plans, friends, preferences, activity) are integrated correctly into the new customer profile hub
+
+==================================================
+1. CREATE A NEW CUSTOMER PROFILE HUB
+==================================================
+
+Create a dedicated customer-facing "Profil" section/tab.
+
+This new Profile must become the user's personal/social identity page inside the app.
+
+It should contain and unify:
+
+- profile picture
+- display name / username
+- short bio or personal status if appropriate
+- food preferences / lifestyle preferences
+- nightlife / restaurant taste profile
+- level / progress if available
+- friend summary
+- plans summary
+- visited restaurants
+- saved/favorite places
+- personal activity feed
+
+This must feel like:
+- the user's real profile
+- a social identity page
+- a personal hub
+
+==================================================
+2. MOVE SOCIAL/PERSONAL FEATURES INTO THE NEW PROFILE
+==================================================
+
+Integrate all user-personal systems into this new "Profil" section, including:
+
+- Freunde
+- S Plan / Solo Plan if relevant
+- Gruppenpläne / group plans
+- visited places
+- food/activity preferences
+- activity/history related to the user's own actions
+
+The new Profile should show these in clean sections, for example:
+- Profilkopf
+- Meine Pläne
+- Freunde
+- Besuchte Orte
+- Gespeicherte Orte
+- Aktivitäten
+- Mein Geschmack / Präferenzen
+
+Do NOT make it messy.
+Keep it highly readable.
+
+==================================================
+3. CONVERT THE OLD PROFILE PAGE INTO SETTINGS
+==================================================
+
+The existing old profile/account page should NO LONGER act as the user's main profile.
+
+Instead, convert it into a proper "Settings / Einstellungen" section.
+
+This Settings section should contain things like:
+- account settings
+- notifications
+- privacy
+- app preferences
+- legal / terms / privacy policy
+- help/support
+- logout
+- other account-management tools
+
+This section should feel like a normal app settings page, not a social profile.
+
+==================================================
+4. SEPARATE CUSTOMER PROFILE FROM BUSINESS OWNER PROFILE
+==================================================
+
+Do NOT mix the restaurant owner / business owner identity into the customer profile hub.
+
+The customer "Profil" is ONLY for the normal user.
+
+The restaurant/business owner identity belongs to:
+- business dashboard
+- premium/business context
+- owner/business account areas
+
+If there is any old profile content that actually belongs to the restaurant owner/business dashboard:
+- keep it on the business side
+- do NOT show it as part of the customer social profile
+
+==================================================
+5. KEEP EXISTING FEATURES WORKING
+==================================================
+
+Do NOT remove:
+- friends system
+- plans system
+- group plan system
+- saved places
+- user preference logic
+
+Keep them working, but surface them properly inside the new Profile hub.
+
+Standalone routes/tabs may still exist if needed, but the new Profil should become the central place where the user feels:
+"this is my page"
+
+==================================================
+6. PROFILE CONTENT STRUCTURE (IMPORTANT)
+==================================================
+
+Organize the new Profile into clean sections such as:
+
+A. Header
+- photo
+- name
+- username
+- level/status
+
+B. Quick stats
+- friends count
+- plans count
+- visited places
+- saved places
+
+C. Personal sections
+- Meine Pläne
+- Gruppenpläne
+- Freunde
+- Besuchte Orte
+- Mein Geschmack / Präferenzen
+- Aktivitäten
+
+The user must not get lost.
+
+==================================================
+7. USER PREFERENCES BELONG IN PROFILE HUB
+==================================================
+
+All the smart customer-side user preference items such as:
+- food style
+- nightlife style
+- restaurant type interest
+- preferred vibe
+- outing preferences
+
+should be integrated into the new Profile hub in a clean way.
+
+This is part of the user's identity/taste profile.
+
+It should NOT feel like technical settings.
+
+==================================================
+8. SETTINGS CONTENT STRUCTURE
+==================================================
+
+The new Settings page should include only settings/account-management style content, for example:
+
+- Konto
+- Datenschutz
+- Benachrichtigungen
+- Sprache
+- Hilfe
+- Abmelden
+- Rechtliches
+
+If needed, move these items out of the old profile and into Settings.
+
+==================================================
+9. NAVIGATION / TAB BEHAVIOR
+==================================================
+
+Ensure the customer navigation clearly distinguishes:
+
+- Profil = user social/personal hub
+- Einstellungen = app/account settings
+
+No confusion between the two.
+
+If bottom navigation or user menus need to be updated:
+- do so cleanly
+- keep labels clear
+- avoid breaking existing routing
+
+==================================================
+10. GERMAN UX COPY
+==================================================
+
+Use clear German labels:
+
+- Profil
+- Einstellungen
+- Meine Pläne
+- Gruppenpläne
+- Freunde
+- Besuchte Orte
+- Gespeichert
+- Aktivitäten
+- Mein Geschmack
+- Konto
+- Datenschutz
+- Benachrichtigungen
+- Abmelden
+
+==================================================
+11. READABILITY / UX
+==================================================
+
+The new Profile hub must be:
+- clean
+- social
+- lively
+- easy to scan
+
+The new Settings page must be:
+- simple
+- utility-focused
+- organized
+- calm
+
+Do NOT overload either screen.
+
+==================================================
+12. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. New customer Profil exists and works as a dedicated user hub
+B. Friends/plans/preferences/activity are surfaced inside it
+C. Old profile/account page has been converted to Settings
+D. Settings now contains account/privacy/logout/legal style items
+E. Customer profile is clearly separate from business owner identity
+F. Existing systems still work
+G. User does not get lost between Profil and Einstellungen
+
+==================================================
+FINAL RESULT
+==================================================
+
+The app must clearly separate:
+
+1. Customer Profil = personal/social identity hub
+2. Einstellungen = account/privacy/app settings
+3. Business owner identity = business dashboard only
+
+The result should feel organized, modern, and intuitive.
