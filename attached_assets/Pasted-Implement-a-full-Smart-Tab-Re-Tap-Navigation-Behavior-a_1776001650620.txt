@@ -1,0 +1,144 @@
+Implement a full "Smart Tab Re-Tap Navigation Behavior" across the customer app.
+
+IMPORTANT:
+- Do NOT redesign the UI
+- Do NOT change the visual style
+- This is a UX/navigation behavior upgrade
+- Apply it to ALL bottom navigation sections, not just Home
+
+========================
+GOAL
+========================
+
+Make the bottom navigation tabs smart and useful.
+
+Expected behavior:
+
+1. If the user taps a tab for a section they are NOT currently on:
+   - navigate normally to that section
+
+2. If the user taps the SAME tab for the section they are ALREADY on:
+   - scroll instantly/smoothly back to the TOP of that section's main page
+
+3. If the user is inside a nested/sub page within that section
+   (for example detail screen, modal flow, generated plan state, deeper internal view):
+   - return to the ROOT page of that section first
+   - then scroll to top if needed
+
+This behavior should work across all main sections.
+
+========================
+APPLY TO ALL MAIN TABS
+========================
+
+At minimum apply this to:
+
+- Startseite / Home
+- Entdecken
+- Essensplan / Plan
+- Buchungen
+- Freunde
+- Profil
+
+Examples:
+
+A. Home:
+- user scrolls very far down the homepage
+- taps Home tab again
+- app scrolls back to top
+
+B. Plan:
+- user is deep inside group plan creation or plan state
+- taps Plan tab again
+- app returns to the main Plan root screen
+
+C. Buchungen:
+- user is inside booking detail/history lower down
+- taps Buchungen again
+- return to bookings root and/or scroll top
+
+D. Profil / Freunde / Entdecken:
+- same smart re-tap behavior
+
+========================
+UX REQUIREMENTS
+========================
+
+- smooth scroll, not janky
+- fast response
+- no double navigation flicker
+- no broken history behavior
+- no full page reload
+- no state corruption
+
+========================
+TECHNICAL BEHAVIOR
+========================
+
+Implement a reusable pattern for bottom-tab behavior:
+
+- detect re-tap on current tab
+- if current route belongs to that tab:
+  - scroll container to top
+  OR
+  - navigate to section root if currently in nested state
+- otherwise normal navigate
+
+If needed:
+- add refs to scroll containers
+- add section root route mapping
+- add helper utility for smart tab handling
+
+========================
+NESTED VIEW HANDLING
+========================
+
+For sections with inner flows (especially Plan):
+
+- if the user is in creation flow / detail / result state
+- tapping the tab again should NOT do nothing
+- it should reset back to the main section entry page
+
+Example:
+Plan tab should act like a quick "back to Plan home" shortcut.
+
+========================
+MAKE ALL TABS FEEL ALIVE
+========================
+
+The bottom navigation should feel fully active and premium.
+
+No dead tabs.
+No useless repeat taps.
+Every repeated tap should do something helpful.
+
+========================
+FINAL VALIDATION
+========================
+
+Verify all these cases:
+
+1. Home tab re-tap scrolls to top
+2. Discover tab re-tap scrolls to top
+3. Plan tab re-tap returns to plan root if in nested plan flow
+4. Bookings tab re-tap returns to bookings root/top
+5. Friends tab re-tap returns to root/top
+6. Profile tab re-tap returns to root/top
+
+Also verify:
+- no broken navigation
+- no duplicated route push chaos
+- no weird scroll bugs
+- mobile behavior is smooth
+
+========================
+FINAL RESULT
+========================
+
+Bottom navigation must become smart, premium, and helpful.
+
+Tapping the current tab again should always help the user:
+- go back to top
+- or return to the section root
+
+No more manual long scrolling back up.
