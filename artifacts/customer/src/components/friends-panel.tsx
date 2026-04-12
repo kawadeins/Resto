@@ -4,12 +4,15 @@
  */
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { UserPlus, UserCheck, UserX, X, Check, Search, Users, ChevronRight, MessageCircle } from "lucide-react";
+import { UserPlus, UserCheck, UserX, X, Check, Search, Users, ChevronRight, MessageCircle, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+interface ConvSummary { id: number; type: string; unread_count: number; participants: { user_email: string }[] }
 
 import {
   getFriends,
@@ -33,7 +36,9 @@ function Avatar({ name, photoUrl, size = 10 }: { name: string; photoUrl: string 
   );
 }
 
-function FriendRow({ friend, email, onRemove }: { friend: FriendProfile; email: string; onRemove: () => void }) {
+function FriendRow({ friend, email, unreadCount, onRemove }: {
+  friend: FriendProfile; email: string; unreadCount: number; onRemove: () => void;
+}) {
   const [confirming, setConfirming] = useState(false);
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -45,6 +50,22 @@ function FriendRow({ friend, email, onRemove }: { friend: FriendProfile; email: 
       toast({ title: "Freund entfernt" });
       onRemove();
     },
+  });
+
+  const startDM = useMutation({
+    mutationFn: async () => {
+      const r = await fetch(`${API_BASE}/api/messages/start-dm`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderEmail: email, recipientEmail: friend.email }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
+      return r.json();
+    },
+    onSuccess: (d) => {
+      window.location.href = `${import.meta.env.BASE_URL?.replace(/\/$/, "") ?? ""}/messages/${d.conversationId}`;
+    },
+    onError: (e: any) => toast({ title: e.message ?? "Fehler", variant: "destructive" }),
   });
 
   return (
@@ -64,17 +85,33 @@ function FriendRow({ friend, email, onRemove }: { friend: FriendProfile; email: 
           </Button>
         </div>
       ) : (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5 shrink-0">
           <Link href={`/u/${encodeURIComponent(friend.email)}`}>
             <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-primary" title="Profil ansehen">
               <Users className="w-4 h-4" />
             </Button>
           </Link>
-          <Link href="/messages">
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-primary" title="Nachricht senden">
-              <MessageCircle className="w-4 h-4" />
+          {/* Chat button with unread badge */}
+          <div className="relative">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Chat öffnen"
+              onClick={() => startDM.mutate()}
+              disabled={startDM.isPending}
+            >
+              {startDM.isPending
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <MessageCircle className="w-4 h-4" />
+              }
             </Button>
-          </Link>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-red-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center pointer-events-none shadow-sm">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </div>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl text-muted-foreground hover:text-destructive" onClick={() => setConfirming(true)}>
             <UserX className="w-4 h-4" />
           </Button>
@@ -156,6 +193,28 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
       return data;
     },
   });
+
+  // Fetch conversations to compute per-friend unread counts
+  const { data: conversations = [] } = useQuery<ConvSummary[]>({
+    queryKey: ["conversations", email],
+    queryFn: () =>
+      fetch(`${API_BASE}/api/messages/conversations/${encodeURIComponent(email)}`, { credentials: "include" })
+        .then(r => r.json()),
+    enabled: !!email && friends.length > 0,
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+
+  // Build a map: friend email → unread_count
+  const unreadMap: Record<string, number> = {};
+  for (const conv of conversations) {
+    if (conv.type === "direct") {
+      const otherEmail = conv.participants.find(p => p.user_email !== email)?.user_email;
+      if (otherEmail && conv.unread_count > 0) {
+        unreadMap[otherEmail] = conv.unread_count;
+      }
+    }
+  }
 
   const { data: requests = { incoming: [], outgoing: [] }, isLoading: loadingReqs } = useQuery({
     queryKey: ["friend-requests", email],
@@ -271,7 +330,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
         ) : (
           <div className="space-y-1">
             {(compact ? friends.slice(0, 5) : friends).map(f => (
-              <FriendRow key={f.email} friend={f} email={email} onRemove={() => qc.invalidateQueries({ queryKey: ["friends", email] })} />
+              <FriendRow key={f.email} friend={f} email={email} unreadCount={unreadMap[f.email] ?? 0} onRemove={() => qc.invalidateQueries({ queryKey: ["friends", email] })} />
             ))}
             {compact && friends.length > 5 && (
               <button className="w-full text-xs font-bold text-primary py-2 flex items-center justify-center gap-1 hover:bg-primary/5 rounded-2xl transition-colors">

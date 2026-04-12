@@ -141,12 +141,32 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
 }
 
 // ── Message Button ─────────────────────────────────────────────────────────────
+interface ConvSummary { id: number; type: string; unread_count: number; participants: { user_email: string }[] }
+
 function MessageButton({ viewerEmail, targetEmail, status }: {
   viewerEmail: string; targetEmail: string; status: FriendshipStatus;
 }) {
   const { toast } = useToast();
   const isFriends = status === "accepted";
   const isPending = status === "pending_sent" || status === "pending_received";
+
+  // Fetch conversations only when friends to find unread count
+  const { data: conversations = [] } = useQuery<ConvSummary[]>({
+    queryKey: ["conversations", viewerEmail],
+    queryFn: () =>
+      fetch(`${API_BASE}/api/messages/conversations/${encodeURIComponent(viewerEmail)}`, { credentials: "include" })
+        .then(r => r.json()),
+    enabled: isFriends && !!viewerEmail,
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+
+  const unreadCount = isFriends
+    ? (conversations.find(c =>
+        c.type === "direct" &&
+        c.participants.some(p => p.user_email === targetEmail)
+      )?.unread_count ?? 0)
+    : 0;
 
   const startDM = useMutation({
     mutationFn: async () => {
@@ -164,16 +184,14 @@ function MessageButton({ viewerEmail, targetEmail, status }: {
     onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
   });
 
-  const label = isPending ? "Anfrage ausstehend" : "Nachricht senden";
-
   if (isFriends) {
     return (
       <button
         onClick={() => startDM.mutate()}
         disabled={startDM.isPending}
-        className="flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-2xl transition-all active:scale-[0.97] disabled:opacity-60 border"
+        className="relative flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-2xl transition-all active:scale-[0.97] disabled:opacity-60 border"
         style={{
-          background: "rgba(var(--primary-rgb, 120 60 220) / 0.08)",
+          background: "rgba(120, 60, 220, 0.08)",
           borderColor: "hsl(263 70% 52% / 0.35)",
           color: "hsl(263, 70%, 48%)",
           backdropFilter: "blur(8px)",
@@ -188,12 +206,18 @@ function MessageButton({ viewerEmail, targetEmail, status }: {
           (e.currentTarget as HTMLButtonElement).style.transform = "";
         }}
       >
-        <Send className="w-4 h-4" /> {"Nachricht senden"}
+        <Send className="w-4 h-4" /> {"Chat öffnen"}
+        {unreadCount > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center shadow-sm">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </button>
     );
   }
 
   // Disabled state — not yet friends or pending
+  const label = isPending ? "Anfrage ausstehend" : "Nachricht senden";
   return (
     <button
       disabled

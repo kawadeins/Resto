@@ -1,0 +1,110 @@
+Implement a complete "Smart Messaging Access System" across profile and friends list.
+
+IMPORTANT:
+- Do NOT redesign the app
+- Keep existing UI structure
+- Upgrade messaging entry points and logic only
+- Maintain premium visual consistency
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Unify messaging access across:
+- user profile
+- friends list
+- social interactions
+
+Make messaging:
+- conditional (only after friendship)
+- visible
+- smart
+- responsive
+
+==================================================
+1. PROFILE BUTTON SYSTEM
+==================================================
+
+Add two buttons:
+
+[Freund hinzufügen]   [Nachricht senden / Chat öffnen]
+
+States:
+
+A. Not friends:
+- "Nachricht senden"
+- disabled
+- opacity reduced
+- tooltip:
+  "Nachricht erst nach Annahme möglich"
+
+B. Request pending:
+- disabled
+- label: "Anfrage ausstehend"
+
+C. Friends:
+- label changes to "Chat öffnen"
+- fully clickable
+- opens chat instantly
+
+==================================================
+2. UNREAD BADGE (PROFILE)
+==================================================
+
+If unread messages exist:
+- show red badge on "Chat öffnen"
+- small, clean, not noisy
+
+==================================================
+3. FRIENDS LIST INTEGRATION
+==================================================
+
+Inside friends list:
+
+Each friend card must include:
+- avatar
+- name
+- small "Chat öffnen" button
+- unread indicator if messages exist
+
+Behavior:
+- one tap → opens chat
+- no navigation friction
+
+==================================================
+4. CHAT AUTO-CREATION
+==================================================
+
+When friendship becomes accepted:
+
+- create chat automatically (or lazily on first open)
+- link both users
+
+==================================================
+5. BACKEND SECURITY
+==================================================
+
+Enforce:
+- messaging allowed ONLY if friendship accepted
+- no bypass via API
+- validate before sending messages
+
+==================================================
+6. MOBILE UX
+==================================================
+
+- buttons aligned
+- no overflow
+- clean spacing
+- easy tap targets
+
+==================================================
+7. FINAL VALIDATION
+==================================================
+
+Verify:
+- profile button works in all states
+- chat opens correctly
+- unread badge works
+- friends list has chat access
+- no unauthorized messaging
