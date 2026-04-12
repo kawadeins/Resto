@@ -15,6 +15,18 @@ function getFomoViewers(restaurantId: number): number | null {
   return 8 + (seed % 18);
 }
 
+function getFomoSlots(restaurantId: number): number | null {
+  const hour = new Date().getHours();
+  if (hour < 11 || hour > 22) return null;
+  const seed = (restaurantId * 11 + hour * 17 + 3) % 100;
+  if (seed > 28) return null;
+  return 1 + (seed % 4);
+}
+
+function hasFriendEndorsement(restaurantId: number): boolean {
+  return (restaurantId * 31 + 7) % 10 < 3;
+}
+
 interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
   showFlashDeal?: boolean;
@@ -126,6 +138,10 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
 
   // FOMO: live viewer count (deterministic per restaurant + hour)
   const fomoViewers = useMemo(() => getFomoViewers(restaurant.id), [restaurant.id]);
+  // FOMO: limited slots warning
+  const fomoSlots = useMemo(() => getFomoSlots(restaurant.id), [restaurant.id]);
+  // Social proof: friend endorsement
+  const friendEndorsement = useMemo(() => hasFriendEndorsement(restaurant.id), [restaurant.id]);
 
   return (
     <Link href={`/restaurant/${restaurant.id}`} className="block group press-scale">
@@ -234,6 +250,16 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                 {fomoViewers} schauen gerade
+              </span>
+            )}
+            {fomoSlots !== null && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-200">
+                {"⚡ Nur noch "}{fomoSlots}{fomoSlots === 1 ? " Platz!" : " Plätze!"}
+              </span>
+            )}
+            {friendEndorsement && !fomoSlots && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-200">
+                {"👥 Freunde empfehlen"}
               </span>
             )}
           </div>

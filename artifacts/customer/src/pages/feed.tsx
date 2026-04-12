@@ -63,6 +63,21 @@ if (!document.getElementById("feed-styles")) {
     .bm-bounce  { animation: bookmarkBounce 0.32s cubic-bezier(.36,.07,.19,.97) both; }
     .slide-up   { animation: slideUp 0.35s cubic-bezier(.2,.8,.3,1) both; }
     .fade-in    { animation: fadeIn 0.25s ease both; }
+    @keyframes rewardEntrance {
+      0%  { opacity:0; transform:translateY(28px) scale(0.94); }
+      60% { opacity:1; transform:translateY(-4px) scale(1.01); }
+      100%{ opacity:1; transform:translateY(0) scale(1); }
+    }
+    @keyframes progressFill {
+      from { width:0; }
+      to   { width:var(--pct); }
+    }
+    @keyframes nudgePop {
+      0%  { opacity:0; transform:scale(0.92) translateY(12px); }
+      100%{ opacity:1; transform:scale(1) translateY(0); }
+    }
+    .reward-entrance { animation: rewardEntrance 0.55s cubic-bezier(.2,.8,.3,1) both; }
+    .nudge-pop       { animation: nudgePop 0.4s cubic-bezier(.2,.8,.3,1) both; }
     .shimmer-line {
       background: linear-gradient(90deg,
         hsl(var(--muted)) 25%,
@@ -81,8 +96,9 @@ const GRAD = "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))";
 const GRAD_SOFT = "linear-gradient(135deg,hsl(263,70%,52%,0.1),hsl(330,85%,58%,0.1))";
 
 // ── API helpers ───────────────────────────────────────────────────────────────
-const fetchFeed = (viewer: string) =>
-  fetch(`${API_BASE}/api/posts?viewer=${encodeURIComponent(viewer)}&limit=20`).then(r => { if(!r.ok) throw new Error(); return r.json(); });
+const fetchFeed = (viewer: string, offset = 0, limit = 12) =>
+  fetch(`${API_BASE}/api/posts?viewer=${encodeURIComponent(viewer)}&limit=${limit}&offset=${offset}`)
+    .then(r => { if(!r.ok) throw new Error(); return r.json(); });
 
 const fetchComments = (postId: number) =>
   fetch(`${API_BASE}/api/posts/${postId}/comments`).then(r => { if(!r.ok) throw new Error(); return r.json(); });
@@ -658,9 +674,10 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
 }
 
 // ── Post Card ─────────────────────────────────────────────────────────────────
-function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
+function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }: {
   post: any; email: string; userName: string; userPhoto: string | null;
   onOpenComments: (id: number) => void;
+  onLiked?: () => void;
 }) {
   const { gainXp } = useXpGain();
   const [liked, setLiked] = useState(post.likedByMe);
@@ -688,7 +705,11 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
     const prev = liked;
     setLiked(!prev);
     setLikeCount((c: number) => c + (prev ? -1 : 1));
-    if (!prev) gainXp(10, "Reaktion");
+    if (!prev) {
+      gainXp(10, "Reaktion");
+      if ("vibrate" in navigator) navigator.vibrate(12);
+      onLiked?.();
+    }
     try {
       const r = await apiToggleLike(post.id, email);
       setLiked(r.liked);
@@ -910,6 +931,163 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
   );
 }
 
+// ── XP Tier Config ────────────────────────────────────────────────────────────
+const XP_TIERS = [
+  { name: "Bronze", next: "Silver", min: 0,   nextMin: 100,  color: "#cd7f32" },
+  { name: "Silver", next: "Gold",   min: 100,  nextMin: 250,  color: "#94a3b8" },
+  { name: "Gold",   next: "Elite",  min: 250,  nextMin: 500,  color: "#f59e0b" },
+  { name: "Elite",  next: null,     min: 500,  nextMin: null, color: "hsl(263,70%,52%)" },
+];
+
+// ── XP Progress Bar ───────────────────────────────────────────────────────────
+function XpProgressBar({ points }: { points: number }) {
+  const tierIdx = XP_TIERS.findIndex((t, i) =>
+    points >= t.min && (XP_TIERS[i + 1] === undefined || points < XP_TIERS[i + 1].min)
+  );
+  const tier = XP_TIERS[Math.max(0, tierIdx)];
+  const next = tier.next ? XP_TIERS[tierIdx + 1] : null;
+  if (!next) return null;
+  const pct = Math.min(100, Math.round(((points - tier.min) / (next.min - tier.min)) * 100));
+  const remaining = next.min - points;
+
+  return (
+    <div className="px-4 py-2.5 border-b" style={{ borderColor: "hsl(var(--border)/0.5)", background: "hsl(var(--background)/0.97)" }}>
+      <div className="max-w-[600px] mx-auto flex items-center gap-3">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] font-black" style={{ color: tier.color }}>{tier.name}</span>
+        </div>
+        <div className="flex-1 relative h-2 rounded-full overflow-hidden bg-muted">
+          <div
+            className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
+            style={{ width: `${pct}%`, background: `linear-gradient(90deg,${tier.color},${next ? XP_TIERS[tierIdx + 1].color : tier.color})` }}
+          />
+        </div>
+        <span className="text-[11px] font-black shrink-0" style={{ color: next ? XP_TIERS[tierIdx + 1].color : tier.color }}>{next.name}</span>
+        <span className="text-[10px] text-muted-foreground font-semibold shrink-0 whitespace-nowrap">
+          {remaining} Pkt. fehlen
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Variable Reward Cards ──────────────────────────────────────────────────────
+const REWARD_DEFS = [
+  {
+    emoji: "🔥",
+    label: "Trending jetzt",
+    title: "Top Restaurant heute Abend",
+    subtitle: "Besonders beliebt — von der Community empfohlen",
+    cta: "Entdecken",
+    href: "/explore",
+    grad: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))",
+  },
+  {
+    emoji: "💥",
+    label: "Nur heute",
+    title: "Flash-Deals in deiner Nähe",
+    subtitle: "Bis zu 30 % Rabatt — Angebote laufen bald ab",
+    cta: "Deals ansehen",
+    href: "/explore",
+    grad: "linear-gradient(135deg,hsl(330,85%,58%),hsl(14,90%,60%))",
+  },
+  {
+    emoji: "👥",
+    label: "Social",
+    title: "Was deine Freunde empfehlen",
+    subtitle: "Beliebte Spots diese Woche im Freundeskreis",
+    cta: "Freunde entdecken",
+    href: "/explore",
+    grad: "linear-gradient(135deg,hsl(200,80%,50%),hsl(263,70%,52%))",
+  },
+];
+
+function RewardCard({ idx }: { idx: number }) {
+  const def = REWARD_DEFS[idx % REWARD_DEFS.length];
+  return (
+    <div className="reward-entrance rounded-[20px] overflow-hidden relative" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.06)" }}>
+      <div className="relative p-5" style={{ background: def.grad }}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">{def.label}</span>
+              <span className="w-1 h-1 rounded-full bg-white/40" />
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            </div>
+            <h3 className="text-white font-bold text-[17px] leading-tight mb-1">{def.title}</h3>
+            <p className="text-white/75 text-[12px] leading-snug">{def.subtitle}</p>
+          </div>
+          <div className="text-[3.5rem] leading-none select-none">{def.emoji}</div>
+        </div>
+        <Link
+          href={def.href}
+          className="mt-4 inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-[13px] font-bold px-4 py-2 rounded-xl transition-all active:scale-95"
+        >
+          {def.cta} <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ── Premium Nudge Card ─────────────────────────────────────────────────────────
+function PremiumNudgeCard({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="nudge-pop rounded-[20px] overflow-hidden border" style={{
+      background: "linear-gradient(135deg,hsl(263,70%,52%,0.07),hsl(330,85%,58%,0.07))",
+      borderColor: "hsl(263,70%,52%,0.2)",
+      boxShadow: "0 4px 20px hsl(263,70%,52%,0.08)"
+    }}>
+      <div className="p-5">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-xl" style={{ background: GRAD }}>
+            {"✨"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm leading-tight">{"Du bist aktiv — maximiere dein Erlebnis"}</p>
+            <p className="text-muted-foreground text-xs mt-0.5 leading-snug">
+              {"Mit Premium siehst du exklusive Deals, frühe Reservierungen & mehr"}
+            </p>
+          </div>
+          <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <Link
+          href="/profile"
+          className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-white py-2.5 rounded-xl active:scale-95 transition-all hover:opacity-90"
+          style={{ background: GRAD }}
+        >
+          {"14 Tage kostenlos testen"} <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ── Feed list builder (injects reward + nudge cards) ──────────────────────────
+type FeedItem =
+  | { kind: "post";   post: any }
+  | { kind: "reward"; idx: number }
+  | { kind: "nudge" };
+
+function buildFeedItems(posts: any[], showNudge: boolean): FeedItem[] {
+  const items: FeedItem[] = [];
+  let rewardCycle = 0;
+  for (let i = 0; i < posts.length; i++) {
+    items.push({ kind: "post", post: posts[i] });
+    // Inject premium nudge after 7th post when engagement is high
+    if (i === 6 && showNudge) {
+      items.push({ kind: "nudge" });
+    }
+    // Inject variable reward every 5 posts (not at the very end)
+    if ((i + 1) % 5 === 0 && i < posts.length - 1) {
+      items.push({ kind: "reward", idx: rewardCycle++ });
+    }
+  }
+  return items;
+}
+
 // ── Guest Banner ──────────────────────────────────────────────────────────────
 function GuestBanner() {
   return (
@@ -929,6 +1107,8 @@ function GuestBanner() {
 }
 
 // ── Feed Page ─────────────────────────────────────────────────────────────────
+const PAGE_SIZE = 12;
+
 export default function FeedPage() {
   useSeo({ title: "Feed – RestoSmart" });
 
@@ -939,58 +1119,127 @@ export default function FeedPage() {
   const [showCreate, setShowCreate] = useState(false);
   const qc = useQueryClient();
 
+  // Infinite scroll state
+  const [allPosts, setAllPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const offsetRef = useRef(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Engagement tracking
+  const [loyaltyPts, setLoyaltyPts] = useState<number | null>(null);
+  const interactionRef = useRef(0);
+  const [showNudge, setShowNudge] = useState(false);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+
+  const bumpInteraction = useCallback(() => {
+    interactionRef.current += 1;
+    if (interactionRef.current >= 3 && !nudgeDismissed) {
+      setShowNudge(true);
+    }
+  }, [nudgeDismissed]);
+
+  // Email sync
   useEffect(() => {
     const sync = () => setEmail(localStorage.getItem("restosmart_email") ?? "");
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
   }, []);
 
+  // Profile + loyalty
   useEffect(() => {
     if (!email) return;
     fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) { setUserName(d.name || email.split("@")[0]); setUserPhoto(d.photoUrl || null); } });
+      .then(d => {
+        if (d) {
+          setUserName(d.name || email.split("@")[0]);
+          setUserPhoto(d.photoUrl || null);
+          setLoyaltyPts(d.loyalty?.points ?? 0);
+        }
+      });
   }, [email]);
 
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["feed", email],
-    queryFn: () => fetchFeed(email),
-    refetchInterval: 60_000,
-  });
+  // Initial load
+  useEffect(() => {
+    setLoading(true);
+    setAllPosts([]);
+    offsetRef.current = 0;
+    setHasMore(true);
+    fetchFeed(email, 0, PAGE_SIZE)
+      .then(data => {
+        setAllPosts(data);
+        offsetRef.current = data.length;
+        if (data.length < PAGE_SIZE) setHasMore(false);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [email]);
+
+  // Load more
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const data = await fetchFeed(email, offsetRef.current, PAGE_SIZE);
+      if (data.length < PAGE_SIZE) setHasMore(false);
+      setAllPosts(prev => {
+        const existingIds = new Set(prev.map((p: any) => p.id));
+        return [...prev, ...data.filter((p: any) => !existingIds.has(p.id))];
+      });
+      offsetRef.current += data.length;
+    } catch {}
+    finally { setLoadingMore(false); }
+  }, [email, loadingMore, hasMore]);
+
+  // Intersection observer sentinel
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) loadMore();
+    }, { rootMargin: "400px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [loadMore]);
+
+  const feedItems = buildFeedItems(allPosts, showNudge && !nudgeDismissed);
 
   return (
     <div className="min-h-screen pb-28" style={{ background: "hsl(var(--background))" }}>
-      {/* ── Header ── */}
-      <div
-        className="sticky top-0 z-30 px-4 py-3.5 flex items-center justify-between"
-        style={{ background: "hsl(var(--background)/0.92)", backdropFilter: "blur(18px)", borderBottom: "1px solid hsl(var(--border)/0.5)" }}
-      >
-        <div>
-          <h1 className="font-serif font-bold text-[20px] leading-tight">{"Feed"}</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">{"Food-Erlebnisse der Community"}</p>
+      {/* ── Sticky Header ── */}
+      <div className="sticky top-0 z-30" style={{ background: "hsl(var(--background)/0.92)", backdropFilter: "blur(18px)" }}>
+        <div className="px-4 py-3.5 flex items-center justify-between border-b" style={{ borderColor: "hsl(var(--border)/0.5)" }}>
+          <div>
+            <h1 className="font-serif font-bold text-[20px] leading-tight">{"Feed"}</h1>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{"Food-Erlebnisse der Community"}</p>
+          </div>
+          {email && (
+            <button
+              className="flex items-center gap-1.5 text-sm font-bold text-white px-4 py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
+              style={{ background: GRAD, boxShadow: "0 4px 14px hsl(263,70%,52%,0.38)" }}
+              onClick={() => setShowCreate(true)}
+            >
+              <Plus className="w-4 h-4" />{"Posten"}
+            </button>
+          )}
         </div>
-        {email && (
-          <button
-            className="flex items-center gap-1.5 text-sm font-bold text-white px-4 py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
-            style={{ background: GRAD, boxShadow: "0 4px 14px hsl(263,70%,52%,0.38)" }}
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus className="w-4 h-4" />{"Posten"}
-          </button>
-        )}
+        {/* XP Progress Strip */}
+        {email && loyaltyPts !== null && <XpProgressBar points={loyaltyPts} />}
       </div>
 
       {/* ── Content ── */}
       <div className="max-w-[600px] mx-auto px-3 sm:px-5 py-5 space-y-5">
         {!email && <GuestBanner />}
 
-        {isLoading ? (
+        {loading ? (
           <>
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
           </>
-        ) : posts.length === 0 ? (
+        ) : allPosts.length === 0 ? (
           <div className="flex flex-col items-center gap-5 py-20 text-center fade-in">
             <div className="w-24 h-24 rounded-3xl flex items-center justify-center text-5xl" style={{ background: GRAD_SOFT }}>{"✨"}</div>
             <div>
@@ -1008,21 +1257,53 @@ export default function FeedPage() {
             )}
           </div>
         ) : (
-          posts.map((post: any) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              email={email}
-              userName={userName}
-              userPhoto={userPhoto}
-              onOpenComments={setCommentPostId}
-            />
-          ))
+          <>
+            {feedItems.map((item, i) => {
+              if (item.kind === "reward") {
+                return <RewardCard key={`reward-${item.idx}`} idx={item.idx} />;
+              }
+              if (item.kind === "nudge") {
+                return (
+                  <PremiumNudgeCard
+                    key="nudge"
+                    onDismiss={() => { setNudgeDismissed(true); setShowNudge(false); }}
+                  />
+                );
+              }
+              return (
+                <PostCard
+                  key={item.post.id}
+                  post={item.post}
+                  email={email}
+                  userName={userName}
+                  userPhoto={userPhoto}
+                  onOpenComments={id => { bumpInteraction(); setCommentPostId(id); }}
+                  onLiked={bumpInteraction}
+                />
+              );
+            })}
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-4" />
+
+            {loadingMore && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+
+            {!hasMore && allPosts.length > 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm font-medium fade-in">
+                <div className="text-2xl mb-2">{"🍽️"}</div>
+                {"Du hast alles gesehen — komm morgen wieder!"}
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* ── Floating Create ── */}
-      {email && posts.length > 0 && (
+      {email && allPosts.length > 0 && (
         <button
           className="fixed bottom-24 right-4 z-20 w-14 h-14 rounded-full text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
           style={{ background: GRAD, boxShadow: "0 6px 24px hsl(263,70%,52%,0.5)" }}
@@ -1049,7 +1330,17 @@ export default function FeedPage() {
           userName={userName}
           userPhoto={userPhoto}
           onClose={() => setShowCreate(false)}
-          onCreated={() => qc.invalidateQueries({ queryKey: ["feed"] })}
+          onCreated={() => {
+            qc.invalidateQueries({ queryKey: ["feed"] });
+            setAllPosts([]);
+            offsetRef.current = 0;
+            setHasMore(true);
+            fetchFeed(email, 0, PAGE_SIZE).then(data => {
+              setAllPosts(data);
+              offsetRef.current = data.length;
+              if (data.length < PAGE_SIZE) setHasMore(false);
+            });
+          }}
         />
       )}
     </div>

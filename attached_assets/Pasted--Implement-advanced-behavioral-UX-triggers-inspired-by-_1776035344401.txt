@@ -1,0 +1,114 @@
+"}
+Implement advanced behavioral UX triggers inspired by top-performing apps (TikTok, Instagram, Uber).
+
+This is NOT manipulation.
+This is smart engagement optimization.
+
+========================
+GOAL
+========================
+
+Increase:
+- session time
+- scroll depth
+- return frequency
+- emotional engagement
+
+========================
+1. INFINITE SCROLL OPTIMIZATION
+========================
+
+- Implement seamless infinite scroll in feed
+- Preload next content before user reaches end
+- No visible loading breaks
+
+- Add “soft stop illusion”:
+  user feels like they can stop, but new content appears smoothly
+
+========================
+2. VARIABLE REWARD SYSTEM
+========================
+
+- Not every scroll gives same value
+
+Examples:
+- normal post
+- suddenly: "🔥 Top Restaurant heute"
+- suddenly: "20% Deal in deiner Nähe"
+
+This randomness creates dopamine loop
+
+========================
+3. MICRO-DOPAMINE INTERACTIONS
+========================
+
+- Like:
+  → bounce animation + subtle vibration (mobile)
+
+- Follow:
+  → smooth confirmation animation
+
+- Booking:
+  → success animation + glow
+
+- XP gain:
+  → animated counter increase
+
+========================
+4. FOMO LAYERS
+========================
+
+Add real-time signals:
+
+- "🔥 8 Leute schauen gerade dieses Restaurant"
+- "Nur noch 3 Plätze verfügbar"
+- "Heute besonders beliebt"
+
+========================
+5. PROGRESS ADDICTION
+========================
+
+- Always show:
+  XP progress
+  next level
+
+Example:
+"Noch 25 XP bis Silver"
+
+User should feel:
+"I’m close… just one more action"
+
+========================
+6. SOCIAL PROOF
+========================
+
+- Show:
+  "Freunde waren hier"
+  "Max empfiehlt das"
+
+- Highlight friend activity in feed
+
+========================
+7. SMART INTERRUPTION MOMENTS
+========================
+
+At perfect timing:
+- after 3 scrolls → show premium suggestion
+- after booking → suggest sharing
+- after like → suggest follow
+
+========================
+RULES
+========================
+
+- Smooth, never aggressive
+- No spam feeling
+- Always feel helpful
+
+========================
+RESULT
+========================
+
+User keeps scrolling longer
+User interacts more
+User returns natural
