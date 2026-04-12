@@ -141,8 +141,12 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
 }
 
 // ── Message Button ─────────────────────────────────────────────────────────────
-function MessageButton({ viewerEmail, targetEmail }: { viewerEmail: string; targetEmail: string }) {
+function MessageButton({ viewerEmail, targetEmail, status }: {
+  viewerEmail: string; targetEmail: string; status: FriendshipStatus;
+}) {
   const { toast } = useToast();
+  const isFriends = status === "accepted";
+  const isPending = status === "pending_sent" || status === "pending_received";
 
   const startDM = useMutation({
     mutationFn: async () => {
@@ -160,13 +164,49 @@ function MessageButton({ viewerEmail, targetEmail }: { viewerEmail: string; targ
     onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
   });
 
+  const label = isPending ? "Anfrage ausstehend" : "Nachricht senden";
+
+  if (isFriends) {
+    return (
+      <button
+        onClick={() => startDM.mutate()}
+        disabled={startDM.isPending}
+        className="flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-2xl transition-all active:scale-[0.97] disabled:opacity-60 border"
+        style={{
+          background: "rgba(var(--primary-rgb, 120 60 220) / 0.08)",
+          borderColor: "hsl(263 70% 52% / 0.35)",
+          color: "hsl(263, 70%, 48%)",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 1px 10px hsl(263 70% 52% / 0.12)",
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 18px hsl(263 70% 52% / 0.25)";
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.98)";
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 1px 10px hsl(263 70% 52% / 0.12)";
+          (e.currentTarget as HTMLButtonElement).style.transform = "";
+        }}
+      >
+        <Send className="w-4 h-4" /> {"Nachricht senden"}
+      </button>
+    );
+  }
+
+  // Disabled state — not yet friends or pending
   return (
     <button
-      onClick={() => startDM.mutate()}
-      disabled={startDM.isPending}
-      className="flex items-center gap-1.5 text-sm font-bold text-primary bg-primary/10 px-5 py-2.5 rounded-2xl active:scale-95 transition-all disabled:opacity-60"
+      disabled
+      title={"Nachricht erst nach Annahme möglich"}
+      className="flex items-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-2xl border cursor-not-allowed select-none"
+      style={{
+        opacity: 0.55,
+        background: "hsl(var(--muted) / 0.4)",
+        borderColor: "hsl(var(--border))",
+        color: "hsl(var(--muted-foreground))",
+      }}
     >
-      <Send className="w-4 h-4" /> {"Nachricht"}
+      <Send className="w-4 h-4" /> {label}
     </button>
   );
 }
@@ -298,9 +338,11 @@ export default function PublicProfilePage() {
                   status={friendStatus}
                   onStatusChange={setFriendStatus}
                 />
-                {friendStatus === "accepted" && (
-                  <MessageButton viewerEmail={currentEmail} targetEmail={userEmail} />
-                )}
+                <MessageButton
+                  viewerEmail={currentEmail}
+                  targetEmail={userEmail}
+                  status={friendStatus}
+                />
               </div>
             )}
 

@@ -1,0 +1,169 @@
+Implement "Conditional Messaging Button" on user profile pages.
+
+IMPORTANT:
+- Do NOT redesign the profile
+- Keep current layout
+- Only add a second button next to "Freund hinzufügen"
+- Maintain premium UI consistency
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Add a second button:
+👉 "Nachricht senden"
+
+BUT:
+- messaging is only allowed AFTER friend request is accepted
+
+==================================================
+1. ADD SECOND BUTTON (UI)
+==================================================
+
+On public user profile:
+
+Current:
+[Freund hinzufügen]
+
+Update to:
+
+[Freund hinzufügen]   [Nachricht senden]
+
+Style:
+- keep same height and radius
+- spacing between buttons
+- primary = Freund hinzufügen (gradient)
+- secondary = Nachricht senden (outline or softer gradient)
+
+Example:
+Primary:
+→ purple gradient (existing)
+
+Secondary:
+→ outline / light gradient / glass style
+
+==================================================
+2. BUTTON STATES (VERY IMPORTANT)
+==================================================
+
+The "Nachricht senden" button must have 3 states:
+
+----------------------------------------
+STATE 1 — Not friends
+----------------------------------------
+
+- Button is visible but disabled
+- slightly faded (opacity ~60%)
+- not clickable
+
+Optional tooltip:
+"Nachricht erst nach Annahme möglich"
+
+----------------------------------------
+STATE 2 — Request sent (pending)
+----------------------------------------
+
+- still disabled
+- label can stay same or:
+"Anfrage ausstehend"
+
+----------------------------------------
+STATE 3 — Friends (accepted)
+----------------------------------------
+
+- fully active button
+- clickable
+- opens chat مباشرة
+
+==================================================
+3. CLICK BEHAVIOR
+==================================================
+
+If NOT friends:
+- do nothing OR show small message:
+"Du kannst erst nach Annahme der Anfrage schreiben"
+
+If friends:
+- open direct chat
+- create chat if not exists
+
+==================================================
+4. VISUAL DESIGN (IMPORTANT)
+==================================================
+
+Make it feel premium:
+
+Option A:
+- outline button with gradient border
+
+Option B:
+- soft glass effect
+
+Option C:
+- lighter gradient than main button
+
+Hover / tap:
+- smooth scale (0.98)
+- slight glow
+
+Keep it elegant — not heavy.
+
+==================================================
+5. MOBILE UX
+==================================================
+
+On mobile:
+- buttons stack OR stay side-by-side depending on width
+- no overflow
+- clean spacing
+
+==================================================
+6. GERMAN UX COPY
+==================================================
+
+Use:
+
+- "Freund hinzufügen"
+- "Nachricht senden"
+- "Anfrage ausstehend"
+- "Nachricht erst nach Annahme möglich"
+
+==================================================
+7. BACKEND / LOGIC
+==================================================
+
+Check friendship status:
+
+if status === "accepted":
+  enable messaging
+
+else:
+  disable messaging
+
+Do NOT allow bypass:
+- chat endpoint must also validate friendship
+
+==================================================
+8. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. Button appears next to add friend
+B. Disabled before acceptance
+C. Enabled after acceptance
+D. Opens chat correctly
+E. No UI break
+F. Works on mobile
+
+==================================================
+FINAL RESULT
+==================================================
+
+Profile now feels like a real social app:
+
+- Add friend → primary action
+- Message → secondary but clear action
+
+BUT:
+No messaging without connection → protects users + improves quality

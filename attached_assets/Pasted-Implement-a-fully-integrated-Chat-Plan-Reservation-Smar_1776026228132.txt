@@ -1,0 +1,251 @@
+Implement a fully integrated "Chat + Plan + Reservation + Smart Notification System".
+
+IMPORTANT:
+- Do NOT redesign the app
+- Do NOT break existing working systems
+- This is an integration + intelligence layer
+- Must feel smooth, not complex
+- Mobile-first (iPhone)
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Turn chat into a central coordination tool for:
+
+- group plans
+- restaurant decisions
+- reservations
+- real-time updates
+
+The system must feel:
+- social
+- useful
+- intelligent
+- automated
+
+==================================================
+1. CONNECT CHAT WITH GROUP PLAN
+==================================================
+
+When a user creates a Group Plan:
+
+Automatically:
+- create a linked group chat
+- include all participants
+
+Features:
+- users can chat inside the plan
+- messages relate to the plan
+- show plan summary at top of chat
+
+Example:
+- restaurant name
+- date
+- number of people
+
+UI:
+- chat header shows:
+  "Plan: Dinner @ Restaurant X"
+
+==================================================
+2. PLAN → RESERVATION FLOW
+==================================================
+
+Inside the group chat:
+
+Add CTA:
+👉 "Reservierung senden"
+
+Flow:
+- user selects:
+  - restaurant (if not already selected)
+  - date
+  - time
+  - number of people
+
+Then:
+- send reservation request to restaurant
+
+==================================================
+3. RESTAURANT RESPONSE SYSTEM
+==================================================
+
+Restaurant owner receives:
+
+- reservation request
+- details:
+  - group size
+  - date/time
+  - user info
+
+Owner actions:
+- bestätigen (accept)
+- ablehnen (رفض)
+
+==================================================
+4. REAL-TIME STATUS IN CHAT
+==================================================
+
+After reservation request:
+
+Inside chat show:
+
+- "Reservierungsanfrage gesendet"
+- "Bestätigt" (green)
+- "Abgelehnt" (red)
+
+Update live inside chat.
+
+==================================================
+5. SMART NOTIFICATIONS SYSTEM (VERY IMPORTANT)
+==================================================
+
+Implement intelligent notifications for BOTH:
+
+A. USER
+B. RESTAURANT OWNER
+
+----------------------------------------
+USER NOTIFICATIONS
+----------------------------------------
+
+Trigger when:
+- reservation accepted
+- reservation rejected
+- friend joins plan
+- new message in plan chat
+- reminder before reservation (1 day / 2 hours)
+
+Examples:
+- "Deine Reservierung wurde bestätigt"
+- "Deine Reservierung wurde abgelehnt"
+- "Erinnerung: Dein Dinner heute um 19:00"
+
+----------------------------------------
+OWNER NOTIFICATIONS
+----------------------------------------
+
+Trigger when:
+- new reservation request arrives
+- new chat related to booking (optional)
+- important business events
+
+Examples:
+- "Neue Reservierung für 8 Personen"
+- "Heute hast du 3 Reservierungen"
+
+==================================================
+6. SMART BEHAVIOR (INTELLIGENCE LAYER)
+==================================================
+
+System learns user behavior:
+
+If user likes:
+- nightlife
+- sushi
+- cafes
+
+Send smart suggestions:
+
+Example:
+- "Basierend auf deinem Geschmack: Heute -20% bei XYZ Restaurant"
+
+Keep it subtle, not spammy.
+
+==================================================
+7. PLAN REMINDERS
+==================================================
+
+Automatically notify:
+
+- before plan date
+- before reservation time
+
+Examples:
+- 24 hours before
+- 2 hours before
+
+==================================================
+8. GROUP CHAT IMPROVEMENTS
+==================================================
+
+Inside group chat:
+
+Add:
+- participant list
+- ability to add/remove members (owner only)
+- show who accepted the plan
+
+==================================================
+9. CONNECTION BETWEEN ALL SYSTEMS
+==================================================
+
+Everything must be linked:
+
+Feed → Profile → Plan → Chat → Reservation → Notifications
+
+No isolated features.
+
+==================================================
+10. UI REQUIREMENTS
+==================================================
+
+- clean chat UI
+- visible status badges
+- no clutter
+- smooth animations
+- clear CTA buttons
+
+==================================================
+11. GERMAN UX COPY
+==================================================
+
+Use:
+
+- "Reservierung senden"
+- "Anfrage gesendet"
+- "Bestätigt"
+- "Abgelehnt"
+- "Erinnerung"
+- "Neue Nachricht"
+- "Neuer Teilnehmer"
+
+==================================================
+12. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. Plan creates chat automatically
+B. Users can chat inside plan
+C. Reservation can be sent from chat
+D. Owner receives request
+E. Owner can accept/reject
+F. Status updates appear in chat
+G. Notifications work for both sides
+H. Reminders trigger correctly
+I. No broken flows
+
+==================================================
+FINAL RESULT
+==================================================
+
+The app becomes:
+
+- social
+- interactive
+- smart
+- coordinated
+
+Users can:
+- plan
+- chat
+- reserve
+- get notified
+
+All in one smooth flow.
+
+This is no longer just an app.
+
+This is a complete dining experience platform.
