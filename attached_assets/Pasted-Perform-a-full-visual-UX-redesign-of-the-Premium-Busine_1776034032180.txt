@@ -1,0 +1,109 @@
+Perform a full visual + UX redesign of the Premium / Business upgrade section across the app.
+
+This is NOT a layout redesign.
+This is a high-end visual polish + conversion optimization.
+
+========================
+GOAL
+========================
+
+Transform the Premium section into a high-conversion, visually premium, emotionally engaging upgrade block.
+
+========================
+1. COLOR & STYLE FIX
+========================
+
+- Replace current flat background with animated gradient:
+  purple → pink → soft orange (aligned with app branding)
+
+- Add:
+  - subtle glow effect around container
+  - soft glass / blur background (backdrop-filter)
+  - rounded corners with depth
+
+- Add slow animation:
+  gradient shift every 6–8 seconds (very smooth, not distracting)
+
+========================
+2. TEXT CONSISTENCY (CRITICAL)
+========================
+
+Unify ALL Premium messaging across app:
+
+- Use ONLY:
+  "14 Tage kostenlos testen"
+
+- Remove any reference to:
+  - 30 Tage
+  - inconsistent trial durations
+
+========================
+3. PREMIUM BLOCK CONTENT
+========================
+
+Replace text with:
+
+TITLE:
+"Wachse schneller mit Premium"
+
+SUBTEXT:
+"Mehr Gäste, mehr Umsatz – automatisiert."
+
+FEATURE LIST:
+✔ Mehr Sichtbarkeit
+✔ Sofortige Buchungen
+✔ Smart Marketing Tools
+✔ Analytics & Insights
+
+BADGE:
+"🔥 14 Tage kostenlos testen"
+
+CTA BUTTON:
+"Jetzt kostenlos starten"
+
+========================
+4. CTA BUTTON IMPROVEMENT
+========================
+
+- Full-width gradient button
+- Add subtle pulse animation
+- Strong shadow for depth
+- Increase height slightly for mobile tap comfort
+
+========================
+5. MICRO-INTERACTIONS
+========================
+
+- Hover / tap:
+  - slight scale (1.02)
+  - glow intensifies
+
+- Button press:
+  - quick feedback animation
+
+========================
+6. TRUST SIGNALS
+========================
+
+Add small line under button:
+"Jederzeit kündbar – keine versteckten Kosten"
+
+========================
+7. RESPONSIVENESS
+========================
+
+Ensure:
+- looks perfect on mobile first
+- spacing balanced
+- no overflow or text wrapping issues
+
+========================
+IMPORTANT RULES
+========================
+
+- Do NOT change backend logic
+- Do NOT change navigation
+- Do NOT remove section
+
+Focus ONLY on:
+visual polish + clarity + conversion

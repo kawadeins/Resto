@@ -12,7 +12,6 @@ import {
   CheckCircle2, Circle, ArrowRight, Eye, Users, TrendingUp,
   Zap, Building2, Star, Clock, ChevronDown, ChevronUp, X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { getBizType } from "@/lib/biz-copy";
 import { track } from "@/lib/conversion-tracking";
@@ -322,26 +321,27 @@ export function GrowthActivationHub({ onUpgrade }: { onUpgrade?: () => void }) {
             {/* Upgrade CTA */}
             {progressPct >= 50 && (
               <div className="px-5 mb-4">
-                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                    <Zap className="w-4 h-4 text-white" />
+                <div className="relative overflow-hidden rounded-2xl cursor-pointer group"
+                  onClick={() => {
+                    track("upgrade_cta_clicked", { source: "activation_hub_cta" });
+                    onUpgrade?.();
+                  }}
+                >
+                  <div className="absolute inset-0 premium-gradient-bg rounded-2xl" />
+                  <div className="absolute inset-0 rounded-2xl bg-black/10" />
+                  <div className="relative z-10 flex items-center gap-3 px-4 py-3.5">
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                      <Zap className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-extrabold text-white leading-tight">{"Wachse schneller mit Premium"}</p>
+                      <p className="text-[11px] text-white/65 leading-tight">{"14 Tage kostenlos \u00B7 39,90\u20AC/Monat"}</p>
+                    </div>
+                    <div className="shrink-0 px-3 py-1.5 rounded-lg bg-white text-[12px] font-extrabold group-hover:scale-[1.03] active:scale-[0.97] transition-transform"
+                      style={{ color: "hsl(263,70%,42%)" }}>
+                      {"Starten"}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-foreground leading-tight">Jetzt sichtbar werden</p>
-                    <p className="text-[11px] text-muted-foreground leading-tight">
-                      {"Mehr Sichtbarkeit = mehr Kunden — 39,90€/Monat"}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="h-7 px-3 rounded-lg text-xs font-bold bg-gradient-to-r from-primary to-accent text-white border-0 shrink-0"
-                    onClick={() => {
-                      track("upgrade_cta_clicked", { source: "activation_hub_cta" });
-                      onUpgrade?.();
-                    }}
-                  >
-                    Starten
-                  </Button>
                 </div>
               </div>
             )}

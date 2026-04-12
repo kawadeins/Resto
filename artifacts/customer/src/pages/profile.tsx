@@ -946,7 +946,7 @@ function OwnerPremiumCard({
             </div>
           </div>
 
-          <p className="text-[10px] text-muted-foreground mt-2 text-center">30 Tage kostenlos testen · Jederzeit kündbar</p>
+          <p className="text-[10px] text-muted-foreground mt-2 text-center">{"14 Tage kostenlos testen \u00B7 Jederzeit k\u00FCndbar"}</p>
         </div>
       </div>
     </button>

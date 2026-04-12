@@ -341,3 +341,30 @@
     inset: -1px;
   }
 }
+
+/* ── Premium upgrade block animations ────────────────────────────────────────── */
+@keyframes premiumGradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes premiumGlow {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+@keyframes premiumCtaPulse {
+  0%, 100% { box-shadow: 0 4px 24px rgba(124,58,237,0.35), 0 0 0 0 rgba(124,58,237,0.25); }
+  50%       { box-shadow: 0 8px 36px rgba(124,58,237,0.55), 0 0 0 6px rgba(124,58,237,0); }
+}
+
+.premium-gradient-bg {
+  background: linear-gradient(135deg, hsl(263,70%,42%), hsl(300,70%,48%), hsl(330,85%,54%), hsl(20,90%,55%), hsl(330,85%,54%), hsl(263,70%,42%));
+  background-size: 300% 300%;
+  animation: premiumGradientShift 7s ease infinite;
+}
+.premium-glow {
+  animation: premiumGlow 4s ease-in-out infinite;
+}
+.premium-cta-pulse {
+  animation: premiumCtaPulse 2.5s ease-in-out infinite;
+}
