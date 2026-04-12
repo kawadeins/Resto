@@ -1,0 +1,145 @@
+Upgrade the Public Feed UI to a premium, modern, social-first experience.
+
+IMPORTANT:
+- Do NOT change backend logic
+- Focus on UI/UX transformation
+- Make it feel like Instagram + Airbnb hybrid
+
+==================================================
+1. POST CARD REDESIGN (CRITICAL)
+==================================================
+
+Each post must become a strong visual card:
+
+- rounded corners (16–20px)
+- shadow (soft, modern)
+- overflow hidden
+- spacing between cards (16–24px)
+
+Add:
+- subtle hover/press animation
+- scale 0.98 on tap
+
+==================================================
+2. IMAGE EXPERIENCE (VERY IMPORTANT)
+==================================================
+
+- image must dominate the card
+- aspect ratio 4:5 (like Instagram)
+- full width
+- smooth loading (fade-in)
+
+Add:
+- slight zoom on hover (desktop)
+- gradient overlay at bottom
+
+==================================================
+3. USER HEADER IMPROVEMENT
+==================================================
+
+Top of post:
+
+- avatar (circle, gradient border optional)
+- username (bold)
+- location (restaurant name, smaller, colored)
+- timestamp (light gray)
+
+Example:
+Max W.
+📍 Café Central · vor 28 Min.
+
+==================================================
+4. LIKE / COMMENT REDESIGN
+==================================================
+
+Replace current weak icons with:
+
+- larger icons
+- more spacing
+- modern style
+
+Behavior:
+- like → animate (scale + color fill)
+- count increases smoothly
+
+Add:
+- heart turns gradient when active
+- subtle bounce animation
+
+==================================================
+5. CAPTION STYLE
+==================================================
+
+- username bold
+- caption normal
+- max 2 lines (truncate with "mehr anzeigen")
+
+Example:
+Max W. Perfekte Pizza heute Abend 🔥
+
+==================================================
+6. ADD MICRO-INTERACTIONS
+==================================================
+
+- double tap image → like
+- like animation (heart pop)
+- smooth scroll inertia
+
+==================================================
+7. ADD "SAVE" BUTTON (IMPORTANT)
+==================================================
+
+Each post:
+- bookmark icon
+- saves restaurant/post
+
+==================================================
+8. ADD RESTAURANT TAG UI
+==================================================
+
+If post has restaurant:
+
+- show small pill:
+  "📍 Café Central"
+
+Clickable → opens restaurant page
+
+==================================================
+9. FEED SPACING & LAYOUT
+==================================================
+
+- center content
+- max width: 600–700px
+- mobile optimized
+- breathing space
+
+==================================================
+10. ADD EMPTY STATE (IMPORTANT)
+==================================================
+
+If no posts:
+
+- show:
+  "Noch keine Beiträge"
+  "Sei der Erste ✨"
+
+==================================================
+11. PERFORMANCE
+==================================================
+
+- lazy load images
+- virtualized list if needed
+- smooth scrolling
+
+==================================================
+12. FINAL RESULT
+==================================================
+
+Feed must feel:
+
+- alive
+- modern
+- addictive
+- premium
+
+User should WANT to scroll.

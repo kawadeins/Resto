@@ -1,28 +1,25 @@
 /**
- * Public Social Feed — Instagram-style post stream.
- * Users can view posts, like them, comment, and create new posts.
+ * Public Social Feed — Premium Instagram-style post stream.
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
-  Heart, MessageCircle, Send, X, Image, MapPin, ChevronDown,
-  Plus, Loader2, Bookmark, MoreHorizontal, Trash2, Camera
+  Heart, MessageCircle, Send, X, MapPin,
+  Plus, Loader2, Bookmark, Camera
 } from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 // ── API helpers ────────────────────────────────────────────────────────────────
-async function fetchFeed(viewer: string, offset = 0) {
-  const r = await fetch(`${API_BASE}/api/posts?viewer=${encodeURIComponent(viewer)}&limit=20&offset=${offset}`);
+async function fetchFeed(viewer: string) {
+  const r = await fetch(`${API_BASE}/api/posts?viewer=${encodeURIComponent(viewer)}&limit=20&offset=0`);
   if (!r.ok) throw new Error("Failed to fetch feed");
   return r.json();
 }
-
 async function toggleLike(postId: number, userEmail: string) {
   const r = await fetch(`${API_BASE}/api/posts/${postId}/like`, {
     method: "POST",
@@ -32,13 +29,11 @@ async function toggleLike(postId: number, userEmail: string) {
   if (!r.ok) throw new Error("Failed to toggle like");
   return r.json();
 }
-
 async function fetchComments(postId: number) {
   const r = await fetch(`${API_BASE}/api/posts/${postId}/comments`);
   if (!r.ok) throw new Error("Failed to fetch comments");
   return r.json();
 }
-
 async function addComment(postId: number, userEmail: string, text: string) {
   const r = await fetch(`${API_BASE}/api/posts/${postId}/comments`, {
     method: "POST",
@@ -62,11 +57,17 @@ function timeAgo(ts: string): string {
   return new Date(ts).toLocaleDateString("de-AT", { day: "numeric", month: "short" });
 }
 
-// ── Avatar ─────────────────────────────────────────────────────────────────────
+// ── Avatar ────────────────────────────────────────────────────────────────────
 function Avatar({ photoUrl, name, size = "md" }: { photoUrl?: string | null; name: string; size?: "sm" | "md" | "lg" }) {
-  const sz = size === "sm" ? "w-7 h-7 text-[10px]" : size === "lg" ? "w-12 h-12 text-base" : "w-9 h-9 text-xs";
+  const sz = size === "sm" ? "w-7 h-7 text-[10px]" : size === "lg" ? "w-11 h-11 text-sm" : "w-9 h-9 text-xs";
   return (
-    <div className={`${sz} rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-background`}>
+    <div
+      className={`${sz} rounded-full shrink-0 overflow-hidden flex items-center justify-center`}
+      style={{
+        background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))",
+        boxShadow: "0 0 0 2px white, 0 0 0 3.5px hsl(263,70%,52%,0.4)",
+      }}
+    >
       {photoUrl ? (
         <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
       ) : (
@@ -76,11 +77,51 @@ function Avatar({ photoUrl, name, size = "md" }: { photoUrl?: string | null; nam
   );
 }
 
-// ── Comment Sheet ──────────────────────────────────────────────────────────────
+// ── Heart Pop Animation (keyframes injected once) ──────────────────────────────
+const STYLE_ID = "feed-heart-style";
+if (!document.getElementById(STYLE_ID)) {
+  const s = document.createElement("style");
+  s.id = STYLE_ID;
+  s.textContent = `
+    @keyframes heartPop {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.5); }
+      60%  { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+    @keyframes floatHeart {
+      0%   { opacity: 1; transform: translate(-50%,-50%) scale(0.8); }
+      50%  { opacity: 1; transform: translate(-50%,-80%) scale(1.4); }
+      100% { opacity: 0; transform: translate(-50%,-130%) scale(1); }
+    }
+    .heart-pop { animation: heartPop 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+    .heart-float {
+      position: absolute;
+      pointer-events: none;
+      font-size: 4rem;
+      animation: floatHeart 0.9s ease forwards;
+      z-index: 20;
+    }
+    @keyframes imgFadeIn {
+      from { opacity: 0; transform: scale(1.04); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .img-fade-in { animation: imgFadeIn 0.5s ease both; }
+    @keyframes bookmarkPop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.3) rotate(-8deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+    .bookmark-pop { animation: bookmarkPop 0.35s cubic-bezier(.36,.07,.19,.97) both; }
+  `;
+  document.head.appendChild(s);
+}
+
+// ── Comment Sheet ─────────────────────────────────────────────────────────────
 function CommentSheet({
-  postId, postOwner, email, userName, userPhoto, onClose
+  postId, email, userName, userPhoto, onClose
 }: {
-  postId: number; postOwner: string; email: string; userName: string; userPhoto: string | null; onClose: () => void;
+  postId: number; email: string; userName: string; userPhoto: string | null; onClose: () => void;
 }) {
   const [text, setText] = useState("");
   const qc = useQueryClient();
@@ -104,35 +145,39 @@ function CommentSheet({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
       <div
-        className="bg-background rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[85vh] flex flex-col shadow-2xl"
+        className="bg-background rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[85vh] flex flex-col"
+        style={{ boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b shrink-0">
           <h3 className="font-bold text-base">{"Kommentare"}</h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Comment list */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
           {isLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
             </div>
           ) : comments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground text-sm">
-              {"Noch keine Kommentare — schreib den ersten!"}
+            <div className="text-center py-10">
+              <p className="text-3xl mb-2">{"💬"}</p>
+              <p className="text-sm text-muted-foreground">{"Noch keine Kommentare — schreib den ersten!"}</p>
             </div>
           ) : (
             comments.map((c: any) => (
               <div key={c.id} className="flex gap-3">
                 <Avatar photoUrl={c.user_photo} name={c.user_name || c.user_email} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="bg-muted/50 rounded-2xl px-3 py-2.5">
+                  <div className="bg-muted/40 rounded-2xl px-3.5 py-2.5">
                     <p className="text-xs font-bold mb-0.5">{c.user_name || c.user_email.split("@")[0]}</p>
                     <p className="text-sm leading-snug">{c.text}</p>
                   </div>
@@ -144,7 +189,6 @@ function CommentSheet({
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
         {email ? (
           <div className="px-4 py-3 border-t flex gap-2 items-end shrink-0">
             <Avatar photoUrl={userPhoto} name={userName} size="sm" />
@@ -153,7 +197,7 @@ function CommentSheet({
                 value={text}
                 onChange={e => setText(e.target.value)}
                 placeholder={"Kommentar schreiben…"}
-                className="resize-none min-h-[40px] max-h-[120px] pr-10 rounded-2xl text-sm py-2.5"
+                className="resize-none min-h-[40px] max-h-[100px] pr-10 rounded-2xl text-sm py-2.5"
                 rows={1}
                 onKeyDown={e => {
                   if (e.key === "Enter" && !e.shiftKey && text.trim()) {
@@ -163,14 +207,14 @@ function CommentSheet({
                 }}
               />
               <button
-                className="absolute right-2 bottom-2 w-7 h-7 rounded-full bg-primary flex items-center justify-center disabled:opacity-40"
+                className="absolute right-2 bottom-2 w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-40 transition-opacity"
+                style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
                 disabled={!text.trim() || submitMutation.isPending}
                 onClick={() => submitMutation.mutate()}
               >
                 {submitMutation.isPending
                   ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-                  : <Send className="w-3.5 h-3.5 text-white" />
-                }
+                  : <Send className="w-3.5 h-3.5 text-white" />}
               </button>
             </div>
           </div>
@@ -186,7 +230,7 @@ function CommentSheet({
   );
 }
 
-// ── Create Post Modal ──────────────────────────────────────────────────────────
+// ── Create Post Modal ─────────────────────────────────────────────────────────
 function CreatePostModal({
   email, userName, userPhoto, onClose, onCreated
 }: {
@@ -237,51 +281,55 @@ function CreatePostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
       <div
-        className="bg-background rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[90vh] flex flex-col shadow-2xl"
+        className="bg-background rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[90vh] flex flex-col"
+        style={{ boxShadow: "0 -8px 40px rgba(0,0,0,0.18)" }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b shrink-0">
-          <button onClick={onClose} className="text-sm text-muted-foreground font-medium hover:text-foreground">
+          <button onClick={onClose} className="text-sm text-muted-foreground font-medium hover:text-foreground transition-colors">
             {"Abbrechen"}
           </button>
           <h3 className="font-bold text-base">{"Post erstellen"}</h3>
           <button
-            className="text-sm font-bold text-primary hover:opacity-80 disabled:opacity-40"
+            className="text-sm font-bold disabled:opacity-40 transition-opacity"
+            style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
             disabled={!image || loading}
             onClick={submit}
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Teilen"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : "Teilen"}
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-          {/* Image picker */}
           {!preview ? (
             <div
-              className="border-2 border-dashed border-border/60 rounded-2xl p-8 text-center flex flex-col items-center gap-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+              className="border-2 border-dashed border-border/50 rounded-2xl p-8 text-center flex flex-col items-center gap-3 cursor-pointer transition-all hover:border-primary/60 hover:bg-primary/5"
               onClick={() => fileRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={e => e.preventDefault()}
             >
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Camera className="w-6 h-6 text-primary" />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,hsl(263,70%,52%,0.12),hsl(330,85%,58%,0.12))" }}>
+                <Camera className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-sm">{"Foto hinzufügen"}</p>
+                <p className="font-bold text-sm">{"Foto hinzufügen"}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{"Tippe oder ziehe ein Bild hierher"}</p>
               </div>
-              <button className="text-xs font-bold text-white bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-xl hover:opacity-90">
+              <div className="text-xs font-bold text-white px-5 py-2.5 rounded-xl" style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}>
                 {"Foto auswählen"}
-              </button>
+              </div>
             </div>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden">
-              <img src={preview} alt="Preview" className="w-full max-h-72 object-cover rounded-2xl" />
+            <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: "4/5" }}>
+              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
               <button
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white hover:bg-black/80"
+                className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white hover:bg-black/80 transition-colors"
                 onClick={() => { setImage(null); setPreview(null); }}
               >
                 <X className="w-4 h-4" />
@@ -290,8 +338,7 @@ function CreatePostModal({
           )}
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
-          {/* Caption */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-start">
             <Avatar photoUrl={userPhoto} name={userName} />
             <Textarea
               value={caption}
@@ -301,8 +348,7 @@ function CreatePostModal({
             />
           </div>
 
-          {/* Restaurant tag */}
-          <div className="flex items-center gap-2 p-3 rounded-xl border bg-muted/20">
+          <div className="flex items-center gap-2.5 p-3.5 rounded-xl border bg-muted/20">
             <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
             <input
               type="text"
@@ -319,17 +365,30 @@ function CreatePostModal({
 }
 
 // ── Post Card ─────────────────────────────────────────────────────────────────
-function PostCard({ post, email, userName, userPhoto, onLike, onOpenComments }: {
+function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
   post: any; email: string; userName: string; userPhoto: string | null;
-  onLike: (id: number) => void; onOpenComments: (id: number) => void;
+  onOpenComments: (id: number) => void;
 }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [liking, setLiking] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [heartPop, setHeartPop] = useState(false);
+  const [floatHearts, setFloatHearts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [captionExpanded, setCaptionExpanded] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const heartIdRef = useRef(0);
+  const lastTapRef = useRef(0);
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async (skipAnimation = false) => {
     if (!email || liking) return;
     setLiking(true);
+    if (!skipAnimation) {
+      setHeartPop(true);
+      setTimeout(() => setHeartPop(false), 400);
+    }
     const prev = liked;
     setLiked(!prev);
     setLikeCount((c: number) => c + (prev ? -1 : 1));
@@ -343,87 +402,218 @@ function PostCard({ post, email, userName, userPhoto, onLike, onOpenComments }: 
     } finally {
       setLiking(false);
     }
-  };
+  }, [email, liking, liked, post.id]);
 
-  const isOwner = email === post.user_email;
+  const handleDoubleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 350) {
+      const rect = imageRef.current?.getBoundingClientRect();
+      let x = 50, y = 50;
+      if (rect) {
+        const clientX = "touches" in e ? e.touches[0]?.clientX ?? rect.left + rect.width / 2 : (e as React.MouseEvent).clientX;
+        const clientY = "touches" in e ? e.touches[0]?.clientY ?? rect.top + rect.height / 2 : (e as React.MouseEvent).clientY;
+        x = ((clientX - rect.left) / rect.width) * 100;
+        y = ((clientY - rect.top) / rect.height) * 100;
+      }
+      const id = ++heartIdRef.current;
+      setFloatHearts(fh => [...fh, { id, x, y }]);
+      setTimeout(() => setFloatHearts(fh => fh.filter(h => h.id !== id)), 1000);
+      if (!liked) handleLike(true);
+    }
+    lastTapRef.current = now;
+  }, [liked, handleLike]);
+
+  const imageUrl = post.image_url?.startsWith("/api") ? `${API_BASE}${post.image_url}` : post.image_url;
+  const displayName = post.user_name || post.user_email?.split("@")[0] || "?";
+  const caption = post.caption || "";
+  const longCaption = caption.length > 100;
 
   return (
-    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm">
-      {/* Header */}
+    <div
+      className="bg-card rounded-[20px] overflow-hidden transition-transform duration-200 select-none"
+      style={{
+        boxShadow: "0 2px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
+        transform: pressed ? "scale(0.985)" : "scale(1)",
+      }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
+    >
+      {/* ── Header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
         <Link href="/profile">
-          <Avatar photoUrl={post.user_photo} name={post.user_name || post.user_email} />
+          <Avatar photoUrl={post.user_photo} name={displayName} />
         </Link>
         <div className="flex-1 min-w-0">
           <Link href="/profile">
-            <p className="text-sm font-bold truncate hover:text-primary transition-colors">
-              {post.user_name || post.user_email.split("@")[0]}
-            </p>
+            <p className="text-sm font-bold truncate hover:text-primary transition-colors">{displayName}</p>
           </Link>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
             {post.restaurant_name && (
-              <span className="flex items-center gap-1 text-[11px] text-rose-500 font-medium">
-                <MapPin className="w-3 h-3" /> {post.restaurant_name}
-              </span>
+              <Link href="/entdecken">
+                <span
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ background: "hsl(330,85%,58%,0.12)", color: "hsl(330,85%,48%)" }}
+                >
+                  <MapPin className="w-2.5 h-2.5" />
+                  {post.restaurant_name}
+                </span>
+              </Link>
             )}
             <span className="text-[11px] text-muted-foreground">{timeAgo(post.created_at)}</span>
           </div>
         </div>
+        <button
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${saved ? "" : "hover:bg-muted/60"}`}
+          onClick={() => {
+            setSaved(s => !s);
+            const el = document.getElementById(`bm-${post.id}`);
+            el?.classList.remove("bookmark-pop");
+            void el?.offsetWidth;
+            el?.classList.add("bookmark-pop");
+          }}
+        >
+          <Bookmark
+            id={`bm-${post.id}`}
+            className={`w-5 h-5 transition-colors ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`}
+          />
+        </button>
       </div>
 
-      {/* Image */}
-      <div className="relative bg-muted/30">
+      {/* ── Image ── */}
+      <div
+        ref={imageRef}
+        className="relative w-full overflow-hidden bg-muted/20 cursor-pointer"
+        style={{ aspectRatio: "4/5" }}
+        onClick={handleDoubleTap}
+      >
+        {!imgLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/40" />
+          </div>
+        )}
         <img
-          src={post.image_url.startsWith("/api") ? `${API_BASE}${post.image_url}` : post.image_url}
+          src={imageUrl}
           alt="Post"
-          className="w-full aspect-[4/3] sm:aspect-[16/10] object-cover"
           loading="lazy"
-          onDoubleClick={handleLike}
+          className={`w-full h-full object-cover transition-transform duration-500 ease-out hover:scale-[1.03] ${imgLoaded ? "img-fade-in" : "opacity-0"}`}
+          onLoad={() => setImgLoaded(true)}
         />
+
+        {/* Gradient overlay at bottom */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-28 pointer-events-none"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)" }}
+        />
+
+        {/* Float hearts on double-tap */}
+        {floatHearts.map(h => (
+          <span
+            key={h.id}
+            className="heart-float"
+            style={{ left: `${h.x}%`, top: `${h.y}%` }}
+          >
+            {"❤️"}
+          </span>
+        ))}
+
+        {/* Restaurant pill overlay at bottom-left */}
+        {post.restaurant_name && (
+          <div className="absolute bottom-3 left-3 pointer-events-none">
+            <span
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-white px-2.5 py-1 rounded-full backdrop-blur-sm"
+              style={{ background: "rgba(0,0,0,0.45)" }}
+            >
+              <MapPin className="w-2.5 h-2.5" />
+              {post.restaurant_name}
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Actions */}
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-4 mb-3">
+      {/* ── Actions ── */}
+      <div className="px-4 pt-3.5 pb-4">
+        <div className="flex items-center gap-5 mb-3">
+          {/* Like */}
           <button
-            className={`flex items-center gap-1.5 group transition-transform active:scale-90 ${!email && "opacity-50 cursor-default"}`}
-            onClick={handleLike}
+            className={`flex items-center gap-2 transition-all active:scale-90 ${!email && "opacity-50 cursor-default"}`}
+            onClick={() => handleLike()}
             disabled={!email}
+            aria-label="Like"
           >
             <Heart
-              className={`w-6 h-6 transition-all duration-150 ${liked ? "fill-rose-500 text-rose-500 scale-110" : "text-foreground group-hover:text-rose-500"}`}
+              className={`w-6 h-6 transition-all duration-200 ${heartPop ? "heart-pop" : ""} ${liked ? "fill-rose-500 text-rose-500" : "text-foreground hover:text-rose-400"}`}
+              style={liked ? { filter: "drop-shadow(0 0 4px rgba(244,63,94,0.5))" } : {}}
             />
-            <span className={`text-sm font-semibold tabular-nums ${liked ? "text-rose-500" : "text-muted-foreground"}`}>
+            <span className={`text-sm font-bold tabular-nums transition-colors ${liked ? "text-rose-500" : "text-muted-foreground"}`}>
               {likeCount}
             </span>
           </button>
+
+          {/* Comment */}
           <button
-            className="flex items-center gap-1.5 group"
+            className="flex items-center gap-2 group"
             onClick={() => onOpenComments(post.id)}
+            aria-label="Kommentare"
           >
             <MessageCircle className="w-6 h-6 text-foreground group-hover:text-primary transition-colors" />
-            <span className="text-sm font-semibold text-muted-foreground tabular-nums">{post.commentCount}</span>
+            <span className="text-sm font-bold text-muted-foreground tabular-nums group-hover:text-primary transition-colors">
+              {post.commentCount}
+            </span>
           </button>
         </div>
 
         {/* Caption */}
-        {post.caption && (
-          <p className="text-sm leading-snug">
-            <span className="font-bold mr-1.5">{post.user_name || post.user_email.split("@")[0]}</span>
-            {post.caption}
-          </p>
+        {caption && (
+          <div className="text-sm leading-snug">
+            <span className="font-bold mr-1.5">{displayName}</span>
+            <span className={!captionExpanded && longCaption ? "line-clamp-2" : ""}>
+              {caption}
+            </span>
+            {longCaption && !captionExpanded && (
+              <button
+                className="text-muted-foreground font-medium ml-1 hover:text-foreground transition-colors text-xs"
+                onClick={() => setCaptionExpanded(true)}
+              >
+                {"mehr anzeigen"}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Comment teaser */}
         {post.commentCount > 0 && (
           <button
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
             onClick={() => onOpenComments(post.id)}
           >
-            {"Alle"} {post.commentCount} {"Kommentar" + (post.commentCount !== 1 ? "e" : "")} {"ansehen"}
+            {"Alle "}{post.commentCount}{" Kommentar"}{post.commentCount !== 1 ? "e" : ""}{" ansehen"}
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Stories-style top bar (anonymous users banner) ────────────────────────────
+function GuestBanner() {
+  return (
+    <div
+      className="rounded-2xl p-5 text-center"
+      style={{ background: "linear-gradient(135deg,hsl(263,70%,52%,0.08),hsl(330,85%,58%,0.08))", border: "1px solid hsl(263,70%,52%,0.15)" }}
+    >
+      <p className="text-2xl mb-2">{"📸"}</p>
+      <p className="font-bold text-sm mb-1">{"Meld dich an, um zu posten & zu liken"}</p>
+      <p className="text-xs text-muted-foreground mb-3.5">{"Der Feed ist öffentlich – du kannst ohne Login alles lesen"}</p>
+      <Link
+        href="/profile"
+        className="inline-flex items-center text-xs font-bold text-white px-5 py-2.5 rounded-xl transition-opacity hover:opacity-90"
+        style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
+      >
+        {"Anmelden"}
+      </Link>
     </div>
   );
 }
@@ -445,7 +635,6 @@ export default function FeedPage() {
     return () => window.removeEventListener("storage", sync);
   }, []);
 
-  // Fetch user profile for avatar/name
   useEffect(() => {
     if (!email) return;
     fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`)
@@ -464,57 +653,65 @@ export default function FeedPage() {
     refetchInterval: 60_000,
   });
 
+  const commentPost = posts.find((p: any) => p.id === commentPostId);
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/50 px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen pb-28" style={{ background: "hsl(var(--background))" }}>
+      {/* ── Sticky Header ── */}
+      <div
+        className="sticky top-0 z-30 px-4 py-3 flex items-center justify-between"
+        style={{ background: "hsl(var(--background)/0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid hsl(var(--border)/0.5)" }}
+      >
         <div>
-          <h1 className="font-serif font-bold text-xl">{"Feed"}</h1>
-          <p className="text-xs text-muted-foreground">{"Food-Erlebnisse der Community"}</p>
+          <h1 className="font-serif font-bold text-xl leading-tight">{"Feed"}</h1>
+          <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{"Food-Erlebnisse der Community"}</p>
         </div>
         {email && (
           <button
-            className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white text-sm font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity shadow-sm"
+            className="flex items-center gap-1.5 text-sm font-bold text-white px-4 py-2 rounded-xl shadow-md hover:opacity-90 active:scale-95 transition-all"
+            style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))", boxShadow: "0 4px 12px hsl(263,70%,52%,0.35)" }}
             onClick={() => setShowCreatePost(true)}
           >
-            <Plus className="w-4 h-4" /> {"Posten"}
+            <Plus className="w-4 h-4" />
+            {"Posten"}
           </button>
         )}
       </div>
 
-      {/* Content */}
-      <div className="max-w-xl mx-auto px-3 sm:px-4 py-4 space-y-4">
-        {!email && (
-          <div className="bg-gradient-to-br from-primary/8 to-accent/8 border border-primary/15 rounded-2xl p-5 text-center">
-            <p className="text-2xl mb-2">{"📸"}</p>
-            <p className="font-semibold text-sm mb-1">{"Meld dich an, um zu posten & zu liken"}</p>
-            <p className="text-xs text-muted-foreground mb-3">{"Der Feed ist öffentlich – du kannst ohne Login alles lesen"}</p>
-            <Link href="/profile" className="inline-flex text-xs font-bold text-white bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-              {"Anmelden"}
-            </Link>
-          </div>
-        )}
+      {/* ── Feed Content ── */}
+      <div className="max-w-[600px] mx-auto px-3 sm:px-5 py-5 space-y-5">
+        {!email && <GuestBanner />}
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">{"Feed wird geladen…"}</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg,hsl(263,70%,52%,0.12),hsl(330,85%,58%,0.12))" }}
+            >
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground font-medium">{"Feed wird geladen…"}</p>
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-16 text-center">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-4xl">
-              {"📸"}
+          <div className="flex flex-col items-center gap-5 py-20 text-center">
+            <div
+              className="w-24 h-24 rounded-3xl flex items-center justify-center text-5xl"
+              style={{ background: "linear-gradient(135deg,hsl(263,70%,52%,0.1),hsl(330,85%,58%,0.1))" }}
+            >
+              {"✨"}
             </div>
             <div>
-              <p className="font-bold text-lg">{"Noch keine Beiträge"}</p>
-              <p className="text-muted-foreground text-sm mt-1">{"Sei der Erste und teile dein Food-Erlebnis!"}</p>
+              <p className="font-bold text-xl">{"Noch keine Beiträge"}</p>
+              <p className="text-muted-foreground text-sm mt-1.5">{"Sei der Erste und teile dein Food-Erlebnis!"}</p>
             </div>
             {email && (
               <button
-                className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:opacity-90"
+                className="flex items-center gap-2 text-sm font-bold text-white px-6 py-3 rounded-2xl shadow-md hover:opacity-90 active:scale-95 transition-all"
+                style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
                 onClick={() => setShowCreatePost(true)}
               >
-                <Camera className="w-4 h-4" /> {"Ersten Post erstellen"}
+                <Camera className="w-4 h-4" />
+                {"Ersten Post erstellen"}
               </button>
             )}
           </div>
@@ -526,28 +723,31 @@ export default function FeedPage() {
               email={email}
               userName={userName}
               userPhoto={userPhoto}
-              onLike={() => {}}
               onOpenComments={(id) => setCommentPostId(id)}
             />
           ))
         )}
       </div>
 
-      {/* Floating create button (mobile) */}
+      {/* ── Floating Create Button ── */}
       {email && posts.length > 0 && (
         <button
-          className="fixed bottom-24 right-4 z-20 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+          className="fixed bottom-24 right-4 z-20 w-14 h-14 rounded-full text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+          style={{
+            background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))",
+            boxShadow: "0 6px 20px hsl(263,70%,52%,0.45)",
+          }}
           onClick={() => setShowCreatePost(true)}
+          aria-label="Neuer Post"
         >
           <Plus className="w-6 h-6" />
         </button>
       )}
 
-      {/* Comment sheet */}
+      {/* ── Comment Sheet ── */}
       {commentPostId !== null && (
         <CommentSheet
           postId={commentPostId}
-          postOwner={posts.find((p: any) => p.id === commentPostId)?.user_email || ""}
           email={email}
           userName={userName}
           userPhoto={userPhoto}
@@ -555,14 +755,14 @@ export default function FeedPage() {
         />
       )}
 
-      {/* Create post modal */}
-      {showCreatePost && email && (
+      {/* ── Create Post Modal ── */}
+      {showCreatePost && (
         <CreatePostModal
           email={email}
           userName={userName}
           userPhoto={userPhoto}
           onClose={() => setShowCreatePost(false)}
-          onCreated={() => refetch()}
+          onCreated={() => qc.invalidateQueries({ queryKey: ["feed"] })}
         />
       )}
     </div>
