@@ -36,6 +36,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 import { recordHabitEvent } from "@/lib/habit-engine";
 import { PostBookingTrigger } from "@/components/return-trigger";
+import {
+  incrementRestaurantViews,
+  RestaurantBrowseTrigger,
+  PostBookingPremiumNudge,
+} from "@/components/contextual-premium-trigger";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -278,9 +283,16 @@ export default function Restaurant() {
     image: restaurant?.heroImage || undefined,
   });
 
-  // Record explore visit habit event once per page load
+  // Track restaurant browse count for contextual premium trigger
+  const [browseViewCount, setBrowseViewCount] = useState(0);
+
+  // Record explore visit habit event once per page load + increment browse counter
   useEffect(() => {
-    if (restaurantId) recordHabitEvent("explore_visit");
+    if (restaurantId) {
+      recordHabitEvent("explore_visit");
+      const count = incrementRestaurantViews();
+      setBrowseViewCount(count);
+    }
   }, [restaurantId]);
 
   const { data: reviews } = useListReviews(
@@ -1147,6 +1159,7 @@ export default function Restaurant() {
                 {bookingSuccess ? (
                   <div className="text-center py-6 space-y-4">
                     <PostBookingTrigger restaurantName={restaurant?.name} />
+                    <PostBookingPremiumNudge restaurantName={restaurant?.name} />
                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
@@ -1371,6 +1384,9 @@ export default function Restaurant() {
           </div>
         </div>
       )}
+
+      {/* Contextual premium browse trigger — appears after 3+ restaurant views */}
+      <RestaurantBrowseTrigger viewCount={browseViewCount} />
     </div>
   );
 }
