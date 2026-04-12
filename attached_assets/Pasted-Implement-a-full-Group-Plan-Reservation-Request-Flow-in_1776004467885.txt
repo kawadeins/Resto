@@ -1,0 +1,306 @@
+Implement a full "Group Plan → Reservation Request Flow" inside the customer app and business dashboard.
+
+IMPORTANT:
+- Do NOT redesign the app
+- Do NOT remove the existing Group Plan logic
+- Do NOT break the current booking/reservation system
+- This is a feature extension that connects Group Plans with real restaurant reservation requests
+- Keep the premium design and existing navigation behavior
+
+==================================================
+GOAL
+==================================================
+
+Allow the Group Plan owner to send a reservation request to the selected restaurant after finishing the plan.
+
+The full flow must support:
+
+1. Create/edit group plan
+2. Add participants
+3. Choose a restaurant
+4. Choose the group date/time
+5. Choose when the reservation request should be sent
+6. Automatically send the reservation request to the restaurant
+7. Restaurant owner/manager can approve or reject
+8. Group plan owner sees the reservation status clearly
+
+This must feel like a real coordination + booking system.
+
+==================================================
+1. GROUP PLAN RESERVATION REQUEST SETUP
+==================================================
+
+After the plan owner finishes the group plan, add a new reservation request section inside the plan flow.
+
+The owner must be able to configure:
+
+- reservation date
+- reservation time
+- party size (derived from participant count but editable if needed)
+- optional note/message to restaurant
+- when the reservation request should be sent
+
+Examples for send timing:
+- sofort senden
+- 3 Tage vorher
+- 2 Tage vorher
+- 1 Tag vorher
+- manuell senden
+
+German labels:
+- "Reservierungsanfrage senden"
+- "Sendezeitpunkt"
+- "Sofort"
+- "3 Tage vorher"
+- "2 Tage vorher"
+- "1 Tag vorher"
+- "Manuell"
+
+==================================================
+2. AUTOMATIC RESERVATION REQUEST SCHEDULING
+==================================================
+
+If the user chooses delayed sending (for example 2 or 3 days before):
+
+- store the planned send time
+- automatically trigger the reservation request at that scheduled time
+- ensure it is sent only once
+- do not lose the request if app is closed
+
+If the user chooses "sofort":
+- send immediately after confirmation
+
+If the user chooses "manuell":
+- keep the request ready but unsent until the owner taps send
+
+==================================================
+3. RESERVATION REQUEST PAYLOAD
+==================================================
+
+The reservation request sent to the restaurant must include:
+
+- group plan ID
+- restaurant ID
+- group plan owner
+- participant count
+- requested date
+- requested time
+- selected restaurant
+- optional note
+- shareable context that this is a group plan
+
+Example message context:
+"Gruppenanfrage für 8 Personen am Freitag um 19:00 Uhr"
+
+==================================================
+4. BUSINESS DASHBOARD RECEIVES GROUP REQUEST
+==================================================
+
+On the business dashboard side, restaurant owner/manager must see the incoming group reservation request clearly.
+
+Add a visible request state in the business reservations section:
+
+- new group request
+- pending
+- approved
+- rejected
+- cancelled if needed
+
+The request should be clearly marked as:
+- "Gruppenanfrage"
+
+Show:
+- date
+- time
+- group size
+- requester name
+- optional note
+- linked restaurant context
+
+==================================================
+5. RESTAURANT OWNER ACTIONS
+==================================================
+
+Restaurant owner/manager must be able to:
+
+- confirm / approve request
+- reject request
+- optionally cancel later if needed
+
+German labels:
+- "Bestätigen"
+- "Ablehnen"
+- "Stornieren"
+
+When confirmed:
+- request status becomes approved
+- customer/group owner sees green success state
+
+When rejected:
+- request status becomes rejected
+- customer/group owner sees red rejected state
+
+Do NOT leave the request hanging without visible status.
+
+==================================================
+6. STATUS FEEDBACK TO GROUP OWNER
+==================================================
+
+The group plan owner must clearly see the restaurant response.
+
+Statuses:
+- Anfrage geplant
+- Anfrage gesendet
+- Bestätigt
+- Abgelehnt
+- Storniert
+
+Visual indicators:
+- gray / neutral = planned
+- blue = sent/pending
+- green = confirmed
+- red = rejected/cancelled
+
+The group owner should never be unsure whether the restaurant accepted.
+
+==================================================
+7. LIVE STATUS INSIDE GROUP PLAN
+==================================================
+
+Inside the saved group plan card / detail view, show reservation request status clearly.
+
+Example:
+- "Reservierungsstatus: Bestätigt"
+- "Reservierungsstatus: Warten auf Antwort"
+- "Reservierungsstatus: Abgelehnt"
+
+Also show:
+- restaurant name
+- requested date/time
+- participant count
+
+==================================================
+8. NOTIFICATIONS / FEEDBACK
+==================================================
+
+When status changes:
+
+Group owner should receive clear feedback in-app:
+- "Deine Gruppenanfrage wurde bestätigt"
+- "Deine Gruppenanfrage wurde abgelehnt"
+
+If notification infrastructure exists, hook into it.
+If not, at minimum show the updated status inside the plan immediately.
+
+==================================================
+9. RESERVATION REQUEST EDIT RULES
+==================================================
+
+Rules:
+- if request not yet sent, owner can still edit plan data and reservation timing
+- if request already sent and still pending, owner can optionally cancel or update only if supported
+- if request confirmed, editing should be restricted or require a new update request
+
+Keep logic safe and clear.
+
+==================================================
+10. DUPLICATE PROTECTION
+==================================================
+
+Prevent duplicate reservation spam.
+
+Rules:
+- same group plan should not send the same restaurant request multiple times accidentally
+- scheduled job must not send duplicate requests
+- restaurant should not see duplicate identical requests for the same plan unless truly updated
+
+==================================================
+11. SHARE + RESERVATION RELATION
+==================================================
+
+If the plan is shared with participants:
+- they should see that a reservation request exists
+- they should see whether it is pending / approved / rejected
+- they do not need owner-level control unless explicitly intended
+
+The plan owner remains the main controller.
+
+==================================================
+12. MOBILE-FIRST UX
+==================================================
+
+This must work well on iPhone/mobile.
+
+Requirements:
+- reservation setup easy to understand
+- timing selection simple
+- status clearly visible
+- no hidden actions
+- no clutter
+
+==================================================
+13. GERMAN UX COPY
+==================================================
+
+Use clear German labels such as:
+- "Reservierungsanfrage senden"
+- "Anfrage geplant"
+- "Anfrage gesendet"
+- "Bestätigt"
+- "Abgelehnt"
+- "Storniert"
+- "Warten auf Antwort"
+- "An Restaurant senden"
+- "Antwort vom Restaurant"
+
+==================================================
+14. BACKEND SAFETY
+==================================================
+
+Ensure:
+- request belongs to valid group plan
+- request belongs to selected restaurant
+- participant count is valid
+- only plan owner can send/edit/cancel request
+- restaurant can only act on requests for its own business
+- status changes are stored persistently
+
+==================================================
+15. FINAL VALIDATION
+==================================================
+
+Verify this full flow:
+
+A. User creates group plan
+B. User adds participants
+C. User selects restaurant
+D. User chooses reservation request timing
+E. Request is sent immediately OR scheduled correctly
+F. Restaurant receives request in dashboard
+G. Restaurant approves or rejects
+H. Group owner sees updated status clearly
+I. No duplicate sends
+J. No broken status confusion
+
+==================================================
+FINAL RESULT
+==================================================
+
+Group Plan must become a real group reservation coordination system.
+
+The owner should be able to:
+- plan
+- choose a restaurant
+- send a reservation request
+- wait for answer
+- see approval/rejection clearly
+
+Restaurant owner should be able to:
+- receive the request
+- approve
+- reject
+- manage it safely
+
+No incomplete flow.
+No unclear status.
+No dead reservation request logic.

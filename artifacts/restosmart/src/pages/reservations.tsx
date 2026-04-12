@@ -8,7 +8,17 @@ import {
   useUpdateReservation,
   useDeleteReservation,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+
+const GRP_API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
+
+const GRP_STATUS: Record<string, { label: string; cls: string }> = {
+  planned:   { label: "Geplant",            cls: "bg-slate-100 text-slate-600 border-slate-200" },
+  sent:      { label: "Warten auf Antwort", cls: "bg-blue-50 text-blue-600 border-blue-200" },
+  confirmed: { label: "Bestätigt",          cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  rejected:  { label: "Abgelehnt",          cls: "bg-rose-50 text-rose-600 border-rose-200" },
+  cancelled: { label: "Storniert",          cls: "bg-slate-50 text-slate-400 border-slate-200" },
+};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -74,9 +84,36 @@ export default function Reservations() {
   
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
-  
+  const [mainTab, setMainTab] = useState<"reservations" | "gruppenanfragen">("reservations");
+
   const [dateFilter, setDateFilter] = useState<"today" | "week" | "all">("today");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const { data: groupRequests = [], refetch: refetchGroupRequests } = useQuery<any[]>({
+    queryKey: ["group-reservations-owner"],
+    queryFn: async () => {
+      const r = await fetch(`${GRP_API}/group-reservations`);
+      if (!r.ok) return [];
+      return r.json();
+    },
+    staleTime: 30 * 1000,
+    enabled: mainTab === "gruppenanfragen",
+  });
+
+  const updateGroupRequestStatus = async (id: number, status: "confirmed" | "rejected" | "cancelled") => {
+    try {
+      await fetch(`${GRP_API}/group-reservations/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      refetchGroupRequests();
+      const labels: Record<string, string> = { confirmed: "Bestätigt", rejected: "Abgelehnt", cancelled: "Storniert" };
+      toast({ title: `Anfrage: ${labels[status]}` });
+    } catch {
+      toast({ title: "Fehler beim Aktualisieren", variant: "destructive" });
+    }
+  };
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -197,6 +234,25 @@ export default function Reservations() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Reservierungen</h2>
           <p className="text-muted-foreground mt-2">Tische und Buchungen verwalten.</p>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => setMainTab("reservations")}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${mainTab === "reservations" ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+            >
+              Reservierungen
+            </button>
+            <button
+              onClick={() => { setMainTab("gruppenanfragen"); refetchGroupRequests(); }}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${mainTab === "gruppenanfragen" ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+            >
+              Gruppenanfragen
+              {groupRequests.filter(r => r.status === "sent").length > 0 && (
+                <span className="ml-1.5 bg-rose-500 text-white text-[10px] rounded-full px-1.5 py-0.5 font-bold">
+                  {groupRequests.filter(r => r.status === "sent").length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
         <Sheet open={sheetOpen} onOpenChange={(open) => {
           setSheetOpen(open);
@@ -432,6 +488,88 @@ export default function Reservations() {
         </motion.div>
       </div>
 
+      {mainTab === "gruppenanfragen" && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-bold">Gruppenanfragen</CardTitle>
+              <p className="text-sm text-muted-foreground">Von Kunden per Gruppen-Essensplan gesendete Reservierungsanfragen.</p>
+            </CardHeader>
+            <CardContent>
+              {groupRequests.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground text-sm">Keine Gruppenanfragen vorhanden.</div>
+              ) : (
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Gruppe</TableHead>
+                        <TableHead>Datum / Uhrzeit</TableHead>
+                        <TableHead>Personen</TableHead>
+                        <TableHead>Anfragesteller</TableHead>
+                        <TableHead>Notiz</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Aktionen</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {groupRequests.map((req: any) => {
+                        const s = GRP_STATUS[req.status] ?? GRP_STATUS.planned;
+                        return (
+                          <TableRow key={req.id}>
+                            <TableCell>
+                              <div className="font-semibold text-sm leading-snug">{req.groupPlanTitle || "Gruppe"}</div>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-sm">
+                              <div>{new Date(req.requestedDate).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</div>
+                              <div className="text-muted-foreground">{req.requestedTime} Uhr</div>
+                            </TableCell>
+                            <TableCell className="text-sm">{req.partySize}</TableCell>
+                            <TableCell className="text-sm">
+                              <div>{req.organizerName || "—"}</div>
+                              <div className="text-xs text-muted-foreground">{req.organizerEmail}</div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground max-w-[140px] truncate">{req.note || "—"}</TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${s.cls}`}>
+                                {s.label}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {req.status === "sent" && (
+                                  <>
+                                    <Button size="sm" variant="outline" className="h-7 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                      onClick={() => updateGroupRequestStatus(req.id, "confirmed")}>
+                                      Bestätigen
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="h-7 text-xs border-rose-300 text-rose-600 hover:bg-rose-50"
+                                      onClick={() => updateGroupRequestStatus(req.id, "rejected")}>
+                                      Ablehnen
+                                    </Button>
+                                  </>
+                                )}
+                                {req.status === "confirmed" && (
+                                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground"
+                                    onClick={() => updateGroupRequestStatus(req.id, "cancelled")}>
+                                    Stornieren
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {mainTab === "reservations" && (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
         <Card>
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6">
@@ -553,6 +691,7 @@ export default function Reservations() {
           </CardContent>
         </Card>
       </motion.div>
+      )}
     </div>
   );
 }

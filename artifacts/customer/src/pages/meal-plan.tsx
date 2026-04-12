@@ -255,6 +255,177 @@ interface GroupPlan {
   restaurant?: RestaurantRef | null;
 }
 
+// ─── Reservation Request types + constants ───────────────────────────────────
+
+interface ReservationRequest {
+  id: number;
+  groupPlanId: number;
+  restaurantId: number;
+  restaurantName: string;
+  partySize: number;
+  requestedDate: string;
+  requestedTime: string;
+  note: string;
+  sendTiming: string;
+  status: string;
+  scheduledSendAt?: string | null;
+  sentAt?: string | null;
+}
+
+const SEND_TIMING_OPTIONS = [
+  { id: "sofort",        label: "Sofort senden" },
+  { id: "3_days_before", label: "3 Tage vorher" },
+  { id: "2_days_before", label: "2 Tage vorher" },
+  { id: "1_day_before",  label: "1 Tag vorher" },
+  { id: "manual",        label: "Manuell senden" },
+];
+
+const RESERVATION_STATUS: Record<string, { label: string; cls: string; dotCls: string }> = {
+  planned:   { label: "Anfrage geplant",   cls: "bg-muted/60 text-muted-foreground border-border/60",        dotCls: "bg-slate-400" },
+  sent:      { label: "Warten auf Antwort",cls: "bg-blue-500/10 text-blue-600 border-blue-500/20",          dotCls: "bg-blue-500 animate-pulse" },
+  confirmed: { label: "Bestätigt",         cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",  dotCls: "bg-emerald-500" },
+  rejected:  { label: "Abgelehnt",         cls: "bg-rose-500/10 text-rose-600 border-rose-500/20",           dotCls: "bg-rose-500" },
+  cancelled: { label: "Storniert",         cls: "bg-muted/40 text-muted-foreground/60 border-border/30",     dotCls: "bg-slate-300" },
+};
+
+// ─── Setup Reservation Modal ──────────────────────────────────────────────────
+
+function SetupReservationModal({
+  plan, onClose, onSaved,
+}: { plan: GroupPlan; onClose: () => void; onSaved: () => void }) {
+  const [partySize, setPartySize] = useState(plan.groupSize.toString());
+  const [date, setDate] = useState(plan.date);
+  const [time, setTime] = useState(plan.time);
+  const [note, setNote] = useState("");
+  const [sendTiming, setSendTiming] = useState("sofort");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const email = localStorage.getItem("restosmart_email") ?? "";
+  const userName = localStorage.getItem("restosmart_user_name") ?? "";
+
+  const handleSubmit = async () => {
+    if (!plan.restaurant) { setError("Kein Restaurant ausgewählt"); return; }
+    if (!date || !time) { setError("Datum und Uhrzeit erforderlich"); return; }
+    setSaving(true); setError("");
+    try {
+      const res = await fetch(`${API}/meal-plan/reservation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupPlanId: plan.id,
+          restaurantId: plan.restaurant.id,
+          restaurantName: plan.restaurant.name,
+          organizerEmail: email,
+          organizerName: userName,
+          partySize: parseInt(partySize) || plan.groupSize,
+          requestedDate: date,
+          requestedTime: time,
+          note: note.trim(),
+          sendTiming,
+        }),
+      });
+      if (!res.ok) throw new Error("Fehler");
+      onSaved();
+      onClose();
+    } catch {
+      setError("Fehler beim Erstellen der Anfrage. Bitte versuche es erneut.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md bg-background rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="h-1.5 bg-gradient-to-r from-primary to-accent" />
+        <div className="p-5 border-b flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <CalendarDays className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base">Reservierungsanfrage</h2>
+              <p className="text-xs text-muted-foreground truncate max-w-[200px]">{plan.restaurant?.name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Datum *</label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Uhrzeit *</label>
+              <input type="time" value={time} onChange={e => setTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Personenzahl</label>
+            <input type="number" value={partySize} onChange={e => setPartySize(e.target.value)} min={1} max={100}
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Sendezeitpunkt</label>
+            <div className="grid grid-cols-1 gap-2">
+              {SEND_TIMING_OPTIONS.map(opt => (
+                <button key={opt.id} onClick={() => setSendTiming(opt.id)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all press-scale text-left ${sendTiming === opt.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30"}`}>
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${sendTiming === opt.id ? "border-primary" : "border-muted-foreground/40"}`}>
+                    {sendTiming === opt.id && <div className="w-2 h-2 rounded-full bg-primary" />}
+                  </div>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Nachricht ans Restaurant (optional)</label>
+            <textarea value={note} onChange={e => setNote(e.target.value)}
+              placeholder="z.B. Wir feiern einen Geburtstag, bitte einen ruhigen Tisch…"
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+          </div>
+
+          {error && <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-3 py-2">{error}</p>}
+
+          {sendTiming === "sofort" && (
+            <div className="flex items-start gap-2 bg-blue-500/8 border border-blue-500/20 rounded-xl px-3 py-2.5">
+              <Zap className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-600">Die Anfrage wird sofort an das Restaurant gesendet.</p>
+            </div>
+          )}
+          {sendTiming === "manual" && (
+            <div className="flex items-start gap-2 bg-muted/50 border border-border/60 rounded-xl px-3 py-2.5">
+              <Bell className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">Du kannst die Anfrage manuell aus deinem Plan heraus senden.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 border-t shrink-0 flex gap-2">
+          <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-border text-sm font-bold hover:bg-muted/50 transition-colors press-scale">
+            Abbrechen
+          </button>
+          <button onClick={handleSubmit} disabled={saving}
+            className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-md shadow-primary/25 press-scale flex items-center justify-center gap-2 disabled:opacity-60">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarDays className="w-4 h-4" />}
+            {saving ? "Wird gesendet…" : sendTiming === "manual" ? "Anfrage speichern" : "Anfrage senden"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Share Plan Sheet ─────────────────────────────────────────────────────────
 
 function SharePlanSheet({ plan, onClose }: { plan: GroupPlan; onClose: () => void }) {
@@ -454,13 +625,39 @@ function RestaurantPickerSection({
 }
 
 function GroupPlanCard({
-  plan, onDelete, onEdit,
-}: { plan: GroupPlan; onDelete: () => void; onEdit: () => void }) {
+  plan, onDelete, onEdit, reservationRequest, onReservationChange,
+}: {
+  plan: GroupPlan; onDelete: () => void; onEdit: () => void;
+  reservationRequest: ReservationRequest | null; onReservationChange: () => void;
+}) {
   const [showShare, setShowShare] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSetupReservation, setShowSetupReservation] = useState(false);
+  const [sendingNow, setSendingNow] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const ft = FOOD_THEME_GROUPS.find((f) => f.id === plan.foodTheme);
   const dateObj = new Date(plan.date);
   const isUpcoming = dateObj >= new Date(new Date().setHours(0,0,0,0));
+
+  const handleSendNow = async () => {
+    if (!reservationRequest) return;
+    setSendingNow(true);
+    try {
+      await fetch(`${API}/meal-plan/reservation/${reservationRequest.id}/send`, { method: "POST" });
+      onReservationChange();
+    } finally { setSendingNow(false); }
+  };
+
+  const handleCancelRequest = async () => {
+    if (!reservationRequest) return;
+    setCancelling(true);
+    try {
+      await fetch(`${API}/meal-plan/reservation/${reservationRequest.id}`, { method: "DELETE" });
+      onReservationChange();
+    } finally { setCancelling(false); }
+  };
+
+  const rs = reservationRequest ? (RESERVATION_STATUS[reservationRequest.status] ?? RESERVATION_STATUS.planned) : null;
 
   const { data: suggestions } = useQuery({
     queryKey: ["group-suggestions", plan.id],
@@ -539,6 +736,54 @@ function GroupPlanCard({
             </div>
           )}
 
+          {/* Reservation Request Section */}
+          {plan.restaurant && (
+            <div className="mb-3">
+              {!reservationRequest ? (
+                <button
+                  onClick={() => setShowSetupReservation(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 text-primary text-xs font-bold hover:bg-primary/5 transition-all press-scale"
+                >
+                  <CalendarDays className="w-4 h-4" /> Reservierungsanfrage einrichten
+                </button>
+              ) : (
+                <div className={`rounded-2xl border p-3 ${rs!.cls}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${rs!.dotCls}`} />
+                    <p className="text-xs font-extrabold uppercase tracking-widest">Reservierungsstatus</p>
+                    <span className="ml-auto text-xs font-bold">{rs!.label}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs opacity-80 mb-2">
+                    <span>{new Date(reservationRequest.requestedDate).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" })}</span>
+                    <span>·</span>
+                    <span>{reservationRequest.requestedTime} Uhr</span>
+                    <span>·</span>
+                    <span>{reservationRequest.partySize} Personen</span>
+                  </div>
+                  {reservationRequest.note && (
+                    <p className="text-xs italic opacity-70 mb-2 line-clamp-1">{reservationRequest.note}</p>
+                  )}
+                  <div className="flex gap-2 mt-1">
+                    {reservationRequest.status === "planned" && reservationRequest.sendTiming === "manual" && (
+                      <button onClick={handleSendNow} disabled={sendingNow}
+                        className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold press-scale disabled:opacity-60">
+                        {sendingNow ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                        Jetzt senden
+                      </button>
+                    )}
+                    {["planned", "sent"].includes(reservationRequest.status) && (
+                      <button onClick={handleCancelRequest} disabled={cancelling}
+                        className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-current/20 bg-current/5 text-[11px] font-bold press-scale disabled:opacity-60">
+                        {cancelling ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+                        Stornieren
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Suggest restaurants */}
           <button
             onClick={() => setShowSuggestions(!showSuggestions)}
@@ -585,6 +830,13 @@ function GroupPlanCard({
       </div>
 
       {showShare && <SharePlanSheet plan={plan} onClose={() => setShowShare(false)} />}
+      {showSetupReservation && (
+        <SetupReservationModal
+          plan={plan}
+          onClose={() => setShowSetupReservation(false)}
+          onSaved={() => { setShowSetupReservation(false); onReservationChange(); }}
+        />
+      )}
     </>
   );
 }
@@ -1061,6 +1313,19 @@ export default function MealPlan() {
 
   const isLoggedIn = !!email;
 
+  const { data: reservationRequests = [] } = useQuery<ReservationRequest[]>({
+    queryKey: ["group-reservation-requests", email],
+    queryFn: async () => {
+      const r = await fetch(`${API}/meal-plan/reservation/organizer/${encodeURIComponent(email)}`);
+      if (!r.ok) return [];
+      return r.json();
+    },
+    enabled: isLoggedIn,
+    staleTime: 30 * 1000,
+  });
+
+  const refreshReservations = () => qc.invalidateQueries({ queryKey: ["group-reservation-requests", email] });
+
   const { data: plans = [], isLoading: plansLoading } = useQuery<any[]>({
     queryKey: ["meal-plan", email],
     queryFn: async () => {
@@ -1386,6 +1651,8 @@ export default function MealPlan() {
                       plan={plan}
                       onDelete={() => deleteGroup.mutate(plan.id)}
                       onEdit={() => setEditPlan(plan)}
+                      reservationRequest={reservationRequests.find(r => r.groupPlanId === plan.id) ?? null}
+                      onReservationChange={refreshReservations}
                     />
                   ))}
                 </>
@@ -1399,6 +1666,8 @@ export default function MealPlan() {
                       plan={plan}
                       onDelete={() => deleteGroup.mutate(plan.id)}
                       onEdit={() => setEditPlan(plan)}
+                      reservationRequest={reservationRequests.find(r => r.groupPlanId === plan.id) ?? null}
+                      onReservationChange={refreshReservations}
                     />
                   ))}
                 </>

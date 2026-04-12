@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { mealPlansTable, groupPlansTable, restaurantsTable, discountsTable } from "@workspace/db";
+import { mealPlansTable, groupPlansTable, restaurantsTable, discountsTable, groupReservationRequestsTable } from "@workspace/db";
 import { eq, and, inArray } from "drizzle-orm";
 
 const router = Router();
@@ -313,6 +313,150 @@ router.get("/group/:planId/suggestions", async (req, res) => {
     res.json(suggestions);
   } catch (err) {
     res.status(500).json({ error: "Fehler beim Laden der Vorschläge" });
+  }
+});
+
+// ─── Group Reservation Requests ───────────────────────────────────────────────
+
+function calcScheduledSendAt(requestedDate: string, sendTiming: string): Date | null {
+  if (sendTiming === "sofort" || sendTiming === "manual") return null;
+  const d = new Date(requestedDate);
+  const days = sendTiming === "3_days_before" ? 3 : sendTiming === "2_days_before" ? 2 : 1;
+  d.setDate(d.getDate() - days);
+  d.setHours(9, 0, 0, 0);
+  return d;
+}
+
+// Auto-send scheduled reservations every 10 minutes
+async function processScheduledReservations() {
+  try {
+    const now = new Date();
+    const rows = await db.select().from(groupReservationRequestsTable)
+      .where(eq(groupReservationRequestsTable.status, "planned"));
+    for (const r of rows) {
+      if (r.scheduledSendAt && r.scheduledSendAt <= now) {
+        await db.update(groupReservationRequestsTable)
+          .set({ status: "sent", sentAt: now, updatedAt: now })
+          .where(eq(groupReservationRequestsTable.id, r.id));
+      }
+    }
+  } catch { /* silent */ }
+}
+setInterval(processScheduledReservations, 10 * 60 * 1000);
+processScheduledReservations();
+
+// POST /reservation — create / replace reservation request for a group plan
+router.post("/reservation", async (req, res) => {
+  try {
+    const {
+      groupPlanId, restaurantId, restaurantName, organizerEmail,
+      organizerName, partySize, requestedDate, requestedTime, note, sendTiming,
+    } = req.body;
+    if (!groupPlanId || !restaurantId || !organizerEmail || !requestedDate || !requestedTime) {
+      return res.status(400).json({ error: "Pflichtfelder fehlen" });
+    }
+    const timing = sendTiming ?? "sofort";
+    const status = timing === "sofort" ? "sent" : "planned";
+    const sentAt = timing === "sofort" ? new Date() : null;
+    const scheduledSendAt = calcScheduledSendAt(requestedDate, timing);
+
+    await db.delete(groupReservationRequestsTable)
+      .where(eq(groupReservationRequestsTable.groupPlanId, parseInt(groupPlanId)));
+
+    const [created] = await db.insert(groupReservationRequestsTable).values({
+      groupPlanId: parseInt(groupPlanId),
+      restaurantId: parseInt(restaurantId),
+      restaurantName: restaurantName ?? "",
+      organizerEmail,
+      organizerName: organizerName ?? "",
+      partySize: parseInt(partySize) || 2,
+      requestedDate,
+      requestedTime,
+      note: note ?? "",
+      sendTiming: timing,
+      scheduledSendAt,
+      sentAt,
+      status,
+    }).returning();
+    res.json(created);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Erstellen der Anfrage" });
+  }
+});
+
+// GET /reservation/organizer/:email — all requests for an organizer
+router.get("/reservation/organizer/:email", async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    const rows = await db.select().from(groupReservationRequestsTable)
+      .where(eq(groupReservationRequestsTable.organizerEmail, email));
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Laden der Anfragen" });
+  }
+});
+
+// GET /reservation/plan/:groupPlanId — single request for a plan (must be before /:id routes)
+router.get("/reservation/plan/:groupPlanId", async (req, res) => {
+  try {
+    const planId = parseInt(req.params.groupPlanId);
+    const [row] = await db.select().from(groupReservationRequestsTable)
+      .where(eq(groupReservationRequestsTable.groupPlanId, planId));
+    res.json(row ?? null);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Laden der Anfrage" });
+  }
+});
+
+// PUT /reservation/:id — update (only while status=planned)
+router.put("/reservation/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { partySize, requestedDate, requestedTime, note, sendTiming } = req.body;
+    const sched = requestedDate && sendTiming ? calcScheduledSendAt(requestedDate, sendTiming) : undefined;
+    const [updated] = await db.update(groupReservationRequestsTable)
+      .set({
+        ...(partySize     !== undefined && { partySize: parseInt(partySize) }),
+        ...(requestedDate !== undefined && { requestedDate }),
+        ...(requestedTime !== undefined && { requestedTime }),
+        ...(note          !== undefined && { note }),
+        ...(sendTiming    !== undefined && { sendTiming }),
+        ...(sched         !== undefined && { scheduledSendAt: sched }),
+        updatedAt: new Date(),
+      })
+      .where(eq(groupReservationRequestsTable.id, id))
+      .returning();
+    res.json(updated ?? null);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Aktualisieren" });
+  }
+});
+
+// POST /reservation/:id/send — manually trigger send
+router.post("/reservation/:id/send", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const [updated] = await db.update(groupReservationRequestsTable)
+      .set({ status: "sent", sentAt: new Date(), updatedAt: new Date() })
+      .where(eq(groupReservationRequestsTable.id, id))
+      .returning();
+    res.json(updated ?? null);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Senden" });
+  }
+});
+
+// DELETE /reservation/:id — cancel reservation request
+router.delete("/reservation/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const [updated] = await db.update(groupReservationRequestsTable)
+      .set({ status: "cancelled", updatedAt: new Date() })
+      .where(eq(groupReservationRequestsTable.id, id))
+      .returning();
+    res.json(updated ?? null);
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Stornieren" });
   }
 });
 

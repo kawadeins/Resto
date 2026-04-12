@@ -46,6 +46,7 @@ import teamRouter from "./team";
 import walletRouter from "./wallet";
 import authRouter from "./auth";
 import oauthRouter from "./oauth";
+import groupReservationsRouter from "./group-reservations";
 
 const router: IRouter = Router();
 
@@ -96,5 +97,6 @@ router.use("/team", teamRouter);
 router.use("/wallet", walletRouter);
 router.use("/auth", authRouter);
 router.use("/auth", oauthRouter);
+router.use("/group-reservations", groupReservationsRouter);
 
 export default router;
