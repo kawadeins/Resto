@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Send, Plus, Users, MessageCircle, MoreVertical,
   VolumeX, Volume2, ShieldOff, Shield, Check, CheckCheck,
-  X, Search, Loader2
+  X, Search, Loader2, ImageIcon, ZoomIn
 } from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
 import { useToast } from "@/hooks/use-toast";
@@ -56,7 +56,8 @@ interface Conversation {
 }
 
 interface Message {
-  id: number; sender_email: string; text: string;
+  id: number; sender_email: string; text: string | null;
+  image_url: string | null;
   is_read: boolean; created_at: string;
   sender_name: string | null; sender_photo: string | null;
 }
@@ -164,12 +165,136 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
   );
 }
 
+// ── Fullscreen Image Viewer ────────────────────────────────────────────────────
+function FullscreenViewer({ src, onClose }: { src: string; onClose: () => void }) {
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.93)", backdropFilter: "blur(20px)" }}
+      onClick={onClose}
+    >
+      <button
+        className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors z-10"
+        onClick={onClose}
+      >
+        <X className="w-5 h-5 text-white" />
+      </button>
+      <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
+        <img
+          src={src.startsWith("/api") ? `${API_BASE}${src}` : src}
+          alt="Bild"
+          className="max-w-[92vw] max-h-[80vh] rounded-2xl shadow-2xl object-contain"
+          style={{ transform: `scale(${scale})`, transition: "transform 0.2s ease" }}
+        />
+        <div className="flex items-center gap-3">
+          <button
+            className="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium hover:bg-white/25 transition-colors"
+            onClick={() => setScale(s => Math.min(s + 0.5, 3))}
+          >
+            <ZoomIn className="inline w-4 h-4 mr-1" />{"Vergrößern"}
+          </button>
+          <button
+            className="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium hover:bg-white/25 transition-colors"
+            onClick={() => setScale(1)}
+          >
+            {"Zurücksetzen"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Chat Image Bubble ──────────────────────────────────────────────────────────
+function ChatImageBubble({ src, isOwn, onExpand }: { src: string; isOwn: boolean; onExpand: () => void }) {
+  const [err, setErr] = useState(false);
+  const fullSrc = src.startsWith("/api") ? `${API_BASE}${src}` : src;
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl cursor-pointer group ${isOwn ? "rounded-br-md" : "rounded-bl-md"}`}
+      style={{ maxWidth: 220, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}
+      onClick={onExpand}
+    >
+      {err ? (
+        <div className="w-52 h-36 flex items-center justify-center bg-muted/60 rounded-2xl">
+          <ImageIcon className="w-8 h-8 text-muted-foreground" />
+        </div>
+      ) : (
+        <img
+          src={fullSrc}
+          alt="Bild"
+          onError={() => setErr(true)}
+          className="w-full max-w-[220px] max-h-[280px] object-cover rounded-2xl transition-opacity"
+        />
+      )}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-2xl">
+        <ZoomIn className="w-7 h-7 text-white drop-shadow-lg" />
+      </div>
+    </div>
+  );
+}
+
+// ── Image Preview Modal (before send) ─────────────────────────────────────────
+function ImagePreviewModal({ preview, onSend, onCancel, isPending }: {
+  preview: string; onSend: () => void; onCancel: () => void; isPending: boolean;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}
+      onClick={onCancel}
+    >
+      <div
+        className="bg-background w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b">
+          <p className="font-bold text-[15px]">{"Bild senden"}</p>
+          <button onClick={onCancel} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/70 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="px-5 py-5 flex justify-center">
+          <img src={preview} alt="Vorschau" className="max-h-72 max-w-full rounded-2xl object-contain shadow-lg" />
+        </div>
+        <div className="px-5 pb-6 flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-3 rounded-2xl border text-sm font-semibold hover:bg-muted/60 transition-colors"
+          >
+            {"Abbrechen"}
+          </button>
+          <button
+            onClick={onSend}
+            disabled={isPending}
+            className="flex-1 py-3 rounded-2xl text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity hover:opacity-90 active:scale-95"
+            style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
+          >
+            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {"Senden"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Chat View ──────────────────────────────────────────────────────────────────
 function ChatView({ convId, email, onBack }: { convId: number; email: string; onBack: () => void }) {
   const [text, setText] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [fullscreenSrc, setFullscreenSrc] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const imgInputRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
   const { toast } = useToast();
 
@@ -192,12 +317,12 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
   }, [messages]);
 
   const sendMutation = useMutation({
-    mutationFn: async (t: string) => {
+    mutationFn: async ({ text: t, imageUrl: img }: { text?: string; imageUrl?: string }) => {
       const r = await fetch(`${API_BASE}/api/messages/send`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senderEmail: email, conversationId: convId, text: t }),
+        body: JSON.stringify({ senderEmail: email, conversationId: convId, text: t, imageUrl: img }),
       });
       const data = await r.json();
       if (!r.ok) {
@@ -215,6 +340,41 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
         if (e.strikeMessage) setTimeout(() => toast({ title: "Hinweis", description: e.strikeMessage }), 800);
       } else {
         toast({ title: e.message || "Fehler", variant: "destructive" });
+      }
+    },
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fd = new FormData();
+      fd.append("image", file);
+      fd.append("senderEmail", email);
+      fd.append("conversationId", String(convId));
+      const r = await fetch(`${API_BASE}/api/messages/upload-image`, {
+        method: "POST", credentials: "include", body: fd,
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        const err: any = new Error(data.error || "Upload fehlgeschlagen");
+        err.moderated = data.moderated;
+        err.strikeMessage = data.strikeMessage;
+        throw err;
+      }
+      return data as { imageUrl: string };
+    },
+    onSuccess: (data) => {
+      setImageFile(null);
+      setImagePreview(null);
+      sendMutation.mutate({ imageUrl: data.imageUrl });
+    },
+    onError: (e: any) => {
+      setImageFile(null);
+      setImagePreview(null);
+      if (e.moderated) {
+        toast({ title: "Bild blockiert", description: e.message, variant: "destructive" });
+        if (e.strikeMessage) setTimeout(() => toast({ title: "Hinweis", description: e.strikeMessage }), 800);
+      } else {
+        toast({ title: e.message || "Upload fehlgeschlagen", variant: "destructive" });
       }
     },
   });
@@ -256,7 +416,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
     const t = text.trim();
     if (!t || sendMutation.isPending) return;
     setText("");
-    sendMutation.mutate(t);
+    sendMutation.mutate({ text: t });
   }, [text, sendMutation]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -264,6 +424,20 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const url = URL.createObjectURL(file);
+    setImagePreview(url);
+    e.target.value = "";
+  };
+
+  const handleImageSend = () => {
+    if (!imageFile || uploadImageMutation.isPending) return;
+    uploadImageMutation.mutate(imageFile);
   };
 
   return (
@@ -363,16 +537,25 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
                     {msg.sender_name || msg.sender_email.split("@")[0]}
                   </p>
                 )}
-                <div
-                  className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    isOwn
-                      ? "text-white rounded-br-md"
-                      : "bg-muted/60 text-foreground rounded-bl-md"
-                  }`}
-                  style={isOwn ? { background: GRAD } : undefined}
-                >
-                  {msg.text}
-                </div>
+                {msg.image_url && (
+                  <ChatImageBubble
+                    src={msg.image_url}
+                    isOwn={isOwn}
+                    onExpand={() => setFullscreenSrc(msg.image_url!)}
+                  />
+                )}
+                {msg.text && (
+                  <div
+                    className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                      isOwn
+                        ? "text-white rounded-br-md"
+                        : "bg-muted/60 text-foreground rounded-bl-md"
+                    } ${msg.image_url ? "mt-1" : ""}`}
+                    style={isOwn ? { background: GRAD } : undefined}
+                  >
+                    {msg.text}
+                  </div>
+                )}
                 <p className={`text-[10px] text-muted-foreground mt-1 ${isOwn ? "text-right mr-1" : "ml-3"}`}>
                   {timeAgo(msg.created_at)}
                   {isOwn && (msg.is_read ? <CheckCheck className="inline w-3 h-3 ml-1 text-primary" /> : <Check className="inline w-3 h-3 ml-1" />)}
@@ -387,6 +570,22 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
       {/* Input */}
       <div className="shrink-0 px-4 pb-6 pt-3 border-t" style={{ background: "hsl(var(--background)/0.97)" }}>
         <div className="flex items-center gap-2">
+          {/* Hidden file input */}
+          <input
+            ref={imgInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+          {/* Image picker button */}
+          <button
+            onClick={() => imgInputRef.current?.click()}
+            title="Bild senden"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors shrink-0"
+          >
+            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
           <input
             ref={inputRef}
             value={text}
@@ -408,6 +607,21 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
           </button>
         </div>
       </div>
+
+      {/* Image preview modal */}
+      {imagePreview && imageFile && (
+        <ImagePreviewModal
+          preview={imagePreview}
+          onSend={handleImageSend}
+          onCancel={() => { setImageFile(null); setImagePreview(null); }}
+          isPending={uploadImageMutation.isPending || sendMutation.isPending}
+        />
+      )}
+
+      {/* Fullscreen image viewer */}
+      {fullscreenSrc && (
+        <FullscreenViewer src={fullscreenSrc} onClose={() => setFullscreenSrc(null)} />
+      )}
     </div>
   );
 }

@@ -6,14 +6,54 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { customerProfilesTable } from "@workspace/db";
 import { eq, inArray } from "drizzle-orm";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import express from "express";
 import {
   moderateText,
+  moderateImage,
   recordViolation,
   getUserStatus,
   getSuspendedMessage,
 } from "../utils/moderation.js";
 
 const router = Router();
+
+// ── Chat image storage ─────────────────────────────────────────────────────────
+const CHAT_IMG_DIR = path.join(process.cwd(), "public", "chat-images");
+if (!fs.existsSync(CHAT_IMG_DIR)) fs.mkdirSync(CHAT_IMG_DIR, { recursive: true });
+
+const chatStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, CHAT_IMG_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
+    cb(null, `chat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}${ext}`);
+  },
+});
+const chatUpload = multer({
+  storage: chatStorage,
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only images allowed"));
+  },
+});
+router.use("/images", express.static(CHAT_IMG_DIR));
+
+// ── Rate limiter: max 10 image uploads per user per 60s ───────────────────────
+const imgRateMap = new Map<string, { count: number; resetAt: number }>();
+function checkImgRate(email: string): boolean {
+  const now = Date.now();
+  const entry = imgRateMap.get(email);
+  if (!entry || now > entry.resetAt) {
+    imgRateMap.set(email, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 10) return false;
+  entry.count++;
+  return true;
+}
 
 // ── Helper: raw pg client ──────────────────────────────────────────────────────
 function pg() { return (db as any).$client; }
@@ -120,12 +160,80 @@ router.get("/conversation/:id/:email", async (req, res) => {
   }
 });
 
+// ── POST /api/messages/upload-image ───────────────────────────────────────────
+// Upload and moderate a chat image before sending
+router.post("/upload-image", chatUpload.single("image"), async (req, res) => {
+  try {
+    const senderEmail = (req.body.senderEmail || "").trim().toLowerCase();
+    const conversationId = parseInt(req.body.conversationId || "0", 10);
+    if (!senderEmail || !conversationId) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return void res.status(400).json({ error: "Fehlende Felder." });
+    }
+    if (!req.file) return void res.status(400).json({ error: "Kein Bild." });
+
+    const pgDb = pg();
+
+    // ── Account suspension check ─────────────────────────────────────────────
+    const userStatus = await getUserStatus(senderEmail, pgDb);
+    if (userStatus.suspended) {
+      fs.unlinkSync(req.file.path);
+      return void res.status(403).json({
+        error: getSuspendedMessage("message"),
+        moderated: true,
+        suspended: true,
+      });
+    }
+
+    // ── Rate limit check ─────────────────────────────────────────────────────
+    if (!checkImgRate(senderEmail)) {
+      fs.unlinkSync(req.file.path);
+      return void res.status(429).json({ error: "Zu viele Bilder. Bitte warte kurz." });
+    }
+
+    // ── Participant check ────────────────────────────────────────────────────
+    const { rows: access } = await pgDb.query(
+      `SELECT 1 FROM conversation_participants WHERE conversation_id=$1 AND user_email=$2`,
+      [conversationId, senderEmail]
+    );
+    if (access.length === 0) {
+      fs.unlinkSync(req.file.path);
+      return void res.status(403).json({ error: "Kein Zugriff." });
+    }
+
+    // ── Image moderation ─────────────────────────────────────────────────────
+    const modResult = await moderateImage(req.file.path, "post_image");
+    if (modResult.blocked) {
+      fs.unlinkSync(req.file.path);
+      const violation = await recordViolation(
+        senderEmail, "message", modResult.severity,
+        modResult.reason ?? "unsafe chat image", modResult.category,
+        req.file.originalname, pgDb
+      );
+      return void res.status(422).json({
+        error: "Dieses Bild kann nicht gesendet werden. Bitte sende nur geeignete Inhalte.",
+        moderated: true,
+        strikeMessage: violation.strikeMessage,
+      });
+    }
+
+    const imageUrl = `/api/messages/images/${req.file.filename}`;
+    res.json({ imageUrl });
+  } catch (err) {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    console.error("[messages] upload-image error:", err);
+    res.status(500).json({ error: "Bild-Upload fehlgeschlagen." });
+  }
+});
+
 // ── POST /api/messages/send ────────────────────────────────────────────────────
 // Send a message in a conversation
 router.post("/send", async (req, res) => {
   try {
-    const { senderEmail, conversationId, text } = req.body;
-    if (!senderEmail || !conversationId || !text?.trim()) {
+    const { senderEmail, conversationId, text, imageUrl } = req.body;
+    const hasText = !!text?.trim();
+    const hasImage = !!imageUrl?.trim();
+    if (!senderEmail || !conversationId || (!hasText && !hasImage)) {
       return void res.status(400).json({ error: "Fehlende Felder." });
     }
     const pgDb = pg();
@@ -158,24 +266,27 @@ router.post("/send", async (req, res) => {
       }
     }
 
-    // ── Text moderation ──────────────────────────────────────────────────────
-    const modResult = await moderateText(text.trim(), "message");
-    if (modResult.blocked) {
-      const violation = await recordViolation(
-        senderEmail, "message", modResult.severity,
-        modResult.reason ?? "unsafe message", modResult.category,
-        text.slice(0, 200), pgDb
-      );
-      return void res.status(422).json({
-        error: modResult.message,
-        moderated: true,
-        strikeMessage: violation.strikeMessage,
-      });
+    // ── Text moderation (only if there is text) ──────────────────────────────
+    if (hasText) {
+      const modResult = await moderateText(text.trim(), "message");
+      if (modResult.blocked) {
+        const violation = await recordViolation(
+          senderEmail, "message", modResult.severity,
+          modResult.reason ?? "unsafe message", modResult.category,
+          text.slice(0, 200), pgDb
+        );
+        return void res.status(422).json({
+          error: modResult.message,
+          moderated: true,
+          strikeMessage: violation.strikeMessage,
+        });
+      }
     }
 
     const { rows } = await pgDb.query(
-      `INSERT INTO direct_messages (conversation_id, sender_email, text) VALUES ($1, $2, $3) RETURNING *`,
-      [conversationId, senderEmail, text.trim()]
+      `INSERT INTO direct_messages (conversation_id, sender_email, text, image_url)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [conversationId, senderEmail, hasText ? text.trim() : null, hasImage ? imageUrl.trim() : null]
     );
 
     res.json(rows[0]);

@@ -1,0 +1,164 @@
+Implement "Safe Image Sharing in Chat" with strict moderation.
+
+IMPORTANT:
+- Do NOT allow unsafe content
+- Integrate with the existing moderation system
+- Keep UX simple and fast
+- Mobile-first (iPhone)
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Allow users to send images in:
+- direct chat
+- group chat
+
+BUT enforce strict filtering so only appropriate images are allowed.
+
+==================================================
+1. IMAGE SENDING IN CHAT
+==================================================
+
+Add ability to:
+- upload image in chat
+- preview before sending
+- send image message
+- display image in chat bubble
+
+Supported:
+- camera upload
+- gallery upload
+
+UI:
+- small "+" or image icon in chat input
+- preview modal before send
+- cancel or send buttons
+
+==================================================
+2. IMAGE MODERATION BEFORE SEND (CRITICAL)
+==================================================
+
+Every image must be checked BEFORE sending.
+
+Block immediately if image contains:
+- nudity
+- sexual content
+- pornographic content
+- inappropriate body exposure
+- violent or disturbing content
+
+Allowed images:
+- food
+- restaurant photos
+- friends / normal selfies (clean)
+- daily life (clean)
+
+If image is unsafe:
+- DO NOT send
+- show message:
+
+German:
+"Dieses Bild kann nicht gesendet werden."
+or
+"Bitte sende nur geeignete Inhalte."
+
+==================================================
+3. CHAT IMAGE DISPLAY
+==================================================
+
+Images inside chat must:
+- load correctly
+- have rounded corners
+- tap to open fullscreen
+- support zoom
+
+If image fails:
+- show fallback
+- no broken UI
+
+==================================================
+4. RATE LIMIT / SPAM PROTECTION
+==================================================
+
+Prevent abuse:
+- limit rapid image sending
+- prevent spam uploads
+- combine with strike system if abused
+
+==================================================
+5. LINK TO STRIKE SYSTEM
+==================================================
+
+If user tries to send blocked images repeatedly:
+
+- count violations
+- apply warning system:
+
+1st attempt:
+warning
+
+2nd attempt:
+strong warning
+
+3rd attempt:
+temporary block or restriction
+
+==================================================
+6. GROUP CHAT SUPPORT
+==================================================
+
+Allow image sending in:
+- group chats
+
+Apply same moderation rules.
+
+==================================================
+7. USER EXPERIENCE
+==================================================
+
+Keep it smooth:
+- fast upload
+- preview before send
+- no lag
+- clear feedback
+
+==================================================
+8. GERMAN UX COPY
+==================================================
+
+Use:
+
+- "Bild auswählen"
+- "Senden"
+- "Abbrechen"
+- "Dieses Bild kann nicht gesendet werden"
+- "Bitte sende nur geeignete Inhalte"
+
+==================================================
+9. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. User can send image in chat
+B. Image preview works
+C. Safe images send correctly
+D. Unsafe images are blocked BEFORE sending
+E. Error message shows correctly
+F. Images display clean in chat
+G. Group chat supports images
+H. Strike system works for abuse
+
+==================================================
+FINAL RESULT
+==================================================
+
+Chat now supports image sharing BUT stays clean:
+
+- no sexual content
+- no inappropriate images
+- only safe, normal, restaurant-friendly content
+
+This keeps the platform:
+clean, premium, and safe.
