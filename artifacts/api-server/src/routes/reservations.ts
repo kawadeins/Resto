@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { reservationsTable, loyaltyPointsTable } from "@workspace/db";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
+import { createNotification } from "../lib/notify";
 import { sendBookingConfirmation, sendLoyaltyTierUnlock } from "../services/email";
 import {
   CreateReservationBody,
@@ -115,6 +116,17 @@ router.post("/", async (req, res) => {
       source: body.source,
     }).returning();
     res.status(201).json(mapReservation(row));
+    // Notify business of new reservation (fire-and-forget)
+    void createNotification({
+      userType: "business",
+      restaurantId: (row as any).restaurantId ?? 1,
+      type: "new_reservation",
+      priority: "important",
+      title: "Neue Reservierung",
+      message: `${body.customerName} – ${body.partySize} Personen am ${body.date} um ${body.time} Uhr.`,
+      link: "/reservations",
+      metadata: { reservationId: row.id },
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create reservation");
     res.status(400).json({ error: "Invalid reservation data" });

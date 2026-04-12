@@ -1,0 +1,385 @@
+Implement a full "Smart Notification & Alert System" for the entire RestoSmart platform.
+
+IMPORTANT:
+- Do NOT redesign the app
+- Do NOT break existing booking, group plan, wallet, campaign, or dashboard systems
+- This is a system-wide notification layer for BOTH:
+  1. customer app
+  2. business dashboard
+
+The goal is to create a modern, high-value, intelligent notification system that keeps both customers and restaurant owners informed without needing to constantly open the app.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Build a strong notification engine that supports:
+
+CUSTOMER SIDE:
+- group plan updates
+- reservation approvals/rejections
+- reminders
+- personalized suggestions
+- relevant offers
+- social/group activity
+
+BUSINESS SIDE:
+- new reservations
+- group reservation requests
+- important wallet alerts
+- campaign / boost alerts
+- review alerts
+- pending actions
+- dashboard badges and indicators
+
+The notification system must feel:
+- premium
+- intelligent
+- relevant
+- modern
+- useful
+- not spammy
+
+==================================================
+1. CUSTOMER NOTIFICATIONS
+==================================================
+
+Add a customer-side notification system for important events.
+
+Examples:
+- Deine Gruppenanfrage wurde bestätigt
+- Deine Gruppenanfrage wurde abgelehnt
+- Deine Reservierung wurde bestätigt
+- Erinnerung: Dein Gruppenplan ist morgen
+- Neues Angebot passend zu deinem Geschmack
+- Dieses Restaurant könnte dir gefallen
+
+Use cases:
+- group plan status change
+- reservation status change
+- future plan reminders
+- personalized restaurant suggestions
+- relevant discounts/offers
+- social/group invites
+
+==================================================
+2. BUSINESS DASHBOARD NOTIFICATIONS
+==================================================
+
+Add a business-side notification system for restaurant owners/managers.
+
+Examples:
+- Neue Reservierung eingegangen
+- Neue Gruppenanfrage erhalten
+- Neue Bewertung erhalten
+- Kritische Bewertung benötigt Antwort
+- Dein Guthaben ist fast aufgebraucht
+- Eine Kampagne wurde gestoppt
+- Budgetlimit fast erreicht
+- Neue Anfrage wartet auf Bestätigung
+
+These notifications should appear:
+- inside the dashboard
+- with badges on relevant sections
+- optionally in a top notifications center
+
+==================================================
+3. BADGE / COUNTER SYSTEM
+==================================================
+
+Add visible counters/badges for key sections.
+
+Examples:
+- Reservierungen (3)
+- Gruppenanfragen (2)
+- Bewertungen (1)
+- Benachrichtigungen (5)
+
+Use:
+- small red or brand-colored badges
+- subtle but clearly visible
+- counts update from real data
+
+Apply to both customer and business side where relevant.
+
+==================================================
+4. IN-APP NOTIFICATION CENTER
+==================================================
+
+Create a notification center / alerts list for both customer and business app.
+
+Must support:
+- unread/read status
+- timestamp
+- icon per notification type
+- click action to open related page
+- grouped by importance or recency
+
+Examples:
+Customer:
+- accepted reservation
+- upcoming reminder
+- matching nightlife offer
+
+Business:
+- new booking
+- new group request
+- wallet low
+- campaign action needed
+
+==================================================
+5. IMPORTANT REAL-TIME / ACTIONABLE ALERTS
+==================================================
+
+Notifications must be actionable.
+
+Examples:
+Business owner:
+- "Neue Gruppenanfrage" → opens reservation request page
+- "Bewertung benötigt Antwort" → opens reviews page
+- "Guthaben fast leer" → opens wallet top-up
+- "Boost pausiert" → opens campaign center
+
+Customer:
+- "Reservierung bestätigt" → opens booking detail
+- "Gruppenplan bestätigt" → opens plan detail
+- "Neues passendes Angebot" → opens restaurant/offer page
+
+==================================================
+6. FUTURE REMINDERS / SCHEDULED ALERTS
+==================================================
+
+Add reminder support for future actions.
+
+Customer examples:
+- group plan tomorrow
+- reservation in 2 hours
+- reminder 1 day before
+- reminder when restaurant answers
+
+Business examples:
+- upcoming group reservation
+- planned request waiting
+- campaign needs action tomorrow
+- wallet running low before scheduled boost
+
+The system must support time-based future notifications.
+
+==================================================
+7. BEHAVIOR-BASED SMART NOTIFICATIONS
+==================================================
+
+Implement smart recommendation notifications based on real user behavior.
+
+Customer examples:
+- if user often interacts with nightlife / bars / clubs:
+  "Heute Abend passt dieses Lokal perfekt zu dir"
+- if user likes breakfast places:
+  "Guten Morgen – diese Cafés passen heute zu deinem Stil"
+
+Business examples:
+- if owner frequently runs boosts:
+  "Heute könnte ein Abend-Boost sinnvoll sein"
+- if low wallet before usual spending:
+  "Dein Guthaben reicht bald nicht mehr für deine Kampagnen"
+
+IMPORTANT:
+- use real behavior/history/preferences where available
+- no fake AI
+- no spam
+- no irrelevant recommendations
+
+==================================================
+8. NOTIFICATION PRIORITY SYSTEM
+==================================================
+
+Classify notifications by importance.
+
+Levels:
+- critical
+- important
+- informational
+- suggestion
+
+Examples:
+Critical:
+- new reservation waiting
+- wallet almost empty before scheduled campaign
+- group request response needed
+
+Important:
+- reservation approved/rejected
+- new review received
+
+Informational:
+- reminder
+- saved plan updated
+
+Suggestion:
+- matching offer
+- nightlife recommendation
+- boost idea
+
+This helps UI hierarchy and reduces noise.
+
+==================================================
+9. VISUAL DESIGN / UI BEHAVIOR
+==================================================
+
+Notifications must feel premium and modern.
+
+Requirements:
+- clean cards / list items
+- icon per type
+- badge counts
+- subtle motion
+- no clutter
+- readable German copy
+- soft highlight for unread items
+
+Do NOT make it noisy.
+Do NOT make it spammy.
+
+==================================================
+10. MOBILE + DASHBOARD DELIVERY
+==================================================
+
+The system must work in:
+- customer mobile app
+- customer web app
+- business dashboard
+
+At minimum implement:
+- in-app notification center
+- badges
+- alert banners/toasts for important immediate events
+
+If push infrastructure exists, hook into it.
+If not, structure the system so push can be added later.
+
+==================================================
+11. GROUP PLAN + RESERVATION STATUS ALERTS
+==================================================
+
+This is critical.
+
+When a restaurant accepts/rejects a group reservation request:
+- customer/group owner must receive clear notification
+- status should also update visually inside the plan
+- if possible, participants can also see that status changed
+
+Examples:
+- "Deine Gruppenanfrage wurde bestätigt"
+- "Deine Gruppenanfrage wurde abgelehnt"
+
+==================================================
+12. BUSINESS ACTION ALERTS
+==================================================
+
+Business dashboard must notify owners/managers when action is needed.
+
+Examples:
+- a reservation needs confirmation
+- a group request arrived
+- critical review needs response
+- wallet low
+- boost failed / paused
+- new premium-relevant insight available
+
+Also show badges directly on:
+- reservations
+- reviews
+- campaigns
+- wallet/billing
+
+==================================================
+13. NO-SPAM / SMART FILTERING
+==================================================
+
+The notification engine must NOT spam users.
+
+Rules:
+- deduplicate similar notifications
+- avoid repeated noisy reminders
+- suppress low-value alerts if too frequent
+- prioritize important actionable events
+- suggestions must be relevant, not random
+
+==================================================
+14. DATA MODEL / BACKEND
+==================================================
+
+Create or extend a proper notifications model.
+
+Each notification should support:
+- id
+- user type (customer/business)
+- recipient id/email/session-linked identity
+- type
+- title
+- message
+- status (unread/read)
+- priority
+- createdAt
+- link/action target
+- optional metadata
+- optional scheduledAt for future reminders
+
+==================================================
+15. GERMAN UX COPY
+==================================================
+
+All visible notification copy must be in German.
+
+Examples:
+- Neue Reservierung
+- Neue Gruppenanfrage
+- Reservierung bestätigt
+- Anfrage abgelehnt
+- Erinnerung
+- Dein Guthaben ist fast leer
+- Dieses Angebot könnte dir gefallen
+
+==================================================
+16. FINAL VALIDATION
+==================================================
+
+Verify:
+
+CUSTOMER:
+- gets notified when group plan request is approved/rejected
+- sees reminders for future plans
+- sees relevant suggestions
+- can open the right destination from notifications
+
+BUSINESS:
+- sees reservation/group request alerts
+- sees badges on important sections
+- sees wallet/campaign/review alerts
+- can click alert and go directly to the needed page
+
+Also verify:
+- counts update correctly
+- unread/read works
+- no notification chaos
+- no duplicates
+- no broken links
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart must have a strong modern notification system that keeps:
+
+- customers informed and engaged
+- restaurant owners informed and responsive
+
+The system should feel like a real smart platform:
+- alive
+- useful
+- predictive
+- premium
+
+No dead dashboards.
+No hidden important events.
+No need to constantly manually check everything.

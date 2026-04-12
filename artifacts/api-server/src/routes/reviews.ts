@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { reviewsTable, loyaltyPointsTable, reservationsTable, restaurantsTable } from "@workspace/db";
+import { createNotification } from "../lib/notify";
 import { eq, desc, avg, count, and, isNull, or, ne, lte, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { sendEmail } from "../lib/email.js";
@@ -417,6 +418,21 @@ router.post("/", reviewSubmitLimiter, async (req, res) => {
     }
 
     res.status(201).json({ ...mapReview(review), requiresRecovery: isLowRating && !startRecovery });
+
+    // Notify business of new review (fire-and-forget)
+    const isCritical = body.rating <= 2;
+    void createNotification({
+      userType: "business",
+      restaurantId,
+      type: isCritical ? "critical_review" : "new_review",
+      priority: isCritical ? "critical" : "important",
+      title: isCritical ? "Kritische Bewertung eingegangen" : "Neue Bewertung eingegangen",
+      message: isCritical
+        ? `${body.customerName} hat ${body.rating} ★ hinterlassen – Antwort empfohlen.`
+        : `${body.customerName} hat ${body.rating} ★ hinterlassen.`,
+      link: "/reviews",
+      metadata: { reviewId: review.id, rating: body.rating },
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to create review");
     res.status(500).json({ error: "Failed to create review" });

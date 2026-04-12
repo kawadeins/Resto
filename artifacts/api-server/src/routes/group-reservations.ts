@@ -7,6 +7,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { groupReservationRequestsTable } from "@workspace/db";
 import { eq, and, ne } from "drizzle-orm";
+import { createNotification } from "../lib/notify";
 
 const router = Router();
 
@@ -27,7 +28,6 @@ router.get("/", async (req, res) => {
         )
         .orderBy(groupReservationRequestsTable.createdAt);
     } else {
-      // Fallback: return all non-planned requests (single-tenant / dev mode)
       rows = await db
         .select()
         .from(groupReservationRequestsTable)
@@ -51,17 +51,18 @@ router.put("/:id/status", async (req, res) => {
       return res.status(400).json({ error: "Ungültiger Status" });
     }
 
-    // Ownership check: if session has restaurantId, verify it matches the request
+    // Load the request before update so we have organizer info
+    const [existing] = await db
+      .select()
+      .from(groupReservationRequestsTable)
+      .where(eq(groupReservationRequestsTable.id, id));
+
+    if (!existing) return res.status(404).json({ error: "Anfrage nicht gefunden" });
+
+    // Ownership check: if session has restaurantId, verify it matches
     const sessionRestaurantId: number | undefined = req.session.restaurantId;
-    if (sessionRestaurantId) {
-      const [existing] = await db
-        .select()
-        .from(groupReservationRequestsTable)
-        .where(eq(groupReservationRequestsTable.id, id));
-      if (!existing) return res.status(404).json({ error: "Anfrage nicht gefunden" });
-      if (existing.restaurantId !== sessionRestaurantId) {
-        return res.status(403).json({ error: "Keine Berechtigung für diese Anfrage" });
-      }
+    if (sessionRestaurantId && existing.restaurantId !== sessionRestaurantId) {
+      return res.status(403).json({ error: "Keine Berechtigung für diese Anfrage" });
     }
 
     const [updated] = await db
@@ -72,6 +73,36 @@ router.put("/:id/status", async (req, res) => {
 
     if (!updated) return res.status(404).json({ error: "Anfrage nicht gefunden" });
     res.json(updated);
+
+    // ── Notification hooks (fire-and-forget after response) ─────────────────
+    const dateStr = new Date(existing.requestedDate).toLocaleDateString("de-DE", {
+      weekday: "short", day: "numeric", month: "short",
+    });
+
+    if (status === "confirmed") {
+      // Notify the group organizer (customer side)
+      void createNotification({
+        userType: "customer",
+        recipientEmail: existing.organizerEmail,
+        type: "group_reservation_confirmed",
+        priority: "important",
+        title: "Gruppenanfrage bestätigt",
+        message: `${existing.restaurantName} hat deine Anfrage für ${dateStr} bestätigt.`,
+        link: "/meal-plan",
+        metadata: { groupPlanId: existing.groupPlanId, requestId: id },
+      });
+    } else if (status === "rejected") {
+      void createNotification({
+        userType: "customer",
+        recipientEmail: existing.organizerEmail,
+        type: "group_reservation_rejected",
+        priority: "important",
+        title: "Gruppenanfrage abgelehnt",
+        message: `${existing.restaurantName} kann deine Anfrage für ${dateStr} leider nicht annehmen.`,
+        link: "/meal-plan",
+        metadata: { groupPlanId: existing.groupPlanId, requestId: id },
+      });
+    }
   } catch (err) {
     res.status(500).json({ error: "Fehler beim Aktualisieren des Status" });
   }

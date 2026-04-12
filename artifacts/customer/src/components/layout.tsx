@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays, Users, Building2 } from "lucide-react";
 import { RestoLogo } from "@/components/resto-logo";
 import { Link } from "wouter";
+import { CustomerNotificationBell } from "@/components/notification-bell";
 
 // ─── Route → tab ownership ────────────────────────────────────────────────────
 // Order matters: more-specific prefixes must come first.
@@ -81,6 +82,14 @@ const EASE   = "0.15s ease";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { activeTab, pressedTab, handleTap } = useSmartTabNav();
+  const [customerEmail, setCustomerEmail] = useState(
+    () => localStorage.getItem("restosmart_email") ?? ""
+  );
+  useEffect(() => {
+    const sync = () => setCustomerEmail(localStorage.getItem("restosmart_email") ?? "");
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
@@ -108,6 +117,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </button>
               );
             })}
+            <CustomerNotificationBell email={customerEmail} />
           </nav>
         </div>
       </header>
@@ -116,6 +126,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 w-full pb-20 md:pb-0">
         {children}
       </main>
+
+      {/* ── Mobile notification bell (top-right, visible only on mobile) ─── */}
+      {customerEmail && (
+        <div className="md:hidden fixed top-3 right-3 z-[60]">
+          <CustomerNotificationBell email={customerEmail} />
+        </div>
+      )}
 
       {/* ── Mobile bottom nav ──────────────────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">

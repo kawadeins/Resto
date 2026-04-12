@@ -23,6 +23,7 @@ export * from "./customer_profiles";
 export * from "./meal_plans";
 export * from "./group_plans";
 export * from "./app_feedback";
+export * from "./smart_notifications";
 export * from "./friendships";
 export * from "./social_activities";
 export * from "./instant_plans";

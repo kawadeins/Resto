@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { mealPlansTable, groupPlansTable, restaurantsTable, discountsTable, groupReservationRequestsTable } from "@workspace/db";
 import { eq, and, inArray } from "drizzle-orm";
+import { createNotification } from "../lib/notify";
 
 const router = Router();
 
@@ -379,6 +380,24 @@ router.post("/reservation", async (req, res) => {
       status,
     }).returning();
     res.json(created);
+
+    // Notify business owner of new group request (fire-and-forget)
+    if (status === "sent") {
+      const dateLabel = new Date(requestedDate).toLocaleDateString("de-DE", {
+        weekday: "short", day: "numeric", month: "short",
+      });
+      const rId = parseInt(restaurantId);
+      void createNotification({
+        userType: "business",
+        restaurantId: rId,
+        type: "new_group_request",
+        priority: "important",
+        title: "Neue Gruppenanfrage",
+        message: `${organizerName || organizerEmail} möchte am ${dateLabel} für ${parseInt(partySize) || 2} Personen reservieren.`,
+        link: "/reservations",
+        metadata: { requestId: created.id, groupPlanId: parseInt(groupPlanId) },
+      });
+    }
   } catch (err) {
     res.status(500).json({ error: "Fehler beim Erstellen der Anfrage" });
   }

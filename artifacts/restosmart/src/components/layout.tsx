@@ -5,6 +5,7 @@ import {
   Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
   Clock, X, Flame, UsersRound, LogOut,
 } from "lucide-react";
+import { OwnerNotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { track } from "@/lib/conversion-tracking";
@@ -270,8 +271,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-background text-foreground dark overflow-hidden">
       {/* Seitenleiste */}
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50 border-r border-border bg-sidebar">
-        <div className="flex h-16 shrink-0 items-center px-6 border-b border-sidebar-border bg-sidebar-primary/5">
+        <div className="flex h-16 shrink-0 items-center px-6 border-b border-sidebar-border bg-sidebar-primary/5 justify-between">
           <RestoLogo size="md" />
+          <OwnerNotificationBell />
         </div>
         <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6">
           <nav className="flex-1 space-y-1">
@@ -351,6 +353,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
           );
         })}
+        {/* Mobile notifications */}
+        <div className="flex flex-col items-center justify-center w-full h-full space-y-1">
+          <OwnerNotificationBell />
+          <span className="text-[10px] font-medium text-muted-foreground">Alerts</span>
+        </div>
         {/* Mobile profile button */}
         <Link
           href="/profile"
