@@ -39,6 +39,9 @@ import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api
 import { VibeOnboarding } from "@/components/vibe-onboarding";
 import { SmartRecommendationsSection } from "@/components/smart-recommendations";
 import { SmartPlanGenerator, SmartPlanTriggerButton } from "@/components/smart-plan-generator";
+import { DailyHookBanner } from "@/components/daily-hook-banner";
+import { LevelUpModal, checkAndShowLevelUp } from "@/components/level-up-modal";
+import { PostScrollTrigger } from "@/components/return-trigger";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -92,6 +95,7 @@ const TIER_CONFIG: Record<string, { gradient: string; badge: string; glow: strin
   Bronze: { gradient: "from-amber-700/20 via-amber-500/10 to-transparent", badge: "bg-amber-100 text-amber-800 border-amber-300", glow: "shadow-amber-200" },
   Silver: { gradient: "from-slate-500/20 via-slate-400/10 to-transparent", badge: "bg-slate-100 text-slate-700 border-slate-300", glow: "shadow-slate-200" },
   Gold:   { gradient: "from-yellow-500/20 via-amber-400/10 to-transparent", badge: "bg-yellow-100 text-yellow-800 border-yellow-300", glow: "shadow-yellow-200" },
+  Elite:  { gradient: "from-primary/25 via-accent/15 to-transparent", badge: "bg-primary/10 text-primary border-primary/30", glow: "shadow-primary/25" },
 };
 const MSG_ICON: Record<string, React.ElementType> = {
   win_back: RefreshCw,
@@ -101,10 +105,19 @@ const MSG_ICON: Record<string, React.ElementType> = {
 };
 
 function PersonalizedSection({ email }: { email: string }) {
+  const [levelUpTier, setLevelUpTier] = useState<string | null>(null);
   const { data, isLoading } = useGetPersonalizedOffers(
     { email },
     { query: { queryKey: getGetPersonalizedOffersQueryKey({ email }), enabled: !!email } }
   );
+
+  useEffect(() => {
+    if (data?.tier) {
+      const tier = checkAndShowLevelUp(data.tier);
+      if (tier) setLevelUpTier(tier);
+    }
+  }, [data?.tier]);
+
   if (isLoading) return (
     <section className="px-4 py-4">
       <div className="container mx-auto max-w-6xl"><Skeleton className="h-24 w-full rounded-3xl" /></div>
@@ -113,12 +126,19 @@ function PersonalizedSection({ email }: { email: string }) {
   if (!data) return null;
   const Icon = data.messageType ? (MSG_ICON[data.messageType] ?? Gift) : Gift;
   const cfg = TIER_CONFIG[data.tier] ?? TIER_CONFIG.Bronze;
-  const pct = data.tier === "Gold" ? 100
+  const pct = data.tier === "Elite" ? 100
+    : data.tier === "Gold"   ? Math.min(100, Math.round(((data.points - 500) / 500) * 100))
     : data.tier === "Silver" ? Math.min(100, Math.round(((data.points - 200) / 300) * 100))
     : Math.min(100, Math.round((data.points / 200) * 100));
 
   return (
     <section className="px-4 py-4">
+      {levelUpTier && (
+        <LevelUpModal
+          tier={levelUpTier as any}
+          onClose={() => setLevelUpTier(null)}
+        />
+      )}
       <div className="container mx-auto max-w-6xl">
         <div className={`rounded-3xl border border-border/50 bg-gradient-to-r ${cfg.gradient} bg-card p-5 flex flex-col md:flex-row gap-4 md:items-center shadow-lg ${cfg.glow}`}>
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -257,24 +277,36 @@ function DynamicSection({
 
 type HeadlineSegment = { text: string; gradient?: boolean };
 
-const ROTATING_HEADLINES: HeadlineSegment[][] = [
-  [
-    { text: "Wien entdecken." },
-    { text: " Die Nacht gehört Ihnen.", gradient: true },
-  ],
-  [
-    { text: "Heute Abend." },
-    { text: " Wiens beste Lokale warten.", gradient: true },
-  ],
-  [
-    { text: "Reservieren." },
-    { text: " Exklusive Deals sichern.", gradient: true },
-  ],
-  [
-    { text: "Jetzt buchen." },
-    { text: " Smart entdecken, mehr erleben.", gradient: true },
-  ],
-];
+function getTimeSlotHeadlines(): HeadlineSegment[][] {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 11) return [
+    [{ text: "Guten Morgen." }, { text: " Die besten Frühstücks-Spots.", gradient: true }],
+    [{ text: "Früh aufgestanden?" }, { text: " Wien erwartet dich.", gradient: true }],
+    [{ text: "Jetzt buchen." }, { text: " Tische sind noch frei.", gradient: true }],
+  ];
+  if (h >= 11 && h < 15) return [
+    [{ text: "Mittagszeit." }, { text: " Sichere dir jetzt einen Tisch.", gradient: true }],
+    [{ text: "Hunger?" }, { text: " Wiens beste Restaurants warten.", gradient: true }],
+    [{ text: "Lunch-Deals." }, { text: " Nur heute verfügbar.", gradient: true }],
+  ];
+  if (h >= 15 && h < 18) return [
+    [{ text: "Nachmittag." }, { text: " Entdecke neue Cafés in Wien.", gradient: true }],
+    [{ text: "Happy Hour." }, { text: " Die besten Angebote warten.", gradient: true }],
+    [{ text: "Entspannen." }, { text: " Dein Lieblingsplatz ist nah.", gradient: true }],
+  ];
+  if (h >= 18 && h < 22) return [
+    [{ text: "Guten Abend." }, { text: " Wiens beste Restaurants warten.", gradient: true }],
+    [{ text: "Heute Abend." }, { text: " Das perfekte Dinner sichern.", gradient: true }],
+    [{ text: "Jetzt reservieren." }, { text: " Exklusive Abendangebote.", gradient: true }],
+  ];
+  return [
+    [{ text: "Die Nacht gehört dir." }, { text: " Wiens bestes Nachtleben.", gradient: true }],
+    [{ text: "Wien bei Nacht." }, { text: " Entdecke die besten Bars.", gradient: true }],
+    [{ text: "Jetzt buchen." }, { text: " Smart entdecken, mehr erleben.", gradient: true }],
+  ];
+}
+
+const ROTATING_HEADLINES = getTimeSlotHeadlines();
 
 function RotatingHeroHeadline() {
   const [index, setIndex] = useState(0);
@@ -455,6 +487,9 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
+
+      {/* ── DAILY HOOK BANNER ── */}
+      <DailyHookBanner />
 
       {/* ── VIBE ONBOARDING (first visit only) ── */}
       <VibeOnboarding />
@@ -969,6 +1004,9 @@ export default function Home() {
           variant="fab"
         />
       )}
+
+      {/* ── POST SCROLL RETURN TRIGGER ── */}
+      <PostScrollTrigger />
 
       {/* ── SMART PLAN GENERATOR MODAL ── */}
       <SmartPlanGenerator

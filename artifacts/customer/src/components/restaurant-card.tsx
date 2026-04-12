@@ -7,6 +7,14 @@ import { LiveBadge } from "@/components/live-badge";
 import { SocialCueChip } from "@/components/social-cue-chip";
 import { useLifestyleMode } from "@/hooks/use-lifestyle-mode";
 
+function getFomoViewers(restaurantId: number): number | null {
+  const hour = new Date().getHours();
+  if (hour < 10 || hour > 23) return null;
+  const seed = (restaurantId * 7 + hour * 13) % 100;
+  if (seed > 55) return null;
+  return 8 + (seed % 18);
+}
+
 interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
   showFlashDeal?: boolean;
@@ -116,6 +124,9 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
     live.intensity !== "quiet" &&
     live.intensity !== "active";
 
+  // FOMO: live viewer count (deterministic per restaurant + hour)
+  const fomoViewers = useMemo(() => getFomoViewers(restaurant.id), [restaurant.id]);
+
   return (
     <Link href={`/restaurant/${restaurant.id}`} className="block group press-scale">
       <div className={`relative overflow-hidden rounded-3xl bg-card border transition-all duration-300
@@ -213,12 +224,18 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
             )}
           </div>
 
-          {/* Live badge + social cue — only render row when there's a meaningful signal */}
+          {/* Live badge + social cue + FOMO count — only render row when there's a meaningful signal */}
           <div className="flex items-center gap-2 flex-wrap min-h-0">
             {showLiveBadge && live.primaryBadge && (
               <LiveBadge badge={live.primaryBadge} />
             )}
             <SocialCueChip restaurantId={restaurant.id} variant="card" />
+            {fomoViewers && !showLiveBadge && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                {fomoViewers} schauen gerade
+              </span>
+            )}
           </div>
 
           {/* Meta info */}

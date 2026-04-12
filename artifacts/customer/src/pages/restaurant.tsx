@@ -35,6 +35,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 import { recordHabitEvent } from "@/lib/habit-engine";
+import { PostBookingTrigger } from "@/components/return-trigger";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -1145,6 +1146,7 @@ export default function Restaurant() {
               <div className="p-6">
                 {bookingSuccess ? (
                   <div className="text-center py-6 space-y-4">
+                    <PostBookingTrigger restaurantName={restaurant?.name} />
                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>

@@ -1,0 +1,180 @@
+Perform a full implementation of a high-retention, behavior-driven engagement system for the app.
+
+This is NOT a UI task.
+This is NOT a redesign.
+
+This is a behavioral system designed to:
+- increase daily active users (DAU)
+- create habit loops
+- drive repeat visits
+- increase bookings and premium conversions
+
+========================
+PRIMARY GOAL
+========================
+
+Turn the app into a daily-use product by creating psychological triggers, smart notifications, and reward loops.
+
+========================
+1. DAILY HOOK SYSTEM (CORE)
+========================
+
+Implement a “daily reason to open the app” system:
+
+- Daily content changes automatically:
+  - "Top Spots heute"
+  - "Nur heute Rabatte"
+  - "Trending jetzt in deiner Nähe"
+
+- Show dynamic banner on homepage:
+  - changes every day
+  - based on time (morning / evening / night)
+
+Examples:
+Morning:
+"Guten Morgen ☕ Die besten Frühstück-Spots warten"
+
+Night:
+"Die Nacht gehört Ihnen 🌙 Entdecken Sie Wiens beste Bars"
+
+========================
+2. SMART NOTIFICATIONS (HIGH IMPACT)
+========================
+
+Implement intelligent notification system:
+
+User-based behavior triggers:
+- If user likes nightlife → send:
+  "🔥 Heute 20% auf Cocktails in deiner Nähe"
+
+- If user inactive 2–3 days:
+  "Wir haben neue Spots für dich entdeckt 👀"
+
+- Before reservation:
+  "Dein Tisch ist bald bereit 🍽️"
+
+- After visit:
+  "Wie war dein Erlebnis? Bewerte jetzt ⭐"
+
+- Social triggers:
+  "Dein Freund hat einen neuen Spot entdeckt"
+
+IMPORTANT:
+- Notifications must feel personal, not spammy
+- Limit frequency intelligently
+
+========================
+3. REWARD & XP SYSTEM
+========================
+
+Enhance gamification:
+
+- User earns XP for:
+  - booking
+  - posting
+  - liking
+  - inviting friends
+
+- Levels:
+  Bronze → Silver → Gold → Elite
+
+- Show progress bar:
+  "Noch 40 XP bis Silver"
+
+- Reward unlock examples:
+  - early access deals
+  - featured profile
+  - bonus visibility
+
+========================
+4. SOCIAL LOOP (VIRAL MECHANIC)
+========================
+
+- When user posts:
+  - notify friends
+  - increase visibility in feed
+
+- When user joins group plan:
+  - others get notification
+
+- Add “activity feed”:
+  - "Max hat ein neues Restaurant entdeckt"
+  - "Anna plant ein Dinner 🍝"
+
+========================
+5. FOMO SYSTEM (FEAR OF MISSING OUT)
+========================
+
+Create urgency:
+
+- Add timers:
+  "⏳ Angebot endet in 2 Stunden"
+
+- Live indicators:
+  "🔥 12 Personen schauen dieses Restaurant gerade"
+
+- Trending tags:
+  "Beliebt heute"
+  "Fast ausgebucht"
+
+========================
+6. RETURN TRIGGERS
+========================
+
+- After scroll ends:
+  suggest:
+  "Noch mehr entdecken →"
+
+- After booking:
+  suggest:
+  "Lade Freunde ein"
+
+- After like:
+  suggest:
+  "Folge diesem Nutzer"
+
+========================
+7. MICRO-ANIMATIONS (DOPAMINE EFFECT)
+========================
+
+- Like → heart bounce animation
+- XP gain → smooth counter animation
+- Level up → subtle celebration animation
+- Booking success → premium confirmation effect
+
+========================
+8. PERSONALIZATION ENGINE
+========================
+
+Track:
+- favorite food types
+- activity time (night/day)
+- interaction behavior
+
+Then adapt:
+- feed content
+- notifications
+- homepage banners
+
+========================
+IMPORTANT RULES
+========================
+
+- Do NOT overload the user
+- Do NOT spam notifications
+- Everything must feel natural and smart
+
+Focus on:
+habit creation + emotional engagement + return behavior
+
+========================
+END RESULT
+========================
+
+The app should feel:
+- alive
+- personalized
+- dynamic
+- addictive (in a positive way)
+
+Users should WANT to open it daily without being forced

@@ -13,6 +13,7 @@ import {
 import { useSeo } from "@/hooks/use-seo";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useXpGain } from "@/components/xp-toast";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -661,6 +662,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
   post: any; email: string; userName: string; userPhoto: string | null;
   onOpenComments: (id: number) => void;
 }) {
+  const { gainXp } = useXpGain();
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [saved, setSaved] = useState(post.savedByMe);
@@ -686,6 +688,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments }: {
     const prev = liked;
     setLiked(!prev);
     setLikeCount((c: number) => c + (prev ? -1 : 1));
+    if (!prev) gainXp(10, "Reaktion");
     try {
       const r = await apiToggleLike(post.id, email);
       setLiked(r.liked);

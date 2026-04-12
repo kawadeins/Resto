@@ -38,6 +38,15 @@ RestoSmart is a full-stack SaaS web application designed to provide restaurant o
 -   **Master Brain + Auto Decision Engine:** Central intelligence system monitoring 26 core systems, assessing health, speed, and risk to generate priority scores and perform safe auto-actions.
 -   **City Expansion Engine:** Provides health scores for cities to guide expansion decisions.
 -   **Behavior Priority Engine:** Client-side ranking system for discovery surfaces based on relevance and sponsored boost scores, with transparent `isSponsored` indicators.
+-   **High-Retention Engagement System:** Multi-layer behavioral loop driving DAU:
+    - **DailyHookBanner:** Time-of-day contextual banner (morning ☕ / lunch 🍜 / evening 🌆 / night 🌙) with rotating daily content chips (Top Spots heute, Nur heute Rabatte, Trending in Wien) — dismissible per session.
+    - **Time-Aware Hero Headlines:** RotatingHeroHeadline now cycles through time-slot specific messages (morning greetings vs. night Nachtleben headlines).
+    - **XP Toast System:** `XpToastProvider` global context + floating "+10 XP" animation triggered on like, booking, post. `useXpGain()` hook available to any component.
+    - **Level-Up Celebration Modal:** Spring-animated modal with confetti burst when user crosses tier thresholds (Bronze→Silver→Gold→Elite). `checkAndShowLevelUp()` called in PersonalizedSection.
+    - **Elite Tier:** Added 4th loyalty tier (500+ pts) to TIER_CONFIG with primary/accent gradient treatment.
+    - **PostBookingTrigger:** Slide-up "Lade Freunde ein!" card that appears 600ms after a successful booking.
+    - **PostScrollTrigger:** "Noch mehr entdecken →" CTA that appears when user scrolls to 88% of the page.
+    - **FOMO Live Viewer Count:** Deterministic "X schauen gerade" badge on restaurant cards (based on restaurantId + hour seed, shown only during peak hours 10-23).
 -   **Auto Revenue Optimization Engine:** Analyzes promotion data to generate business-type-aware recommendations and provides a dashboard with KPIs and ROI feedback.
 -   **Dynamic Pricing Engine:** Computes real-time impression costs with owner-facing panels and founder configuration controls.
 

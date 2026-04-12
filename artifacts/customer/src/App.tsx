@@ -22,6 +22,7 @@ import Messages from "@/pages/messages";
 import { AppRatingPrompt } from "@/components/app-rating-prompt";
 import { SmartReminders } from "@/components/smart-reminders";
 import { SocialProvider } from "@/contexts/social-context";
+import { XpToastProvider } from "@/components/xp-toast";
 
 const queryClient = new QueryClient();
 
@@ -73,12 +74,14 @@ function AppShell() {
   }, []);
 
   return (
-    <SocialProvider email={email}>
-      <Layout>
-        <Router />
-      </Layout>
-      <GlobalLayers />
-    </SocialProvider>
+    <XpToastProvider>
+      <SocialProvider email={email}>
+        <Layout>
+          <Router />
+        </Layout>
+        <GlobalLayers />
+      </SocialProvider>
+    </XpToastProvider>
   );
 }
 
