@@ -321,6 +321,7 @@ export default function Restaurant() {
   });
 
   const createBooking = useCreateCustomerBooking({
+    request: { credentials: "include" },
     mutation: {
       onSuccess: () => {
         setBookingSuccess(true);

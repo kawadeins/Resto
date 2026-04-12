@@ -166,7 +166,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!email) return;
     setLoading(true);
-    fetch(`${API_BASE}/api/customer-profile?email=${encodeURIComponent(email)}`, { credentials: "include" })
+    fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => { setProfile(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -176,15 +176,15 @@ export default function SettingsPage() {
     if (!email) return;
     setSaving(true);
     try {
-      const r = await fetch(`${API_BASE}/api/customer-profile`, {
+      const r = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, ...patch }),
+        body: JSON.stringify(patch),
       });
       if (!r.ok) throw new Error();
-      const updated = await r.json();
-      setProfile(updated);
+      await r.json();
+      setProfile(prev => prev ? { ...prev, ...patch } : prev);
       toast({ title: "Gespeichert", description: "Deine Einstellungen wurden aktualisiert." });
     } catch {
       toast({ title: "Fehler", description: "Speichern fehlgeschlagen. Bitte erneut versuchen.", variant: "destructive" });

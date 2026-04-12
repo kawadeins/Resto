@@ -1,0 +1,404 @@
+Perform a full "Customer App Feature Activation + Button Audit + Complete Repair Pass" across the entire user-facing app.
+
+IMPORTANT:
+- This is NOT a redesign task
+- This is NOT a feature brainstorming task
+- This is a strict implementation verification + repair pass
+- You must actively test, fix, reconnect, and activate all recently added features
+- Focus especially on the customer app, profile, feed, social, plans, chat, and image/avatar systems
+- Mobile-first (iPhone priority)
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Audit and repair the full customer-side app so that ALL recently added features actually work correctly.
+
+This includes:
+- buttons
+- icons
+- taps
+- actions
+- image uploads
+- profile editing
+- friends
+- feed
+- plans
+- chats
+- notifications
+- reservation-linked flows
+- all interactive UI elements
+
+The result must be:
+- fully clickable
+- fully connected
+- fully testable
+- visually stable
+- production-ready
+
+==================================================
+1. FULL BUTTON AUDIT (CRITICAL)
+==================================================
+
+Inspect EVERY important button and interactive action in the customer app.
+
+Check all of the following:
+- button visible
+- button clickable
+- button triggers the correct action
+- no dead buttons
+- no wrong navigation
+- no missing backend connection
+- no broken loading state
+- no silent failure
+- proper success/error feedback
+
+This includes:
+- profile buttons
+- save/edit buttons
+- friend request buttons
+- message/chat buttons
+- group plan buttons
+- save/share/cancel buttons
+- create post buttons
+- like/comment/save post buttons
+- feed navigation buttons
+- booking buttons
+- restaurant action buttons
+- tab buttons
+- settings buttons
+- notification actions
+
+Fix every broken one.
+
+==================================================
+2. FULL ICON / TAP TARGET AUDIT
+==================================================
+
+Inspect all important icons and tap targets, especially mobile.
+
+Verify:
+- icon is tappable
+- icon has correct action
+- touch area is large enough
+- icon feedback is visible
+- no hidden or clipped tap targets
+- no confusing icon behavior
+
+This includes:
+- feed actions
+- chat icons
+- share icons
+- profile edit icons
+- image upload icons
+- save/bookmark icons
+- notification icons
+- friend/request icons
+
+Fix all broken icon interactions.
+
+==================================================
+3. PROFILE IMAGE / AVATAR SYSTEM (TOP PRIORITY)
+==================================================
+
+This is a critical bug.
+
+Fully audit and repair the customer profile image/avatar system.
+
+Must verify and fix:
+- user can upload/change avatar
+- image preview works
+- image saves correctly
+- image loads correctly after save
+- image appears correctly in:
+  - own profile
+  - public profile
+  - feed posts
+  - comments
+  - friends list
+  - chat
+- fallback avatar works if upload fails or no image exists
+- no broken image URLs
+- no stale cache issue after updating image
+- no blank avatar state
+
+If needed:
+- fix upload path
+- fix storage reference
+- fix persisted image URL
+- fix frontend image refresh
+- fix cache-busting after update
+
+This item must be treated as critical.
+
+==================================================
+4. PROFILE HUB FEATURE AUDIT
+==================================================
+
+Audit the full new customer profile hub.
+
+Verify and fix:
+- profile header loads correctly
+- profile edit/settings opens correctly
+- name can be changed
+- bio can be changed
+- city/country can be changed if implemented
+- avatar updates correctly
+- profile completion system works if added
+- visited places section works
+- plans section works
+- friends section works
+- activity feed works
+- settings remain separate from profile
+
+Also verify:
+- public profile view only shows safe data
+- private profile data is not leaked
+
+==================================================
+5. FRIEND SYSTEM AUDIT
+==================================================
+
+Audit all friend-related features.
+
+Verify and fix:
+- add friend by email works
+- add friend from profile works
+- add friend from feed/post context works
+- friend request state updates correctly
+- accept/reject works
+- profile button changes correctly after acceptance
+- "Nachricht senden" disabled before acceptance
+- "Chat öffnen" works after acceptance
+- unread badge works if implemented
+- friends list chat button works
+
+No dead friend flows allowed.
+
+==================================================
+6. FEED + POST SYSTEM AUDIT
+==================================================
+
+Audit the public feed and posting system.
+
+Verify and fix:
+- feed loads correctly
+- post cards render correctly
+- images render correctly
+- create post works
+- post preview works
+- publish works
+- restaurant tagging works if implemented
+- public post opens profile correctly
+- like works
+- unlike works
+- comment open works
+- comments submit works
+- save/bookmark works if implemented
+- no layout break on mobile
+
+Also verify:
+- public profile from post only shows safe public data
+
+==================================================
+7. COMMENTS + SOCIAL INTERACTION AUDIT
+==================================================
+
+Verify and fix:
+- comments list loads
+- comments submit
+- empty state works
+- timestamps show
+- reaction/like animation if implemented works
+- no duplicate submissions
+- moderation does not break normal safe comments
+
+==================================================
+8. CHAT + GROUP CHAT AUDIT
+==================================================
+
+Audit the messaging system fully.
+
+Verify and fix:
+- direct chat opens correctly
+- group chat opens correctly
+- send text works
+- send image works if implemented
+- unsafe image is blocked if moderation exists
+- block/mute works if implemented
+- group chat creation works
+- plan-linked chat works if implemented
+- unread state works
+- no unauthorized messaging bypass
+
+Also verify:
+- message button/profile behavior matches friendship state exactly
+
+==================================================
+9. GROUP PLAN SYSTEM AUDIT
+==================================================
+
+Audit all recent Group Plan upgrades.
+
+Verify and fix:
+- create plan works
+- add/remove participants works
+- choose restaurant works
+- save works
+- share works
+- cancel works
+- edit existing plan works
+- send reservation request works if implemented
+- plan status updates correctly
+- plan root / navigation behavior works
+- no dead-end modal/state remains
+
+==================================================
+10. SMART TAB / NAVIGATION AUDIT
+==================================================
+
+Verify and fix all smart tab behaviors:
+
+- tapping active tab scrolls to top
+- nested section returns to root
+- profile/settings separation works
+- no broken navigation loops
+- no wrong route behavior
+- no double push / flicker
+
+Apply especially to:
+- Home
+- Discover
+- Plans
+- Profile
+- Settings
+- Feed if present
+
+==================================================
+11. NOTIFICATION / BADGE AUDIT
+==================================================
+
+Audit all notification-related UX currently in app.
+
+Verify and fix:
+- badges show correctly
+- notification count updates
+- click opens correct destination
+- no broken badge state
+- no unread counter stuck
+- no visual overlap
+- important actions surface correctly
+
+==================================================
+12. MODERATION / SAFETY FLOW AUDIT
+==================================================
+
+If moderation was added for:
+- posts
+- comments
+- chat
+- images
+
+Verify it works correctly without breaking safe content.
+
+Test:
+- safe image upload
+- unsafe image blocked
+- safe comment accepted
+- abusive comment blocked
+- safe chat accepted
+- abusive chat blocked
+
+Ensure:
+- warnings/messages are clear
+- no false blocking of normal food/social content
+
+==================================================
+13. LOADING / ERROR / SUCCESS STATES
+==================================================
+
+Audit all async states and fix weak UX.
+
+Ensure:
+- no stuck spinners
+- no blank loading states
+- no silent failures
+- proper German feedback
+- success feedback visible
+- error feedback clear
+- retry possible where needed
+
+==================================================
+14. API / DATA CONNECTION REPAIR
+==================================================
+
+Inspect all customer app API calls for:
+- wrong endpoints
+- wrong auth/session usage
+- missing credentials include
+- missing CSRF token
+- broken payloads
+- broken response handling
+- 401/403/404/409/500 issues
+
+Fix all customer-side API failures and reconnect all broken flows.
+
+==================================================
+15. FINAL CLICK-BY-CLICK VALIDATION
+==================================================
+
+After repairs, perform a real click-through validation of all major customer-side features:
+
+A. Open customer app
+B. Open profile
+C. Edit name/bio/avatar
+D. Confirm avatar actually changes and renders
+E. Open feed
+F. Create post
+G. Like/comment/save a post
+H. Open another user’s public profile
+I. Send friend request
+J. Accept friend request
+K. Open chat
+L. Create/edit/share group plan
+M. Choose restaurant for plan
+N. Use smart navigation tabs
+O. Open settings
+P. Confirm no major button/icon is dead
+
+==================================================
+16. FINAL REPORT
+==================================================
+
+Produce a strict structured report with:
+
+A. Buttons audited
+B. Icons/tap targets audited
+C. Profile image/avatar issue status
+D. Profile hub status
+E. Friend system status
+F. Feed/post system status
+G. Comments/social interaction status
+H. Chat/group chat status
+I. Group plan status
+J. Navigation/tab behavior status
+K. Notification/badge status
+L. Moderation/safety status
+M. Remaining blockers if any
+
+For each category classify:
+- Working
+- Broken before / Fixed now
+- Still needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+The customer app must become fully operational and reliable.
+
+All recently added features must actually work.
+All buttons and icons must be active.
+The profile image/avatar bug must be fixed.
+No dead interactions.
+No broken social/profile/chat/feed/group-plan flows.

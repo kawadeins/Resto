@@ -79,6 +79,7 @@ export default function MyBookings() {
       fetch(`${API_BASE}/api/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           restaurantId: data.restaurantId,
           customerName: activeEmail.split("@")[0] || "Gast",
@@ -103,6 +104,7 @@ export default function MyBookings() {
       fetch(`${API_BASE}/api/marketplace/bookings/${bookingId}/cancel`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: activeEmail }),
       }).then(async r => {
         if (!r.ok) {

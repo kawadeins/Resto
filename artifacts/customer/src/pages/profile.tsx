@@ -254,7 +254,7 @@ function AvatarUpload({
     try {
       const r = await fetch(
         `${API_BASE}/api/customer-profile/upload?email=${encodeURIComponent(email)}`,
-        { method: "POST", body: fd }
+        { method: "POST", body: fd, credentials: "include" }
       );
       const data = await r.json();
       if (!r.ok) {
@@ -1420,7 +1420,9 @@ export default function Profile() {
   const { data: profile, isLoading } = useQuery<CustomerProfile>({
     queryKey: ["customer-profile", email],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`);
+      const r = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`, {
+        credentials: "include",
+      });
       if (!r.ok) throw new Error("Failed to load");
       return r.json();
     },
@@ -1431,6 +1433,7 @@ export default function Profile() {
     mutationFn: async (updates: Partial<CustomerProfile>) => {
       const r = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(email)}`, {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
@@ -1463,6 +1466,7 @@ export default function Profile() {
   const handleEnterEmail = (e: string) => {
     setEmail(e);
     localStorage.setItem("restosmart_email", e);
+    window.dispatchEvent(new StorageEvent("storage", { key: "restosmart_email", newValue: e }));
   };
 
   const handleActivatePremium = (businessType: BusinessType, mode: "trial" | "active" = "trial", trialEndDate?: string) => {

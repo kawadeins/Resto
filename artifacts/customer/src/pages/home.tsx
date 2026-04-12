@@ -355,7 +355,9 @@ export default function Home() {
     queryKey: ["customer-profile-home", customerEmail],
     queryFn: async () => {
       if (!customerEmail) return null;
-      const res = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(customerEmail)}`);
+      const res = await fetch(`${API_BASE}/api/customer-profile/${encodeURIComponent(customerEmail)}`, {
+        credentials: "include",
+      });
       if (!res.ok) return null;
       return res.json();
     },

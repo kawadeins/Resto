@@ -61,12 +61,16 @@ router.get("/:email", requireSelfAccess, async (req, res) => {
       .from(loyaltyPointsTable)
       .where(eq(loyaltyPointsTable.customerEmail, email));
 
-    const bookings = await db
-      .select()
-      .from(reservationsTable)
-      .where(eq(reservationsTable.customerEmail, email))
-      .orderBy(desc(reservationsTable.createdAt))
-      .limit(5);
+    const pgDb = (db as any).$client;
+    const bookingsRaw = await pgDb.query(
+      `SELECT r.id, r.date, r.time, r.party_size, r.status, COALESCE(res.name, 'RestoSmart Betrieb') AS restaurant_name
+       FROM reservations r
+       LEFT JOIN restaurants res ON res.id = r.restaurant_id
+       WHERE r.customer_email = $1
+       ORDER BY r.created_at DESC
+       LIMIT 5`,
+      [email]
+    );
 
     const [reviewStats] = await db
       .select({ total: count(reviewsTable.id), avg: avg(reviewsTable.rating) })
@@ -119,13 +123,13 @@ router.get("/:email", requireSelfAccess, async (req, res) => {
         totalReviews: Number(reviewStats?.total ?? 0),
         avgRating: reviewStats?.avg ? parseFloat(reviewStats.avg) : null,
       },
-      recentBookings: bookings.map((b) => ({
+      recentBookings: bookingsRaw.rows.map((b: any) => ({
         id: b.id,
         date: b.date,
         time: b.time,
-        partySize: b.partySize,
+        partySize: b.party_size,
         status: b.status,
-        restaurantName: "RestoSmart Brasserie",
+        restaurantName: b.restaurant_name,
       })),
     });
   } catch (err) {

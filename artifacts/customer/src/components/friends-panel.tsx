@@ -2,7 +2,7 @@
  * FriendsPanel — inline friends management widget.
  * Used in the Friends page and profile social tab.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus, UserCheck, UserX, X, Check, Search, Users, ChevronRight, MessageCircle, Loader2 } from "lucide-react";
 import { Link } from "wouter";
@@ -188,11 +188,11 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
     queryFn: () => getFriends(email),
     enabled: !!email,
     staleTime: 60000,
-    select: (data) => {
-      if (onFriendCountChange) onFriendCountChange(data.length);
-      return data;
-    },
   });
+
+  useEffect(() => {
+    if (onFriendCountChange) onFriendCountChange(friends.length);
+  }, [friends.length, onFriendCountChange]);
 
   // Fetch conversations to compute per-friend unread counts
   const { data: conversations = [] } = useQuery<ConvSummary[]>({

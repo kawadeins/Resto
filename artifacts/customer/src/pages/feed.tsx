@@ -88,13 +88,13 @@ const fetchComments = (postId: number) =>
 
 const apiToggleLike = (postId: number, email: string) =>
   fetch(`${API_BASE}/api/posts/${postId}/like`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
+    method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
     body: JSON.stringify({ user_email: email }),
   }).then(r => { if(!r.ok) throw new Error(); return r.json(); });
 
 const apiToggleSave = (postId: number, email: string) =>
   fetch(`${API_BASE}/api/posts/${postId}/save`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
+    method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
     body: JSON.stringify({ user_email: email }),
   }).then(r => { if(!r.ok) throw new Error(); return r.json(); });
 
@@ -103,7 +103,7 @@ const apiSearchRestaurants = (q: string) =>
 
 const apiAddComment = async (postId: number, email: string, text: string) => {
   const r = await fetch(`${API_BASE}/api/posts/${postId}/comments`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
+    method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
     body: JSON.stringify({ user_email: email, text }),
   });
   const data = await r.json();
@@ -386,7 +386,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
         fd.append("restaurant_name", restaurant.name);
         if (restaurant.id) fd.append("restaurant_id", String(restaurant.id));
       }
-      const r = await fetch(`${API_BASE}/api/posts`, { method: "POST", body: fd });
+      const r = await fetch(`${API_BASE}/api/posts`, { method: "POST", credentials: "include", body: fd });
       const data = await r.json();
       if (!r.ok) {
         if (data.moderated) {

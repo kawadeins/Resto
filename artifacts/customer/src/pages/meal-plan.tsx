@@ -313,6 +313,7 @@ function SetupReservationModal({
       const res = await fetch(`${API}/meal-plan/reservation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           groupPlanId: plan.id,
           restaurantId: plan.restaurant.id,
@@ -644,7 +645,7 @@ function GroupPlanCard({
     if (!reservationRequest) return;
     setSendingNow(true);
     try {
-      await fetch(`${API}/meal-plan/reservation/${reservationRequest.id}/send`, { method: "POST" });
+      await fetch(`${API}/meal-plan/reservation/${reservationRequest.id}/send`, { method: "POST", credentials: "include" });
       onReservationChange();
     } finally { setSendingNow(false); }
   };
@@ -653,7 +654,7 @@ function GroupPlanCard({
     if (!reservationRequest) return;
     setCancelling(true);
     try {
-      await fetch(`${API}/meal-plan/reservation/${reservationRequest.id}`, { method: "DELETE" });
+      await fetch(`${API}/meal-plan/reservation/${reservationRequest.id}`, { method: "DELETE", credentials: "include" });
       onReservationChange();
     } finally { setCancelling(false); }
   };
@@ -876,6 +877,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
     const res = await fetch(`${API}/meal-plan/group`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         organizerEmail: email,
         organizerName: userName,
@@ -1374,6 +1376,7 @@ export default function MealPlan() {
       const r = await fetch(`${API}/meal-plan/${encodeURIComponent(email)}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ dayOfWeek, mealSlot }),
       });
       return r.json();
@@ -1383,7 +1386,7 @@ export default function MealPlan() {
 
   const deleteGroup = useMutation({
     mutationFn: async (id: number) => {
-      const r = await fetch(`${API}/meal-plan/group/${id}`, { method: "DELETE" });
+      const r = await fetch(`${API}/meal-plan/group/${id}`, { method: "DELETE", credentials: "include" });
       return r.json();
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["group-plans", email] }),

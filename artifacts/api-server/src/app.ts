@@ -126,7 +126,9 @@ app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 //   - /api/stripe/webhook  (handled by Stripe HMAC; raw body)
 //   - /api/campaigns/:id/mark-converted  (customer-facing booking event)
 //
-const CSRF_BYPASS = /^\/api\/(auth|stripe\/webhook|conversion\/event)($|\/)|\/mark-converted$/;
+// Customer-facing mutation endpoints that use email-in-body auth (not business session)
+// are exempt from CSRF. Business routes (/campaigns, /wallet, /reviews, etc.) remain protected.
+const CSRF_BYPASS = /^\/api\/(auth|stripe\/webhook|conversion\/event|smart-notifications\/predict|posts|social|customer-profile|messages|reviews|marketplace\/bookings|meal-plan|instant-plans|recommendations)($|\/)|\/mark-converted$/;
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const MUTATING = ["POST", "PUT", "PATCH", "DELETE"];
