@@ -1,0 +1,164 @@
+Enhance the bottom navigation with a premium "active tab feedback + re-tap to top" experience across the customer app.
+
+IMPORTANT:
+- Do NOT redesign the whole app
+- Do NOT change the information architecture
+- Keep the current bottom navigation structure
+- This is a UX polish + interaction upgrade
+
+========================
+GOAL
+========================
+
+Make the bottom navigation feel:
+- alive
+- premium
+- responsive
+- useful
+
+It must provide:
+1. smart re-tap behavior
+2. visual active-state clarity
+3. subtle feedback when the user taps tabs
+4. smooth return-to-top / return-to-root behavior
+
+========================
+1. SMART RE-TAP BEHAVIOR
+========================
+
+For all bottom tabs:
+
+- If user taps a different tab:
+  -> navigate normally
+
+- If user taps the SAME active tab again:
+  -> if on root screen of that tab: scroll to top smoothly
+  -> if inside nested screen/flow: return to tab root first
+  -> then ensure user lands at the top/root cleanly
+
+Apply to:
+- Startseite
+- Entdecken
+- Essensplan
+- Buchungen
+- Freunde
+- Profil
+
+========================
+2. ACTIVE TAB VISUAL UPGRADE
+========================
+
+Improve the active tab state so it feels stronger and more premium.
+
+Requirements:
+- active icon slightly emphasized
+- active label color stronger
+- optional soft gradient glow or pill background
+- inactive tabs stay calm and secondary
+- keep visual hierarchy clean
+
+Do NOT overdo it.
+It must feel elegant, not childish.
+
+========================
+3. TAP FEEDBACK
+========================
+
+When user taps a tab:
+
+- add subtle visual feedback immediately
+- small scale animation OR soft pulse
+- duration: 120–180ms
+- no lag
+- no jump
+
+If same tab is re-tapped:
+- show small feedback before scroll-to-top or root return
+- user should feel that the tap was recognized
+
+========================
+4. SCROLL-TO-TOP FEEDBACK
+========================
+
+When a tab re-tap scrolls to top:
+
+- make scroll smooth
+- no instant harsh jump unless platform constraints require it
+- if useful, add a subtle "returned to top" feeling through motion only
+- no toast needed
+- no noisy UI
+
+========================
+5. PLAN / NESTED FLOW SPECIAL HANDLING
+========================
+
+Essensplan is especially important.
+
+If user is:
+- in group plan creation
+- in plan result state
+- in any nested internal plan step
+
+and taps the Plan tab again:
+- return to main plan landing/root
+- do NOT leave them stuck inside the nested flow
+
+Do similar root-return handling for:
+- bookings details
+- profile subpages
+- friends subpages
+when applicable
+
+========================
+6. CLEAN IMPLEMENTATION
+========================
+
+Use a reusable navigation utility/pattern.
+
+If needed:
+- create per-tab root route mapping
+- add scroll refs
+- add helper for "is current tab already active?"
+- avoid duplicated ad hoc logic in every page
+
+Keep code maintainable.
+
+========================
+7. MOBILE-FIRST QUALITY
+========================
+
+This must feel excellent on iPhone/mobile.
+
+Requirements:
+- no accidental double navigation
+- no route flicker
+- no scroll lag
+- no broken browser history
+- no full page reloads
+
+========================
+8. FINAL VALIDATION
+========================
+
+Verify:
+- active tab is visually clearer
+- re-tap on current tab always does something useful
+- home re-tap scrolls to top
+- discover re-tap scrolls to top
+- plan re-tap returns to plan root
+- bookings re-tap returns to bookings root/top
+- friends re-tap returns to root/top
+- profile re-tap returns to root/top
+- interactions feel smooth and premium
+
+========================
+FINAL RESULT
+========================
+
+The bottom navigation should no longer feel static.
+
+It should feel like a modern premium mobile app:
+- responsive
+- smart
+- polished
+- helpful

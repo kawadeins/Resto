@@ -1,18 +1,19 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { UtensilsCrossed, Compass, CalendarCheck, UserCircle, CalendarDays, Users, Building2 } from "lucide-react";
 import { RestoLogo } from "@/components/resto-logo";
 import { Link } from "wouter";
 
 // ─── Route → tab ownership ────────────────────────────────────────────────────
-// Order matters: more specific prefixes must come first.
-const ROUTE_TAB_MAP: Array<{ prefix: string; exact?: boolean; tab: string }> = [
-  { prefix: "/restaurant", tab: "/explore" },  // /restaurant/:id belongs to Entdecken
+// Order matters: more-specific prefixes must come first.
+const ROUTE_TAB_MAP: Array<{ prefix: string; tab: string }> = [
+  { prefix: "/restaurant", tab: "/explore" },  // /restaurant/:id → Entdecken
   { prefix: "/explore",    tab: "/explore" },
   { prefix: "/meal-plan",  tab: "/meal-plan" },
   { prefix: "/my-bookings",tab: "/my-bookings" },
   { prefix: "/friends",    tab: "/friends" },
   { prefix: "/profile",    tab: "/profile" },
-  { prefix: "/",           tab: "/" },          // catch-all: home
+  { prefix: "/",           tab: "/" },           // catch-all: home
 ];
 
 function getActiveTab(location: string): string {
@@ -32,15 +33,20 @@ function getActiveTab(location: string): string {
 
 function useSmartTabNav() {
   const [location, navigate] = useLocation();
+  const [pressedTab, setPressedTab] = useState<string | null>(null);
   const activeTab = getActiveTab(location);
 
   const handleTap = (tabHref: string) => {
+    // Flash tap feedback for 180 ms regardless of outcome
+    setPressedTab(tabHref);
+    setTimeout(() => setPressedTab(null), 180);
+
     if (activeTab === tabHref) {
       if (location === tabHref) {
-        // Already on section root → smooth scroll to top
+        // Already on root → smooth scroll to top
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        // Inside nested view → navigate to root, then scroll top
+        // In a nested view → return to section root, then scroll top
         navigate(tabHref);
         requestAnimationFrame(() => {
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -52,7 +58,7 @@ function useSmartTabNav() {
     }
   };
 
-  return { activeTab, handleTap };
+  return { activeTab, pressedTab, handleTap };
 }
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
@@ -66,15 +72,19 @@ const NAV_ITEMS = [
   { href: "/profile",     label: "Profil",     icon: UserCircle },
 ];
 
+// ─── Spring easing for icon feedback ─────────────────────────────────────────
+const SPRING = "0.18s cubic-bezier(0.34, 1.56, 0.64, 1)";
+const EASE   = "0.15s ease";
+
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { activeTab, handleTap } = useSmartTabNav();
+  const { activeTab, pressedTab, handleTap } = useSmartTabNav();
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
 
-      {/* Desktop header */}
+      {/* ── Desktop header ─────────────────────────────────────────────────── */}
       <header className="hidden md:flex sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/">
@@ -87,10 +97,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <button
                   key={item.href}
                   onClick={() => handleTap(item.href)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  className={`px-4 py-2 rounded-full text-sm transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      ? "bg-primary/12 text-primary font-bold"
+                      : "text-muted-foreground font-medium hover:text-foreground hover:bg-muted/60"
                   }`}
                 >
                   {item.label}
@@ -101,37 +111,68 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Main content */}
+      {/* ── Main content ───────────────────────────────────────────────────── */}
       <main className="flex-1 w-full pb-20 md:pb-0">
         {children}
       </main>
 
-      {/* Mobile bottom nav — glassy pill design */}
+      {/* ── Mobile bottom nav ──────────────────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <div className="mx-3 mb-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-border/60 shadow-xl shadow-black/10 px-2 py-2">
+        <div className="mx-3 mb-3 rounded-2xl bg-white/92 backdrop-blur-xl border border-border/60 shadow-xl shadow-black/10 px-2 py-2">
           <div className="flex items-center justify-around gap-0.5">
             {NAV_ITEMS.map((item) => {
-              const isActive = activeTab === item.href;
+              const isActive  = activeTab === item.href;
+              const isPressed = pressedTab === item.href;
               const Icon = item.icon;
+
+              // Icon-pill spring: compress on press, slight lift when active
+              const pillScale = isPressed ? 0.80 : isActive ? 1.06 : 1;
+              // Button-level spring: gentle squeeze on any tap
+              const btnScale  = isPressed ? 0.94 : 1;
+
               return (
                 <button
                   key={item.href}
                   onClick={() => handleTap(item.href)}
-                  className="press-scale flex flex-col items-center gap-0.5 flex-1 py-1 min-w-0 cursor-pointer bg-transparent border-0"
+                  style={{
+                    transform: `scale(${btnScale})`,
+                    transition: `transform ${EASE}`,
+                  }}
+                  className="flex flex-col items-center gap-0.5 flex-1 py-1 min-w-0 cursor-pointer bg-transparent border-0"
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
-                    isActive
-                      ? "bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/30"
-                      : "bg-transparent"
-                  }`}>
+                  {/* Icon pill */}
+                  <div
+                    style={{
+                      transform: `scale(${pillScale})`,
+                      transition: `transform ${SPRING}`,
+                    }}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                      isActive
+                        ? "bg-gradient-to-br from-primary to-accent shadow-xl shadow-primary/35"
+                        : "bg-transparent"
+                    }`}
+                  >
                     <Icon
-                      className={`transition-colors ${isActive ? "text-white" : "text-muted-foreground"}`}
-                      style={{ width: 18, height: 18 }}
+                      style={{
+                        width:  isActive ? 20 : 17,
+                        height: isActive ? 20 : 17,
+                        transition: `width ${EASE}, height ${EASE}`,
+                      }}
+                      className={isActive ? "text-white" : "text-muted-foreground"}
                     />
                   </div>
-                  <span className={`text-[9px] font-semibold transition-colors truncate w-full text-center ${
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  }`}>
+
+                  {/* Label */}
+                  <span
+                    style={{
+                      fontSize:   isActive ? "10px" : "9px",
+                      fontWeight: isActive ? 700 : 500,
+                      transition: `font-size ${EASE}, color ${EASE}`,
+                    }}
+                    className={`truncate w-full text-center ${
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
                     {item.label}
                   </span>
                 </button>
@@ -141,7 +182,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      {/* Desktop footer */}
+      {/* ── Desktop footer ─────────────────────────────────────────────────── */}
       <footer className="hidden md:block border-t mt-auto">
         {/* For Business banner */}
         <div className="bg-gradient-to-r from-primary/8 via-background to-accent/8 border-b border-border/40 py-5 px-6">
@@ -151,11 +192,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Building2 className="w-4.5 h-4.5 text-white" />
               </div>
               <div>
-                <p className="font-bold text-sm text-foreground leading-tight">Restaurant, {"Café"} oder Bar?</p>
-                <p className="text-xs text-muted-foreground">Mehr {"Gäste"} mit RestoSmart {"—"} kostenlos starten</p>
+                <p className="font-bold text-sm text-foreground leading-tight">{"Restaurant, Café oder Bar?"}</p>
+                <p className="text-xs text-muted-foreground">{"Mehr Gäste mit RestoSmart — kostenlos starten"}</p>
               </div>
             </div>
-            <Link href="/for-business" className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+            <Link
+              href="/for-business"
+              className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+            >
               {"Für Betriebe"} <Building2 className="w-3.5 h-3.5" />
             </Link>
           </div>
