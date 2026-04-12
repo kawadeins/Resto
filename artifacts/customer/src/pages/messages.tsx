@@ -199,11 +199,24 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ senderEmail: email, conversationId: convId, text: t }),
       });
-      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
-      return r.json();
+      const data = await r.json();
+      if (!r.ok) {
+        const err: any = new Error(data.error || "Fehler");
+        err.moderated = data.moderated;
+        err.strikeMessage = data.strikeMessage;
+        throw err;
+      }
+      return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["messages", convId, email] }),
-    onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
+    onError: (e: any) => {
+      if (e.moderated) {
+        toast({ title: "Nachricht blockiert", description: e.message, variant: "destructive" });
+        if (e.strikeMessage) setTimeout(() => toast({ title: "Hinweis", description: e.strikeMessage }), 800);
+      } else {
+        toast({ title: e.message || "Fehler", variant: "destructive" });
+      }
+    },
   });
 
   const muteMutation = useMutation({

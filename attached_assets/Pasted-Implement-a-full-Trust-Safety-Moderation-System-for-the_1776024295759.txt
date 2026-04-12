@@ -1,0 +1,357 @@
+Implement a full "Trust & Safety Moderation System" for the RestoSmart social/customer platform.
+
+IMPORTANT:
+- This is a REAL implementation task
+- Do NOT just describe policy
+- Do NOT redesign the app
+- This is a platform safety system for:
+  - image uploads
+  - public posts
+  - comments
+  - direct chat
+  - group chat
+  - profile content
+- The goal is to keep the platform clean, food-focused, and safe
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Build a strong moderation layer that automatically detects and blocks:
+
+1. Inappropriate images
+2. Non-food / irrelevant image uploads where required
+3. Sexual / nude / explicit content
+4. Abusive / insulting / toxic text
+5. Harassment in comments and messages
+6. Political/extremist content if outside product scope
+7. Spam / repeated abuse
+8. Repeated bad behavior by users
+
+The platform must stay:
+- clean
+- premium
+- safe
+- restaurant-focused
+- family-safe / public-safe
+
+==================================================
+1. IMAGE MODERATION (CRITICAL)
+==================================================
+
+Every uploaded image must be checked BEFORE it is published or sent.
+
+Apply this to:
+- public posts
+- profile avatar uploads if possible
+- chat image uploads
+- group chat image uploads
+- any other social image upload
+
+The moderation system must detect and block:
+
+A. Sexual / nude / explicit content
+B. pornographic content
+C. highly inappropriate body exposure
+D. violent or disturbing content
+E. hateful/extremist imagery
+F. spammy / irrelevant image abuse
+G. content clearly unrelated to allowed platform use if required
+
+For public social posts:
+- strongly prefer food / restaurant / outing related images
+- if the image is clearly unrelated and low-quality for platform purpose, reject it or flag it
+
+If image is unsafe:
+- do NOT publish
+- do NOT send
+- show clear German error message
+
+Example:
+"Dieses Bild kann nicht hochgeladen werden."
+or
+"Bitte lade nur geeignete Inhalte hoch."
+
+==================================================
+2. TEXT MODERATION (POSTS / COMMENTS / CHATS)
+==================================================
+
+Moderate all user-generated text across:
+- post captions
+- comments
+- direct messages
+- group chat messages
+- optional profile bio if needed
+
+Detect and act on:
+- insults
+- harassment
+- threats
+- sexual explicit language
+- extreme vulgarity
+- discriminatory slurs
+- hate speech
+- abusive toxic content
+- political/extremist content if outside the product scope
+- spam / repeated nonsense
+- deliberately offensive language
+
+If content is clearly unsafe:
+- block submission immediately
+- do not publish/send it
+
+==================================================
+3. DIFFERENT MODERATION LEVELS
+==================================================
+
+Use severity-based moderation:
+
+LEVEL 1 — soft warning / borderline
+Examples:
+- rude tone
+- mild inappropriate language
+- off-topic spammy text
+
+Action:
+- warn user
+- allow correction
+- ask them to edit
+
+LEVEL 2 — blocked submission
+Examples:
+- vulgar insult
+- explicit sexual message
+- harassment
+- abusive comment
+- unsafe image
+
+Action:
+- block content
+- do not publish/send
+- count violation
+
+LEVEL 3 — serious abuse
+Examples:
+- repeated harassment
+- repeated explicit content
+- hate speech
+- severe inappropriate imagery
+- repeated unsafe behavior across messages/comments/posts
+
+Action:
+- block content
+- apply strike
+- escalate account risk
+
+==================================================
+4. 3-STRIKE ACCOUNT ENFORCEMENT
+==================================================
+
+Implement an account discipline system:
+
+- 1st violation:
+  warning
+  "Bitte beachte unsere Richtlinien."
+
+- 2nd violation:
+  stronger warning / temporary restriction if appropriate
+  "Weitere Verstöße können zu einer Sperrung führen."
+
+- 3rd serious or repeated violation:
+  suspend / block account
+  or lock social/community features
+
+This must work across:
+- posts
+- comments
+- chat
+- profile uploads
+- image submissions
+
+Do NOT let users endlessly abuse the platform.
+
+==================================================
+5. CHAT SAFETY
+==================================================
+
+Apply moderation to messaging too.
+
+For direct chat and group chat:
+- block abusive messages before sending
+- block sexual harassment
+- block hate speech
+- block repeated spam
+- optionally block unsafe image sending
+
+If a user repeatedly abuses chat:
+- issue strikes
+- mute/restrict
+- eventually suspend chat access or account
+
+==================================================
+6. COMMENT SAFETY
+==================================================
+
+Comments must be clean and safe.
+
+The system must:
+- block abusive comments
+- block explicit sexual comments
+- block harassment and insults
+- block repeated toxic spam
+- optionally flag suspicious repeated negativity
+
+If a comment is rejected:
+- show clear message
+- do not publish it
+
+==================================================
+7. PROFILE / BIO SAFETY
+==================================================
+
+Also moderate:
+- profile bio
+- username if needed
+- visible profile text
+
+Do NOT allow:
+- explicit sexual bios
+- hate content
+- abusive slogans
+- extremist/political misuse if out of scope
+
+==================================================
+8. FOOD / PLATFORM RELEVANCE FILTER
+==================================================
+
+Because this is a restaurant/social food platform:
+
+For public posting, the system should strongly encourage relevant content:
+- food
+- restaurants
+- outings
+- dining
+- social eating experiences
+
+If a post image is clearly inappropriate for the platform purpose:
+- reject it
+OR
+- flag it for non-relevant content depending on confidence
+
+The platform should not become a random unsafe image board.
+
+==================================================
+9. USER FEEDBACK / GERMAN COPY
+==================================================
+
+Use clean German moderation messages such as:
+
+- "Dieser Inhalt kann nicht veröffentlicht werden."
+- "Bitte verwende respektvolle Sprache."
+- "Dieses Bild verstößt gegen unsere Richtlinien."
+- "Bitte lade nur geeignete Inhalte hoch."
+- "Dein Kommentar wurde blockiert."
+- "Weitere Verstöße können zu Einschränkungen führen."
+- "Dein Konto wurde wegen wiederholter Verstöße eingeschränkt."
+
+Messages should be clear, calm, and firm.
+
+==================================================
+10. MODERATION LOGGING
+==================================================
+
+Create moderation logs for safety/admin use.
+
+For each violation, store:
+- user
+- type (image/text/chat/comment/profile)
+- severity
+- action taken
+- timestamp
+- moderation reason/category
+
+This helps with:
+- repeat offenders
+- admin review
+- future appeal/review if needed
+
+==================================================
+11. SAFE PUBLISH / SAFE SEND FLOW
+==================================================
+
+No unsafe content should appear first and get moderated later if avoidable.
+
+Preferred flow:
+- user submits content
+- moderation check runs
+- if safe → publish/send
+- if unsafe → block before publish/send
+
+Apply this especially to:
+- posts
+- comments
+- chat messages
+- image uploads
+
+==================================================
+12. ADMIN / DASHBOARD VISIBILITY (OPTIONAL IF EASY)
+==================================================
+
+If easy to support:
+- add a lightweight moderation dashboard or moderation queue
+- show flagged content / repeated offenders
+- allow manual review if needed
+
+At minimum:
+- store moderation logs properly
+- support future review
+
+==================================================
+13. PRIVACY / FAIRNESS
+==================================================
+
+Moderation should be strict but not random.
+
+Requirements:
+- do not overblock normal harmless food content
+- do not censor normal casual language unnecessarily
+- only escalate when content is truly unsafe or repeatedly abusive
+- keep the product clean without ruining UX
+
+==================================================
+14. FINAL VALIDATION
+==================================================
+
+Verify all of the following:
+
+A. Unsafe image upload is blocked before publish
+B. Nude/sexual image upload is blocked
+C. Abusive comment is blocked
+D. Harassing chat message is blocked
+E. Unsafe profile bio is blocked
+F. Warning / strike system increments correctly
+G. Repeated offender reaches restriction / suspension
+H. Safe normal food content still works
+I. No unsafe content leaks into public feed or chat
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart must have a strong moderation and safety layer that keeps the platform:
+
+- clean
+- food-focused
+- respectful
+- premium
+- safe for the public
+
+No sexual content.
+No abusive chat.
+No hateful or toxic public comments.
+No repeated offenders without consequences.
+
+Warnings and enforcement must be real:
+- first warning
+- second warning
+- third strike = restriction/suspension

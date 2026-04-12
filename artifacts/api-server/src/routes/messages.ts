@@ -6,6 +6,12 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { customerProfilesTable } from "@workspace/db";
 import { eq, inArray } from "drizzle-orm";
+import {
+  moderateText,
+  recordViolation,
+  getUserStatus,
+  getSuspendedMessage,
+} from "../utils/moderation.js";
 
 const router = Router();
 
@@ -124,6 +130,16 @@ router.post("/send", async (req, res) => {
     }
     const pgDb = pg();
 
+    // ── Account suspension check ─────────────────────────────────────────────
+    const userStatus = await getUserStatus(senderEmail, pgDb);
+    if (userStatus.suspended) {
+      return void res.status(403).json({
+        error: getSuspendedMessage("message"),
+        moderated: true,
+        suspended: true,
+      });
+    }
+
     // Check participant
     const { rows: access } = await pgDb.query(
       `SELECT 1 FROM conversation_participants WHERE conversation_id=$1 AND user_email=$2`,
@@ -140,6 +156,21 @@ router.post("/send", async (req, res) => {
       if (await isBlocked(senderEmail, p.user_email)) {
         return void res.status(403).json({ error: "Nachricht kann nicht gesendet werden." });
       }
+    }
+
+    // ── Text moderation ──────────────────────────────────────────────────────
+    const modResult = await moderateText(text.trim(), "message");
+    if (modResult.blocked) {
+      const violation = await recordViolation(
+        senderEmail, "message", modResult.severity,
+        modResult.reason ?? "unsafe message", modResult.category,
+        text.slice(0, 200), pgDb
+      );
+      return void res.status(422).json({
+        error: modResult.message,
+        moderated: true,
+        strikeMessage: violation.strikeMessage,
+      });
     }
 
     const { rows } = await pgDb.query(

@@ -11,6 +11,13 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import {
+  moderateText,
+  moderateImage,
+  recordViolation,
+  getUserStatus,
+  getSuspendedMessage,
+} from "../utils/moderation.js";
 
 const router = Router();
 
@@ -148,6 +155,23 @@ router.patch("/:email", requireSelfAccess, async (req, res) => {
     const email = decodeURIComponent(req.params.email);
     const body = UpdateBody.parse(req.body);
 
+    // ── Bio moderation ────────────────────────────────────────────────────────
+    if (body.bio?.trim()) {
+      const pgDb = (db as any).$client;
+      const modResult = await moderateText(body.bio.trim(), "bio");
+      if (modResult.blocked) {
+        await recordViolation(
+          email, "bio", modResult.severity,
+          modResult.reason ?? "unsafe bio", modResult.category,
+          body.bio.slice(0, 200), pgDb
+        );
+        return void res.status(422).json({
+          error: modResult.message,
+          moderated: true,
+        });
+      }
+    }
+
     const existing = await db
       .select()
       .from(customerProfilesTable)
@@ -183,10 +207,30 @@ router.patch("/:email", requireSelfAccess, async (req, res) => {
   }
 });
 
-// POST /api/customer-profile/upload — avatar upload (public — no PII returned)
-router.post("/upload", upload.single("file"), (req, res) => {
+// POST /api/customer-profile/upload — avatar upload with image moderation
+router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return void res.status(400).json({ error: "No file" });
+
+    // ── Avatar image moderation ───────────────────────────────────────────────
+    const modResult = await moderateImage(req.file.path, "avatar");
+    if (modResult.blocked) {
+      fs.unlinkSync(req.file.path);
+      const uploaderEmail = (req.query.email as string) || "";
+      if (uploaderEmail) {
+        const pgDb = (db as any).$client;
+        await recordViolation(
+          uploaderEmail, "avatar", modResult.severity,
+          modResult.reason ?? "unsafe avatar", modResult.category,
+          req.file.originalname, pgDb
+        );
+      }
+      return void res.status(422).json({
+        error: modResult.message,
+        moderated: true,
+      });
+    }
+
     res.json({ url: `/uploads/${req.file.filename}` });
   } catch {
     res.status(500).json({ error: "Upload failed" });

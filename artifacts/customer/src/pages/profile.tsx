@@ -243,6 +243,7 @@ function AvatarUpload({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
   const dim = size === "lg" ? "w-24 h-24" : "w-14 h-14";
   const textSize = size === "lg" ? "text-3xl" : "text-lg";
 
@@ -251,9 +252,22 @@ function AvatarUpload({
     const fd = new FormData();
     fd.append("file", file);
     try {
-      const r = await fetch(`${API_BASE}/api/customer-profile/upload`, { method: "POST", body: fd });
-      const { url } = await r.json();
-      onUpload(`${API_BASE}${url}`);
+      const r = await fetch(
+        `${API_BASE}/api/customer-profile/upload?email=${encodeURIComponent(email)}`,
+        { method: "POST", body: fd }
+      );
+      const data = await r.json();
+      if (!r.ok) {
+        if (data.moderated) {
+          toast({ title: "Bild blockiert", description: data.error, variant: "destructive" });
+        } else {
+          toast({ title: "Fehler", description: "Upload fehlgeschlagen." });
+        }
+        return;
+      }
+      onUpload(`${API_BASE}${data.url}`);
+    } catch {
+      toast({ title: "Fehler", description: "Upload fehlgeschlagen." });
     } finally {
       setUploading(false);
     }
@@ -1420,11 +1434,24 @@ export default function Profile() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
-      if (!r.ok) throw new Error("Failed to save");
+      const data = await r.json();
+      if (!r.ok) {
+        const err: any = new Error(data.error || "Failed to save");
+        err.moderated = data.moderated;
+        throw err;
+      }
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customer-profile", email] });
       toast({ title: "Gespeichert", description: "Dein Profil wurde aktualisiert." });
+    },
+    onError: (err: any) => {
+      if (err.moderated) {
+        toast({ title: "Inhalt blockiert", description: err.message, variant: "destructive" });
+      } else {
+        toast({ title: "Fehler", description: "Profil konnte nicht gespeichert werden." });
+      }
     },
   });
 

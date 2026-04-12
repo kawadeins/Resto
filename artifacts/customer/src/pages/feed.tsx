@@ -101,11 +101,20 @@ const apiToggleSave = (postId: number, email: string) =>
 const apiSearchRestaurants = (q: string) =>
   fetch(`${API_BASE}/api/posts/restaurants/search?q=${encodeURIComponent(q)}`).then(r => r.json());
 
-const apiAddComment = (postId: number, email: string, text: string) =>
-  fetch(`${API_BASE}/api/posts/${postId}/comments`, {
+const apiAddComment = async (postId: number, email: string, text: string) => {
+  const r = await fetch(`${API_BASE}/api/posts/${postId}/comments`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user_email: email, text }),
-  }).then(r => { if(!r.ok) throw new Error(); return r.json(); });
+  });
+  const data = await r.json();
+  if (!r.ok) {
+    const err: any = new Error(data.error || "Fehler beim Kommentieren.");
+    err.moderated = data.moderated;
+    err.strikeMessage = data.strikeMessage;
+    throw err;
+  }
+  return data;
+};
 
 // ── Time ago ──────────────────────────────────────────────────────────────────
 function timeAgo(ts: string) {
@@ -181,7 +190,16 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
       setText("");
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
     },
-    onError: () => toast({ title: "Fehler", description: "Kommentar konnte nicht gesendet werden." }),
+    onError: (err: any) => {
+      if (err.moderated) {
+        toast({ title: "Inhalt blockiert", description: err.message, variant: "destructive" });
+        if (err.strikeMessage) {
+          setTimeout(() => toast({ title: "Hinweis", description: err.strikeMessage }), 800);
+        }
+      } else {
+        toast({ title: "Fehler", description: "Kommentar konnte nicht gesendet werden." });
+      }
+    },
   });
 
   return (
@@ -369,7 +387,18 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
         if (restaurant.id) fd.append("restaurant_id", String(restaurant.id));
       }
       const r = await fetch(`${API_BASE}/api/posts`, { method: "POST", body: fd });
-      if (!r.ok) throw new Error();
+      const data = await r.json();
+      if (!r.ok) {
+        if (data.moderated) {
+          toast({ title: "Inhalt blockiert", description: data.error, variant: "destructive" });
+          if (data.strikeMessage) {
+            setTimeout(() => toast({ title: "Hinweis", description: data.strikeMessage }), 800);
+          }
+        } else {
+          toast({ title: "Fehler", description: "Beitrag konnte nicht erstellt werden." });
+        }
+        return;
+      }
       setStep("success");
       onCreated();
     } catch {

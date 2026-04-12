@@ -51,6 +51,7 @@ import smartNotificationsRouter from "./smart-notifications";
 import postsRouter from "./posts";
 import publicProfileRouter from "./public-profile";
 import messagesRouter from "./messages";
+import moderationAdminRouter from "./moderation-admin";
 
 const router: IRouter = Router();
 
@@ -106,5 +107,6 @@ router.use("/smart-notifications", smartNotificationsRouter);
 router.use("/posts", postsRouter);
 router.use("/public-profile", publicProfileRouter);
 router.use("/messages", messagesRouter);
+router.use("/moderation", moderationAdminRouter);
 
 export default router;

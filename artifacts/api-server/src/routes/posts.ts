@@ -5,6 +5,13 @@ import { eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import {
+  moderateText,
+  moderateImage,
+  recordViolation,
+  getUserStatus,
+  getSuspendedMessage,
+} from "../utils/moderation.js";
 
 const router = Router();
 
@@ -164,6 +171,53 @@ router.post("/", upload.single("image"), async (req, res) => {
     if (!user_email) return void res.status(400).json({ error: "user_email required" });
     if (!req.file) return void res.status(400).json({ error: "image required" });
 
+    const pgDb = (db as any).$client;
+
+    // ── Account suspension check ─────────────────────────────────────────────
+    const userStatus = await getUserStatus(user_email, pgDb);
+    if (userStatus.suspended) {
+      fs.unlinkSync(req.file.path);
+      return void res.status(403).json({
+        error: getSuspendedMessage("post_image"),
+        moderated: true,
+        suspended: true,
+      });
+    }
+
+    // ── Image moderation ─────────────────────────────────────────────────────
+    const imgResult = await moderateImage(req.file.path, "post_image");
+    if (imgResult.blocked) {
+      fs.unlinkSync(req.file.path);
+      const violation = await recordViolation(
+        user_email, "post_image", imgResult.severity,
+        imgResult.reason ?? "unsafe image", imgResult.category,
+        req.file.originalname, pgDb
+      );
+      return void res.status(422).json({
+        error: imgResult.message,
+        moderated: true,
+        strikeMessage: violation.strikeMessage,
+      });
+    }
+
+    // ── Caption text moderation ──────────────────────────────────────────────
+    if (caption?.trim()) {
+      const textResult = await moderateText(caption.trim(), "post_caption");
+      if (textResult.blocked) {
+        fs.unlinkSync(req.file.path);
+        const violation = await recordViolation(
+          user_email, "post_caption", textResult.severity,
+          textResult.reason ?? "unsafe caption", textResult.category,
+          caption.slice(0, 200), pgDb
+        );
+        return void res.status(422).json({
+          error: textResult.message,
+          moderated: true,
+          strikeMessage: violation.strikeMessage,
+        });
+      }
+    }
+
     const profiles = await db
       .select({ name: customerProfilesTable.name, photoUrl: customerProfilesTable.photoUrl })
       .from(customerProfilesTable)
@@ -171,7 +225,6 @@ router.post("/", upload.single("image"), async (req, res) => {
     const profile = profiles[0];
 
     const imageUrl = `/api/posts/images/${req.file.filename}`;
-    const pgDb = (db as any).$client;
 
     const { rows } = await pgDb.query(
       `INSERT INTO social_posts (user_email, user_name, user_photo, image_url, caption, restaurant_id, restaurant_name)
@@ -304,13 +357,39 @@ router.post("/:id/comments", async (req, res) => {
       return void res.status(400).json({ error: "user_email and text required" });
     }
 
+    const pgDb = (db as any).$client;
+
+    // ── Account suspension check ─────────────────────────────────────────────
+    const userStatus = await getUserStatus(user_email, pgDb);
+    if (userStatus.suspended) {
+      return void res.status(403).json({
+        error: getSuspendedMessage("comment"),
+        moderated: true,
+        suspended: true,
+      });
+    }
+
+    // ── Text moderation ──────────────────────────────────────────────────────
+    const modResult = await moderateText(text.trim(), "comment");
+    if (modResult.blocked) {
+      const violation = await recordViolation(
+        user_email, "comment", modResult.severity,
+        modResult.reason ?? "unsafe comment", modResult.category,
+        text.slice(0, 200), pgDb
+      );
+      return void res.status(422).json({
+        error: modResult.message,
+        moderated: true,
+        strikeMessage: violation.strikeMessage,
+      });
+    }
+
     const profiles = await db
       .select({ name: customerProfilesTable.name, photoUrl: customerProfilesTable.photoUrl })
       .from(customerProfilesTable)
       .where(eq(customerProfilesTable.email, user_email));
     const profile = profiles[0];
 
-    const pgDb = (db as any).$client;
     const { rows } = await pgDb.query(
       `INSERT INTO post_comments (post_id, user_email, user_name, user_photo, text)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
