@@ -1,0 +1,98 @@
+Fix the restaurant-owner dashboard reservation action buttons end-to-end.
+
+Context:
+In the restaurant dashboard, incoming group reservation requests are visible in a table with status "Warten auf Antwort" and two action buttons:
+- Bestätigen
+- Ablehnen
+
+Problem:
+These buttons are currently visible but do not work.
+I need them fully activated and production-ready.
+
+Your task:
+Implement the full confirm/reject reservation flow for restaurant owners.
+
+Requirements:
+
+1. BUTTON FUNCTIONALITY
+- Wire up the "Bestätigen" button so it actually confirms the reservation request.
+- Wire up the "Ablehnen" button so it actually rejects the reservation request.
+- Each button must call the correct backend API endpoint.
+- Prevent double submission while request is in progress.
+- Show loading state on the clicked button.
+- Disable both buttons once action is completed successfully.
+
+2. BACKEND ACTIONS
+- Add or fix the backend endpoints for restaurant-owner reservation actions if missing.
+- Only the correct restaurant owner must be allowed to confirm/reject requests for their own restaurant.
+- Validate reservation/request ID on the server.
+- Reject unauthorized access.
+- Return clean JSON responses with updated status.
+
+3. STATUS UPDATES
+- When owner clicks "Bestätigen":
+  - reservation request status becomes confirmed/accepted
+  - dashboard row updates immediately without full page reload
+  - green success feedback appears
+- When owner clicks "Ablehnen":
+  - reservation request status becomes rejected/declined
+  - dashboard row updates immediately without full page reload
+  - red feedback appears
+
+4. UI STATE
+- Replace "Warten auf Antwort" with the correct final status after action:
+  - "Bestätigt" for accepted
+  - "Abgelehnt" for rejected
+- Remove or disable the action buttons after final decision.
+- Make sure the UI cannot remain in stale pending state after success.
+
+5. USER / GROUP SIDE
+- The group creator must be able to see the restaurant's response.
+- If accepted, show clear approved state / green indicator.
+- If rejected, show rejected state / red indicator.
+- Make sure the response is reflected wherever the group reservation status is shown.
+
+6. DATA MODEL
+- Verify reservation request records support:
+  - id
+  - restaurantId
+  - groupId
+  - requestedBy
+  - reservationDate/time
+  - partySize
+  - status (pending / confirmed / rejected)
+  - ownerNote if needed
+  - respondedAt timestamp
+- Add migration if needed, but keep changes minimal and safe.
+
+7. SAFETY
+- No redesign.
+- No unrelated refactors.
+- Do not break existing reservation list rendering.
+- Keep current visual style.
+- Add proper error handling for failed requests.
+- If API fails, show a toast or inline error and keep buttons usable.
+
+8. TESTING
+- Verify full flow:
+  - pending request appears
+  - owner clicks Bestätigen -> status updates to confirmed
+  - owner clicks Ablehnen -> status updates to rejected
+  - unauthorized owner cannot act
+  - page refresh keeps correct final state
+  - group side sees final decision
+
+9. OUTPUT
+After implementing, provide:
+- exact files changed
+- what was broken
+- what was fixed
+- any endpoint added/updated
+- any migration added
+- final behavior summary
+
+Important:
+This is a surgical fix.
+Do not redesign the dashboard.
+Do not add unrelated features.
+Just make the two buttons work correctly and persist the correct reservation decision.

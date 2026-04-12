@@ -9,6 +9,7 @@ import {
   useDeleteReservation,
 } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useSession } from "@/contexts/session-context";
 
 const GRP_API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
 
@@ -82,9 +83,11 @@ export default function Reservations() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  const { csrfToken } = useSession();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [mainTab, setMainTab] = useState<"reservations" | "gruppenanfragen">("reservations");
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   const [dateFilter, setDateFilter] = useState<"today" | "week" | "all">("today");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -101,17 +104,31 @@ export default function Reservations() {
   });
 
   const updateGroupRequestStatus = async (id: number, status: "confirmed" | "rejected" | "cancelled") => {
+    if (updatingId !== null) return;
+    setUpdatingId(id);
     try {
-      await fetch(`${GRP_API}/group-reservations/${id}/status`, {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+      const res = await fetch(`${GRP_API}/group-reservations/${id}/status`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ status }),
       });
-      refetchGroupRequests();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      const updated = await res.json();
+      // Optimistic cache update — no reload needed
+      queryClient.setQueryData<any[]>(["group-reservations-owner"], (prev = []) =>
+        prev.map((r) => (r.id === id ? { ...r, ...updated } : r))
+      );
       const labels: Record<string, string> = { confirmed: "Bestätigt", rejected: "Abgelehnt", cancelled: "Storniert" };
-      toast({ title: `Anfrage: ${labels[status]}` });
-    } catch {
-      toast({ title: "Fehler beim Aktualisieren", variant: "destructive" });
+      toast({ title: `Anfrage ${labels[status]}` });
+    } catch (err: any) {
+      toast({ title: err.message || "Fehler beim Aktualisieren", variant: "destructive" });
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -539,20 +556,30 @@ export default function Reservations() {
                               <div className="flex gap-1">
                                 {req.status === "sent" && (
                                   <>
-                                    <Button size="sm" variant="outline" className="h-7 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                    <Button size="sm" variant="outline"
+                                      className="h-7 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+                                      disabled={updatingId !== null}
                                       onClick={() => updateGroupRequestStatus(req.id, "confirmed")}>
-                                      Bestätigen
+                                      {updatingId === req.id ? (
+                                        <span className="flex items-center gap-1"><svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> …</span>
+                                      ) : "Bestätigen"}
                                     </Button>
-                                    <Button size="sm" variant="outline" className="h-7 text-xs border-rose-300 text-rose-600 hover:bg-rose-50"
+                                    <Button size="sm" variant="outline"
+                                      className="h-7 text-xs border-rose-300 text-rose-600 hover:bg-rose-50 disabled:opacity-60"
+                                      disabled={updatingId !== null}
                                       onClick={() => updateGroupRequestStatus(req.id, "rejected")}>
-                                      Ablehnen
+                                      {updatingId === req.id ? (
+                                        <span className="flex items-center gap-1"><svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> …</span>
+                                      ) : "Ablehnen"}
                                     </Button>
                                   </>
                                 )}
                                 {req.status === "confirmed" && (
-                                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground"
+                                  <Button size="sm" variant="ghost"
+                                    className="h-7 text-xs text-muted-foreground disabled:opacity-60"
+                                    disabled={updatingId !== null}
                                     onClick={() => updateGroupRequestStatus(req.id, "cancelled")}>
-                                    Stornieren
+                                    {updatingId === req.id ? "…" : "Stornieren"}
                                   </Button>
                                 )}
                               </div>
