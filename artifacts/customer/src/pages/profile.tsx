@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -44,6 +43,10 @@ interface CustomerProfile {
   email: string;
   name: string;
   photoUrl: string | null;
+  bio: string | null;
+  city: string | null;
+  country: string | null;
+  age: number | null;
   favoriteCuisines: string[];
   dietaryStyle: string;
   allergies: string[];
@@ -1102,6 +1105,242 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
   );
 }
 
+// ─── Edit Profile Sheet ───────────────────────────────────────────────────────
+
+function EditProfileSheet({
+  open,
+  onClose,
+  profile,
+  email,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  profile: CustomerProfile;
+  email: string;
+  onSave: (updates: Partial<CustomerProfile & { bio: string | null; city: string | null; country: string | null; age: number | null }>) => void;
+}) {
+  const [draft, setDraft] = useState({
+    name: profile.name,
+    bio: profile.bio ?? "",
+    city: profile.city ?? "",
+    country: profile.country ?? "",
+    age: profile.age ? String(profile.age) : "",
+    photoUrl: profile.photoUrl,
+    favoriteCuisines: [...profile.favoriteCuisines],
+    dietaryStyle: profile.dietaryStyle,
+  });
+
+  useEffect(() => {
+    if (open) {
+      setDraft({
+        name: profile.name,
+        bio: profile.bio ?? "",
+        city: profile.city ?? "",
+        country: profile.country ?? "",
+        age: profile.age ? String(profile.age) : "",
+        photoUrl: profile.photoUrl,
+        favoriteCuisines: [...profile.favoriteCuisines],
+        dietaryStyle: profile.dietaryStyle,
+      });
+    }
+  }, [open]);
+
+  const handleSave = () => {
+    const updates: any = {
+      name: draft.name.trim() || profile.name,
+      bio: draft.bio.trim() || null,
+      city: draft.city.trim() || null,
+      country: draft.country.trim() || null,
+      age: draft.age ? parseInt(draft.age) : null,
+      favoriteCuisines: draft.favoriteCuisines,
+      dietaryStyle: draft.dietaryStyle,
+    };
+    if (draft.photoUrl !== profile.photoUrl && draft.photoUrl) {
+      updates.photoUrl = draft.photoUrl;
+    }
+    onSave(updates);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-3xl border-0 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b shrink-0">
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <h2 className="text-base font-bold">{"Profil bearbeiten"}</h2>
+          <button
+            onClick={handleSave}
+            className="text-sm font-bold text-primary hover:opacity-80 transition-opacity"
+          >
+            {"Speichern"}
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-2 pb-2">
+            <AvatarUpload
+              photoUrl={draft.photoUrl}
+              name={draft.name}
+              email={email}
+              onUpload={(url) => setDraft((d) => ({ ...d, photoUrl: url }))}
+              isPremium={false}
+            />
+            <p className="text-xs text-muted-foreground">{"Profilbild ändern"}</p>
+          </div>
+
+          {/* Name */}
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Anzeigename"}</Label>
+            <input
+              value={draft.name}
+              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+              placeholder="Dein Name"
+              className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+            />
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Über mich"}</Label>
+            <textarea
+              value={draft.bio}
+              onChange={(e) => setDraft((d) => ({ ...d, bio: e.target.value }))}
+              placeholder={"z.B. Immer auf der Suche nach neuen Cafés."}
+              maxLength={160}
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+            />
+            <p className="text-[11px] text-muted-foreground text-right">{draft.bio.length}/160</p>
+          </div>
+
+          {/* Location */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Stadt"}</Label>
+              <input
+                value={draft.city}
+                onChange={(e) => setDraft((d) => ({ ...d, city: e.target.value }))}
+                placeholder="Wien"
+                className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Land"}</Label>
+              <input
+                value={draft.country}
+                onChange={(e) => setDraft((d) => ({ ...d, country: e.target.value }))}
+                placeholder={"Österreich"}
+                className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+              />
+            </div>
+          </div>
+
+          {/* Age */}
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Alter"}</Label>
+            <input
+              type="number"
+              value={draft.age}
+              onChange={(e) => setDraft((d) => ({ ...d, age: e.target.value }))}
+              placeholder={"Optional"}
+              min={13}
+              max={120}
+              className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+            />
+          </div>
+
+          {/* Taste tags */}
+          <div className="space-y-2.5">
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Geschmack (bis zu 6)"}</Label>
+            <div className="flex flex-wrap gap-2">
+              {FOOD_TYPES.map((ft) => {
+                const selected = draft.favoriteCuisines.includes(ft.id);
+                const atLimit = !selected && draft.favoriteCuisines.length >= 6;
+                return (
+                  <button
+                    key={ft.id}
+                    type="button"
+                    disabled={atLimit}
+                    onClick={() => {
+                      setDraft((d) => ({
+                        ...d,
+                        favoriteCuisines: selected
+                          ? d.favoriteCuisines.filter((c) => c !== ft.id)
+                          : d.favoriteCuisines.length < 6
+                          ? [...d.favoriteCuisines, ft.id]
+                          : d.favoriteCuisines,
+                      }));
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      selected
+                        ? "bg-primary text-white shadow-sm shadow-primary/25"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    } ${atLimit ? "opacity-40 cursor-not-allowed" : ""}`}
+                  >
+                    {ft.emoji} {ft.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Dietary style */}
+          <div className="space-y-2.5">
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Ernährungsweise"}</Label>
+            <div className="flex flex-wrap gap-2">
+              {DIETARY_STYLES.map((ds) => {
+                const selected = draft.dietaryStyle === ds.id;
+                return (
+                  <button
+                    key={ds.id}
+                    type="button"
+                    onClick={() => setDraft((d) => ({ ...d, dietaryStyle: ds.id }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      selected
+                        ? "bg-primary text-white shadow-sm shadow-primary/25"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {ds.emoji} {ds.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pb-2" />
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 px-5 pb-6 pt-3 border-t space-y-2.5">
+          <Button
+            className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
+            style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
+            onClick={handleSave}
+          >
+            {"Profil aktualisieren"}
+          </Button>
+          <button
+            onClick={onClose}
+            className="w-full text-sm text-muted-foreground py-1.5 hover:text-foreground transition-colors"
+          >
+            {"Abbrechen"}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Profile() {
@@ -1111,6 +1350,7 @@ export default function Profile() {
   const [email, setEmail] = useState<string>("");
   const [ownerPremium, setOwnerPremium] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("restosmart_email") || "";
@@ -1318,6 +1558,26 @@ export default function Profile() {
                   </span>
                 )}
               </div>
+              {/* Bio */}
+              {profile.bio && (
+                <p className="text-sm text-muted-foreground mt-2 text-center sm:text-left leading-relaxed max-w-xs">
+                  {profile.bio}
+                </p>
+              )}
+              {/* Location */}
+              {(profile.city || profile.country) && (
+                <p className="flex items-center gap-1 text-xs text-muted-foreground/70 mt-1 justify-center sm:justify-start">
+                  <MapPin className="w-3 h-3" />
+                  {[profile.city, profile.country].filter(Boolean).join(", ")}
+                </p>
+              )}
+              {/* Edit button */}
+              <button
+                onClick={() => setShowEditProfile(true)}
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-border bg-background/80 hover:bg-muted transition-colors text-xs font-semibold text-foreground shadow-sm"
+              >
+                <Edit2 className="w-3 h-3" /> {"Profil bearbeiten"}
+              </button>
             </div>
             {/* Social stats row */}
             <div className="flex gap-5 sm:gap-6 text-center shrink-0">
@@ -1359,33 +1619,17 @@ export default function Profile() {
               </Link>
             ) : (
               <button className="shrink-0 text-sm font-semibold text-primary flex items-center gap-1 whitespace-nowrap"
-                onClick={() => document.getElementById("tab-food")?.click()}>
+                onClick={() => setShowEditProfile(true)}>
                 {insight.cta} <ArrowRight className="w-4 h-4" />
               </button>
             )
           )}
         </div>
 
-        {/* ── Main Tabs ───────────────────────────────── */}
-        <Tabs defaultValue="overview">
-          <TabsList className="flex overflow-x-auto gap-1 w-full mb-6 h-auto p-1 scrollbar-hide">
-            <TabsTrigger value="overview" className="shrink-0 text-xs sm:text-sm">{"Übersicht"}</TabsTrigger>
-            <TabsTrigger id="tab-food" value="food" className="shrink-0 text-xs sm:text-sm">{"Geschmack"}</TabsTrigger>
-            <TabsTrigger value="friends" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
-              <Users className="w-3 h-3" /> {"Freunde"}
-            </TabsTrigger>
-            <TabsTrigger value="beitraege" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
-              <Image className="w-3 h-3" /> {"Beiträge"}
-            </TabsTrigger>
-            <TabsTrigger value="aktivitaet" data-value="aktivitaet" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
-              <Activity className="w-3 h-3" /> {"Aktivität"}
-            </TabsTrigger>
-          </TabsList>
+        {/* ── Profile Sections ─────────────────────────── */}
+        <div className="space-y-5">
 
-          {/* ═══ TAB: ÜBERSICHT — Social Hub ══════════════════════════════ */}
-          <TabsContent value="overview" className="space-y-5">
-
-            {/* ── 1. MEINE PLÄNE ──────────────────────────── */}
+          {/* ── 1. MEINE PLÄNE ──────────────────────────────────────────── */}
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-base flex items-center gap-2">
@@ -1625,12 +1869,9 @@ export default function Profile() {
                 <h3 className="font-bold text-base flex items-center gap-2">
                   <Activity className="w-4 h-4 text-primary" /> {"Letzte Aktivitäten"}
                 </h3>
-                <button
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                  onClick={() => document.querySelector<HTMLButtonElement>("[data-value='aktivitaet']")?.click()}
-                >
+                <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
                   {"Alle"} <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+                </Link>
               </div>
               {activityFeed.length === 0 ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
@@ -1667,7 +1908,7 @@ export default function Profile() {
                 </h3>
                 <button
                   className="text-xs text-primary hover:underline"
-                  onClick={() => document.getElementById("tab-food")?.click()}
+                  onClick={() => setShowEditProfile(true)}
                 >
                   {"Bearbeiten"}
                 </button>
@@ -1675,7 +1916,7 @@ export default function Profile() {
               {profile.favoriteCuisines.length === 0 && profile.dietaryStyle === "no_preference" ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
                   <Utensils className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-                  <p className="text-xs text-muted-foreground">{"Noch kein Geschmack gesetzt – wähle deine Lieblingsküchen im Geschmack-Tab"}</p>
+                  <p className="text-xs text-muted-foreground">{"Noch kein Geschmack gesetzt – tippe auf Bearbeiten, um deine Lieblingsküchen zu wählen"}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1724,175 +1965,6 @@ export default function Profile() {
               )}
             </div>
 
-          </TabsContent>
-
-          {/* ═══ TAB: GESCHMACK ══════════════════════════════════════════ */}
-          <TabsContent value="food" className="space-y-6">
-
-            {/* Favorite cuisines */}
-            <div className="bg-card border rounded-2xl p-5 md:p-6">
-              <div className="mb-4">
-                <h3 className="font-bold text-base">Lieblingsküchen</h3>
-                <p className="text-xs text-muted-foreground mt-1">Wähle bis zu 6 Küchen – wir zeigen dir passende Restaurants.</p>
-              </div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {FOOD_TYPES.map((ft) => {
-                  const selected = profile.favoriteCuisines.includes(ft.id);
-                  const atLimit = !selected && profile.favoriteCuisines.length >= 6;
-                  return (
-                    <button
-                      key={ft.id}
-                      onClick={() => {
-                        const next = selected
-                          ? profile.favoriteCuisines.filter((c) => c !== ft.id)
-                          : profile.favoriteCuisines.length < 6
-                            ? [...profile.favoriteCuisines, ft.id]
-                            : profile.favoriteCuisines;
-                        save({ favoriteCuisines: next } as any);
-                      }}
-                      disabled={atLimit}
-                      className={`relative flex flex-col items-center gap-2 press-scale group transition-opacity ${atLimit ? "opacity-40" : ""}`}
-                    >
-                      <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${selected ? `bg-gradient-to-br ${ft.from} ${ft.to} shadow-md shadow-black/10` : "bg-muted/50 border border-border/50 group-hover:border-primary/30 group-hover:scale-105"}`}>
-                        {ft.emoji}
-                      </div>
-                      {selected && (
-                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
-                          <Check className="w-2.5 h-2.5 text-primary" />
-                        </div>
-                      )}
-                      <span className={`text-[11px] font-bold text-center leading-tight ${selected ? "text-primary" : "text-muted-foreground"}`}>{ft.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Dietary style */}
-            <div className="bg-card border rounded-2xl p-5 md:p-6">
-              <div className="mb-4">
-                <h3 className="font-bold text-base">Ernährungsweise</h3>
-                <p className="text-xs text-muted-foreground mt-1">Deine bevorzugte Ernährungsform – für passende Empfehlungen.</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {DIETARY_STYLES.map((ds) => {
-                  const selected = profile.dietaryStyle === ds.id;
-                  return (
-                    <button
-                      key={ds.id}
-                      onClick={() => save({ dietaryStyle: ds.id } as any)}
-                      className="relative flex flex-col items-center gap-2 press-scale group"
-                    >
-                      <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${selected ? `bg-gradient-to-br ${ds.from} ${ds.to} shadow-md shadow-black/10` : "bg-muted/50 border border-border/50 group-hover:border-primary/30 group-hover:scale-105"}`}>
-                        {ds.emoji}
-                      </div>
-                      {selected && (
-                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
-                          <Check className={`w-2.5 h-2.5 ${ds.color}`} />
-                        </div>
-                      )}
-                      <span className={`text-[11px] font-bold text-center leading-tight ${selected ? ds.color : "text-muted-foreground"}`}>{ds.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Allergies */}
-            <div className="bg-card border rounded-2xl p-5 md:p-6">
-              <div className="mb-4">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  <h3 className="font-bold text-base">Allergien &amp; Unverträglichkeiten</h3>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Diese Informationen helfen uns, dir sichere Empfehlungen zu geben.</p>
-              </div>
-              <div className="grid grid-cols-4 gap-3">
-                {ALLERGIES.map((al) => {
-                  const selected = profile.allergies.includes(al.id);
-                  const isNone = al.id === "no_allergies";
-                  return (
-                    <button
-                      key={al.id}
-                      onClick={() => {
-                        let next: string[];
-                        if (isNone) {
-                          next = selected ? [] : ["no_allergies"];
-                        } else {
-                          next = selected
-                            ? profile.allergies.filter((a) => a !== al.id)
-                            : [...profile.allergies.filter((a) => a !== "no_allergies"), al.id];
-                        }
-                        save({ allergies: next } as any);
-                      }}
-                      className="relative flex flex-col items-center gap-2 press-scale group"
-                    >
-                      <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-xl transition-all shadow-sm ${selected ? `bg-gradient-to-br ${al.from} ${al.to} shadow-md shadow-black/10` : "bg-muted/50 border border-border/50 group-hover:border-primary/30 group-hover:scale-105"}`}>
-                        {al.emoji}
-                      </div>
-                      {selected && (
-                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
-                          <Check className={`w-2.5 h-2.5 ${isNone ? "text-emerald-600" : "text-orange-600"}`} />
-                        </div>
-                      )}
-                      <span className={`text-[10px] font-bold text-center leading-tight ${selected ? (isNone ? "text-emerald-600" : "text-orange-600") : "text-muted-foreground"}`}>{al.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Recommendation preview */}
-            {(profile.favoriteCuisines.length > 0 || profile.dietaryStyle !== "no_preference") && (
-              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <h3 className="font-semibold text-sm text-primary">Empfehlungsprofil aktiv</h3>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                  Basierend auf deinen Präferenzen zeigen wir dir beim Entdecken zuerst Restaurants, die zu dir passen.
-                  {profile.allergies.length > 0 && profile.allergies[0] !== "no_allergies" &&
-                    " Deine Allergien werden bei der Auswahl berücksichtigt."}
-                </p>
-                <Link href="/explore" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
-                  Personalisierte Empfehlungen ansehen <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ═══ TAB: FREUNDE ══════════════════════════════════════════════ */}
-          <TabsContent value="friends" className="space-y-5">
-            <div className="bg-card border rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-primary" />
-                <h3 className="font-bold text-base">{"Freunde"}</h3>
-                {friends.length > 0 && (
-                  <span className="ml-auto text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
-                    {friends.length}
-                  </span>
-                )}
-              </div>
-              <FriendsPanel email={email} />
-            </div>
-
-            {/* Group plan CTA */}
-            <div className="bg-gradient-to-br from-primary/8 to-accent/8 border border-primary/15 rounded-2xl p-5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 text-2xl">
-                {"🍽️"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm">{"Gemeinsam ausgehen"}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{"Erstelle einen Gruppenplan und lade Freunde ein"}</p>
-              </div>
-              <Button asChild size="sm" className="rounded-xl shrink-0 bg-gradient-to-r from-primary to-accent border-0">
-                <Link href="/meal-plan">{"Plan"}</Link>
-              </Button>
-            </div>
-          </TabsContent>
-
-          {/* ═══ TAB: BEITRÄGE ═══════════════════════════════════════════ */}
-          <TabsContent value="beitraege" className="space-y-5">
 
             {/* Header CTA */}
             <div className="flex items-center justify-between">
@@ -1973,11 +2045,6 @@ export default function Profile() {
                 </Link>
               </>
             )}
-          </TabsContent>
-
-          {/* ═══ TAB: AKTIVITÄT ══════════════════════════════════════════ */}
-          <TabsContent value="aktivitaet" className="space-y-5">
-
             {/* Booking history */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">
@@ -2042,65 +2109,10 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Social activity feed */}
-            <div className="bg-card border rounded-2xl p-5">
-              <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-primary" /> {"Meine Aktivitäten"}
-              </h3>
-              {activityFeed.length === 0 ? (
-                <div className="text-center py-10 space-y-3">
-                  <Activity className="w-10 h-10 text-muted-foreground/40 mx-auto" />
-                  <p className="text-muted-foreground text-sm">{"Noch keine Aktivitäten"}</p>
-                  <p className="text-xs text-muted-foreground/60">
-                    {"Buche ein Restaurant oder schreibe eine Bewertung — deine Aktivitäten erscheinen dann hier"}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {activityFeed.slice(0, 10).map((a) => {
-                    const label = activityLabel(a.activityType);
-                    return (
-                      <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-base">
-                          {label.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium leading-snug">
-                            {"Du"} {label.verb} {"bei"} <span className="text-primary">{a.restaurantName}</span>
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(a.createdAt)}</p>
-                        </div>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${
-                          a.visibility === "public"
-                            ? "bg-green-500/10 text-green-700 border-green-500/20"
-                            : a.visibility === "friends"
-                            ? "bg-primary/10 text-primary border-primary/20"
-                            : "bg-muted text-muted-foreground border-border"
-                        }`}>
-                          {a.visibility === "public" ? "Öffentlich" : a.visibility === "friends" ? "Freunde" : "Privat"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          {/* ── Business / Premium card ─────────────── */}
+          <OwnerPremiumCard isPremium={ownerPremium} onOpenModal={() => setShowPremiumModal(true)} />
 
-            {/* Privacy notice */}
-            <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex items-start gap-3">
-              <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-semibold text-foreground mb-1">{"Datenschutz-Tipp"}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {"Gehe zu Einstellungen, um festzulegen ob deine Aktivitäten öffentlich, nur für Freunde oder privat sichtbar sind."}
-                </p>
-                <Link href="/settings" className="text-xs text-primary font-medium mt-1.5 inline-flex items-center gap-1 hover:underline">
-                  {"Einstellungen"} <ChevronRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
 
       {/* Premium Modal */}
@@ -2108,6 +2120,15 @@ export default function Profile() {
         open={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
         onActivate={handleActivatePremium}
+      />
+
+      {/* Edit Profile Sheet */}
+      <EditProfileSheet
+        open={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+        profile={profile}
+        email={email}
+        onSave={save}
       />
     </div>
   );

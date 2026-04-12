@@ -1,0 +1,217 @@
+Implement a focused "User Profile Settings Upgrade" for the customer Profile page.
+
+IMPORTANT:
+- Do NOT redesign the whole app
+- Do NOT break the new Profil / Einstellungen structure
+- This is a targeted improvement for the customer user profile only
+- Keep the premium visual style
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Improve the customer Profil page by:
+
+1. Removing the unnecessary/messy internal tab strip shown inside the profile page
+2. Adding a dedicated "Profil bearbeiten" / "Profile Settings" flow for the normal user
+3. Allowing the user to actually edit their personal profile information
+
+This is for the CUSTOMER profile only.
+Not the business/owner profile.
+
+==================================================
+1. REMOVE OR REPLACE THE INNER PROFILE TAB STRIP
+==================================================
+
+The inner strip/tab area inside the profile page (for example things like Geschmack / Freunde / Beiträge in that current form) feels unnecessary or visually weak.
+
+Required action:
+- remove this inner strip completely if it adds no real value
+OR
+- replace it with a cleaner structure if needed
+
+Do NOT keep a cluttered redundant tab strip inside the profile page.
+
+The profile should feel cleaner, simpler, and more premium.
+
+==================================================
+2. ADD A REAL "PROFILE SETTINGS" ENTRY
+==================================================
+
+Add a dedicated action for editing the user profile.
+
+Examples:
+- button near avatar/header: "Profil bearbeiten"
+- or small settings/edit icon in the profile header area
+
+This must open a proper user profile settings screen/modal/sheet.
+
+This is NOT the main app settings page.
+This is ONLY for editing the user's personal profile data.
+
+==================================================
+3. ADD USER-EDITABLE PROFILE FIELDS
+==================================================
+
+Inside the new profile settings flow, allow the user to edit:
+
+- Anzeigename / display name
+- optional username
+- Profilbild / avatar
+- Stadt / place of living
+- Land / country
+- Alter / age (if product allows)
+- Kurzbeschreibung / bio
+- optional mood/taste tags if appropriate
+
+Examples:
+- "Sushi-Fan"
+- "Nightlife Lover"
+- "Café-Hopper"
+- "Food Explorer"
+
+Keep this elegant and useful.
+
+==================================================
+4. PROFILE IMAGE / AVATAR EDIT
+==================================================
+
+Allow the user to:
+- upload/change profile image
+- preview before save
+- fallback to generated initials/avatar if no image exists
+
+This should work cleanly on mobile.
+
+==================================================
+5. BIO / DESCRIPTION
+==================================================
+
+Add a short editable bio/about field.
+
+Examples:
+- "Immer auf der Suche nach neuen Cafés."
+- "Liebe Sushi, Brunch und Rooftop-Spots."
+
+Keep it short, elegant, and optional.
+
+==================================================
+6. LOCATION FIELDS
+==================================================
+
+Allow user to set:
+- city
+- country
+
+This should help make the profile feel more personal and real.
+
+Do NOT overcomplicate with exact address.
+City + country is enough unless already supported cleanly.
+
+==================================================
+7. SAVE FLOW
+==================================================
+
+The profile settings flow must include:
+
+- Speichern
+- Abbrechen
+
+Behavior:
+- save updates profile immediately
+- show success feedback:
+  "Profil aktualisiert"
+- do not leave user unsure whether changes were saved
+
+==================================================
+8. KEEP SETTINGS SEPARATE
+==================================================
+
+Do NOT move app-level settings into this profile settings flow.
+
+This new flow is ONLY for:
+- name
+- image
+- bio
+- location
+- age
+- profile identity fields
+
+Main app settings such as:
+- privacy
+- notifications
+- logout
+- legal
+must remain in Einstellungen.
+
+==================================================
+9. PROFILE HEADER SHOULD REFLECT CHANGES
+==================================================
+
+After saving, the visible profile header should update to show:
+
+- new avatar
+- new name
+- new bio (if displayed)
+- new location/tags if used
+
+The profile should feel alive and personalized.
+
+==================================================
+10. GERMAN UX COPY
+==================================================
+
+Use clean German labels such as:
+
+- Profil bearbeiten
+- Anzeigename
+- Benutzername
+- Stadt
+- Land
+- Alter
+- Über mich
+- Profilbild ändern
+- Speichern
+- Abbrechen
+- Profil aktualisiert
+
+==================================================
+11. UX / MOBILE QUALITY
+==================================================
+
+This must work well on iPhone/mobile.
+
+Requirements:
+- easy to tap
+- no cramped fields
+- no keyboard overlap issues
+- save button always reachable
+- no broken layout
+
+==================================================
+12. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. Inner redundant strip inside profile is removed or cleaned up
+B. User can open a dedicated profile edit/settings flow
+C. User can change name
+D. User can change avatar
+E. User can change city/country
+F. User can add/edit bio
+G. Changes are saved and reflected in the profile UI
+H. Main Einstellungen page remains separate
+
+==================================================
+FINAL RESULT
+==================================================
+
+The customer Profil page must feel personal and editable.
+
+The user should be able to shape their own profile identity,
+while app-level settings remain in the separate Einstellungen section.
+
+No clutter.
+No redundant inner strip.
+A clean user profile with real editing capability.

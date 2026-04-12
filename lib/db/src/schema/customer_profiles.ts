@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -12,6 +12,10 @@ export const customerProfilesTable = pgTable("customer_profiles", {
   allergies: text("allergies").array().notNull().default([]),
   favoriteTags: text("favorite_tags").array().notNull().default([]),
   favoriteRestaurantIds: text("favorite_restaurant_ids").array().notNull().default([]),
+  bio: text("bio"),
+  city: text("city"),
+  country: text("country"),
+  age: integer("age"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

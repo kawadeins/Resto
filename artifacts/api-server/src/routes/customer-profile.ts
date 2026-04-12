@@ -88,6 +88,10 @@ router.get("/:email", requireSelfAccess, async (req, res) => {
       email,
       name: profile?.name ?? "",
       photoUrl: profile?.photoUrl ?? null,
+      bio: (profile as any)?.bio ?? null,
+      city: (profile as any)?.city ?? null,
+      country: (profile as any)?.country ?? null,
+      age: (profile as any)?.age ?? null,
       favoriteCuisines: profile?.favoriteCuisines ?? [],
       dietaryStyle: profile?.dietaryStyle ?? "no_preference",
       allergies: profile?.allergies ?? [],
@@ -124,7 +128,11 @@ router.get("/:email", requireSelfAccess, async (req, res) => {
 
 const UpdateBody = z.object({
   name: z.string().optional(),
-  photoUrl: z.string().optional(),
+  photoUrl: z.string().nullable().optional(),
+  bio: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+  age: z.number().nullable().optional(),
   favoriteCuisines: z.array(z.string()).optional(),
   dietaryStyle: z.string().optional(),
   allergies: z.array(z.string()).optional(),
@@ -146,6 +154,10 @@ router.patch("/:email", requireSelfAccess, async (req, res) => {
     const updates: Record<string, any> = { updatedAt: new Date() };
     if (body.name !== undefined) updates.name = body.name;
     if (body.photoUrl !== undefined) updates.photoUrl = body.photoUrl;
+    if (body.bio !== undefined) updates.bio = body.bio;
+    if (body.city !== undefined) updates.city = body.city;
+    if (body.country !== undefined) updates.country = body.country;
+    if (body.age !== undefined) updates.age = body.age;
     if (body.favoriteCuisines !== undefined) updates.favoriteCuisines = body.favoriteCuisines;
     if (body.dietaryStyle !== undefined) updates.dietaryStyle = body.dietaryStyle;
     if (body.allergies !== undefined) updates.allergies = body.allergies;
