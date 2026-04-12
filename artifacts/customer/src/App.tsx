@@ -14,6 +14,7 @@ import Profile from "@/pages/profile";
 import Settings from "@/pages/settings";
 import MealPlan from "@/pages/meal-plan";
 import Friends from "@/pages/friends";
+import Feed from "@/pages/feed";
 import ForBusiness from "@/pages/for-business";
 import PlanDetail from "@/pages/plan-detail";
 import { AppRatingPrompt } from "@/components/app-rating-prompt";
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/my-bookings" component={MyBookings} />
       <Route path="/meal-plan" component={MealPlan} />
       <Route path="/friends" component={Friends} />
+      <Route path="/feed" component={Feed} />
       <Route path="/profile" component={Profile} />
       <Route path="/settings" component={Settings} />
       <Route path="/for-business" component={ForBusiness} />

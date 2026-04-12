@@ -11,6 +11,7 @@ import {
   CheckCircle2, ExternalLink, Building2, ChevronLeft,
   Eye, EyeOff, Smartphone, Globe, Flame, Target, Activity,
   MapPin, CalendarDays, Plus, UserPlus, BookOpen, Bookmark, Compass,
+  Image, MessageCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -1218,6 +1219,17 @@ export default function Profile() {
     staleTime: 60 * 1000,
   });
 
+  const { data: userPosts = [] } = useQuery<any[]>({
+    queryKey: ["user-posts", email],
+    queryFn: async () => {
+      const r = await fetch(`${API_BASE}/api/posts/user/${encodeURIComponent(email)}?viewer=${encodeURIComponent(email)}`);
+      if (!r.ok) return [];
+      return r.json();
+    },
+    enabled: !!email,
+    staleTime: 30 * 1000,
+  });
+
   if (!email) return <LoginScreen onEnter={handleEnterEmail} />;
 
   if (isLoading) {
@@ -1362,7 +1374,10 @@ export default function Profile() {
             <TabsTrigger value="friends" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
               <Users className="w-3 h-3" /> {"Freunde"}
             </TabsTrigger>
-            <TabsTrigger value="aktivitaet" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
+            <TabsTrigger value="beitraege" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
+              <Image className="w-3 h-3" /> {"Beiträge"}
+            </TabsTrigger>
+            <TabsTrigger value="aktivitaet" data-value="aktivitaet" className="shrink-0 text-xs sm:text-sm flex items-center gap-1">
               <Activity className="w-3 h-3" /> {"Aktivität"}
             </TabsTrigger>
           </TabsList>
@@ -1848,31 +1863,116 @@ export default function Profile() {
 
           {/* ═══ TAB: FREUNDE ══════════════════════════════════════════════ */}
           <TabsContent value="friends" className="space-y-5">
-
-            {/* Friends management */}
             <div className="bg-card border rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-base flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" /> {"Freunde verwalten"}
-                </h3>
-                <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  {"Freunde-Seite"} <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-base">{"Freunde"}</h3>
+                {friends.length > 0 && (
+                  <span className="ml-auto text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                    {friends.length}
+                  </span>
+                )}
               </div>
-              <FriendsPanel email={email} compact />
+              <FriendsPanel email={email} />
             </div>
 
-            {/* CTA to standalone friends page */}
-            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
-              <UserPlus className="w-5 h-5 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">{"Gemeinsam ausgehen"}</p>
-                <p className="text-xs text-muted-foreground">{"Lade Freunde ein und plant gemeinsame Abende"}</p>
+            {/* Group plan CTA */}
+            <div className="bg-gradient-to-br from-primary/8 to-accent/8 border border-primary/15 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 text-2xl">
+                {"🍽️"}
               </div>
-              <Button asChild size="sm" variant="outline" className="rounded-xl shrink-0">
-                <Link href="/friends"><ChevronRight className="w-4 h-4" /></Link>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm">{"Gemeinsam ausgehen"}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{"Erstelle einen Gruppenplan und lade Freunde ein"}</p>
+              </div>
+              <Button asChild size="sm" className="rounded-xl shrink-0 bg-gradient-to-r from-primary to-accent border-0">
+                <Link href="/meal-plan">{"Plan"}</Link>
               </Button>
             </div>
+          </TabsContent>
+
+          {/* ═══ TAB: BEITRÄGE ═══════════════════════════════════════════ */}
+          <TabsContent value="beitraege" className="space-y-5">
+
+            {/* Header CTA */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Image className="w-4 h-4 text-primary" /> {"Meine Beiträge"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {userPosts.length === 0 ? "Noch keine Beiträge veröffentlicht" : `${userPosts.length} ${userPosts.length === 1 ? "Beitrag" : "Beiträge"}`}
+                </p>
+              </div>
+              <Link href="/feed" className="flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent px-3 py-2 rounded-xl hover:opacity-90 transition-opacity">
+                <Plus className="w-3.5 h-3.5" /> {"Neuer Post"}
+              </Link>
+            </div>
+
+            {userPosts.length === 0 ? (
+              <div className="flex flex-col items-center gap-4 py-12 text-center bg-card border rounded-2xl">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-4xl">
+                  {"📸"}
+                </div>
+                <div>
+                  <p className="font-bold">{"Noch keine Beiträge"}</p>
+                  <p className="text-muted-foreground text-sm mt-1 max-w-xs">
+                    {"Teile dein Food-Erlebnis mit der Community – Fotos, Orte, Momente."}
+                  </p>
+                </div>
+                <Link href="/feed" className="flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-primary to-accent px-5 py-2.5 rounded-xl hover:opacity-90">
+                  <Plus className="w-4 h-4" /> {"Ersten Beitrag erstellen"}
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Posts grid */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {userPosts.map((post: any) => (
+                    <Link key={post.id} href="/feed">
+                      <div className="relative aspect-square rounded-xl overflow-hidden bg-muted group">
+                        <img
+                          src={post.image_url.startsWith("/api")
+                            ? `${API_BASE}${post.image_url}`
+                            : post.image_url}
+                          alt="Post"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                        {/* Like / comment overlay on hover */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 text-white text-xs font-bold">
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-3.5 h-3.5 fill-white" /> {post.likeCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5" /> {post.commentCount}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Post stats summary */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Beiträge", value: userPosts.length, icon: Image },
+                    { label: "Gefällt mir", value: userPosts.reduce((sum: number, p: any) => sum + p.likeCount, 0), icon: Heart },
+                    { label: "Kommentare", value: userPosts.reduce((sum: number, p: any) => sum + p.commentCount, 0), icon: MessageCircle },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-card border rounded-2xl p-4 text-center">
+                      <s.icon className="w-4 h-4 mx-auto mb-1.5 text-primary" />
+                      <div className="text-xl font-bold font-serif">{s.value}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <Link href="/feed" className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-primary hover:bg-primary/5 rounded-xl transition-colors">
+                  {"Feed öffnen"} <ChevronRight className="w-4 h-4" />
+                </Link>
+              </>
+            )}
           </TabsContent>
 
           {/* ═══ TAB: AKTIVITÄT ══════════════════════════════════════════ */}

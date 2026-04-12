@@ -48,6 +48,7 @@ import authRouter from "./auth";
 import oauthRouter from "./oauth";
 import groupReservationsRouter from "./group-reservations";
 import smartNotificationsRouter from "./smart-notifications";
+import postsRouter from "./posts";
 
 const router: IRouter = Router();
 
@@ -100,5 +101,6 @@ router.use("/auth", authRouter);
 router.use("/auth", oauthRouter);
 router.use("/group-reservations", groupReservationsRouter);
 router.use("/smart-notifications", smartNotificationsRouter);
+router.use("/posts", postsRouter);
 
 export default router;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { UtensilsCrossed, Compass, UserCircle, CalendarDays, Users, Building2, Settings } from "lucide-react";
+import { UtensilsCrossed, Compass, UserCircle, CalendarDays, Rss, Building2, Settings } from "lucide-react";
 import { RestoLogo } from "@/components/resto-logo";
 import { Link } from "wouter";
 import { CustomerNotificationBell } from "@/components/notification-bell";
@@ -13,8 +13,9 @@ const ROUTE_TAB_MAP: Array<{ prefix: string; tab: string }> = [
   { prefix: "/plan",       tab: "/meal-plan" },  // /plan/:id shareable link → Essensplan
   { prefix: "/meal-plan",  tab: "/meal-plan" },
   { prefix: "/my-bookings",tab: "/profile" },    // Buchungen → shown in Profil Aktivität tab
+  { prefix: "/friends",    tab: "/profile" },   // /friends → lives inside Profil now
   { prefix: "/settings",   tab: "/settings" },
-  { prefix: "/friends",    tab: "/friends" },
+  { prefix: "/feed",       tab: "/feed" },
   { prefix: "/profile",    tab: "/profile" },
   { prefix: "/",           tab: "/" },           // catch-all: home
 ];
@@ -70,7 +71,7 @@ const NAV_ITEMS = [
   { href: "/",          label: "Startseite",   icon: UtensilsCrossed },
   { href: "/explore",   label: "Entdecken",    icon: Compass },
   { href: "/meal-plan", label: "Essensplan",   icon: CalendarDays },
-  { href: "/friends",   label: "Freunde",      icon: Users },
+  { href: "/feed",      label: "Feed",         icon: Rss },
   { href: "/profile",   label: "Profil",       icon: UserCircle },
   { href: "/settings",  label: "Einstellungen",icon: Settings },
 ];

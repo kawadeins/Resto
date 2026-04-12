@@ -1,0 +1,227 @@
+Perform a "Social Expansion + Friends Integration + Public Feed System" implementation.
+
+IMPORTANT:
+- This is a REAL implementation task
+- Do NOT just describe changes
+- You MUST modify UI, routing, and logic
+- Do NOT break existing features
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+1. Remove the standalone "Freunde" section/tab
+2. Move ALL friends functionality inside the new "Profil" page
+3. Create a NEW public social feed (like Instagram)
+4. Allow users to post images
+5. Allow other users to like and comment
+
+==================================================
+1. REMOVE FREUNDE TAB (CRITICAL)
+==================================================
+
+- Remove "Freunde" from navigation
+- Do NOT delete logic
+- Do NOT delete data
+
+Instead:
+→ move everything into Profil
+
+==================================================
+2. MOVE FRIEND SYSTEM INTO PROFILE
+==================================================
+
+Inside Profil, create a full Friends section:
+
+Include:
+- friend list
+- friend requests
+- add friend button
+- accept / reject actions
+
+UI examples:
+- "Freunde"
+- "Anfragen"
+- "+ Freund hinzufügen"
+
+==================================================
+3. CREATE NEW "PUBLIC FEED" PAGE
+==================================================
+
+Create a NEW route/page:
+
+- name: Feed OR Entdecken Social
+- route: /feed (or similar)
+
+This is a PUBLIC page
+
+==================================================
+4. PUBLIC FEED CONTENT
+==================================================
+
+The feed shows:
+
+- user posts
+- user profile (avatar + name)
+- image
+- optional caption
+- restaurant tag (optional)
+
+Each post includes:
+- like button
+- comment button
+- comment count
+- like count
+
+==================================================
+5. CREATE POST SYSTEM
+==================================================
+
+Users must be able to:
+
+- upload image
+- write caption
+- optionally tag a restaurant
+- publish post
+
+Where to create post:
+- inside Profil
+- or floating "+" button
+
+==================================================
+6. LIKE SYSTEM
+==================================================
+
+Each post must support:
+
+- like
+- unlike
+- like count update
+- prevent duplicate likes per user
+
+==================================================
+7. COMMENT SYSTEM
+==================================================
+
+Each post must support:
+
+- adding comments
+- viewing comments
+- comment list
+- timestamp
+- user name + avatar
+
+==================================================
+8. PROFILE LINK FROM POSTS
+==================================================
+
+When clicking a user on a post:
+→ open their Profil page
+
+==================================================
+9. PROFILE POSTS SECTION
+==================================================
+
+Inside Profil, add:
+
+- "Beiträge"
+- show user’s own posts
+- grid or list layout
+
+==================================================
+10. KEEP EXISTING SYSTEMS
+==================================================
+
+Do NOT break:
+- bookings
+- plans
+- group plans
+- saved places
+
+But connect them where useful:
+- user can tag restaurant from system
+- visited restaurants can appear in profile
+
+==================================================
+11. UI REQUIREMENTS
+==================================================
+
+Feed must feel:
+- modern
+- clean
+- scrollable
+- image-focused
+
+Profile must feel:
+- personal
+- social
+- organized
+
+==================================================
+12. GERMAN LABELS
+==================================================
+
+Use:
+- Beiträge
+- Kommentieren
+- Gefällt mir
+- Teilen (optional)
+- Freunde
+- Profil
+- Post erstellen
+
+==================================================
+13. DATA STRUCTURE (BASIC)
+==================================================
+
+Each post:
+- id
+- userId
+- imageUrl
+- caption
+- restaurantId (optional)
+- createdAt
+
+Each like:
+- userId
+- postId
+
+Each comment:
+- userId
+- postId
+- text
+- createdAt
+
+==================================================
+14. FINAL VALIDATION
+==================================================
+
+Verify:
+
+- Freunde tab is removed
+- Friends visible inside Profil
+- Feed page exists and works
+- Users can post images
+- Likes work
+- Comments work
+- Clicking profile works
+- Profile shows posts
+- No existing feature is broken
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart becomes:
+
+- restaurant app
++ social platform
+
+Users:
+- discover restaurants
+- create plans
+- connect with friends
+- share food experiences
+- interact via likes and comments
+
+The app must feel alive and social.
