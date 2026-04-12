@@ -1,0 +1,239 @@
+Perform a full production-grade upgrade of the Social Feed, User Profile, and Interaction system.
+
+This is NOT a redesign from scratch.
+This is a SYSTEM COMPLETION + UX INTELLIGENCE pass.
+
+GOAL:
+Transform the feed into a highly engaging, social, restaurant-driven experience that feels like Instagram + Google Maps + Airbnb combined.
+
+========================================
+1. FEED SYSTEM — COMPLETE SOCIAL EXPERIENCE
+========================================
+
+Upgrade feed to be addictive, structured, and meaningful.
+
+POST CARD:
+- Rounded (16–20px)
+- Soft shadow
+- Spacing between posts (20px)
+- Max width centered (mobile-first)
+
+IMAGE:
+- 4:5 ratio
+- dominant visual
+- fade-in loading
+- slight zoom on hover/tap
+- bottom gradient overlay
+
+HEADER:
+- avatar (circle)
+- username (bold)
+- location (restaurant name clickable)
+- timestamp (light gray)
+
+CAPTION:
+- username bold
+- caption normal
+- truncate after 2 lines
+- "mehr anzeigen" toggle
+
+ACTIONS:
+- Like (heart)
+- Comment
+- Save (bookmark)
+
+INTERACTIONS:
+- double tap → like
+- heart animation (scale + gradient fill)
+- smooth transitions
+
+========================================
+2. CREATE POST FLOW (CRITICAL)
+========================================
+
+Implement a complete post creation system.
+
+Flow:
+1. Upload image
+2. Write caption
+3. Tag restaurant (search/select)
+4. Preview post
+5. Publish
+
+REQUIREMENTS:
+- preview screen
+- edit before publish
+- success confirmation ("Beitrag veröffentlicht")
+- validation (no empty post)
+
+OPTIONAL:
+- auto-detect restaurant if user booked recently
+
+========================================
+3. USER PROFILE HUB (CORE FEATURE)
+========================================
+
+Create a powerful user profile page.
+
+STRUCTURE:
+
+HEADER:
+- avatar (editable)
+- username
+- short bio
+- level badge (based on activity)
+- stats:
+  - posts
+  - friends
+  - visited restaurants
+
+SECTIONS (TABS OR STACK):
+- Posts
+- Visited Places
+- Plans (group plans)
+- Friends
+
+FEATURES:
+- edit profile
+- follow / add friend
+- display user taste tags (nightlife, vegan, etc.)
+
+AUTO LOGIC:
+- visited restaurant auto-added after booking
+- posts linked to profile
+
+========================================
+4. COMMENTS SYSTEM (ENGAGEMENT CORE)
+========================================
+
+Implement a modern comment system:
+
+- bottom sheet or modal
+- add comment
+- display comments list
+- timestamps
+- empty state ("Noch keine Kommentare")
+
+OPTIONAL:
+- replies (threaded)
+
+========================================
+5. RESTAURANT INTEGRATION (VERY IMPORTANT)
+========================================
+
+Each post must be connected to a restaurant:
+
+- show restaurant tag (pill UI)
+- clickable → opens restaurant page
+- track:
+  - visited
+  - saved
+  - posted
+
+SYNC:
+- feed ↔ restaurant pages ↔ profile
+
+========================================
+6. SOCIAL GRAPH (FRIENDS → INSIDE PROFILE)
+========================================
+
+Move "Friends" into Profile section.
+
+Add:
+- friend requests
+- follow/unfollow
+- list of friends
+- mutual connections
+
+OPTIONAL:
+- "go eat together" CTA (future)
+
+========================================
+7. SMART FEED RANKING (INTELLIGENCE)
+========================================
+
+Feed must NOT be random.
+
+Priority:
+1. friends posts
+2. user's taste (based on behavior)
+3. visited restaurants related
+4. trending nearby
+
+Fallback:
+- recent posts
+
+========================================
+8. PUBLIC FEED (INSTAGRAM-LIKE)
+========================================
+
+Create a public feed section:
+
+- all users posts
+- scroll-based discovery
+- like/comment enabled
+- open profile from post
+
+IMPORTANT:
+- feels like Instagram but restaurant-focused
+
+========================================
+9. SAVE + VISITED SYSTEM
+========================================
+
+Implement:
+
+SAVE:
+- bookmark post
+- saved list in profile
+
+VISITED:
+- auto-add after booking
+- visible in profile
+
+========================================
+10. MICRO-INTERACTIONS (PREMIUM FEEL)
+========================================
+
+- smooth scrolling
+- button press animation
+- like animation
+- loading skeletons
+- empty states everywhere
+
+========================================
+11. UI POLISH (FINAL QUALITY)
+========================================
+
+- consistent spacing
+- modern typography
+- clear hierarchy
+- no clutter
+- no dead buttons
+- mobile optimized
+
+========================================
+12. PERFORMANCE
+========================================
+
+- lazy load images
+- optimize feed rendering
+- avoid re-renders
+- keep UI smooth
+
+========================================
+FINAL RESULT
+========================================
+
+The system must feel:
+- alive
+- social
+- intelligent
+- premium
+- addictive
+
+User should:
+- scroll longer
+- interact more
+- discover restaurants naturally
+- feel identity inside the app
