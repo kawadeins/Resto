@@ -1,0 +1,152 @@
+Now that the new Profil / Einstellungen structure is in place, perform the next step:
+
+Build a real "Social Food Profile" upgrade for the new customer Profil page.
+
+IMPORTANT:
+- Do NOT redesign the whole app
+- Do NOT break existing routes
+- Do NOT move settings back into profile
+- This pass is ONLY for upgrading the new Profil page
+
+==================================================
+GOAL
+==================================================
+
+Turn the new Profil page into a real personal social hub.
+
+The user profile should feel like:
+- a personal food identity
+- a social restaurant profile
+- a place that shows activity, plans, visited places, and taste
+
+==================================================
+1. PROFILE HEADER
+==================================================
+
+Add a proper profile header with:
+- avatar
+- display name
+- optional username
+- short bio / status
+- optional level badge
+
+Example:
+- Food Explorer
+- Nightlife Lover
+- Coffee Hunter
+
+==================================================
+2. PROFILE STATS
+==================================================
+
+Add a stats row:
+
+- Freunde
+- Pläne
+- Besuchte Orte
+- Gespeichert
+
+These should use real data where available.
+
+==================================================
+3. MY PLANS SECTION
+==================================================
+
+Inside Profil, show:
+- recent solo plans
+- recent group plans
+- quick reopen/edit links
+
+Section title:
+- Meine Pläne
+
+==================================================
+4. FRIENDS PREVIEW
+==================================================
+
+Inside Profil, show:
+- friend count
+- friend avatars/list preview
+- pending friend requests if available
+
+Section title:
+- Freunde
+
+==================================================
+5. VISITED RESTAURANTS
+==================================================
+
+Show a section:
+- Besuchte Orte
+
+Populate it automatically from:
+- real bookings
+- completed visits
+- reviewed restaurants
+where available
+
+==================================================
+6. SAVED / FAVORITES
+==================================================
+
+Show:
+- Gespeichert
+
+Include:
+- favorite restaurants
+- saved places
+- liked spots
+
+==================================================
+7. ACTIVITY FEED
+==================================================
+
+Add a lightweight activity feed to Profil.
+
+Examples:
+- Hat Restaurant X besucht
+- Hat einen Gruppenplan erstellt
+- Hat Restaurant Y gespeichert
+- Hat eine Bewertung geschrieben
+
+Use only real actions.
+No fake content.
+
+==================================================
+8. TASTE / PREFERENCES SECTION
+==================================================
+
+Show a small section for user taste:
+
+- Lieblingsküchen
+- bevorzugte Stimmung
+- Nachtleben / Frühstück / Sushi / Dates etc.
+
+This should reflect real preference data if available.
+
+==================================================
+9. READABILITY
+==================================================
+
+The profile must stay clean and easy to scan.
+
+Suggested order:
+1. header
+2. stats
+3. plans
+4. friends
+5. visited places
+6. saved places
+7. activity
+8. taste
+
+==================================================
+10. FINAL RESULT
+==================================================
+
+The new Profil page must feel like a real personal identity page inside RestoSmart.
+
+It should clearly be different from Einstellungen.
+
+Profil = social/personal hub
+Einstellungen = account/settings/privacy/logout

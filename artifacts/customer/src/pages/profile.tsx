@@ -1207,6 +1207,17 @@ export default function Profile() {
     staleTime: 60 * 1000,
   });
 
+  const { data: instantPlans = [] } = useQuery<any[]>({
+    queryKey: ["instant-plans-active", email],
+    queryFn: async () => {
+      const r = await fetch(`${API_BASE}/api/instant-plans/active/${encodeURIComponent(email)}`);
+      if (!r.ok) return [];
+      return r.json();
+    },
+    enabled: !!email,
+    staleTime: 60 * 1000,
+  });
+
   if (!email) return <LoginScreen onEnter={handleEnterEmail} />;
 
   if (isLoading) {
@@ -1272,36 +1283,47 @@ export default function Profile() {
               <h1 className="font-serif text-2xl md:text-3xl font-bold leading-tight">
                 {profile.name || "Kein Name gesetzt"}
               </h1>
-              <p className="text-muted-foreground text-sm">{profile.email}</p>
+              {/* Food identity status / bio */}
+              <p className="text-muted-foreground text-sm flex items-center gap-1.5 justify-center sm:justify-start">
+                <span className="text-base">{levelInfo.emoji}</span>
+                <span>{levelInfo.title}</span>
+                {profile.favoriteCuisines.length > 0 && (() => {
+                  const ft = FOOD_TYPES.find(f => f.id === profile.favoriteCuisines[0]);
+                  return ft ? <span className="text-muted-foreground/60">· {ft.emoji} {ft.label}</span> : null;
+                })()}
+              </p>
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 flex-wrap">
+                {/* Level badge */}
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 ${levelInfo.color}`}>
+                  Lv. {levelInfo.level} · {levelInfo.xp} XP
+                </span>
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${tierCfg.color} ${tierCfg.bg} ${tierCfg.border}`}>
-                  {tierCfg.icon} {profile.loyalty.tier}-Mitglied
+                  {tierCfg.icon} {profile.loyalty.tier}
                 </span>
                 {ownerPremium && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-primary to-accent text-white shadow-sm shadow-primary/25">
                     <Crown className="w-3 h-3" /> Premium
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground">{profile.loyalty.points} Punkte</span>
               </div>
             </div>
-            {/* Stats row */}
-            <div className="flex gap-5 text-center shrink-0">
-              <div>
-                <div className="text-xl font-bold font-serif">{profile.stats.totalBookings}</div>
-                <div className="text-[11px] text-muted-foreground">Buchungen</div>
-              </div>
-              <div>
-                <div className="text-xl font-bold font-serif">{profile.stats.totalReviews}</div>
-                <div className="text-[11px] text-muted-foreground">Bewertungen</div>
-              </div>
+            {/* Social stats row */}
+            <div className="flex gap-5 sm:gap-6 text-center shrink-0">
               <div>
                 <div className="text-xl font-bold font-serif">{friends.length}</div>
                 <div className="text-[11px] text-muted-foreground">Freunde</div>
               </div>
               <div>
-                <div className="text-xl font-bold font-serif">{profile.loyalty.totalEarned}</div>
-                <div className="text-[11px] text-muted-foreground">Punkte</div>
+                <div className="text-xl font-bold font-serif">{instantPlans.length}</div>
+                <div className="text-[11px] text-muted-foreground">{"Pläne"}</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold font-serif">{visitedRestaurants.length}</div>
+                <div className="text-[11px] text-muted-foreground">{"Besuche"}</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold font-serif">{profile.favoriteRestaurantIds.length}</div>
+                <div className="text-[11px] text-muted-foreground">{"Gespeichert"}</div>
               </div>
             </div>
           </div>
@@ -1345,230 +1367,78 @@ export default function Profile() {
             </TabsTrigger>
           </TabsList>
 
-          {/* ═══ TAB: ÜBERSICHT ═══════════════════════════════════════════ */}
+          {/* ═══ TAB: ÜBERSICHT — Social Hub ══════════════════════════════ */}
           <TabsContent value="overview" className="space-y-5">
 
-            {/* Loyalty card */}
-            <div className={`rounded-2xl border p-5 md:p-6 bg-gradient-to-br ${tierCfg.gradient}`}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-bold text-base">Treue-Status</h3>
-                  <p className={`text-2xl font-serif font-bold mt-0.5 ${tierCfg.color}`}>{tierCfg.icon} {profile.loyalty.tier}</p>
-                </div>
-                <Trophy className={`w-8 h-8 ${tierCfg.color} opacity-70`} />
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{profile.loyalty.points} Punkte</span>
-                  {profile.loyalty.nextTier && (
-                    <span className="text-muted-foreground">
-                      {profile.loyalty.pointsToNext} bis {profile.loyalty.nextTier}
-                    </span>
-                  )}
-                </div>
-                <Progress value={profile.loyalty.tierPct} className="h-2.5" />
-                {profile.loyalty.nextTier ? (
-                  <p className="text-xs text-muted-foreground">
-                    Noch <strong>{profile.loyalty.pointsToNext} Punkte</strong> bis zum {profile.loyalty.nextTier}-Status
-                  </p>
-                ) : (
-                  <p className="text-xs text-yellow-600 font-medium">Höchste Stufe erreicht 🌟</p>
-                )}
-              </div>
-
-              {/* Tier benefits */}
-              <div className="mt-4 pt-4 border-t border-current/10 grid grid-cols-3 gap-3 text-center">
-                {[
-                  { tier: "Bronze", pts: "0–199", icon: "🥉" },
-                  { tier: "Silver", pts: "200–499", icon: "🥈" },
-                  { tier: "Gold", pts: "500+", icon: "🥇" },
-                ].map((t) => (
-                  <div key={t.tier} className={`rounded-xl p-2.5 text-xs ${profile.loyalty.tier === t.tier ? "bg-primary/15 font-semibold" : "opacity-50"}`}>
-                    <div className="text-base mb-1">{t.icon}</div>
-                    <div className="font-medium">{t.tier}</div>
-                    <div className="text-muted-foreground">{t.pts} pts</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Level / XP card ─────────────────────────── */}
-            <div className="bg-gradient-to-br from-primary/8 via-violet-500/5 to-accent/8 border border-primary/15 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{levelInfo.emoji}</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-bold text-base ${levelInfo.color}`}>{levelInfo.title}</span>
-                      <span className="text-xs font-extrabold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">Lv. {levelInfo.level}</span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {levelInfo.xp} XP {levelInfo.level < 5 ? `· noch ${levelInfo.nextXP - levelInfo.xp} bis Level ${levelInfo.level + 1}` : "· Höchstes Level erreicht!"}
-                    </p>
-                  </div>
-                </div>
-                <TrendingUp className="w-5 h-5 text-primary/50" />
-              </div>
-              <Progress value={levelInfo.pct} className="h-2" />
-              <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
-                <span>{levelInfo.xp} XP</span>
-                {levelInfo.level < 5 && <span>{levelInfo.nextXP} XP</span>}
-              </div>
-              <div className="flex gap-3 mt-3 pt-3 border-t border-primary/10 text-[11px] text-muted-foreground">
-                <span>+10 XP pro Buchung</span>
-                <span>·</span>
-                <span>+5 XP pro Bewertung</span>
-                <span>·</span>
-                <span>+3 XP pro Freund</span>
-              </div>
-            </div>
-
-            {/* ── Quick actions ─────────────────────────── */}
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                { icon: Plus,         label: "Plan erstellen",   href: "/meal-plan",    color: "bg-primary/10 text-primary" },
-                { icon: Users,        label: "Freunde",          href: "/friends",      color: "bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400" },
-                { icon: CalendarDays, label: "Buchungen",        href: "/my-bookings",  color: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400" },
-                { icon: Compass,      label: "Entdecken",        href: "/explore",      color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400" },
-              ].map((a) => (
-                <Link key={a.label} href={a.href}>
-                  <div className="flex flex-col items-center gap-2 py-4 bg-card border rounded-2xl hover:border-primary/40 transition-colors cursor-pointer text-center">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${a.color}`}>
-                      <a.icon className="w-4.5 h-4.5 w-[18px] h-[18px]" />
-                    </div>
-                    <span className="text-[11px] font-medium leading-tight">{a.label}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { icon: Calendar, label: "Buchungen", value: profile.stats.totalBookings, href: "/my-bookings", color: "text-primary" },
-                { icon: MessageSquare, label: "Bewertungen", value: profile.stats.totalReviews, href: "/my-bookings", color: "text-amber-500" },
-                { icon: Star, label: "Ø Bewertung", value: profile.stats.avgRating?.toFixed(1) ?? "—", href: "/my-bookings", color: "text-yellow-500" },
-              ].map((s) => (
-                <Link key={s.label} href={s.href}>
-                  <div className="bg-card border rounded-2xl p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                    <s.icon className={`w-5 h-5 mx-auto mb-2 ${s.color}`} />
-                    <div className="text-2xl font-serif font-bold">{s.value}</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{s.label}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* ── Plans preview ─────────────────────────── */}
+            {/* ── 1. MEINE PLÄNE ──────────────────────────── */}
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-primary" /> Meine Pläne
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-primary" /> {"Meine Pläne"}
                 </h3>
                 <Link href="/meal-plan" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  Alle ansehen <ChevronRight className="w-3.5 h-3.5" />
+                  {"Alle ansehen"} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 mb-3">
                 <Link href="/meal-plan">
-                  <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-primary/5 border border-primary/15 hover:border-primary/40 transition-colors cursor-pointer">
-                    <BookOpen className="w-5 h-5 text-primary" />
-                    <div className="text-sm font-semibold">Solo-Pläne</div>
-                    <div className="text-[11px] text-muted-foreground">Wochenplan & Slots</div>
-                  </div>
-                </Link>
-                <Link href="/meal-plan">
-                  <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-accent/5 border border-accent/15 hover:border-accent/40 transition-colors cursor-pointer">
-                    <Users className="w-5 h-5 text-accent" />
-                    <div className="text-sm font-semibold">Gruppenpläne</div>
-                    <div className="text-[11px] text-muted-foreground">Gemeinsam planen</div>
-                  </div>
-                </Link>
-              </div>
-            </div>
-
-            {/* Food identity summary */}
-            {(profile.favoriteCuisines.length > 0 || profile.dietaryStyle !== "no_preference") && (
-              <div className="bg-card border rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-sm">Dein Geschmack</h3>
-                  <button
-                    className="text-xs text-primary hover:underline"
-                    onClick={() => document.getElementById("tab-food")?.click()}
-                  >
-                    Bearbeiten
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {profile.favoriteCuisines.map((c) => {
-                    const ft = FOOD_TYPES.find((f) => f.id === c);
-                    return ft ? (
-                      <span key={c} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted text-sm font-medium">
-                        {ft.emoji} {ft.label}
-                      </span>
-                    ) : null;
-                  })}
-                  {profile.dietaryStyle !== "no_preference" && (() => {
-                    const ds = DIETARY_STYLES.find((d) => d.id === profile.dietaryStyle);
-                    return ds ? (
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${ds.bg} ${ds.color} ${ds.border}`}>
-                        <ds.icon className="w-3.5 h-3.5" /> {ds.label}
-                      </span>
-                    ) : null;
-                  })()}
-                  {profile.allergies.filter(a => a !== "no_allergies").map((a) => {
-                    const al = ALLERGIES.find((x) => x.id === a);
-                    return al ? (
-                      <span key={a} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 text-sm font-medium">
-                        {al.emoji} {al.label}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* ── Visited restaurants / Food Journey ─────── */}
-            {visitedRestaurants.length > 0 && (
-              <div className="bg-card border rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-rose-500" /> Deine Food Journey
-                  </h3>
-                  <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
-                    Alle <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-                <div className="space-y-2.5">
-                  {visitedRestaurants.slice(0, 4).map((b) => (
-                    <div key={b.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
-                      <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
-                        <MapPin className="w-4 h-4 text-rose-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{b.restaurantName}</div>
-                        <div className="text-[11px] text-muted-foreground">{b.date} · {b.partySize} Pers.</div>
-                      </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 font-medium shrink-0">
-                        Besucht
-                      </span>
+                  <div className="flex flex-col gap-2 p-4 rounded-xl bg-primary/5 border border-primary/15 hover:border-primary/40 transition-colors cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                      <span className="text-sm font-bold">{"Solo-Pläne"}</span>
                     </div>
+                    <p className="text-[11px] text-muted-foreground">{"Wochenplan & persönliche Slots"}</p>
+                    <span className="text-xs font-semibold text-primary">{"Öffnen →"}</span>
+                  </div>
+                </Link>
+                <Link href="/meal-plan">
+                  <div className="flex flex-col gap-2 p-4 rounded-xl bg-accent/5 border border-accent/15 hover:border-accent/40 transition-colors cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-accent" />
+                      <span className="text-sm font-bold">{"Gruppenpläne"}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{"Gemeinsam planen & abstimmen"}</p>
+                    <span className="text-xs font-semibold text-accent">{"Öffnen →"}</span>
+                  </div>
+                </Link>
+              </div>
+              {instantPlans.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1">{"Aktive Pläne"}</p>
+                  {instantPlans.slice(0, 3).map((plan: any) => (
+                    <Link key={plan.id} href="/meal-plan">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                          <Users className="w-4 h-4 text-accent" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{plan.title || plan.restaurantName || "Gruppenplan"}</div>
+                          <div className="text-[11px] text-muted-foreground">{plan.partySize || plan.memberCount || "—"} {"Personen"}</div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      </div>
+                    </Link>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
+                  <Plus className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <p className="text-xs text-muted-foreground">{"Noch kein Plan aktiv – starte einen neuen Solo- oder Gruppenplan"}</p>
+                </div>
+              )}
+            </div>
 
-            {/* ── Friends mini-section ─────────────────────── */}
+            {/* ── 2. FREUNDE ──────────────────────────────── */}
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" /> Freunde
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" /> {"Freunde"}
                   {friends.length > 0 && (
                     <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">{friends.length}</span>
                   )}
                 </h3>
                 <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  Verwalten <ChevronRight className="w-3.5 h-3.5" />
+                  {"Verwalten"} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
               {friends.length === 0 ? (
@@ -1577,88 +1447,268 @@ export default function Profile() {
                     <UserPlus className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Noch keine Freunde</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Lade Freunde ein und plane gemeinsam</p>
+                    <p className="text-sm font-medium">{"Noch keine Freunde"}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{"Lade Freunde ein und plane gemeinsame Abende"}</p>
                   </div>
-                  <Link href="/friends">
-                    <button className="text-xs font-semibold text-white bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-                      + Freund hinzufügen
-                    </button>
+                  <Link href="/friends" className="text-xs font-semibold text-white bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+                    {"+ Freund hinzufügen"}
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  <div className="flex -space-x-2 mb-3">
-                    {friends.slice(0, 6).map((f) => (
-                      <div key={f.email} className="w-9 h-9 rounded-full ring-2 ring-background overflow-hidden bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                        {f.photoUrl ? (
-                          <img src={f.photoUrl} alt={f.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold text-xs">{(f.name || f.email).charAt(0).toUpperCase()}</span>
-                        )}
-                      </div>
-                    ))}
-                    {friends.length > 6 && (
-                      <div className="w-9 h-9 rounded-full ring-2 ring-background bg-muted flex items-center justify-center shrink-0">
-                        <span className="text-xs font-bold text-muted-foreground">+{friends.length - 6}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    {friends.slice(0, 3).map((f) => (
-                      <div key={f.email} className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-muted/40 transition-colors">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="space-y-3">
+                  {/* Avatar row */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {friends.slice(0, 7).map((f) => (
+                        <div key={f.email} className="w-10 h-10 rounded-full ring-2 ring-background overflow-hidden bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
                           {f.photoUrl ? (
                             <img src={f.photoUrl} alt={f.name} className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-white text-[10px] font-bold">{(f.name || f.email).charAt(0).toUpperCase()}</span>
+                            <span className="text-white font-bold text-xs">{(f.name || f.email).charAt(0).toUpperCase()}</span>
                           )}
                         </div>
-                        <span className="text-sm font-medium truncate">{f.name || f.email.split("@")[0]}</span>
+                      ))}
+                      {friends.length > 7 && (
+                        <div className="w-10 h-10 rounded-full ring-2 ring-background bg-muted flex items-center justify-center shrink-0">
+                          <span className="text-xs font-bold text-muted-foreground">+{friends.length - 7}</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground ml-1">
+                      {friends.length === 1 ? "1 Freund" : `${friends.length} Freunde`}
+                    </p>
+                  </div>
+                  {/* Friend list preview */}
+                  <div className="space-y-1">
+                    {friends.slice(0, 4).map((f) => (
+                      <div key={f.email} className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-muted/40 transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 overflow-hidden">
+                          {f.photoUrl ? (
+                            <img src={f.photoUrl} alt={f.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-white text-[11px] font-bold">{(f.name || f.email).charAt(0).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{f.name || f.email.split("@")[0]}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{f.email}</p>
+                        </div>
+                        <Link href="/friends">
+                          <span className="text-[11px] text-primary font-medium hover:underline">{"Plan →"}</span>
+                        </Link>
                       </div>
                     ))}
                   </div>
-                  {friends.length > 3 && (
-                    <Link href="/friends">
-                      <button className="w-full mt-2 text-xs font-semibold text-primary py-2 rounded-xl hover:bg-primary/5 transition-colors">
-                        Alle {friends.length} Freunde ansehen
-                      </button>
+                  {friends.length > 4 && (
+                    <Link href="/friends" className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary py-2 rounded-xl hover:bg-primary/5 transition-colors">
+                      {"Alle"} {friends.length} {"Freunde ansehen"} <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Recent bookings */}
-            {profile.recentBookings.length > 0 && (
-              <div className="bg-card border rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-sm">Letzte Buchungen</h3>
-                  <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
-                    Alle ansehen <ChevronRight className="w-3.5 h-3.5" />
+            {/* ── 3. BESUCHTE ORTE ────────────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-rose-500" /> {"Besuchte Orte"}
+                  {visitedRestaurants.length > 0 && (
+                    <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">{visitedRestaurants.length}</span>
+                  )}
+                </h3>
+                <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  {"Alle"} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              {visitedRestaurants.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{"Noch kein Besuch"}</p>
+                    <p className="text-[11px] text-muted-foreground">{"Deine besuchten Restaurants erscheinen hier"}</p>
+                  </div>
+                  <Link href="/explore" className="text-xs font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+                    {"Restaurants entdecken"}
                   </Link>
                 </div>
-                <div className="space-y-3">
-                  {profile.recentBookings.slice(0, 3).map((b) => (
-                    <div key={b.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <ShoppingBag className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium">{b.restaurantName}</div>
-                          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <Clock className="w-3 h-3" />
-                            {b.date} · {b.time} · {b.partySize} Pers.
-                          </div>
-                        </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {visitedRestaurants.slice(0, 5).map((b) => (
+                    <div key={b.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
+                        <MapPin className="w-4.5 h-4.5 text-rose-500" />
                       </div>
-                      <StatusBadge status={b.status} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold truncate">{b.restaurantName}</div>
+                        <div className="text-[11px] text-muted-foreground">{b.date} · {b.partySize} Pers.</div>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 font-medium shrink-0">
+                        Besucht
+                      </span>
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+
+            {/* ── 4. GESPEICHERT ──────────────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Bookmark className="w-4 h-4 text-amber-500" /> {"Gespeichert"}
+                  {profile.favoriteRestaurantIds.length > 0 && (
+                    <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">{profile.favoriteRestaurantIds.length}</span>
+                  )}
+                </h3>
+                <Link href="/explore" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  {"Entdecken"} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-            )}
+              {profile.favoriteRestaurantIds.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center">
+                    <Bookmark className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{"Noch nichts gespeichert"}</p>
+                    <p className="text-[11px] text-muted-foreground">{"Tippe auf ♡ auf einem Restaurant, um es zu merken"}</p>
+                  </div>
+                  <Link href="/explore" className="text-xs font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+                    {"Restaurants entdecken"}
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-[11px] text-muted-foreground mb-3">
+                    {"Du hast"} <strong>{profile.favoriteRestaurantIds.length}</strong> {"Restaurant(s) gespeichert."}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.favoriteRestaurantIds.slice(0, 6).map((id) => (
+                      <span key={id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs font-medium text-amber-700 dark:text-amber-400">
+                        <Bookmark className="w-3 h-3" /> {"Favorit"}
+                      </span>
+                    ))}
+                    {profile.favoriteRestaurantIds.length > 6 && (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-muted text-xs text-muted-foreground">
+                        +{profile.favoriteRestaurantIds.length - 6} {"weitere"}
+                      </span>
+                    )}
+                  </div>
+                  <Link href="/explore" className="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-primary hover:underline">
+                    {"Gespeicherte Orte ansehen"} <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* ── 5. AKTIVITÄTS-FEED (mini) ─────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-primary" /> {"Letzte Aktivitäten"}
+                </h3>
+                <button
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                  onClick={() => document.querySelector<HTMLButtonElement>("[data-value='aktivitaet']")?.click()}
+                >
+                  {"Alle"} <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              {activityFeed.length === 0 ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
+                  <Activity className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                  <p className="text-xs text-muted-foreground">{"Buche ein Restaurant oder schreibe eine Bewertung – Aktivitäten erscheinen dann hier"}</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {activityFeed.slice(0, 5).map((a) => {
+                    const label = activityLabel(a.activityType);
+                    return (
+                      <div key={a.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/30 transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm">
+                          {label.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium leading-snug">
+                            {"Du"} {label.verb} {"bei"} <span className="text-primary">{a.restaurantName}</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground">{timeAgo(a.createdAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* ── 6. GESCHMACK-SUMMARY ─────────────────────── */}
+            <div className="bg-card border rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <Utensils className="w-4 h-4 text-primary" /> {"Mein Geschmack"}
+                </h3>
+                <button
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => document.getElementById("tab-food")?.click()}
+                >
+                  {"Bearbeiten"}
+                </button>
+              </div>
+              {profile.favoriteCuisines.length === 0 && profile.dietaryStyle === "no_preference" ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
+                  <Utensils className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                  <p className="text-xs text-muted-foreground">{"Noch kein Geschmack gesetzt – wähle deine Lieblingsküchen im Geschmack-Tab"}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {profile.favoriteCuisines.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{"Lieblingsküchen"}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.favoriteCuisines.map((c) => {
+                          const ft = FOOD_TYPES.find((f) => f.id === c);
+                          return ft ? (
+                            <span key={c} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted text-sm font-medium">
+                              {ft.emoji} {ft.label}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {profile.dietaryStyle !== "no_preference" && (() => {
+                    const ds = DIETARY_STYLES.find((d) => d.id === profile.dietaryStyle);
+                    return ds ? (
+                      <div className="flex items-center gap-2">
+                        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{"Ernährungsweise:"}</p>
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${ds.color}`}>
+                          {ds.emoji} {ds.label}
+                        </span>
+                      </div>
+                    ) : null;
+                  })()}
+                  {profile.allergies.filter(a => a !== "no_allergies").length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{"Allergien"}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.allergies.filter(a => a !== "no_allergies").map((a) => {
+                          const al = ALLERGIES.find((x) => x.id === a);
+                          return al ? (
+                            <span key={a} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 text-xs font-medium">
+                              {al.emoji} {al.label}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
           </TabsContent>
 
           {/* ═══ TAB: GESCHMACK ══════════════════════════════════════════ */}
