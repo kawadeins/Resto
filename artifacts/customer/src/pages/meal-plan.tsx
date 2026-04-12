@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarDays, Users, Plus, Trash2, ChevronRight, MapPin, Star,
-  Clock, Zap, Bell, User, Phone, X, Check, Sparkles, UtensilsCrossed,
-  ChefHat, Calendar, Loader2
+  Clock, Zap, Bell, User, X, Check, Sparkles, UtensilsCrossed,
+  ChefHat, Calendar, Loader2, Share2, Pencil, Search, Link2,
+  CheckCircle, Building2,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -238,6 +239,7 @@ function TodaySlotMatches({ plan, email }: { plan: any; email: string }) {
 }
 
 interface GroupParticipant { name: string; phone: string; }
+interface RestaurantRef { id: number; name: string; address: string; heroImage?: string; }
 interface GroupPlan {
   id: number;
   title: string;
@@ -249,9 +251,212 @@ interface GroupPlan {
   groupSize: number;
   reminderTiming: string;
   organizerName: string;
+  restaurantId?: number | null;
+  restaurant?: RestaurantRef | null;
 }
 
-function GroupPlanCard({ plan, onDelete }: { plan: GroupPlan; onDelete: () => void }) {
+// ─── Share Plan Sheet ─────────────────────────────────────────────────────────
+
+function SharePlanSheet({ plan, onClose }: { plan: GroupPlan; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const planUrl = `${window.location.origin}${import.meta.env.BASE_URL}plan/${plan.id}`;
+  const dateStr = new Date(plan.date).toLocaleDateString("de-AT", { weekday: "short", day: "numeric", month: "short" });
+  const msgText = [
+    `Hey! Unser Gruppenplan 🍽️`,
+    plan.restaurant ? `📍 ${plan.restaurant.name}` : "",
+    plan.restaurant ? `🗺️ ${plan.restaurant.address}` : "",
+    `📅 ${dateStr} um ${plan.time} Uhr`,
+    `👥 ${plan.groupSize} Personen`,
+    `\n${planUrl}`,
+  ].filter(Boolean).join("\n");
+
+  const handleNative = async () => {
+    try {
+      if (navigator.share && navigator.canShare?.({ url: planUrl })) {
+        await navigator.share({ title: plan.title, text: msgText, url: planUrl });
+        onClose();
+        return;
+      }
+    } catch { /* fallthrough to options below */ }
+  };
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(planUrl); } catch { /* noop */ }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const shareOptions = [
+    {
+      label: "WhatsApp",
+      icon: "💬",
+      cls: "bg-[#25D366]/10 text-[#128C7E] border-[#25D366]/30 hover:bg-[#25D366]/20",
+      href: `https://wa.me/?text=${encodeURIComponent(msgText)}`,
+    },
+    {
+      label: "E-Mail",
+      icon: "✉️",
+      cls: "bg-primary/8 text-primary border-primary/20 hover:bg-primary/15",
+      href: `mailto:?subject=${encodeURIComponent(`Gruppenplan: ${plan.title}`)}&body=${encodeURIComponent(msgText)}`,
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md bg-background rounded-3xl shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="h-1.5 bg-gradient-to-r from-primary to-accent" />
+        <div className="p-5 border-b flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Share2 className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="font-bold text-base">Plan teilen</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-5 space-y-3">
+          <p className="text-sm text-muted-foreground">Teile diesen Plan mit deinen Freunden.</p>
+          {shareOptions.map(o => (
+            <a key={o.label} href={o.href} target="_blank" rel="noopener noreferrer"
+              className={`flex items-center gap-3 p-3.5 rounded-2xl border font-semibold text-sm transition-all ${o.cls}`}>
+              <span className="text-xl leading-none">{o.icon}</span>
+              <span>{o.label}</span>
+              <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
+            </a>
+          ))}
+          <button onClick={copy}
+            className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-muted/40 font-semibold text-sm hover:bg-muted/70 transition-all">
+            {copied
+              ? <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+              : <Link2 className="w-5 h-5 text-muted-foreground shrink-0" />
+            }
+            <span className={copied ? "text-emerald-600" : "text-foreground"}>
+              {copied ? "Link kopiert!" : "Link kopieren"}
+            </span>
+          </button>
+          <button onClick={handleNative}
+            className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-primary/20 bg-primary/5 font-semibold text-sm hover:bg-primary/10 transition-all text-primary">
+            <Share2 className="w-5 h-5 shrink-0" />
+            <span>Mehr Optionen…</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Restaurant Picker ────────────────────────────────────────────────────────
+
+function RestaurantPickerSection({
+  selected, onSelect, onClear,
+}: {
+  selected: RestaurantRef | null;
+  onSelect: (r: RestaurantRef) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const { data: allRestaurants = [] } = useQuery<any[]>({
+    queryKey: ["restaurants-picker"],
+    queryFn: async () => {
+      const r = await fetch(`${API}/marketplace/restaurants`);
+      return r.json();
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const filtered = search.trim().length > 0
+    ? allRestaurants.filter((r: any) =>
+        r.name?.toLowerCase().includes(search.toLowerCase()) ||
+        r.address?.toLowerCase().includes(search.toLowerCase())
+      ).slice(0, 6)
+    : allRestaurants.slice(0, 6);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Restaurant (optional)</label>
+        {selected && (
+          <button onClick={onClear} className="text-xs text-destructive hover:opacity-70 transition-opacity">Entfernen</button>
+        )}
+      </div>
+
+      {selected ? (
+        <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20">
+          <MapPin className="w-4 h-4 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm text-foreground truncate">{selected.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{selected.address}</p>
+          </div>
+          <button onClick={() => setOpen(!open)} className="text-xs text-primary font-semibold hover:opacity-70 press-scale shrink-0">
+            {open ? "Fertig" : "Ändern"}
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-full flex items-center gap-2 p-3 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/40 text-muted-foreground hover:text-primary transition-all press-scale text-sm"
+        >
+          <Building2 className="w-4 h-4" /> Restaurant auswählen
+        </button>
+      )}
+
+      {open && (
+        <div className="mt-2 rounded-2xl border border-border/60 bg-muted/30 backdrop-blur-sm overflow-hidden">
+          <div className="p-2 border-b border-border/40">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Restaurant suchen…"
+                className="w-full pl-8 pr-3 py-2 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="max-h-48 overflow-y-auto divide-y divide-border/40">
+            {filtered.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-4">Keine Restaurants gefunden</p>
+            )}
+            {filtered.map((r: any) => (
+              <button
+                key={r.id}
+                onClick={() => { onSelect({ id: r.id, name: r.name, address: r.address }); setOpen(false); setSearch(""); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/60 transition-colors text-left"
+              >
+                {r.heroImage
+                  ? <img src={r.heroImage} className="w-10 h-10 rounded-xl object-cover shrink-0" alt={r.name} />
+                  : <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 text-lg">🍽️</div>
+                }
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{r.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{r.address}</p>
+                </div>
+                {r.rating && (
+                  <div className="flex items-center gap-0.5 text-xs text-amber-500 font-semibold shrink-0">
+                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />{Number(r.rating).toFixed(1)}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GroupPlanCard({
+  plan, onDelete, onEdit,
+}: { plan: GroupPlan; onDelete: () => void; onEdit: () => void }) {
+  const [showShare, setShowShare] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const ft = FOOD_THEME_GROUPS.find((f) => f.id === plan.foodTheme);
   const dateObj = new Date(plan.date);
@@ -270,78 +475,117 @@ function GroupPlanCard({ plan, onDelete }: { plan: GroupPlan; onDelete: () => vo
   const participants = Array.isArray(plan.participants) ? plan.participants : [];
 
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-all ${isUpcoming ? "border-primary/20 bg-card" : "border-border/50 bg-muted/20 opacity-70"}`}>
-      <div className={`h-2 bg-gradient-to-r ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"}`} />
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"} flex items-center justify-center text-xl shrink-0`}>
-              {ft?.emoji ?? "🍽️"}
-            </div>
-            <div>
-              <h3 className="font-bold text-sm">{plan.title}</h3>
-              <p className="text-xs text-muted-foreground">{ft?.label ?? plan.foodTheme}</p>
+    <>
+      <div className={`rounded-2xl border overflow-hidden transition-all ${isUpcoming ? "border-primary/20 bg-card" : "border-border/50 bg-muted/20 opacity-70"}`}>
+        <div className={`h-2 bg-gradient-to-r ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"}`} />
+        <div className="p-4">
+          {/* Title + theme */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${ft?.from ?? "from-primary"} ${ft?.to ?? "to-accent"} flex items-center justify-center text-xl shrink-0`}>
+                {ft?.emoji ?? "🍽️"}
+              </div>
+              <div>
+                <h3 className="font-bold text-sm">{plan.title}</h3>
+                <p className="text-xs text-muted-foreground">{ft?.label ?? plan.foodTheme}</p>
+              </div>
             </div>
           </div>
-          <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors press-scale">
-            <Trash2 className="w-4 h-4" />
+
+          {/* Details grid */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              <span>{dateObj.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" })}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="w-3.5 h-3.5 text-primary" />
+              <span>{plan.time} Uhr</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Users className="w-3.5 h-3.5 text-primary" />
+              <span>{plan.groupSize} Personen</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Bell className="w-3.5 h-3.5 text-primary" />
+              <span>{reminder?.label ?? plan.reminderTiming}</span>
+            </div>
+          </div>
+
+          {/* Restaurant */}
+          {plan.restaurant && (
+            <div className="flex items-start gap-2.5 bg-primary/5 border border-primary/15 rounded-2xl p-3 mb-3">
+              <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">Treffpunkt</p>
+                <p className="text-sm font-bold text-foreground truncate">{plan.restaurant.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{plan.restaurant.address}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Participants */}
+          {participants.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Teilnehmer</p>
+              <div className="flex flex-wrap gap-1.5">
+                {participants.map((p, i) => (
+                  <div key={i} className="flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-full px-2.5 py-1">
+                    <User className="w-3 h-3 text-primary" />
+                    <span className="text-[11px] font-semibold">{p.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Suggest restaurants */}
+          <button
+            onClick={() => setShowSuggestions(!showSuggestions)}
+            className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors press-scale mb-3"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            {showSuggestions ? "Vorschläge verbergen" : "Passende Restaurants anzeigen"}
           </button>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5 text-primary" />
-            <span>{dateObj.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" })}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3.5 h-3.5 text-primary" />
-            <span>{plan.time} Uhr</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Users className="w-3.5 h-3.5 text-primary" />
-            <span>{plan.groupSize} Personen</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Bell className="w-3.5 h-3.5 text-primary" />
-            <span>{reminder?.label ?? plan.reminderTiming}</span>
-          </div>
-        </div>
-
-        {participants.length > 0 && (
-          <div className="mb-3">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Teilnehmer</p>
-            <div className="flex flex-wrap gap-1.5">
-              {participants.map((p, i) => (
-                <div key={i} className="flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-full px-2.5 py-1">
-                  <User className="w-3 h-3 text-primary" />
-                  <span className="text-[11px] font-semibold">{p.name}</span>
-                </div>
-              ))}
+          {showSuggestions && suggestions && (
+            <div className="mb-3 space-y-2">
+              {suggestions.length > 0 ? (
+                suggestions.slice(0, 3).map((r: any) => (
+                  <SmartMatchCard key={r.id} restaurant={r} foodType={plan.foodTheme} />
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-2">Keine passenden Restaurants gefunden</p>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        <button
-          onClick={() => setShowSuggestions(!showSuggestions)}
-          className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors press-scale"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          {showSuggestions ? "Vorschläge verbergen" : "Passende Restaurants anzeigen"}
-        </button>
-
-        {showSuggestions && suggestions && (
-          <div className="mt-3 space-y-2">
-            {suggestions.length > 0 ? (
-              suggestions.slice(0, 3).map((r: any) => (
-                <SmartMatchCard key={r.id} restaurant={r} foodType={plan.foodTheme} />
-              ))
-            ) : (
-              <p className="text-xs text-muted-foreground text-center py-2">Keine passenden Restaurants gefunden</p>
-            )}
+          {/* Action row */}
+          <div className="flex gap-2 pt-1 border-t border-border/40">
+            <button
+              onClick={() => setShowShare(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 transition-colors press-scale"
+            >
+              <Share2 className="w-3.5 h-3.5" /> Teilen
+            </button>
+            <button
+              onClick={onEdit}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-muted-foreground bg-muted/40 hover:bg-muted/70 transition-colors press-scale"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Bearbeiten
+            </button>
+            <button
+              onClick={onDelete}
+              className="p-2 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors press-scale"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      {showShare && <SharePlanSheet plan={plan} onClose={() => setShowShare(false)} />}
+    </>
   );
 }
 
@@ -355,8 +599,12 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
   const [foodTheme, setFoodTheme] = useState("");
   const [reminderTiming, setReminderTiming] = useState("1_hour_before");
   const [participants, setParticipants] = useState<GroupParticipant[]>([{ name: "", phone: "" }]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantRef | null>(null);
   const [saving, setSaving] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [error, setError] = useState("");
+  const [savedPlanId, setSavedPlanId] = useState<number | null>(null);
+  const [showShareAfterSave, setShowShareAfterSave] = useState(false);
 
   const addParticipant = () => setParticipants([...participants, { name: "", phone: "" }]);
   const removeParticipant = (i: number) => setParticipants(participants.filter((_, j) => j !== i));
@@ -366,39 +614,69 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
     setParticipants(next);
   };
 
-  const handleCreate = async () => {
-    if (!title.trim() || !date || !foodTheme) {
-      setError("Bitte alle Pflichtfelder ausfüllen");
-      return;
-    }
-    setSaving(true);
+  const canSave = !!title.trim() && !!date && !!foodTheme;
+
+  const doCreate = async (): Promise<number | null> => {
+    if (!canSave) { setError("Bitte alle Pflichtfelder ausfüllen"); return null; }
     setError("");
+    const validParticipants = participants.filter((p) => p.name.trim());
+    const res = await fetch(`${API}/meal-plan/group`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        organizerEmail: email,
+        organizerName: userName,
+        title: title.trim(),
+        date, time, mealSlot, foodTheme,
+        participants: validParticipants,
+        groupSize: validParticipants.length + 1,
+        reminderTiming,
+        restaurantId: selectedRestaurant?.id ?? null,
+      }),
+    });
+    if (!res.ok) throw new Error("Fehler");
+    const data = await res.json();
+    return data.id ?? null;
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const validParticipants = participants.filter((p) => p.name.trim());
-      const res = await fetch(`${API}/meal-plan/group`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          organizerEmail: email,
-          organizerName: userName,
-          title: title.trim(),
-          date,
-          time,
-          mealSlot,
-          foodTheme,
-          participants: validParticipants,
-          groupSize: validParticipants.length + 1,
-          reminderTiming,
-        }),
-      });
-      if (!res.ok) throw new Error("Fehler");
+      await doCreate();
       onCreated();
+      onClose();
     } catch {
       setError("Fehler beim Erstellen. Bitte versuche es erneut.");
     } finally {
       setSaving(false);
     }
   };
+
+  const handleShareAndCreate = async () => {
+    setSharing(true);
+    try {
+      const id = await doCreate();
+      if (id) {
+        setSavedPlanId(id);
+        onCreated();
+        setShowShareAfterSave(true);
+      }
+    } catch {
+      setError("Fehler beim Erstellen. Bitte versuche es erneut.");
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  if (showShareAfterSave && savedPlanId !== null) {
+    const tempPlan: GroupPlan = {
+      id: savedPlanId, title, date, time, mealSlot, foodTheme,
+      participants: participants.filter(p => p.name.trim()),
+      groupSize: participants.filter(p => p.name.trim()).length + 1,
+      reminderTiming, organizerName: userName, restaurant: selectedRestaurant,
+    };
+    return <SharePlanSheet plan={tempPlan} onClose={onClose} />;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
@@ -560,19 +838,205 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
             </div>
           </div>
 
+          {/* Restaurant picker */}
+          <RestaurantPickerSection
+            selected={selectedRestaurant}
+            onSelect={setSelectedRestaurant}
+            onClear={() => setSelectedRestaurant(null)}
+          />
+
           {error && (
             <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-3 py-2">{error}</p>
           )}
         </div>
 
-        <div className="p-5 border-t shrink-0">
+        {/* 3-button sticky action bar */}
+        <div className="p-5 border-t shrink-0 flex gap-2">
           <button
-            onClick={handleCreate}
-            disabled={saving}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale flex items-center justify-center gap-2 disabled:opacity-60"
+            onClick={onClose}
+            className="flex-1 py-3 rounded-2xl border border-border text-sm font-bold text-foreground hover:bg-muted/50 transition-colors press-scale"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
-            {saving ? "Erstellen…" : "Gruppenplan erstellen"}
+            Abbrechen
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || sharing || !canSave}
+            className="flex-1 py-3 rounded-2xl bg-muted text-foreground text-sm font-bold press-scale flex items-center justify-center gap-1.5 disabled:opacity-50 hover:bg-muted/80 transition-colors"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            Speichern
+          </button>
+          <button
+            onClick={handleShareAndCreate}
+            disabled={saving || sharing || !canSave}
+            className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-md shadow-primary/25 press-scale flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
+          >
+            {sharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+            Teilen
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Edit Group Plan Modal ────────────────────────────────────────────────────
+
+function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
+  plan: GroupPlan; onClose: () => void; onUpdated: () => void; email: string;
+}) {
+  const [title, setTitle] = useState(plan.title);
+  const [date, setDate] = useState(plan.date);
+  const [time, setTime] = useState(plan.time);
+  const [mealSlot, setMealSlot] = useState(plan.mealSlot);
+  const [foodTheme, setFoodTheme] = useState(plan.foodTheme);
+  const [reminderTiming, setReminderTiming] = useState(plan.reminderTiming);
+  const [participants, setParticipants] = useState<GroupParticipant[]>(
+    Array.isArray(plan.participants) && plan.participants.length > 0
+      ? plan.participants
+      : [{ name: "", phone: "" }]
+  );
+  const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantRef | null>(plan.restaurant ?? null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const addParticipant = () => setParticipants([...participants, { name: "", phone: "" }]);
+  const removeParticipant = (i: number) => setParticipants(participants.filter((_, j) => j !== i));
+  const updateParticipant = (i: number, field: "name" | "phone", value: string) => {
+    const next = [...participants]; next[i][field] = value; setParticipants(next);
+  };
+
+  const handleUpdate = async () => {
+    if (!title.trim() || !date || !foodTheme) { setError("Bitte alle Pflichtfelder ausfüllen"); return; }
+    setSaving(true); setError("");
+    try {
+      const validParticipants = participants.filter(p => p.name.trim());
+      const res = await fetch(`${API}/meal-plan/group/${plan.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(), date, time, mealSlot, foodTheme,
+          participants: validParticipants,
+          groupSize: validParticipants.length + 1,
+          reminderTiming,
+          restaurantId: selectedRestaurant?.id ?? null,
+        }),
+      });
+      if (!res.ok) throw new Error("Fehler");
+      onUpdated();
+    } catch {
+      setError("Fehler beim Speichern. Bitte versuche es erneut.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md bg-background rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="h-1.5 bg-gradient-to-r from-primary to-accent" />
+        <div className="p-5 border-b flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Pencil className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="font-bold text-base">Plan bearbeiten</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-5 space-y-4">
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Titel *</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="z.B. Schulklasse Abendessen…"
+              className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Datum *</label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Uhrzeit</label>
+              <input type="time" value={time} onChange={e => setTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Mahlzeit</label>
+            <div className="grid grid-cols-3 gap-2">
+              {MEAL_SLOT_OPTIONS.map(opt => (
+                <button key={opt.id} onClick={() => setMealSlot(opt.id)}
+                  className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all press-scale ${mealSlot === opt.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30"}`}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Essensthema *</label>
+            <div className="grid grid-cols-4 gap-2">
+              {FOOD_THEME_GROUPS.map(ft => (
+                <button key={ft.id} onClick={() => setFoodTheme(ft.id)} className="relative flex flex-col items-center gap-1.5 press-scale">
+                  <div className={`w-full aspect-square rounded-xl flex items-center justify-center text-xl transition-all ${foodTheme === ft.id ? `bg-gradient-to-br ${ft.from} ${ft.to} shadow-sm` : "bg-muted/50 border border-border/60"}`}>{ft.emoji}</div>
+                  {foodTheme === ft.id && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                      <Check className="w-2.5 h-2.5 text-primary" />
+                    </div>
+                  )}
+                  <span className="text-[9px] font-bold text-center text-muted-foreground leading-tight line-clamp-2">{ft.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Erinnerung</label>
+            <div className="grid grid-cols-3 gap-2">
+              {REMINDER_OPTIONS.map(opt => (
+                <button key={opt.id} onClick={() => setReminderTiming(opt.id)}
+                  className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all press-scale ${reminderTiming === opt.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30"}`}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Teilnehmer</label>
+              <button onClick={addParticipant} className="text-xs font-semibold text-primary flex items-center gap-1 press-scale">
+                <Plus className="w-3.5 h-3.5" /> Hinzufügen
+              </button>
+            </div>
+            <div className="space-y-2">
+              {participants.map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">{i + 1}</div>
+                  <input value={p.name} onChange={e => updateParticipant(i, "name", e.target.value)} placeholder="Name"
+                    className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                  <input value={p.phone} onChange={e => updateParticipant(i, "phone", e.target.value)} placeholder="📱 Telefon" type="tel"
+                    className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                  {participants.length > 1 && (
+                    <button onClick={() => removeParticipant(i)} className="p-1 hover:text-destructive press-scale"><X className="w-4 h-4" /></button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <RestaurantPickerSection selected={selectedRestaurant} onSelect={setSelectedRestaurant} onClear={() => setSelectedRestaurant(null)} />
+
+          {error && <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-3 py-2">{error}</p>}
+        </div>
+
+        <div className="p-5 border-t shrink-0 flex gap-2">
+          <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-border text-sm font-bold hover:bg-muted/50 transition-colors press-scale">
+            Abbrechen
+          </button>
+          <button onClick={handleUpdate} disabled={saving}
+            className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-md shadow-primary/25 press-scale flex items-center justify-center gap-2 disabled:opacity-60 hover:opacity-90 transition-opacity">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {saving ? "Speichern…" : "Änderungen speichern"}
           </button>
         </div>
       </div>
@@ -592,6 +1056,7 @@ export default function MealPlan() {
   const [activeTab, setActiveTab] = useState<"personal" | "group">("personal");
   const [selectedDay, setSelectedDay] = useState(TODAY_EN);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [editPlan, setEditPlan] = useState<GroupPlan | null>(null);
   const qc = useQueryClient();
 
   const isLoggedIn = !!email;
@@ -920,6 +1385,7 @@ export default function MealPlan() {
                       key={plan.id}
                       plan={plan}
                       onDelete={() => deleteGroup.mutate(plan.id)}
+                      onEdit={() => setEditPlan(plan)}
                     />
                   ))}
                 </>
@@ -932,6 +1398,7 @@ export default function MealPlan() {
                       key={plan.id}
                       plan={plan}
                       onDelete={() => deleteGroup.mutate(plan.id)}
+                      onEdit={() => setEditPlan(plan)}
                     />
                   ))}
                 </>
@@ -946,8 +1413,17 @@ export default function MealPlan() {
           email={email}
           userName={userName}
           onClose={() => setShowCreateGroup(false)}
-          onCreated={() => {
-            setShowCreateGroup(false);
+          onCreated={() => qc.invalidateQueries({ queryKey: ["group-plans", email] })}
+        />
+      )}
+
+      {editPlan && (
+        <EditGroupPlanModal
+          plan={editPlan}
+          email={email}
+          onClose={() => setEditPlan(null)}
+          onUpdated={() => {
+            setEditPlan(null);
             qc.invalidateQueries({ queryKey: ["group-plans", email] });
           }}
         />

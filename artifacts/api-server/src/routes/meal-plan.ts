@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { mealPlansTable, groupPlansTable, restaurantsTable, discountsTable } from "@workspace/db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 const router = Router();
 
@@ -184,11 +184,40 @@ router.get("/:email/suggestions", async (req, res) => {
   }
 });
 
+// ── GET single plan by numeric ID (for shareable link) ──────────────────────
+// Must be registered BEFORE /group/:email to avoid "plan" being treated as email
+router.get("/group/plan/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Ungültige Plan-ID" });
+    const [plan] = await db.select().from(groupPlansTable).where(eq(groupPlansTable.id, id));
+    if (!plan) return res.status(404).json({ error: "Plan nicht gefunden" });
+    let restaurant = null;
+    if (plan.restaurantId) {
+      const [r] = await db.select().from(restaurantsTable).where(eq(restaurantsTable.id, plan.restaurantId));
+      if (r) restaurant = { id: r.id, name: r.name, address: r.address, heroImage: r.heroImage };
+    }
+    res.json({ ...plan, restaurant });
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Laden des Plans" });
+  }
+});
+
+// ── GET all plans for an organizer (enriched with restaurant data) ────────────
 router.get("/group/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const plans = await db.select().from(groupPlansTable).where(eq(groupPlansTable.organizerEmail, decodeURIComponent(email)));
-    res.json(plans.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    const sorted = plans.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Enrich with restaurant info
+    const restaurantIds = [...new Set(sorted.filter(p => p.restaurantId).map(p => p.restaurantId as number))];
+    const restaurants = restaurantIds.length > 0
+      ? await db.select({ id: restaurantsTable.id, name: restaurantsTable.name, address: restaurantsTable.address, heroImage: restaurantsTable.heroImage })
+          .from(restaurantsTable)
+          .where(inArray(restaurantsTable.id, restaurantIds))
+      : [];
+    const rMap = Object.fromEntries(restaurants.map(r => [r.id, r]));
+    res.json(sorted.map(p => ({ ...p, restaurant: p.restaurantId ? (rMap[p.restaurantId] ?? null) : null })));
   } catch (err) {
     res.status(500).json({ error: "Fehler beim Laden der Gruppenpläne" });
   }
@@ -229,6 +258,39 @@ router.post("/group", async (req, res) => {
     res.json({ ...created, suggestedRestaurant: restaurantData });
   } catch (err) {
     res.status(500).json({ error: "Fehler beim Erstellen des Gruppenplans" });
+  }
+});
+
+// ── PUT update an existing group plan ────────────────────────────────────────
+router.put("/group/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Ungültige Plan-ID" });
+    const { title, date, time, mealSlot, foodTheme, participants, groupSize, reminderTiming, restaurantId } = req.body;
+    const [updated] = await db.update(groupPlansTable)
+      .set({
+        ...(title    !== undefined && { title: title.trim() }),
+        ...(date     !== undefined && { date }),
+        ...(time     !== undefined && { time }),
+        ...(mealSlot !== undefined && { mealSlot }),
+        ...(foodTheme !== undefined && { foodTheme }),
+        ...(participants !== undefined && { participants }),
+        ...(groupSize !== undefined && { groupSize }),
+        ...(reminderTiming !== undefined && { reminderTiming }),
+        restaurantId: restaurantId ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(groupPlansTable.id, id))
+      .returning();
+    if (!updated) return res.status(404).json({ error: "Plan nicht gefunden" });
+    let restaurant = null;
+    if (updated.restaurantId) {
+      const [r] = await db.select().from(restaurantsTable).where(eq(restaurantsTable.id, updated.restaurantId));
+      if (r) restaurant = { id: r.id, name: r.name, address: r.address };
+    }
+    res.json({ ...updated, restaurant });
+  } catch (err) {
+    res.status(500).json({ error: "Fehler beim Aktualisieren des Plans" });
   }
 });
 

@@ -1,0 +1,292 @@
+Perform a full "Group Plan System Completion + Smart Navigation Integration" upgrade.
+
+IMPORTANT:
+- Do NOT redesign the UI
+- Do NOT remove existing features
+- Only enhance, complete, and connect missing logic
+- Mobile-first (iPhone priority)
+- Keep premium design consistency
+
+==================================================
+GOAL
+==================================================
+
+Transform Group Plan into a fully usable social coordination system:
+
+User must be able to:
+- create a plan
+- edit it later
+- add/remove participants
+- choose a restaurant
+- save it
+- share it everywhere
+- navigate smoothly (smart tabs behavior)
+
+No dead ends.
+No missing actions.
+
+==================================================
+1. GROUP PLAN ACTION BUTTONS (CRITICAL)
+==================================================
+
+Add sticky bottom action bar inside plan modal/screen:
+
+[ Abbrechen ]   [ Speichern ]   [ Teilen ]
+
+Behavior:
+
+Abbrechen:
+- closes modal
+- resets unsaved data
+- optional confirmation if data entered
+
+Speichern:
+- saves plan draft
+- stores:
+  - categories
+  - participants
+  - reminder
+  - date/time
+  - selected restaurant
+- show: "Plan gespeichert"
+
+Teilen:
+- auto-save if not saved
+- opens share flow
+
+==================================================
+2. EDITABLE GROUP PLAN (AFTER CREATION)
+==================================================
+
+Each plan card must support:
+
+- Bearbeiten
+- Teilen
+- Löschen
+
+Edit mode allows:
+- change categories
+- change date/time
+- change reminder
+- change participants
+- change restaurant
+
+==================================================
+3. PARTICIPANT MANAGEMENT
+==================================================
+
+Inside plan:
+
+- + Teilnehmer hinzufügen
+- remove participant
+- edit name/phone
+
+Clean layout.
+Mobile friendly.
+
+==================================================
+4. RESTAURANT SELECTION (VERY IMPORTANT)
+==================================================
+
+Add restaurant selection to plan:
+
+User can:
+- pick a restaurant
+- store:
+  - name
+  - address
+  - optional image
+
+Display inside plan:
+- "Treffpunkt: Restaurant XY"
+- "Adresse: ..."
+
+This becomes meeting point.
+
+==================================================
+5. PLAN CARD UPGRADE
+==================================================
+
+Each plan card must show:
+
+- category
+- date
+- time
+- participants count
+- reminder
+- restaurant name
+- restaurant address
+
+Must feel complete and useful.
+
+==================================================
+6. SHARING SYSTEM (FULL)
+==================================================
+
+Support:
+
+- WhatsApp
+- Email
+- Copy Link
+- Native share
+
+Payload:
+
+Title: Gruppenplan 🍽️
+Text:
+"Hey! Unser Plan:
+Ort: Restaurant XY
+Adresse: ...
+Zeit: ...
+Link: ..."
+
+==================================================
+7. SHAREABLE LINK
+==================================================
+
+- generate plan ID
+- URL: /plan/{id}
+- opens plan details
+- always up-to-date with saved version
+
+==================================================
+8. SAVE + SHARE LOGIC
+==================================================
+
+Rules:
+
+- Speichern = save only
+- Teilen = save + share
+- Abbrechen = discard
+
+If unsaved:
+→ "Änderungen zuerst speichern?"
+
+==================================================
+9. SMART TAB NAVIGATION (GLOBAL)
+==================================================
+
+Apply to ALL bottom tabs:
+
+If user taps different tab:
+→ normal navigation
+
+If user taps SAME tab again:
+→ scroll to top
+
+If inside nested flow:
+→ return to section root
+
+Apply to:
+- Startseite
+- Entdecken
+- Essensplan
+- Buchungen
+- Freunde
+- Profil
+
+==================================================
+10. PLAN TAB SPECIAL BEHAVIOR
+==================================================
+
+If user inside:
+- group creation
+- plan details
+
+and taps "Essensplan":
+
+→ return to plan root screen
+
+==================================================
+11. ACTIVE TAB FEEDBACK
+==================================================
+
+Improve bottom nav:
+
+- active tab stronger color
+- subtle animation (scale/pulse)
+- instant feedback on tap
+
+==================================================
+12. SCROLL TO TOP
+==================================================
+
+- smooth scroll
+- no jump
+- fast response
+
+==================================================
+13. BUTTON STATES
+==================================================
+
+All buttons must support:
+
+- loading
+- disabled
+- success/error feedback
+
+Examples:
+- disable share if empty
+- disable save if no data
+
+==================================================
+14. UX COPY (GERMAN)
+==================================================
+
+Use:
+
+- Abbrechen
+- Speichern
+- Teilen
+- Bearbeiten
+- Teilnehmer hinzufügen
+- Restaurant auswählen
+- Plan gespeichert
+- Plan erfolgreich geteilt
+- Link kopiert
+
+==================================================
+15. MOBILE QUALITY
+==================================================
+
+- no overlap with keyboard
+- no hidden buttons
+- no broken layout
+- easy tap targets
+
+==================================================
+16. FINAL VALIDATION
+==================================================
+
+Test:
+
+✓ create plan  
+✓ save plan  
+✓ edit plan  
+✓ add/remove participants  
+✓ choose restaurant  
+✓ share via WhatsApp/email/link  
+✓ open shared link  
+✓ tab re-tap scrolls to top  
+✓ plan tab resets flow  
+
+==================================================
+FINAL RESULT
+==================================================
+
+Group Plan becomes:
+
+- interactive
+- shareable
+- editable
+- real-life usable
+
+Navigation becomes:
+
+- smart
+- smooth
+- premium
+
+No dead UX.
+No missing actions.
+Production ready.

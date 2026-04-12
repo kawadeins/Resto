@@ -7,8 +7,9 @@ import { Link } from "wouter";
 // ─── Route → tab ownership ────────────────────────────────────────────────────
 // Order matters: more-specific prefixes must come first.
 const ROUTE_TAB_MAP: Array<{ prefix: string; tab: string }> = [
-  { prefix: "/restaurant", tab: "/explore" },  // /restaurant/:id → Entdecken
+  { prefix: "/restaurant", tab: "/explore" },   // /restaurant/:id → Entdecken
   { prefix: "/explore",    tab: "/explore" },
+  { prefix: "/plan",       tab: "/meal-plan" },  // /plan/:id shareable link → Essensplan
   { prefix: "/meal-plan",  tab: "/meal-plan" },
   { prefix: "/my-bookings",tab: "/my-bookings" },
   { prefix: "/friends",    tab: "/friends" },
