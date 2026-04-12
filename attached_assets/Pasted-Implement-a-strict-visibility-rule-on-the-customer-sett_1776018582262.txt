@@ -1,0 +1,135 @@
+Implement a strict visibility rule on the customer settings page.
+
+IMPORTANT:
+- Do NOT redesign the app
+- Do NOT remove the Premium section
+- Premium must remain visible and clear
+- This task is ONLY about hiding the top "Konto" business-owner account block from normal users
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+The top "Konto" section on the settings page must NOT be visible to normal customer users.
+
+It should only appear for users who already have active business access, such as:
+- active Premium / business account
+- restaurant owner account
+- approved business-side user
+- valid owner/business identity in the app
+
+==================================================
+1. KEEP PREMIUM SECTION VISIBLE
+==================================================
+
+The "Business Premium freischalten" section must stay visible to normal users.
+
+Do NOT hide Premium.
+Do NOT remove the upsell / CTA to become a business owner.
+
+This section is important and should remain clearly available.
+
+==================================================
+2. HIDE ONLY THE TOP KONTO BLOCK FOR NORMAL USERS
+==================================================
+
+The first "Konto" block at the top of the page must be hidden for normal customer users.
+
+This includes the block showing things like:
+- avatar
+- display name
+- email
+- account identity card
+- business-side account presentation
+
+A normal user should not see this owner/business account card.
+
+==================================================
+3. SHOW KONTO ONLY AFTER BUSINESS/PREMIUM ACCESS
+==================================================
+
+The top "Konto" business-account block should only render if the user is truly eligible, for example:
+- active business premium
+- active owner/business account
+- approved business-side account
+- whatever existing product rule defines "business user"
+
+If the user is a normal customer:
+- do not render this section at all
+
+==================================================
+4. NORMAL USER SETTINGS MUST STAY CLEAN
+==================================================
+
+For normal customer users, the settings page should show only normal user items such as:
+- Benachrichtigungen
+- Datenschutz
+- Hilfe
+- Abmelden
+- other customer-safe settings
+
+No business account card at the top.
+
+==================================================
+5. PREMIUM CTA MUST STAY STRONG
+==================================================
+
+The Premium / business CTA must remain visible and attractive for normal users.
+
+The user should still clearly see that they can upgrade / activate the business side.
+
+But they should NOT already see the business owner account block before they qualify.
+
+==================================================
+6. BUSINESS USER EXPERIENCE
+==================================================
+
+For users who already are business/premium users:
+- show the top Konto block
+- keep their business-side account card visible
+- keep the settings/business access flow working correctly
+
+==================================================
+7. DO NOT BREAK ANYTHING
+==================================================
+
+Make sure this change does NOT break:
+- customer settings
+- premium upgrade CTA
+- business premium activation flow
+- owner/business access
+- business dashboard entry
+- normal user settings UX
+
+==================================================
+8. FINAL VALIDATION
+==================================================
+
+Verify:
+
+A. Normal customer user:
+- does NOT see the top Konto business block
+- still sees Premium CTA clearly
+
+B. Active business/premium user:
+- DOES see the top Konto block
+- still sees correct business account access
+
+C. No mixed-account confusion remains
+
+==================================================
+FINAL RESULT
+==================================================
+
+The settings page must behave like this:
+
+Normal customer:
+- no business Konto block
+- yes Premium CTA
+
+Business/premium user:
+- yes business Konto block
+- yes business access
+
+Hide only the business account card.
+Keep Premium visible.

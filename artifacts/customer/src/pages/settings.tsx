@@ -257,55 +257,57 @@ export default function SettingsPage() {
 
       <div className="container mx-auto px-4 max-w-2xl py-5 space-y-4">
 
-        {/* ── 1. Konto-Details ─────────────────────────────────────── */}
-        <Section icon={User} title={"Konto"}>
-          {/* Avatar row */}
-          <div className="flex items-center gap-4 pb-2">
-            <div className="relative w-16 h-16 shrink-0">
-              {profile?.photoUrl ? (
-                <img
-                  src={profile.photoUrl}
-                  alt={name}
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-primary/20"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xl font-bold border-2 border-primary/20">
-                  {name ? name[0].toUpperCase() : email[0].toUpperCase()}
-                </div>
-              )}
+        {/* ── 1. Konto-Details — nur für Business/Premium-Nutzer ──────── */}
+        {ownerPremium && (
+          <Section icon={User} title={"Konto"}>
+            {/* Avatar row */}
+            <div className="flex items-center gap-4 pb-2">
+              <div className="relative w-16 h-16 shrink-0">
+                {profile?.photoUrl ? (
+                  <img
+                    src={profile.photoUrl}
+                    alt={name}
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-primary/20"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xl font-bold border-2 border-primary/20">
+                    {name ? name[0].toUpperCase() : email[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm truncate">{name || "Kein Name gesetzt"}</p>
+                <p className="text-xs text-muted-foreground truncate">{email}</p>
+                <Badge variant="secondary" className="mt-1 text-[10px] flex items-center gap-1 w-fit">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" /> E-Mail verifiziert
+                </Badge>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm truncate">{name || "Kein Name gesetzt"}</p>
-              <p className="text-xs text-muted-foreground truncate">{email}</p>
-              <Badge variant="secondary" className="mt-1 text-[10px] flex items-center gap-1 w-fit">
-                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> E-Mail verifiziert
-              </Badge>
+
+            {/* Name field */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">Anzeigename</label>
+              <EditableField
+                value={name}
+                onChange={(v) => save({ name: v } as any)}
+                placeholder={"Namen eingeben..."}
+                icon={User}
+              />
             </div>
-          </div>
 
-          {/* Name field */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">Anzeigename</label>
-            <EditableField
-              value={name}
-              onChange={(v) => save({ name: v } as any)}
-              placeholder={"Namen eingeben..."}
-              icon={User}
-            />
-          </div>
-
-          {/* Email (read-only) */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{"Anmelde-E-Mail"}</label>
-            <EditableField
-              value={email}
-              onChange={() => {}}
-              placeholder={"E-Mail-Adresse"}
-              icon={Mail}
-              readOnly
-            />
-          </div>
-        </Section>
+            {/* Email (read-only) */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{"Anmelde-E-Mail"}</label>
+              <EditableField
+                value={email}
+                onChange={() => {}}
+                placeholder={"E-Mail-Adresse"}
+                icon={Mail}
+                readOnly
+              />
+            </div>
+          </Section>
+        )}
 
         {/* ── 2. Business-Dashboard ──────────────────────────────────── */}
         <Section icon={Crown} title={"Business-Bereich"}>
