@@ -3,11 +3,13 @@
  * Shown on home page when user has friends with recent activity.
  * Social, premium feel. Privacy-safe: aggregated data only.
  */
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Users, Sparkles, ArrowRight, Calendar, Zap } from "lucide-react";
+import { Users, Sparkles, ArrowRight, Plus } from "lucide-react";
 import { getGroupSuggestions, type GroupSuggestion } from "@/lib/social-api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GroupPlanModal } from "@/components/group-plan-modal";
 
 // ─── Urgency config ───────────────────────────────────────────────────────────
 
@@ -87,25 +89,32 @@ function SuggestionCard({ sg }: { sg: GroupSuggestion }) {
 
 // ─── Plan together CTA card ───────────────────────────────────────────────────
 
-function PlanTogetherCard({ friendCount }: { friendCount: number }) {
+function PlanTogetherCard({ friendCount, onCreatePlan }: { friendCount: number; onCreatePlan: () => void }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 p-5 shrink-0 w-64 snap-start flex flex-col gap-3 items-center justify-center text-center">
+    <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 p-5 shrink-0 w-64 snap-start flex flex-col gap-4 items-center justify-center text-center">
       <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl shadow-lg shadow-primary/30">
         👥
       </div>
       <div>
         <p className="font-bold text-sm mb-1">Zusammen planen</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {friendCount > 0
-            ? `Du hast ${friendCount} ${friendCount === 1 ? "Freund" : "Freunde"} – plant gemeinsam`
-            : "Freunde einladen & gemeinsam entdecken"}
+            ? `Du hast ${friendCount} ${friendCount === 1 ? "Freund" : "Freunde"} — plant jetzt gemeinsam`
+            : "Restaurant, Café oder Bar wählen & teilen"}
         </p>
       </div>
-      <Link href="/friends">
-        <button className="text-xs font-bold px-4 py-2 rounded-2xl bg-primary text-white shadow-md shadow-primary/25 hover:bg-primary/90 transition-colors">
-          Freunde verwalten
+      <div className="flex flex-col gap-2 w-full">
+        <button
+          onClick={onCreatePlan}
+          className="flex items-center justify-center gap-2 text-xs font-bold px-4 py-2.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white shadow-md shadow-primary/25 hover:opacity-90 transition-opacity press-scale"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Gruppenplan erstellen
         </button>
-      </Link>
+        <Link href="/friends" className="text-[11px] text-muted-foreground hover:text-primary transition-colors font-medium">
+          Freunde verwalten →
+        </Link>
+      </div>
     </div>
   );
 }
@@ -118,6 +127,8 @@ interface GroupSuggestionsSectionProps {
 }
 
 export function GroupSuggestionsSection({ email, friendCount }: GroupSuggestionsSectionProps) {
+  const [planModalOpen, setPlanModalOpen] = useState(false);
+
   const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ["group-suggestions", email],
     queryFn: () => getGroupSuggestions(email),
@@ -130,42 +141,46 @@ export function GroupSuggestionsSection({ email, friendCount }: GroupSuggestions
   if (!isLoading && suggestions.length === 0 && friendCount === 0) return null;
 
   return (
-    <section className="py-8 px-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-primary/3 to-transparent pointer-events-none" />
-      <div className="container mx-auto max-w-6xl relative z-10">
+    <>
+      <section className="py-8 px-4 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-primary/3 to-transparent pointer-events-none" />
+        <div className="container mx-auto max-w-6xl relative z-10">
 
-        {/* Header */}
-        <div className="flex items-end justify-between mb-5 flex-wrap gap-3">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-accent to-rose-500 flex items-center justify-center shadow-md shadow-accent/25">
-                <Sparkles className="w-4 h-4 text-white" />
+          {/* Header */}
+          <div className="flex items-end justify-between mb-5 flex-wrap gap-3">
+            <div>
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-accent to-rose-500 flex items-center justify-center shadow-md shadow-accent/25">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-xl font-extrabold tracking-tight">Vorschläge für dich</h2>
               </div>
-              <h2 className="text-xl font-extrabold tracking-tight">Vorschläge für dich</h2>
+              <p className="text-xs text-muted-foreground">Basierend auf Freundesaktivitäten der letzten 6 Stunden</p>
             </div>
-            <p className="text-xs text-muted-foreground">Basierend auf Freundesaktivitäten der letzten 6 Stunden</p>
+            <Link href="/friends" className="text-xs font-bold text-primary bg-primary/8 hover:bg-primary/15 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
+              Alle Freunde <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <Link href="/friends" className="text-xs font-bold text-primary bg-primary/8 hover:bg-primary/15 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1">
-            Alle Freunde <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
 
-        {/* Cards */}
-        {isLoading ? (
-          <div className="flex gap-4 overflow-x-hidden">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="shrink-0 w-72 h-48 rounded-3xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide snap-x -mx-4 px-4">
-            {suggestions.map((sg, i) => (
-              <SuggestionCard key={i} sg={sg} />
-            ))}
-            <PlanTogetherCard friendCount={friendCount} />
-          </div>
-        )}
-      </div>
-    </section>
+          {/* Cards */}
+          {isLoading ? (
+            <div className="flex gap-4 overflow-x-hidden">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="shrink-0 w-72 h-48 rounded-3xl" />
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide snap-x -mx-4 px-4">
+              {suggestions.map((sg, i) => (
+                <SuggestionCard key={i} sg={sg} />
+              ))}
+              <PlanTogetherCard friendCount={friendCount} onCreatePlan={() => setPlanModalOpen(true)} />
+            </div>
+          )}
+        </div>
+      </section>
+
+      <GroupPlanModal open={planModalOpen} onClose={() => setPlanModalOpen(false)} />
+    </>
   );
 }

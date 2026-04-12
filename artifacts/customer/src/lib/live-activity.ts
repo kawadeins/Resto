@@ -21,6 +21,7 @@ export interface LiveBadge {
   text: string;
   cls: string;        // tailwind class string for chip
   pulse?: boolean;
+  variant?: "trending" | "hot" | "aktiv";
 }
 
 export interface LiveActivityResult {
@@ -56,16 +57,16 @@ const AVAIL_SCORE: Record<string, number> = {
 // ─── Badge definitions ────────────────────────────────────────────────────────
 
 const BADGES: Record<string, LiveBadge> = {
-  trending:    { icon: "🌟", text: "Sehr beliebt",       cls: "bg-purple-100 text-purple-700 border-purple-200" },
-  hot:         { icon: "🔥", text: "Beliebt",            cls: "bg-rose-100 text-rose-700 border-rose-200" },
-  busy:        { icon: "⚡", text: "Gefragt",            cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  friends_hot: { icon: "👥", text: "Freunde zuletzt aktiv",  cls: "bg-primary/10 text-primary border-primary/25" },
-  lunch_rush:  { icon: "🍽️", text: "Lunch-Rush",         cls: "bg-orange-100 text-orange-700 border-orange-200", pulse: true },
-  happy_hour:  { icon: "🍸", text: "Happy Hour",         cls: "bg-rose-100 text-rose-700 border-rose-200",       pulse: true },
-  cafe_rush:   { icon: "☕", text: "Café-Rush",          cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  night_vibe:  { icon: "🌙", text: "Nachtbetrieb",       cls: "bg-indigo-100 text-indigo-700 border-indigo-200", pulse: true },
-  morning_hot: { icon: "☀️", text: "Frühstücks-Crowd",  cls: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  active:      { icon: "•",  text: "Aktiv",              cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  trending:    { icon: "🌟", text: "Sehr beliebt",          cls: "bg-violet-100 text-violet-800 border-violet-300 shadow-md shadow-violet-100",           variant: "trending" },
+  hot:         { icon: "🔥", text: "Beliebt",               cls: "bg-rose-100 text-rose-800 border-rose-400 shadow-md shadow-rose-100",     pulse: true, variant: "hot" },
+  busy:        { icon: "⚡", text: "Gefragt",               cls: "bg-amber-100 text-amber-800 border-amber-400 shadow-sm shadow-amber-100" },
+  friends_hot: { icon: "👥", text: "Freunde hier",          cls: "bg-primary/12 text-primary border-primary/35 shadow-sm shadow-primary/10" },
+  lunch_rush:  { icon: "🍽️", text: "Lunch-Rush",            cls: "bg-orange-100 text-orange-800 border-orange-400 shadow-md shadow-orange-100", pulse: true, variant: "hot" },
+  happy_hour:  { icon: "🍸", text: "Happy Hour",            cls: "bg-rose-100 text-rose-800 border-rose-400 shadow-md shadow-rose-100",    pulse: true, variant: "hot" },
+  cafe_rush:   { icon: "☕", text: "Café-Rush",             cls: "bg-amber-100 text-amber-800 border-amber-400 shadow-sm shadow-amber-100" },
+  night_vibe:  { icon: "🌙", text: "Nachtbetrieb",          cls: "bg-indigo-100 text-indigo-800 border-indigo-400 shadow-md shadow-indigo-100", pulse: true, variant: "hot" },
+  morning_hot: { icon: "☀️", text: "Frühstücks-Crowd",     cls: "bg-yellow-100 text-yellow-800 border-yellow-400 shadow-sm shadow-yellow-100" },
+  active:      { icon: "●",  text: "Aktiv",                 cls: "bg-emerald-100 text-emerald-800 border-emerald-400 shadow-sm shadow-emerald-100", variant: "aktiv" },
 };
 
 // ─── Heat colour palette ──────────────────────────────────────────────────────

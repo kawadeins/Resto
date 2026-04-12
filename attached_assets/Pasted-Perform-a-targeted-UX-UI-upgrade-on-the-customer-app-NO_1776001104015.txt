@@ -1,0 +1,137 @@
+Perform a targeted UX/UI upgrade on the customer app (NO redesign, only improvements and missing functionality fixes).
+
+========================
+1. HOME PAGE — TRENDING / HOT / BELIEBT / AKTIV VISUAL FIX
+========================
+
+Problem:
+The status indicators (Trending, Hot, Beliebt, Aktiv) are visually too weak, small, and not noticeable.
+
+Fix:
+
+- Increase font size by +20–30%
+- Increase dot/icon size (minimum 10–12px)
+- Add stronger color contrast:
+  - Trending → purple gradient (brand)
+  - Hot → red (bold)
+  - Beliebt → orange
+  - Aktiv → green (vivid)
+
+- Wrap each label inside a soft pill badge:
+  - padding: 6px 12px
+  - border-radius: 999px
+  - background: very light tinted version of its color
+
+- Add subtle animation:
+  - Hot → slight pulse glow
+  - Aktiv → soft blinking dot
+  - Trending → gradient shimmer (VERY slow, premium)
+
+- Increase spacing between items for clarity
+
+Goal:
+Make them feel like LIVE SIGNALS, not passive labels.
+
+========================
+2. GROUP PLAN MODAL — CRITICAL ACTION BUTTONS (MISSING)
+========================
+
+Problem:
+The "Gruppenplan erstellen" modal has NO final action → user gets stuck.
+
+Fix:
+
+At the bottom of the modal, add a sticky action bar:
+
+Layout:
+--------------------------------
+[ Abbrechen ]    [ Plan teilen ]
+--------------------------------
+
+Button behavior:
+
+1. Abbrechen (Cancel)
+- closes modal
+- resets form
+
+2. Plan teilen (PRIMARY CTA)
+- gradient button (brand colors)
+- disabled until required fields filled
+
+========================
+3. SHARE FUNCTION (VERY IMPORTANT)
+========================
+
+When user clicks "Plan teilen":
+
+Open native share flow (mobile-first):
+
+Options:
+- WhatsApp
+- Email
+- Copy Link
+- SMS (if available)
+
+Implementation:
+
+Generate a share payload:
+
+{
+  title: "Gruppenplan 🍽️",
+  text: "Hey! Lass uns zusammen essen gehen 🍔",
+  url: generatedPlanLink
+}
+
+Use:
+- navigator.share() if available
+- fallback: custom share modal
+
+========================
+4. PLAN GENERATION LOGIC
+========================
+
+On share:
+
+- Generate unique plan ID
+- Save:
+  - selected categories
+  - participants
+  - reminder settings
+
+- Create shareable link:
+  /plan/{id}
+
+========================
+5. UX IMPROVEMENTS (SMALL BUT IMPORTANT)
+========================
+
+- Add loading state on "Plan teilen"
+- Add success feedback:
+  → "Plan erfolgreich erstellt & geteilt"
+
+- Animate modal open/close (smooth, 250ms)
+
+- Improve spacing:
+  - categories grid more breathable
+  - participant inputs aligned
+
+========================
+STRICT RULES
+========================
+
+- Do NOT redesign layout
+- Do NOT remove existing logic
+- Only enhance visibility + add missing actions
+- Must work on mobile (iPhone priority)
+
+========================
+END GOAL
+========================
+
+- Home feels alive (live signals visible)
+- Group plan flow becomes COMPLETE:
+  Select → Configure → Share → Done
+
+No dead ends.
+No weak visuals.
+Premium interaction.
