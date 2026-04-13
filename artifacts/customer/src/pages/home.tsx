@@ -576,7 +576,7 @@ export default function Home() {
 
               <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                 <Button asChild size="lg" className="rounded-2xl h-12 px-6 font-bold bg-gradient-to-br from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/30 border-0">
-                  <Link href="/explore">Entdecken <ArrowRight className="w-4 h-4 ml-2" /></Link>
+                  <Link href="/explore">{t("home.explore_cta")} <ArrowRight className="w-4 h-4 ml-2" /></Link>
                 </Button>
 
                 {/* Instant Plan button — hero variant */}
@@ -594,31 +594,31 @@ export default function Home() {
                 )}
 
                 <Link href="/explore?businessType=restaurant" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-primary/20 bg-primary/5 text-primary text-sm font-semibold press-scale hover:bg-primary/10 transition-colors">
-                  <UtensilsCrossed className="w-4 h-4" /> Restaurants
+                  <UtensilsCrossed className="w-4 h-4" /> {t("home.filter_restaurant")}
                 </Link>
                 <Link href="/explore?businessType=cafe" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-amber-300 bg-amber-50 text-amber-800 text-sm font-semibold press-scale hover:bg-amber-100 transition-colors">
-                  <Coffee className="w-4 h-4" /> Cafés
+                  <Coffee className="w-4 h-4" /> {t("home.filter_cafe")}
                 </Link>
                 <Link href="/explore?businessType=bar" className="flex items-center gap-2 h-12 px-5 rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-semibold press-scale hover:bg-rose-100 transition-colors">
-                  <Wine className="w-4 h-4" /> Bars
+                  <Wine className="w-4 h-4" /> {t("home.filter_bar")}
                 </Link>
 
                 {geo.status === "idle" && (
                   <Button size="lg" variant="outline" className="rounded-2xl h-12 px-5 font-semibold border-primary/30 hover:border-primary/60 hover:bg-primary/5 press-scale" onClick={geo.request}>
                     <Navigation className="w-4 h-4 mr-2 text-primary" />
-                    In meiner Nähe
+                    {t("home.near_me")}
                   </Button>
                 )}
                 {geo.status === "requesting" && (
                   <Button size="lg" variant="outline" className="rounded-2xl h-12 px-5" disabled>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Wird ermittelt...
+                    {t("home.locating")}
                   </Button>
                 )}
                 {geo.status === "granted" && (
                   <div className="flex items-center gap-2 h-12 px-4 rounded-2xl border border-emerald-300 bg-emerald-50 text-sm font-semibold text-emerald-700">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Standort aktiv
+                    {t("home.location_active")}
                     <button onClick={geo.clear} className="ml-1 text-emerald-500 hover:text-emerald-700 press-scale">
                       <X className="w-4 h-4" />
                     </button>
@@ -628,7 +628,7 @@ export default function Home() {
 
               {showCityFallback && geo.status === "denied" && (
                 <p className="text-xs text-amber-600 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5" /> Standortzugriff verweigert — Stadt oben eingeben.
+                  <MapPin className="w-3.5 h-3.5" /> {t("home.location_denied_short")}
                 </p>
               )}
             </div>
@@ -652,7 +652,7 @@ export default function Home() {
                       <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
                         <div className="bg-gradient-to-br from-accent to-rose-600 text-white font-extrabold px-4 py-2.5 rounded-2xl shadow-xl shadow-rose-300/40 -rotate-2">
                           <div className="text-3xl leading-none">{activeDeal.percentage}%</div>
-                          <div className="text-[10px] uppercase tracking-widest font-bold opacity-90">RABATT HEUTE</div>
+                          <div className="text-[10px] uppercase tracking-widest font-bold opacity-90">{t("home.discount_today")}</div>
                         </div>
                         {activeDeal.flashExpiresAt && <CountdownTimer expiresAt={activeDeal.flashExpiresAt} />}
                       </div>
@@ -663,7 +663,7 @@ export default function Home() {
                         </div>
                         <h3 className="text-2xl font-extrabold mb-3">{activeDeal.restaurant.name}</h3>
                         <div className="w-full py-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-center text-sm font-bold">
-                          Jetzt buchen →
+                          {t("home.book_now_card")}
                         </div>
                       </div>
                     </div>
@@ -690,7 +690,7 @@ export default function Home() {
                         <div className="absolute top-4 left-4">
                           <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white font-bold px-3 py-1.5 rounded-2xl text-sm flex items-center gap-1.5">
                             <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-                            <span>Beliebt in Wien</span>
+                            <span>{t("home.popular_in_vienna")}</span>
                           </div>
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
@@ -701,7 +701,7 @@ export default function Home() {
                           <h3 className="text-2xl font-extrabold mb-1">{topR.name}</h3>
                           <p className="text-white/70 text-xs mb-3 line-clamp-1">{topR.address}</p>
                           <div className="w-full py-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-center text-sm font-bold">
-                            Jetzt ansehen →
+                            {t("home.view_now")}
                           </div>
                         </div>
                       </div>
@@ -710,10 +710,10 @@ export default function Home() {
                 ) : (
                   <div className="bg-card border border-border/50 rounded-3xl p-8 text-center shadow-xl aspect-[4/5] flex flex-col items-center justify-center">
                     <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-5 text-4xl">🍽️</div>
-                    <h3 className="font-bold text-xl mb-2">Wien entdecken</h3>
-                    <p className="text-muted-foreground text-sm mb-6">Die besten Restaurants, Cafés und Bars der Stadt.</p>
+                    <h3 className="font-bold text-xl mb-2">{t("home.discover_vienna")}</h3>
+                    <p className="text-muted-foreground text-sm mb-6">{t("home.discover_desc")}</p>
                     <Button asChild className="rounded-2xl bg-gradient-to-br from-primary to-accent border-0">
-                      <Link href="/explore">Jetzt entdecken</Link>
+                      <Link href="/explore">{t("home.discover_cta")}</Link>
                     </Button>
                   </div>
                 );
@@ -796,11 +796,11 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <span className="text-2xl">⭐</span>
                 <div>
-                  <h2 className="text-xl font-extrabold tracking-tight">Top in Wien</h2>
-                  <p className="text-xs text-muted-foreground">Hochbewertete Lokale passend zur Uhrzeit</p>
+                  <h2 className="text-xl font-extrabold tracking-tight">{t("home.top_in_vienna")}</h2>
+                  <p className="text-xs text-muted-foreground">{t("home.top_in_vienna_desc")}</p>
                 </div>
               </div>
-              <Link href="/explore?rating=4" className="text-xs font-bold text-primary hover:underline press-scale">Alle →</Link>
+              <Link href="/explore?rating=4" className="text-xs font-bold text-primary hover:underline press-scale">{t("home.view_all")}</Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {rankByContext(allRestaurants, mode, 3).map((ranked) => (
@@ -844,7 +844,7 @@ export default function Home() {
       {/* ── CUISINE BUBBLES ── */}
       <section className="py-10 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl font-extrabold mb-6 tracking-tight">Worauf haben Sie Hunger?</h2>
+          <h2 className="text-2xl font-extrabold mb-6 tracking-tight">{t("home.what_are_you_hungry_for")}</h2>
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x">
             {CUISINES.map((cuisine) => (
               <Link
@@ -865,12 +865,12 @@ export default function Home() {
       {/* ── BUSINESS TYPE QUICK-NAV ── */}
       <section className="py-8 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl font-extrabold mb-5 tracking-tight">Nach Betriebsart</h2>
+          <h2 className="text-2xl font-extrabold mb-5 tracking-tight">{t("home.by_type")}</h2>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { type: "restaurant", emoji: "🍽️", label: "Restaurants", from: "from-primary/80", to: "to-accent/80", textCls: "text-primary" },
-              { type: "cafe", emoji: "☕", label: "Cafés", from: "from-amber-500", to: "to-orange-500", textCls: "text-amber-700" },
-              { type: "bar", emoji: "🍸", label: "Bars", from: "from-rose-500", to: "to-pink-600", textCls: "text-rose-700" },
+              { type: "restaurant", emoji: "🍽️", label: t("home.filter_restaurant"), from: "from-primary/80", to: "to-accent/80", textCls: "text-primary" },
+              { type: "cafe", emoji: "☕", label: t("home.filter_cafe"), from: "from-amber-500", to: "to-orange-500", textCls: "text-amber-700" },
+              { type: "bar", emoji: "🍸", label: t("home.filter_bar"), from: "from-rose-500", to: "to-pink-600", textCls: "text-rose-700" },
             ].map((bt) => (
               <Link
                 key={bt.type}
@@ -883,7 +883,7 @@ export default function Home() {
                   <div className="relative p-5 text-center space-y-2">
                     <div className="text-4xl">{bt.emoji}</div>
                     <div className={`text-sm font-bold ${bt.textCls}`}>{bt.label}</div>
-                    <div className="text-xs text-muted-foreground">Entdecken</div>
+                    <div className="text-xs text-muted-foreground">{t("home.explore_section_label")}</div>
                   </div>
                 </div>
               </Link>
@@ -897,10 +897,10 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-2xl font-extrabold tracking-tight">Entdecke Wien nach Bezirk</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">Hyper-lokal — wähle dein Viertel</p>
+              <h2 className="text-2xl font-extrabold tracking-tight">{t("home.explore_districts")}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("home.hyper_local_hint")}</p>
             </div>
-            <Link href="/explore" className="text-xs font-bold text-primary hover:underline press-scale">Alle →</Link>
+            <Link href="/explore" className="text-xs font-bold text-primary hover:underline press-scale">{t("home.view_all")}</Link>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {[
@@ -939,18 +939,18 @@ export default function Home() {
                   <div className="text-3xl">🏪</div>
                   <div>
                     <div className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full mb-1">
-                      FÜR BETRIEBE
+                      {t("home.for_biz_badge")}
                     </div>
                     <p className="font-extrabold text-foreground text-base md:text-lg leading-tight">
-                      Restaurant, Café oder Bar? Wachse mit uns.
+                      {t("home.for_biz_headline")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Mehr Gäste · Boost-Sichtbarkeit · Kostenlos starten
+                      {t("home.for_biz_sub")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl group-hover:opacity-90 transition-opacity">
-                  Mehr erfahren
+                  {t("home.for_biz_cta")}
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </div>
               </div>
@@ -971,7 +971,7 @@ export default function Home() {
               <div className="flex flex-wrap gap-3 justify-center">
                 <Button asChild size="lg" className="rounded-2xl bg-white text-primary font-bold hover:bg-white/90 shadow-xl press-scale h-12 px-8 border-0">
                   <Link href="/explore">
-                    Jetzt entdecken <Compass className="w-4 h-4 ml-2" />
+                    {t("home.discover_cta")} <Compass className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
                 {customerEmail && allRestaurants && (

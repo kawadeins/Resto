@@ -1,0 +1,225 @@
+Perform a full RESET and REPAIR of the i18n (translation) system.
+
+CRITICAL:
+The current translation system is BROKEN due to duplicated or conflicting implementations.
+
+This is NOT a translation improvement task.
+This is a system cleanup and rebuild task.
+
+==================================================
+PROBLEM
+==================================================
+
+The app currently has:
+- mixed languages on the same screen
+- some components translated, others not
+- duplicated translation logic
+- possible multiple i18n providers
+- inconsistent language switching
+- stale UI not updating on language change
+
+This indicates a broken architecture, not missing translations.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Fix the translation system by:
+1. Removing ALL duplicated / conflicting i18n logic
+2. Keeping ONLY ONE clean translation system
+3. Reconnecting the entire app to it
+4. Ensuring full consistency across:
+   - customer app
+   - restaurant dashboard
+
+==================================================
+STEP 1 — DETECT AND REMOVE DUPLICATES
+==================================================
+
+Search entire codebase for:
+- multiple i18n initializations
+- multiple providers
+- multiple translation hooks
+- duplicated config files
+- multiple language stores
+- manual string mapping systems
+- inline translation objects
+
+Then:
+
+- REMOVE all duplicate systems
+- KEEP only ONE i18n implementation
+- ensure there is only ONE source of truth
+
+==================================================
+STEP 2 — CLEAN THE ARCHITECTURE
+==================================================
+
+Ensure the app uses:
+
+- one global translation provider
+- one locale state
+- one translation hook (e.g. useTranslation or equivalent)
+- one config file for languages
+- one loading strategy for translations
+
+Make sure:
+- both customer app AND dashboard use the SAME system
+- no page bypasses the provider
+- no component uses static text outside translation
+
+==================================================
+STEP 3 — FIX LANGUAGE STATE
+==================================================
+
+Ensure language is controlled by:
+
+- single global state (NOT duplicated)
+- stored in localStorage or equivalent
+- initialized correctly on app load
+- updated properly on language switch
+
+Fix issues where:
+- components don’t re-render on language change
+- state is copied and becomes stale
+- language only updates partially
+
+==================================================
+STEP 4 — REMOVE HARDCODED STRINGS
+==================================================
+
+Scan entire app and remove ALL visible hardcoded text:
+
+Replace them with translation keys.
+
+Targets:
+- navbar
+- sidebar
+- buttons
+- forms
+- placeholders
+- modals
+- dashboard cards
+- profile
+- feed
+- settings
+- booking flow
+- plan system
+- notifications
+- chat
+- errors
+- empty states
+
+No visible UI text should remain hardcoded.
+
+==================================================
+STEP 5 — FIX MIXED LANGUAGE BUG
+==================================================
+
+Specifically fix:
+
+- components that don’t update when language changes
+- memoized labels (useMemo/useCallback bugs)
+- constants defined outside render
+- menu/sidebar arrays defined statically
+- stale props copied from translation once
+
+All UI must re-render correctly when language changes.
+
+==================================================
+STEP 6 — UNIFY TRANSLATION KEYS
+==================================================
+
+Ensure:
+- no duplicate keys across files
+- no conflicting keys
+- no missing keys causing fallback chaos
+- no partial namespace loading
+
+If keys are duplicated or inconsistent:
+- normalize them
+- clean them
+- remove dead keys
+
+==================================================
+STEP 7 — VERIFY FULL APP COVERAGE
+==================================================
+
+Check and fix translation across:
+
+CUSTOMER APP:
+- Home
+- Explore
+- Restaurant page
+- Booking flow
+- Meal plans
+- Feed
+- Profile
+- Public profile
+- Settings
+- Notifications
+- Chat
+
+DASHBOARD:
+- Sidebar
+- Dashboard home
+- Reservations
+- Reviews
+- Analytics
+- Billing
+- Marketing
+- Settings
+- Modals
+
+==================================================
+STEP 8 — HARD VALIDATION (MANDATORY)
+==================================================
+
+Switch languages manually:
+
+- German
+- English
+- French
+
+For each:
+- check every screen
+- verify ZERO mixed-language UI
+- verify ALL text updates
+
+If ANY mixed-language appears:
+→ find root cause and fix it
+
+==================================================
+STEP 9 — FINAL STATE
+==================================================
+
+The app must have:
+
+- ONE translation system
+- ZERO duplication
+- ZERO mixed-language UI
+- FULL reactivity on language switch
+- CONSISTENT behavior across customer + dashboard
+
+==================================================
+STEP 10 — REPORT
+==================================================
+
+Return:
+
+1. What duplicate systems were found and removed
+2. What caused the mixed-language bug
+3. What architecture is now used
+4. Whether full consistency is achieved
+5. Any remaining weak points
+
+==================================================
+IMPORTANT RULE
+==================================================
+
+Do NOT layer fixes on top of broken logic.
+
+You MUST:
+→ remove the broken system
+→ rebuild clean
+→ reconnect everything properly

@@ -226,12 +226,11 @@ function CountdownDigit({ val, label }: { val: string; label: string }) {
   const [flipping, setFlipping] = useState(false);
 
   useEffect(() => {
-    if (prevRef.current !== val) {
-      setFlipping(true);
-      prevRef.current = val;
-      const t = setTimeout(() => setFlipping(false), 180);
-      return () => clearTimeout(t);
-    }
+    if (prevRef.current === val) return;
+    setFlipping(true);
+    prevRef.current = val;
+    const t = setTimeout(() => setFlipping(false), 180);
+    return () => clearTimeout(t);
   }, [val]);
 
   return (

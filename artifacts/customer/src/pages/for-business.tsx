@@ -261,18 +261,18 @@ export default function ForBusiness() {
           <div className="flex justify-center mb-7">
             <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-3.5 py-1.5 text-xs font-bold">
               <Building2 className="w-3 h-3" />
-              Für Betriebe — Restaurants, Cafés &amp; Bars in Wien
+              {t("for_business.hero_badge")}
             </div>
           </div>
 
           {/* Master headline */}
           <div className="text-center max-w-3xl mx-auto mb-10">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.05] mb-5 text-foreground">
-              <span className="gradient-text">Mehr Gäste. Mehr Sichtbarkeit.</span>
-              <br />Mehr Kontrolle.
+              <span className="gradient-text">{t("for_business.master_headline1")}</span>
+              <br />{t("for_business.master_headline2")}
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
-              RestoSmart hilft Restaurants, Cafés und Bars, mehr Reservierungen und mehr Umsatz zu gewinnen — Sichtbarkeit, Bewertungen, Kampagnen und Buchungen alles in einem System.
+              {t("for_business.master_sub")}
             </p>
           </div>
 
@@ -361,7 +361,7 @@ export default function ForBusiness() {
 
               {/* Trust pills */}
               <div className="flex items-center justify-center gap-5 mt-4 flex-wrap">
-                {[t("for_business.pricing_trial"), "Keine Kreditkarte", "In 2 Min. live"].map(pill => (
+                {[t("for_business.pricing_trial"), t("for_business.trust_no_cc"), t("for_business.trust_go_live")].map(pill => (
                   <span key={pill} className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     {pill}
@@ -379,23 +379,23 @@ export default function ForBusiness() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-w-3xl mx-auto">
               <StatCard
-                value={platform.totalVenues > 0 ? `${platform.totalVenues}+` : "Wächst"}
-                label="Betriebe auf der Plattform"
+                value={platform.totalVenues > 0 ? `${platform.totalVenues}+` : t("for_business.stat_growing")}
+                label={t("for_business.stat_venues")}
                 icon={Building2} color="text-primary"
               />
               <StatCard
-                value={platform.totalBookings > 0 ? `${platform.totalBookings.toLocaleString("de")}+` : "Aktiv"}
-                label="Buchungen gesamt"
+                value={platform.totalBookings > 0 ? `${platform.totalBookings.toLocaleString("de")}+` : t("for_business.stat_active")}
+                label={t("for_business.stat_bookings")}
                 icon={CalCheck} color="text-emerald-600"
               />
               <StatCard
-                value={platform.activePromotions > 0 ? `${platform.activePromotions}` : "Täglich"}
-                label="Aktive Boosts gerade"
+                value={platform.activePromotions > 0 ? `${platform.activePromotions}` : t("for_business.stat_daily")}
+                label={t("for_business.stat_boosts")}
                 icon={Zap} color="text-amber-500"
               />
               <StatCard
                 value={platform.avgRating > 0 ? `${platform.avgRating}` : "4.7"}
-                label="Ø Bewertung der Betriebe"
+                label={t("for_business.stat_rating")}
                 icon={Star} color="text-yellow-500"
               />
             </div>
@@ -407,12 +407,12 @@ export default function ForBusiness() {
       <section id="value-section" className="py-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Was Sie bekommen</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">{t("for_business.what_you_get")}</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              Ihr {cfg.label} — voll sichtbar, voll gebucht
+              {t("for_business.visible_booked", { type: cfg.label })}
             </h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
-              RestoSmart ist kein Bewertungsportal. Es ist eine aktive Entdeckungsplattform, die lokale Betriebe direkt zu neuen Gästen bringt.
+              {t("for_business.platform_desc")}
             </p>
           </div>
 
@@ -443,12 +443,12 @@ export default function ForBusiness() {
       <section className="py-14 px-4 bg-gradient-to-br from-rose-50 to-orange-50 border-y border-rose-100">
         <div className="container mx-auto max-w-3xl">
           <div className="text-center mb-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-rose-500 mb-2">Was Sie gerade verpassen</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-rose-500 mb-2">{t("for_business.what_you_miss")}</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              Während Sie warten, buchen andere
+              {t("for_business.while_you_wait")}
             </h2>
             <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
-              Lokale Nutzer suchen gerade nach {cfg.label === "Bar / Lounge" ? "Bars" : cfg.label + "s"} in Wien. Ohne Eintrag finden sie Sie nicht.
+              {t("for_business.locals_searching", { type: cfg.label === "Bar / Lounge" ? "Bar" : cfg.label })}
             </p>
           </div>
 
@@ -497,28 +497,28 @@ export default function ForBusiness() {
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">So einfach geht's</p>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">In 3 Schritten live</h2>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">{t("for_business.how_it_works_label")}</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">{t("for_business.steps_title")}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 step: "01",
                 icon: Building2,
-                title: "Profil aktivieren",
-                desc: "Tragen Sie Ihren Betrieb ein. Wählen Sie Ihren Typ — Restaurant, Café oder Bar. Kostenlos und in 2 Minuten erledigt.",
+                title: t("for_business.step1_title"),
+                desc: t("for_business.step1_desc"),
               },
               {
                 step: "02",
                 icon: Eye,
-                title: "Sichtbar werden",
-                desc: "Ihr Betrieb erscheint in der Nähesuche, auf der Karte und in personalisierten Empfehlungen lokaler Nutzer.",
+                title: t("for_business.step2_title"),
+                desc: t("for_business.step2_desc"),
               },
               {
                 step: "03",
                 icon: TrendingUp,
-                title: "Wachsen & optimieren",
-                desc: "Mit Premium-Tools und Boosts steigern Sie Ihre Sichtbarkeit gezielt — mit echten Daten und smartem Budget.",
+                title: t("for_business.step3_title"),
+                desc: t("for_business.step3_desc"),
               },
             ].map(({ step, icon: Icon, title, desc }) => (
               <div key={step} className="relative rounded-2xl border border-border/60 bg-card p-6">
@@ -538,12 +538,12 @@ export default function ForBusiness() {
       <section className="py-16 px-4 bg-muted/20 border-y border-border/50">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Das Dashboard</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">{t("for_business.dashboard_label")}</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              Alles in einem System — ohne Komplexität
+              {t("for_business.all_in_one")}
             </h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm">
-              Sichtbarkeit, Bewertungen, Kampagnen und Buchungen in einem modernen Business-Dashboard, das in Minuten eingerichtet ist.
+              {t("for_business.dashboard_desc")}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -552,33 +552,33 @@ export default function ForBusiness() {
                 icon: Star,
                 gradient: "from-primary to-accent",
                 shadow: "shadow-primary/20",
-                title: "KI-Bewertungsantworten",
-                desc: "Antworten Sie auf Gästebewertungen in Sekunden — mit vorgeschlagenen, anpassbaren Texten direkt im Dashboard.",
-                tag: "KI-gestützt",
+                title: t("for_business.feature1_title"),
+                desc: t("for_business.feature1_desc"),
+                tag: t("for_business.feature1_tag"),
               },
               {
                 icon: Zap,
                 gradient: "from-amber-400 to-orange-500",
                 shadow: "shadow-amber-400/20",
-                title: "Kampagnen-Center",
-                desc: "Erstellen Sie Boosts und Kampagnen mit einem Klick. Volle Kostenkontrolle, sofort aktiv, jederzeit pausierbar.",
-                tag: "Boost-Feature",
+                title: t("for_business.feature2_title"),
+                desc: t("for_business.feature2_desc"),
+                tag: t("for_business.feature2_tag"),
               },
               {
                 icon: BarChart3,
                 gradient: "from-emerald-500 to-teal-500",
                 shadow: "shadow-emerald-500/20",
-                title: "Analytics & Umsatz-Muster",
-                desc: "Verstehen Sie wann Ihre Gäste kommen, was funktioniert und wo Potenzial liegt — mit klaren, echten Daten.",
-                tag: "Premium",
+                title: t("for_business.feature3_title"),
+                desc: t("for_business.feature3_desc"),
+                tag: t("for_business.feature3_tag"),
               },
               {
                 icon: Shield,
                 gradient: "from-primary to-accent",
                 shadow: "shadow-primary/20",
-                title: "Boost-Wallet transparent",
-                desc: "Laden Sie Ihr Werbebudget auf und sehen Sie jeden ausgegebenen Cent — kein versteckter Algorithmus.",
-                tag: "Transparent",
+                title: t("for_business.feature4_title"),
+                desc: t("for_business.feature4_desc"),
+                tag: t("for_business.feature4_tag"),
               },
             ].map(({ icon: Icon, gradient, shadow, title, desc, tag }) => (
               <div key={title} className="rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200">
@@ -602,7 +602,7 @@ export default function ForBusiness() {
               onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 hover:opacity-90 transition-opacity"
             >
-              Jetzt kostenlos testen <ArrowRight className="w-4 h-4" />
+              {t("for_business.dashboard_cta")} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -612,25 +612,25 @@ export default function ForBusiness() {
       <section className="py-14 px-4 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Premium & Boost</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">{t("for_business.premium_label")}</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              Sichtbarkeit, die sich auszahlt
+              {t("for_business.free_tier_headline")}
             </h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm">
-              Gratis-Listing gibt Ihnen die Basis. Premium gibt Ihnen den Vorsprung.
+              {t("for_business.free_tier_sub")}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             {/* Free tier */}
             <div className="rounded-2xl border border-border/60 bg-card p-6">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Kostenlos</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">{t("for_business.free_label")}</p>
               <div className="space-y-2.5">
                 {[
-                  "Basis-Listing auf der Plattform",
-                  "Karten-Eintrag",
-                  "Grundlegendes Profil",
-                  "Buchungsannahme",
+                  t("for_business.free_feature1"),
+                  t("for_business.free_feature2"),
+                  t("for_business.free_feature3"),
+                  t("for_business.free_feature4"),
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -654,23 +654,23 @@ export default function ForBusiness() {
             {/* Premium tier */}
             <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-accent/5 p-6 relative overflow-hidden">
               <div className="absolute top-3 right-3 bg-gradient-to-r from-primary to-accent text-white text-[10px] font-black px-2.5 py-1 rounded-full">
-                EMPFOHLEN
+                {t("for_business.recommended")}
               </div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Business Premium</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">{t("for_business.business_premium_name")}</p>
               <p className="text-2xl font-extrabold text-foreground mb-1">
-                €39,90 <span className="text-sm font-normal text-muted-foreground">/ Monat</span>
+                €39,90 <span className="text-sm font-normal text-muted-foreground">{t("for_business.pricing_month_suffix")}</span>
               </p>
-              <p className="text-xs text-primary font-semibold mb-4">RestoSmart Business Premium</p>
+              <p className="text-xs text-primary font-semibold mb-4">{t("for_business.premium_subtitle")}</p>
               <div className="space-y-2.5">
                 {[
-                  "Alles aus Kostenlos",
-                  "Höhere Platzierung — prominent sichtbar",
-                  "Premium-Vertrauens-Badge",
-                  "Vollständiges Analytics-Dashboard",
-                  "Revenue Optimizer mit KI-Empfehlungen",
-                  "Zugang zu Boost-Sichtbarkeit",
-                  "Gruppen-Empfehlungs-Feature",
-                  "Smart-Angebote & Flash-Deals",
+                  t("for_business.premium_feature1"),
+                  t("for_business.premium_feature2"),
+                  t("for_business.premium_feature3"),
+                  t("for_business.premium_feature4"),
+                  t("for_business.premium_feature5"),
+                  t("for_business.premium_feature6"),
+                  t("for_business.premium_feature7"),
+                  t("for_business.premium_feature8"),
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-primary shrink-0" />
@@ -689,12 +689,12 @@ export default function ForBusiness() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-sm text-amber-900">Boost-Sichtbarkeit</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">Premium-Feature</span>
+                  <h3 className="font-bold text-sm text-amber-900">{t("for_business.boost_label")}</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">{t("for_business.premium_feature_badge")}</span>
                 </div>
                 <p className="text-sm text-amber-800 mb-2">{cfg.boostExample}</p>
                 <p className="text-xs text-amber-700">
-                  Boosts erscheinen als <strong>„Gesponsert"</strong> — transparent für Nutzer, sichtbar vor der Konkurrenz. Budget selbst festlegen, jederzeit pausierbar.
+                  {t("for_business.boost_transparency")}
                 </p>
               </div>
             </div>
@@ -707,10 +707,10 @@ export default function ForBusiness() {
         <div className="container mx-auto max-w-4xl">
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
             {[
-              { icon: CheckCircle, text: "14 Tage kostenlos", sub: "Kein Risiko" },
-              { icon: Shield,      text: "Keine versteckten Kosten", sub: "Transparente Preise" },
-              { icon: Clock,       text: "In 2 Minuten live", sub: "Keine Kreditkarte" },
-              { icon: Award,       text: "Jederzeit kündbar", sub: "Ohne Bindung" },
+              { icon: CheckCircle, text: t("for_business.trust1"), sub: t("for_business.trust1_sub") },
+              { icon: Shield,      text: t("for_business.trust2"), sub: t("for_business.trust2_sub") },
+              { icon: Clock,       text: t("for_business.trust3"), sub: t("for_business.trust3_sub") },
+              { icon: Award,       text: t("for_business.trust4"), sub: t("for_business.trust4_sub") },
             ].map(({ icon: Icon, text, sub }) => (
               <div key={text} className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -732,20 +732,20 @@ export default function ForBusiness() {
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-accent py-12 px-6 text-center shadow-2xl shadow-primary/25">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)] pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(236,72,153,0.3),transparent_60%)] pointer-events-none" />
-            <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3">Kostenlos starten</p>
+            <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3">{t("for_business.final_cta_label")}</p>
             <h2 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">
-              Ihr Betrieb. Sichtbar. Gebucht.
+              {t("for_business.final_headline")}
             </h2>
             <p className="text-white/80 text-sm md:text-base max-w-md mx-auto mb-7 leading-relaxed">
-              14 Tage voller Zugang — Boosts, Analytics, KI-Antworten und mehr. Keine Kreditkarte. Keine Bindung.
+              {t("for_business.final_sub")}
             </p>
             <button
               onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white text-primary font-extrabold text-sm shadow-xl hover:shadow-2xl hover:opacity-95 transition-all"
             >
-              Jetzt Betrieb eintragen <ArrowRight className="w-4 h-4" />
+              {t("for_business.final_btn")} <ArrowRight className="w-4 h-4" />
             </button>
-            <p className="text-white/50 text-xs mt-4">14 Tage gratis · keine Kreditkarte · sofort aktiv</p>
+            <p className="text-white/50 text-xs mt-4">{t("for_business.final_disclaimer")}</p>
           </div>
         </div>
       </div>
@@ -754,12 +754,12 @@ export default function ForBusiness() {
       <section id="claim-form" className="py-10 px-4">
         <div className="container mx-auto max-w-xl">
           <div className="text-center mb-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Betrieb eintragen</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">{t("for_business.register_label")}</p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              In 2 Minuten live
+              {t("for_business.register_title")}
             </h2>
             <p className="text-muted-foreground mt-2 text-sm max-w-md mx-auto">
-              Betrieb eintragen — 14 Tage voller Premium-Zugang, keine Kreditkarte erforderlich.
+              {t("for_business.register_sub")}
             </p>
           </div>
 
@@ -776,18 +776,18 @@ export default function ForBusiness() {
                 </div>
                 <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Profil jetzt live
+                  {t("for_business.success_live_badge")}
                 </div>
-                <h3 className="text-2xl font-extrabold text-foreground mb-2">Dein Betrieb ist aktiviert!</h3>
+                <h3 className="text-2xl font-extrabold text-foreground mb-2">{t("for_business.success_title")}</h3>
                 <p className="text-muted-foreground text-sm mb-5">
-                  14-Tage-Testphase gestartet — voller Zugang, keine Kreditkarte.
+                  {t("for_business.success_desc")}
                 </p>
                 <div className="bg-white/80 border border-border/60 rounded-2xl p-4 mb-6 text-left space-y-2.5">
                   {[
-                    "Dein Betrieb ist auf der Plattform sichtbar",
-                    "Voller Zugang zum Business-Dashboard",
-                    "14 Tage alle Premium-Funktionen kostenlos",
-                    "Analytics, Boosts & Wachstumstools freigeschaltet",
+                    t("for_business.success_item1"),
+                    t("for_business.success_item2"),
+                    t("for_business.success_item3"),
+                    t("for_business.success_item4"),
                   ].map(item => (
                     <div key={item} className="flex items-center gap-2.5">
                       <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -799,11 +799,11 @@ export default function ForBusiness() {
                   className={`w-full h-13 rounded-2xl bg-gradient-to-r ${cfg.gradient} text-white font-bold text-base shadow-lg px-6 py-3.5 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity`}
                   onClick={() => { window.location.href = window.location.origin + "/restosmart/"; }}
                 >
-                  Dashboard jetzt öffnen
+                  {t("for_business.success_btn")}
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <p className="text-xs text-muted-foreground mt-3">
-                  Du wirst direkt zu deinem Business-Dashboard weitergeleitet.
+                  {t("for_business.success_redirect")}
                 </p>
               </motion.div>
             ) : (
@@ -816,7 +816,7 @@ export default function ForBusiness() {
 
                   {/* Business type selector in form */}
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">Art des Betriebs *</label>
+                    <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">{t("for_business.form_business_type")}</label>
                     <div className="grid grid-cols-3 gap-2">
                       {(["restaurant", "cafe", "bar"] as BizType[]).map(type => {
                         const c = BIZ_CONFIG[type];
@@ -842,7 +842,7 @@ export default function ForBusiness() {
 
                   {/* Form fields */}
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">Name des Betriebs *</label>
+                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("for_business.form_business_name")}</label>
                     <Input
                       placeholder="z.B. Café Schwarzenberg"
                       value={formData.businessName}
@@ -853,7 +853,7 @@ export default function ForBusiness() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">Ihr Name *</label>
+                      <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("for_business.form_owner_name")}</label>
                       <Input
                         placeholder="Vorname & Nachname"
                         value={formData.ownerName}
@@ -862,7 +862,7 @@ export default function ForBusiness() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">Stadt</label>
+                      <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("for_business.form_city")}</label>
                       <Input
                         placeholder="Wien"
                         value={formData.city}
@@ -873,7 +873,7 @@ export default function ForBusiness() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">E-Mail *</label>
+                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("for_business.form_email")}</label>
                     <Input
                       type="email"
                       placeholder="ihre@email.at"
@@ -884,7 +884,7 @@ export default function ForBusiness() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">Telefon (optional)</label>
+                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("for_business.form_phone")}</label>
                     <Input
                       type="tel"
                       placeholder="+43 ..."
@@ -895,7 +895,7 @@ export default function ForBusiness() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">Nachricht (optional)</label>
+                    <label className="block text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wide">{t("for_business.form_message")}</label>
                     <textarea
                       placeholder="Was interessiert Sie besonders? Haben Sie Fragen?"
                       value={formData.message}
@@ -907,7 +907,7 @@ export default function ForBusiness() {
 
                   {claimMutation.isError && (
                     <p className="text-sm text-red-500 rounded-xl bg-red-50 border border-red-200 px-3 py-2">
-                      Fehler beim Absenden — bitte versuchen Sie es erneut.
+                      {t("for_business.form_error")}
                     </p>
                   )}
 
@@ -920,14 +920,14 @@ export default function ForBusiness() {
                     disabled={claimMutation.isPending || !formData.businessName || !formData.ownerName || !formData.email}
                   >
                     {claimMutation.isPending ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Wird gesendet…</>
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("for_business.form_submitting")}</>
                     ) : (
-                      <>14 Tage kostenlos testen <ArrowRight className="w-4 h-4 ml-2" /></>
+                      <>{t("for_business.pricing_trial")} <ArrowRight className="w-4 h-4 ml-2" /></>
                     )}
                   </Button>
 
                   <p className="text-[11px] text-muted-foreground text-center">
-                    Kostenlos starten — kein Kreditkarte erforderlich. Premium optional.
+                    {t("for_business.form_legal")}
                   </p>
                 </div>
               </motion.div>
@@ -943,18 +943,18 @@ export default function ForBusiness() {
             {[
               {
                 icon: Shield, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100",
-                title: "Transparent & fair",
-                desc: 'Kein versteckter Algorithmus. Boosts werden klar als \u201eGesponsert\u201c markiert \u2014 Vertrauen bei Nutzern und Betrieben.',
+                title: t("for_business.why0_title"),
+                desc: t("for_business.why0_desc"),
               },
               {
                 icon: MapPin, color: "text-primary", bg: "bg-primary/5 border-primary/15",
-                title: "Wien-fokussiert",
-                desc: "Wir konzentrieren uns auf Wien — mit echter Lokalkenntniss und regionalem Verständnis für alle Stadtbezirke.",
+                title: t("for_business.why1_title"),
+                desc: t("for_business.why1_desc"),
               },
               {
                 icon: Award, color: "text-amber-600", bg: "bg-amber-50 border-amber-100",
-                title: "Betriebe wachsen zuerst",
-                desc: "Unser Geschäftsmodell funktioniert nur, wenn Restaurants, Cafés und Bars wirklich wachsen. Ihr Erfolg ist unser Erfolg.",
+                title: t("for_business.why2_title"),
+                desc: t("for_business.why2_desc"),
               },
             ].map(({ icon: Icon, color, bg, title, desc }) => (
               <div key={title} className={`rounded-2xl border ${bg} p-6`}>
@@ -969,7 +969,7 @@ export default function ForBusiness() {
 
           {/* Contact line */}
           <div className="mt-10 text-center">
-            <p className="text-sm text-muted-foreground mb-3">Fragen? Wir helfen gerne direkt.</p>
+            <p className="text-sm text-muted-foreground mb-3">{t("for_business.contact_hint")}</p>
             <div className="flex items-center justify-center gap-6 flex-wrap">
               <a href="mailto:hello@restosmart.at" className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
                 <Mail className="w-4 h-4" /> hello@restosmart.at
