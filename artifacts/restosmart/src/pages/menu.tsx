@@ -115,11 +115,11 @@ export default function Menu() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Dieses Gericht löschen? Alle Rezeptverknüpfungen werden entfernt.")) {
+    if (confirm(t("menu.delete_confirm_full"))) {
       deleteMenuItem.mutate({ id }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListMenuItemsQueryKey() });
-          toast({ title: "Gericht erfolgreich gelöscht" });
+          toast({ title: t("menu.toast_deleted") });
         }
       });
     }
@@ -143,9 +143,9 @@ export default function Menu() {
 
       queryClient.invalidateQueries({ queryKey: getListMenuItemsQueryKey() });
       setSheetOpen(false);
-      toast({ title: editingDish ? "Gericht aktualisiert" : "Gericht erstellt" });
+      toast({ title: editingDish ? t("menu.toast_updated") : t("menu.toast_created") });
     } catch (error) {
-      toast({ title: "Gericht konnte nicht gespeichert werden", variant: "destructive" });
+      toast({ title: t("menu.toast_save_error"), variant: "destructive" });
     }
   };
 
@@ -169,9 +169,9 @@ export default function Menu() {
     <div className="space-y-8 pb-10">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Speisekarte verwalten</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t("menu.page_title")}</h2>
           <p className="text-muted-foreground mt-2">
-            Gerichte erstellen, Zutaten verknüpfen und Rentabilität in Echtzeit verfolgen.
+            {t("menu.page_subtitle")}
           </p>
         </div>
         <Button onClick={() => {
@@ -180,7 +180,7 @@ export default function Menu() {
           setIngredients([]);
           setSheetOpen(true);
         }}>
-          <Plus className="mr-2 h-4 w-4" /> Gericht hinzufügen
+          <Plus className="mr-2 h-4 w-4" /> {t("menu.add_dish_btn")}
         </Button>
       </div>
 
@@ -188,7 +188,7 @@ export default function Menu() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Aktive Gerichte</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("menu.stat_active_dishes")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.activeCount}</div>
@@ -198,7 +198,7 @@ export default function Menu() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Ø Gewinnmarge %</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("menu.stat_avg_margin")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-emerald-500">{stats.avgMargin.toFixed(1)}%</div>
@@ -208,7 +208,7 @@ export default function Menu() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Gericht mit höchster Marge</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("menu.stat_highest_margin")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.highestMarginDish}</div>
@@ -230,14 +230,14 @@ export default function Menu() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Kategorie</TableHead>
-                    <TableHead className="text-right">Verkaufspreis</TableHead>
-                    <TableHead className="text-right">Rezeptkosten</TableHead>
-                    <TableHead className="text-right">Gewinn</TableHead>
-                    <TableHead className="text-right">Marge</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Aktionen</TableHead>
+                    <TableHead>{t("menu.col_name")}</TableHead>
+                    <TableHead>{t("menu.col_category")}</TableHead>
+                    <TableHead className="text-right">{t("menu.col_selling_price")}</TableHead>
+                    <TableHead className="text-right">{t("menu.col_recipe_cost")}</TableHead>
+                    <TableHead className="text-right">{t("menu.col_profit")}</TableHead>
+                    <TableHead className="text-right">{t("menu.col_margin")}</TableHead>
+                    <TableHead>{t("menu.col_status")}</TableHead>
+                    <TableHead className="text-right">{t("menu.col_actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -264,9 +264,9 @@ export default function Menu() {
                       </TableCell>
                       <TableCell>
                         {dish.isActive ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Aktiv</Badge>
+                          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">{t("menu.badge_active")}</Badge>
                         ) : (
-                          <Badge variant="secondary" className="bg-muted text-muted-foreground">Inaktiv</Badge>
+                          <Badge variant="secondary" className="bg-muted text-muted-foreground">{t("menu.badge_inactive")}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -287,9 +287,9 @@ export default function Menu() {
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editingDish ? "Gericht bearbeiten" : "Neues Gericht hinzufügen"}</SheetTitle>
+            <SheetTitle>{editingDish ? t("menu.sheet_title_edit") : t("menu.sheet_title_new")}</SheetTitle>
             <SheetDescription>
-              Gerichtdetails eingeben und Zutaten verknüpfen, um die Gewinnmarge in Echtzeit zu berechnen.
+              {t("menu.sheet_desc")}
             </SheetDescription>
           </SheetHeader>
 
@@ -300,7 +300,7 @@ export default function Menu() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dish Name</FormLabel>
+                    <FormLabel>{t("menu.form_dish_name")}</FormLabel>
                     <FormControl><Input {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -313,7 +313,7 @@ export default function Menu() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>{t("menu.form_category")}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -329,7 +329,7 @@ export default function Menu() {
                   name="sellingPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Selling Price (€)</FormLabel>
+                      <FormLabel>{t("menu.form_selling_price")}</FormLabel>
                       <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -342,7 +342,7 @@ export default function Menu() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel>{t("menu.form_description")}</FormLabel>
                     <FormControl><Textarea {...field} value={field.value || ""} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -355,8 +355,8 @@ export default function Menu() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-muted/20">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Active Status</FormLabel>
-                      <p className="text-sm text-muted-foreground">Show in POS and public menu</p>
+                      <FormLabel className="text-base">{t("menu.form_active_status")}</FormLabel>
+                      <p className="text-sm text-muted-foreground">{t("menu.form_active_hint")}</p>
                     </div>
                     <FormControl>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -367,9 +367,9 @@ export default function Menu() {
 
               <div className="pt-6 border-t border-border">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-lg">Recipe Ingredients</h3>
+                  <h3 className="font-bold text-lg">{t("menu.section_ingredients")}</h3>
                   <Button type="button" variant="outline" size="sm" onClick={addIngredient}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Ingredient
+                    <Plus className="mr-2 h-4 w-4" /> {t("menu.btn_add_ingredient")}
                   </Button>
                 </div>
 
@@ -380,7 +380,7 @@ export default function Menu() {
                     return (
                       <div key={idx} className="flex gap-2 items-end">
                         <div className="flex-1">
-                          <Label className="text-[10px] text-muted-foreground">Item</Label>
+                          <Label className="text-[10px] text-muted-foreground">{t("menu.ingredient_item_label")}</Label>
                           <Select
                             value={ing.inventoryItemId.toString()}
                             onValueChange={(val) => updateIngredient(idx, "inventoryItemId", parseInt(val))}
@@ -406,7 +406,7 @@ export default function Menu() {
                           />
                         </div>
                         <div className="w-20 text-right">
-                          <Label className="text-[10px] text-muted-foreground">Cost</Label>
+                          <Label className="text-[10px] text-muted-foreground">{t("menu.ingredient_cost_label")}</Label>
                           <div className="h-9 flex items-center justify-end text-xs font-mono text-muted-foreground">
                             €{lineCost.toFixed(2)}
                           </div>
@@ -425,7 +425,7 @@ export default function Menu() {
                   })}
                   {ingredients.length === 0 && (
                     <div className="text-center py-6 text-sm text-muted-foreground border-2 border-dashed rounded-lg">
-                      No ingredients linked. Margin calculations will be inaccurate.
+                      {t("menu.no_ingredients")}
                     </div>
                   )}
                 </div>
@@ -433,11 +433,11 @@ export default function Menu() {
 
               <div className="p-4 bg-primary/5 rounded-lg space-y-2 border border-primary/10">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Estimated Recipe Cost:</span>
+                  <span className="text-sm font-medium">{t("menu.est_recipe_cost")}</span>
                   <span className="font-bold">€{estimatedRecipeCost.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Est. Profit Margin:</span>
+                  <span className="text-sm font-medium">{t("menu.est_profit_margin")}</span>
                   <span className={`font-bold ${estimatedMargin > 50 ? "text-emerald-500" : estimatedMargin > 30 ? "text-amber-500" : "text-rose-500"}`}>
                     {estimatedMargin.toFixed(1)}%
                   </span>
@@ -446,7 +446,7 @@ export default function Menu() {
 
               <SheetFooter className="pt-6">
                 <Button type="submit" className="w-full" disabled={createMenuItem.isPending || updateMenuItem.isPending || setMenuItemIngredients.isPending}>
-                  {editingDish ? "Gericht & Rezept speichern" : "Gericht & Rezept anlegen"}
+                  {editingDish ? t("menu.btn_save_dish") : t("menu.btn_create_dish")}
                 </Button>
               </SheetFooter>
             </form>

@@ -82,12 +82,12 @@ export default function Pos() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListMenuItemsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListPosSalesQueryKey({ params: { limit: 50 } }) });
-        toast({ title: "Verkauf erfasst. Lagerbestand automatisch abgezogen." });
+        toast({ title: t("pos.toast_sale_recorded") });
         setSellingDish(null);
         setQuantity(1);
         setNotes("");
       },
-      onError: () => toast({ title: "Verkauf konnte nicht erfasst werden", variant: "destructive" })
+      onError: () => toast({ title: t("pos.toast_sale_error"), variant: "destructive" })
     });
   };
 
@@ -96,11 +96,11 @@ export default function Pos() {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return "Gerade eben";
-    if (diffMin < 60) return `Vor ${diffMin} Min.`;
+    if (diffMin < 1) return t("pos.time_just_now");
+    if (diffMin < 60) return t("pos.time_minutes_ago", { count: diffMin });
     const diffHours = Math.floor(diffMin / 60);
-    if (diffHours < 24) return `Vor ${diffHours} Std.`;
-    return "Gestern";
+    if (diffHours < 24) return t("pos.time_hours_ago", { count: diffHours });
+    return t("pos.time_yesterday");
   };
 
   return (
@@ -108,9 +108,9 @@ export default function Pos() {
       {/* Left Column: Menu Grid */}
       <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Kassensystem</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t("pos.page_title")}</h2>
           <p className="text-muted-foreground mt-1">
-            Verkäufe erfassen und Zutaten automatisch aus dem Lager abziehen.
+            {t("pos.page_subtitle")}
           </p>
         </div>
 
@@ -158,7 +158,7 @@ export default function Pos() {
                       €{item.sellingPrice.toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground mb-4">
-                      Rezeptkosten: €{item.recipeCost.toFixed(2)}
+                      {t("pos.recipe_cost_label")} €{item.recipeCost.toFixed(2)}
                     </div>
                     <Button 
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
@@ -167,7 +167,7 @@ export default function Pos() {
                         setSellingDish(item);
                       }}
                     >
-                      <ShoppingCart className="mr-2 h-4 w-4" /> Verkaufen
+                      <ShoppingCart className="mr-2 h-4 w-4" /> {t("pos.btn_sell")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -182,7 +182,7 @@ export default function Pos() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
-            Letzte Verkäufe
+            {t("pos.sales_log_title")}
           </h3>
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
             Live
@@ -211,7 +211,7 @@ export default function Pos() {
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2">
                       <Badge className="h-4 px-1 text-[9px] bg-muted text-muted-foreground">x{sale.quantity}</Badge>
-                      <span className="text-emerald-500/70 font-mono">+{sale.totalProfit.toFixed(2)} Gewinn</span>
+                      <span className="text-emerald-500/70 font-mono">{t("pos.profit_suffix", { amount: sale.totalProfit.toFixed(2) })}</span>
                     </div>
                     <div className="text-muted-foreground">{formatTimeAgo(sale.soldAt)}</div>
                   </div>
@@ -223,8 +223,8 @@ export default function Pos() {
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
                 <ShoppingCart className="h-6 w-6 opacity-20" />
               </div>
-              <p className="text-sm font-medium">Noch keine Verkäufe erfasst.</p>
-              <p className="text-xs">Starten Sie mit der Erfassung aus dem Speisekartengitter.</p>
+              <p className="text-sm font-medium">{t("pos.no_sales_title")}</p>
+              <p className="text-xs">{t("pos.no_sales_hint")}</p>
             </div>
           )}
         </div>
@@ -232,7 +232,7 @@ export default function Pos() {
         <div className="mt-auto p-4 bg-primary/5 rounded-xl border border-primary/10 space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4" /> Heutiger Gewinn
+              <TrendingUp className="h-4 w-4" /> {t("pos.today_profit")}
             </div>
             <div className="text-xl font-bold text-emerald-500">
               €{todayStats.profit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -240,7 +240,7 @@ export default function Pos() {
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <DollarSign className="h-4 w-4" /> Heutiger Umsatz
+              <DollarSign className="h-4 w-4" /> {t("pos.today_revenue")}
             </div>
             <div className="text-xl font-bold">
               €{todayStats.revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -253,14 +253,14 @@ export default function Pos() {
       <Dialog open={!!sellingDish} onOpenChange={(open) => !open && setSellingDish(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Verkauf erfassen: {sellingDish?.name}</DialogTitle>
+            <DialogTitle>{t("pos.dialog_title", { name: sellingDish?.name ?? "" })}</DialogTitle>
             <DialogDescription>
-              Dieser Verkauf zieht die benötigten Zutaten automatisch aus dem Lager ab.
+              {t("pos.dialog_desc")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="quantity" className="text-right">Menge</Label>
+              <Label htmlFor="quantity" className="text-right">{t("pos.label_quantity")}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -271,10 +271,10 @@ export default function Pos() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">Notizen</Label>
+              <Label htmlFor="notes" className="text-right">{t("pos.label_notes")}</Label>
               <Textarea
                 id="notes"
-                placeholder="Sonderwünsche oder Tischinfo..."
+                placeholder={t("pos.notes_placeholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="col-span-3 h-20"
@@ -282,23 +282,23 @@ export default function Pos() {
             </div>
             <div className="bg-muted/30 p-4 rounded-lg space-y-2 text-sm mt-4 border border-border/50">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Gesamtumsatz:</span>
+                <span className="text-muted-foreground">{t("pos.total_revenue")}</span>
                 <span className="font-bold text-emerald-500">€{((sellingDish?.sellingPrice || 0) * quantity).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Gesch. Gesamtgewinn:</span>
+                <span className="text-muted-foreground">{t("pos.total_profit")}</span>
                 <span className="font-bold text-emerald-400">€{((sellingDish?.absoluteProfit || 0) * quantity).toFixed(2)}</span>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSellingDish(null)}>Abbrechen</Button>
+            <Button variant="outline" onClick={() => setSellingDish(null)}>{t("pos.btn_cancel")}</Button>
             <Button 
               className="bg-emerald-600 hover:bg-emerald-500 text-white"
               onClick={handleConfirmSale}
               disabled={recordSale.isPending}
             >
-              {recordSale.isPending ? "Bestätige..." : "Verkauf bestätigen"}
+              {recordSale.isPending ? t("pos.btn_confirming") : t("pos.btn_confirm_sale")}
             </Button>
           </DialogFooter>
         </DialogContent>

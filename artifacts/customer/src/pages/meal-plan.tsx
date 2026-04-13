@@ -12,68 +12,109 @@ import { SmartPlanGenerator, SmartPlanTriggerButton } from "@/components/smart-p
 
 const API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
 
-const DAYS = [
-  { id: "Monday", short: "Mo", label: "Montag" },
-  { id: "Tuesday", short: "Di", label: "Dienstag" },
-  { id: "Wednesday", short: "Mi", label: "Mittwoch" },
-  { id: "Thursday", short: "Do", label: "Donnerstag" },
-  { id: "Friday", short: "Fr", label: "Freitag" },
-  { id: "Saturday", short: "Sa", label: "Samstag" },
-  { id: "Sunday", short: "So", label: "Sonntag" },
-];
-
 const TODAY_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
 
-const MEAL_SLOTS = [
-  { id: "lunch", label: "Mittagessen", emoji: "☀️" },
-  { id: "dinner", label: "Abendessen", emoji: "🌙" },
-];
+type TFn = (key: string) => string;
 
-const FOOD_TYPES = [
-  { id: "burger", emoji: "🍔", label: "Burger", from: "from-amber-400", to: "to-orange-500" },
-  { id: "pizza", emoji: "🍕", label: "Pizza", from: "from-red-400", to: "to-rose-500" },
-  { id: "meat", emoji: "🥩", label: "Fleisch", from: "from-orange-500", to: "to-red-600" },
-  { id: "fish", emoji: "🐟", label: "Fisch", from: "from-blue-400", to: "to-cyan-500" },
-  { id: "pasta", emoji: "🍝", label: "Pasta", from: "from-yellow-400", to: "to-amber-500" },
-  { id: "sushi", emoji: "🍣", label: "Sushi", from: "from-rose-400", to: "to-pink-600" },
-  { id: "vegan", emoji: "🌱", label: "Vegan", from: "from-green-400", to: "to-emerald-600" },
-  { id: "desserts", emoji: "🍰", label: "Desserts", from: "from-pink-400", to: "to-fuchsia-500" },
-  { id: "salat", emoji: "🥗", label: "Salat", from: "from-lime-400", to: "to-green-500" },
-  { id: "mexican", emoji: "🌮", label: "Mexikanisch", from: "from-amber-300", to: "to-orange-400" },
-  { id: "asian", emoji: "🍜", label: "Asiatisch", from: "from-red-300", to: "to-orange-500" },
-  { id: "oriental", emoji: "🥙", label: "Orientalisch", from: "from-amber-400", to: "to-yellow-500" },
-];
+function getDays(t: TFn) {
+  return [
+    { id: "Monday",    short: t("meal_plan.day_short_monday"),    label: t("meal_plan.day_monday") },
+    { id: "Tuesday",   short: t("meal_plan.day_short_tuesday"),   label: t("meal_plan.day_tuesday") },
+    { id: "Wednesday", short: t("meal_plan.day_short_wednesday"), label: t("meal_plan.day_wednesday") },
+    { id: "Thursday",  short: t("meal_plan.day_short_thursday"),  label: t("meal_plan.day_thursday") },
+    { id: "Friday",    short: t("meal_plan.day_short_friday"),    label: t("meal_plan.day_friday") },
+    { id: "Saturday",  short: t("meal_plan.day_short_saturday"),  label: t("meal_plan.day_saturday") },
+    { id: "Sunday",    short: t("meal_plan.day_short_sunday"),    label: t("meal_plan.day_sunday") },
+  ];
+}
 
-const FOOD_THEME_GROUPS = [
-  { id: "burger", emoji: "🍔", label: "Burger", from: "from-amber-400", to: "to-orange-500" },
-  { id: "pizza", emoji: "🍕", label: "Pizza", from: "from-red-400", to: "to-rose-500" },
-  { id: "sushi", emoji: "🍣", label: "Sushi", from: "from-rose-400", to: "to-pink-600" },
-  { id: "meat", emoji: "🥩", label: "Grill & Fleisch", from: "from-orange-500", to: "to-red-600" },
-  { id: "fish", emoji: "🐟", label: "Fisch & Meeresfrüchte", from: "from-blue-400", to: "to-cyan-500" },
-  { id: "pasta", emoji: "🍝", label: "Pasta & Italienisch", from: "from-yellow-400", to: "to-amber-500" },
-  { id: "vegan", emoji: "🌱", label: "Vegan & Vegetarisch", from: "from-green-400", to: "to-emerald-600" },
-  { id: "asian", emoji: "🍜", label: "Asiatisch", from: "from-red-300", to: "to-orange-500" },
-  { id: "oriental", emoji: "🥙", label: "Orientalisch", from: "from-amber-400", to: "to-yellow-500" },
-  { id: "mexican", emoji: "🌮", label: "Mexikanisch", from: "from-amber-300", to: "to-orange-400" },
-];
+function getMealSlots(t: TFn) {
+  return [
+    { id: "lunch",  label: t("meal_plan.slot_lunch"),  emoji: "☀️" },
+    { id: "dinner", label: t("meal_plan.slot_dinner"), emoji: "🌙" },
+  ];
+}
 
-const REMINDER_OPTIONS = [
-  { id: "1_hour_before", label: "1 Stunde vorher" },
-  { id: "1_day_before", label: "1 Tag vorher" },
-  { id: "both", label: "Beides" },
-];
+function getFoodTypes(t: TFn) {
+  return [
+    { id: "burger",   emoji: "🍔", label: t("meal_plan.food_burger"),   from: "from-amber-400", to: "to-orange-500" },
+    { id: "pizza",    emoji: "🍕", label: t("meal_plan.food_pizza"),    from: "from-red-400",   to: "to-rose-500" },
+    { id: "meat",     emoji: "🥩", label: t("meal_plan.food_meat"),     from: "from-orange-500",to: "to-red-600" },
+    { id: "fish",     emoji: "🐟", label: t("meal_plan.food_fish"),     from: "from-blue-400",  to: "to-cyan-500" },
+    { id: "pasta",    emoji: "🍝", label: t("meal_plan.food_pasta"),    from: "from-yellow-400",to: "to-amber-500" },
+    { id: "sushi",    emoji: "🍣", label: t("meal_plan.food_sushi"),    from: "from-rose-400",  to: "to-pink-600" },
+    { id: "vegan",    emoji: "🌱", label: t("meal_plan.food_vegan"),    from: "from-green-400", to: "to-emerald-600" },
+    { id: "desserts", emoji: "🍰", label: t("meal_plan.food_desserts"), from: "from-pink-400",  to: "to-fuchsia-500" },
+    { id: "salat",    emoji: "🥗", label: t("meal_plan.food_salat"),    from: "from-lime-400",  to: "to-green-500" },
+    { id: "mexican",  emoji: "🌮", label: t("meal_plan.food_mexican"),  from: "from-amber-300", to: "to-orange-400" },
+    { id: "asian",    emoji: "🍜", label: t("meal_plan.food_asian"),    from: "from-red-300",   to: "to-orange-500" },
+    { id: "oriental", emoji: "🥙", label: t("meal_plan.food_oriental"), from: "from-amber-400", to: "to-yellow-500" },
+  ];
+}
 
-const MEAL_SLOT_OPTIONS = [
-  { id: "lunch", label: "Mittagessen ☀️" },
-  { id: "dinner", label: "Abendessen 🌙" },
-  { id: "brunch", label: "Brunch 🥐" },
-];
+function getFoodThemeGroups(t: TFn) {
+  return [
+    { id: "burger",   emoji: "🍔", label: t("meal_plan.theme_burger"),   from: "from-amber-400", to: "to-orange-500" },
+    { id: "pizza",    emoji: "🍕", label: t("meal_plan.theme_pizza"),    from: "from-red-400",   to: "to-rose-500" },
+    { id: "sushi",    emoji: "🍣", label: t("meal_plan.theme_sushi"),    from: "from-rose-400",  to: "to-pink-600" },
+    { id: "meat",     emoji: "🥩", label: t("meal_plan.theme_meat"),     from: "from-orange-500",to: "to-red-600" },
+    { id: "fish",     emoji: "🐟", label: t("meal_plan.theme_fish"),     from: "from-blue-400",  to: "to-cyan-500" },
+    { id: "pasta",    emoji: "🍝", label: t("meal_plan.theme_pasta"),    from: "from-yellow-400",to: "to-amber-500" },
+    { id: "vegan",    emoji: "🌱", label: t("meal_plan.theme_vegan"),    from: "from-green-400", to: "to-emerald-600" },
+    { id: "asian",    emoji: "🍜", label: t("meal_plan.theme_asian"),    from: "from-red-300",   to: "to-orange-500" },
+    { id: "oriental", emoji: "🥙", label: t("meal_plan.theme_oriental"), from: "from-amber-400", to: "to-yellow-500" },
+    { id: "mexican",  emoji: "🌮", label: t("meal_plan.theme_mexican"),  from: "from-amber-300", to: "to-orange-400" },
+  ];
+}
+
+function getReminderOptions(t: TFn) {
+  return [
+    { id: "1_hour_before", label: t("meal_plan.reminder_1_hour_before") },
+    { id: "1_day_before",  label: t("meal_plan.reminder_1_day_before") },
+    { id: "both",          label: t("meal_plan.reminder_both") },
+  ];
+}
+
+function getMealSlotOptions(t: TFn) {
+  return [
+    { id: "lunch",  label: `${t("meal_plan.slot_lunch")} ☀️` },
+    { id: "dinner", label: `${t("meal_plan.slot_dinner")} 🌙` },
+    { id: "brunch", label: `${t("meal_plan.slot_brunch")} 🥐` },
+  ];
+}
+
+function getSendTimingOptions(t: TFn) {
+  return [
+    { id: "sofort",        label: t("meal_plan.send_now") },
+    { id: "3_days_before", label: t("meal_plan.send_3d_before") },
+    { id: "2_days_before", label: t("meal_plan.send_2d_before") },
+    { id: "1_day_before",  label: t("meal_plan.send_1d_before") },
+    { id: "manual",        label: t("meal_plan.send_manual") },
+  ];
+}
+
+const FOOD_META: Record<string, { emoji: string; from: string; to: string }> = {
+  burger:   { emoji: "🍔", from: "from-amber-400", to: "to-orange-500" },
+  pizza:    { emoji: "🍕", from: "from-red-400",   to: "to-rose-500" },
+  meat:     { emoji: "🥩", from: "from-orange-500",to: "to-red-600" },
+  fish:     { emoji: "🐟", from: "from-blue-400",  to: "to-cyan-500" },
+  pasta:    { emoji: "🍝", from: "from-yellow-400",to: "to-amber-500" },
+  sushi:    { emoji: "🍣", from: "from-rose-400",  to: "to-pink-600" },
+  vegan:    { emoji: "🌱", from: "from-green-400", to: "to-emerald-600" },
+  desserts: { emoji: "🍰", from: "from-pink-400",  to: "to-fuchsia-500" },
+  salat:    { emoji: "🥗", from: "from-lime-400",  to: "to-green-500" },
+  mexican:  { emoji: "🌮", from: "from-amber-300", to: "to-orange-400" },
+  asian:    { emoji: "🍜", from: "from-red-300",   to: "to-orange-500" },
+  oriental: { emoji: "🥙", from: "from-amber-400", to: "to-yellow-500" },
+};
 
 function getFoodTypeData(id: string) {
-  return FOOD_TYPES.find((f) => f.id === id);
+  const m = FOOD_META[id];
+  return m ? { id, ...m, label: id } : undefined;
 }
 
 function SmartMatchCard({ restaurant, foodType }: { restaurant: any; foodType: string }) {
+  const { t } = useTranslation();
   const ft = getFoodTypeData(foodType);
   return (
     <Link href={`/restaurant/${restaurant.id}`}>
@@ -93,9 +134,9 @@ function SmartMatchCard({ restaurant, foodType }: { restaurant: any; foodType: s
               <Star className="w-3 h-3 fill-amber-400 text-amber-400" />{restaurant.rating.toFixed(1)}
             </span>
             {restaurant.isOpenNow ? (
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Geöffnet</span>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">{t("meal_plan.open_label")}</span>
             ) : (
-              <span className="text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">Geschlossen</span>
+              <span className="text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{t("meal_plan.closed_label")}</span>
             )}
             {restaurant.hasActiveFlash && (
               <span className="flex items-center gap-0.5 text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-full">
@@ -116,7 +157,9 @@ function SlotPicker({
   day: string; slot: { id: string; label: string; emoji: string };
   currentFoodType: string | null; onSelect: (foodType: string) => void; onClear: () => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const FOOD_TYPES = getFoodTypes(t);
   const selected = FOOD_TYPES.find((f) => f.id === currentFoodType);
 
   return (
@@ -127,7 +170,7 @@ function SlotPicker({
         </span>
         {selected && (
           <button onClick={onClear} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 press-scale">
-            <X className="w-3 h-3" /> Löschen
+            <X className="w-3 h-3" /> {t("meal_plan.delete_slot")}
           </button>
         )}
       </div>
@@ -140,7 +183,7 @@ function SlotPicker({
           <span className="text-2xl">{selected.emoji}</span>
           <div className="text-left">
             <p className="font-bold text-sm">{selected.label}</p>
-            <p className="text-xs opacity-80">Tippe zum Ändern</p>
+            <p className="text-xs opacity-80">{t("meal_plan.tap_to_change")}</p>
           </div>
           <Check className="w-4 h-4 ml-auto" />
         </button>
@@ -150,7 +193,7 @@ function SlotPicker({
           className="w-full flex items-center gap-2 p-3 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/40 text-muted-foreground hover:text-primary transition-all press-scale text-sm"
         >
           <Plus className="w-4 h-4" />
-          Gericht planen
+          {t("meal_plan.plan_meal")}
         </button>
       )}
 
@@ -181,6 +224,7 @@ function SlotPicker({
 }
 
 function TodayMatchesSection({ plans, email }: { plans: any[]; email: string }) {
+  const { t } = useTranslation();
   const todayPlans = plans.filter((p) => p.dayOfWeek === TODAY_EN);
   if (!todayPlans.length) return null;
 
@@ -191,8 +235,8 @@ function TodayMatchesSection({ plans, email }: { plans: any[]; email: string }) 
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-sm">Heutige Matches</h3>
-          <p className="text-xs text-muted-foreground">Passende Restaurants für deinen Plan heute</p>
+          <h3 className="font-bold text-sm">{t("meal_plan.today_matches")}</h3>
+          <p className="text-xs text-muted-foreground">{t("meal_plan.today_matches_subtitle")}</p>
         </div>
       </div>
       {todayPlans.map((plan) => (
@@ -203,6 +247,8 @@ function TodayMatchesSection({ plans, email }: { plans: any[]; email: string }) 
 }
 
 function TodaySlotMatches({ plan, email }: { plan: any; email: string }) {
+  const { t } = useTranslation();
+  const MEAL_SLOTS = getMealSlots(t);
   const slot = MEAL_SLOTS.find((s) => s.id === plan.mealSlot);
   const ft = getFoodTypeData(plan.foodType);
   const { data: suggestions, isLoading } = useQuery({
@@ -225,7 +271,7 @@ function TodaySlotMatches({ plan, email }: { plan: any; email: string }) {
       </div>
       {isLoading ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground p-2">
-          <Loader2 className="w-4 h-4 animate-spin" /> Suche Restaurants…
+          <Loader2 className="w-4 h-4 animate-spin" /> {t("meal_plan.searching_restaurants")}
         </div>
       ) : suggestions?.length > 0 ? (
         <div className="space-y-2">
@@ -234,7 +280,7 @@ function TodaySlotMatches({ plan, email }: { plan: any; email: string }) {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground py-2 px-3 bg-muted/40 rounded-xl">Keine passenden Restaurants gefunden</p>
+        <p className="text-xs text-muted-foreground py-2 px-3 bg-muted/40 rounded-xl">{t("meal_plan.no_matches")}</p>
       )}
     </div>
   );
@@ -274,27 +320,26 @@ interface ReservationRequest {
   sentAt?: string | null;
 }
 
-const SEND_TIMING_OPTIONS = [
-  { id: "sofort",        label: "Sofort senden" },
-  { id: "3_days_before", label: "3 Tage vorher" },
-  { id: "2_days_before", label: "2 Tage vorher" },
-  { id: "1_day_before",  label: "1 Tag vorher" },
-  { id: "manual",        label: "Manuell senden" },
-];
-
-const RESERVATION_STATUS: Record<string, { label: string; cls: string; dotCls: string }> = {
-  planned:   { label: "Anfrage geplant",   cls: "bg-muted/60 text-muted-foreground border-border/60",        dotCls: "bg-slate-400" },
-  sent:      { label: "Warten auf Antwort",cls: "bg-blue-500/10 text-blue-600 border-blue-500/20",          dotCls: "bg-blue-500 animate-pulse" },
-  confirmed: { label: "Bestätigt",         cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",  dotCls: "bg-emerald-500" },
-  rejected:  { label: "Abgelehnt",         cls: "bg-rose-500/10 text-rose-600 border-rose-500/20",           dotCls: "bg-rose-500" },
-  cancelled: { label: "Storniert",         cls: "bg-muted/40 text-muted-foreground/60 border-border/30",     dotCls: "bg-slate-300" },
+const RESERVATION_STATUS_STYLES: Record<string, { cls: string; dotCls: string }> = {
+  planned:   { cls: "bg-muted/60 text-muted-foreground border-border/60",        dotCls: "bg-slate-400" },
+  sent:      { cls: "bg-blue-500/10 text-blue-600 border-blue-500/20",          dotCls: "bg-blue-500 animate-pulse" },
+  confirmed: { cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",  dotCls: "bg-emerald-500" },
+  rejected:  { cls: "bg-rose-500/10 text-rose-600 border-rose-500/20",           dotCls: "bg-rose-500" },
+  cancelled: { cls: "bg-muted/40 text-muted-foreground/60 border-border/30",     dotCls: "bg-slate-300" },
 };
+
+function getReservationStatus(status: string, t: TFn) {
+  const styles = RESERVATION_STATUS_STYLES[status] ?? RESERVATION_STATUS_STYLES.planned;
+  const labelKey = `meal_plan.status_${status}_label` as const;
+  return { ...styles, label: t(labelKey) };
+}
 
 // ─── Setup Reservation Modal ──────────────────────────────────────────────────
 
 function SetupReservationModal({
   plan, onClose, onSaved,
 }: { plan: GroupPlan; onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation();
   const [partySize, setPartySize] = useState(plan.groupSize.toString());
   const [date, setDate] = useState(plan.date);
   const [time, setTime] = useState(plan.time);
@@ -302,13 +347,14 @@ function SetupReservationModal({
   const [sendTiming, setSendTiming] = useState("sofort");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const SEND_TIMING_OPTIONS = getSendTimingOptions(t);
 
   const email = localStorage.getItem("restosmart_email") ?? "";
   const userName = localStorage.getItem("restosmart_user_name") ?? "";
 
   const handleSubmit = async () => {
-    if (!plan.restaurant) { setError("Kein Restaurant ausgewählt"); return; }
-    if (!date || !time) { setError("Datum und Uhrzeit erforderlich"); return; }
+    if (!plan.restaurant) { setError(t("meal_plan.no_restaurant_selected")); return; }
+    if (!date || !time) { setError(t("meal_plan.date_time_required")); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch(`${API}/meal-plan/reservation`, {
@@ -332,7 +378,7 @@ function SetupReservationModal({
       onSaved();
       onClose();
     } catch {
-      setError("Fehler beim Erstellen der Anfrage. Bitte versuche es erneut.");
+      setError(t("meal_plan.create_error"));
     } finally {
       setSaving(false);
     }
@@ -348,7 +394,7 @@ function SetupReservationModal({
               <CalendarDays className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-base">Reservierungsanfrage</h2>
+              <h2 className="font-bold text-base">{t("meal_plan.reservation_title")}</h2>
               <p className="text-xs text-muted-foreground truncate max-w-[200px]">{plan.restaurant?.name}</p>
             </div>
           </div>
@@ -358,25 +404,25 @@ function SetupReservationModal({
         <div className="overflow-y-auto flex-1 p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Datum *</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.date_label")}</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Uhrzeit *</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.time_label")} *</label>
               <input type="time" value={time} onChange={e => setTime(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Personenzahl</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("common.party_size") || "Personenzahl"}</label>
             <input type="number" value={partySize} onChange={e => setPartySize(e.target.value)} min={1} max={100}
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Sendezeitpunkt</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.send_timing_label")}</label>
             <div className="grid grid-cols-1 gap-2">
               {SEND_TIMING_OPTIONS.map(opt => (
                 <button key={opt.id} onClick={() => setSendTiming(opt.id)}
@@ -391,9 +437,9 @@ function SetupReservationModal({
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Nachricht ans Restaurant (optional)</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.request_note_label")}</label>
             <textarea value={note} onChange={e => setNote(e.target.value)}
-              placeholder="z.B. Wir feiern einen Geburtstag, bitte einen ruhigen Tisch…"
+              placeholder={t("meal_plan.request_note_placeholder")}
               rows={3}
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
           </div>
@@ -403,25 +449,25 @@ function SetupReservationModal({
           {sendTiming === "sofort" && (
             <div className="flex items-start gap-2 bg-blue-500/8 border border-blue-500/20 rounded-xl px-3 py-2.5">
               <Zap className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-blue-600">Die Anfrage wird sofort an das Restaurant gesendet.</p>
+              <p className="text-xs text-blue-600">{t("meal_plan.sending_request")}</p>
             </div>
           )}
           {sendTiming === "manual" && (
             <div className="flex items-start gap-2 bg-muted/50 border border-border/60 rounded-xl px-3 py-2.5">
               <Bell className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground">Du kannst die Anfrage manuell aus deinem Plan heraus senden.</p>
+              <p className="text-xs text-muted-foreground">{t("meal_plan.save_request")}</p>
             </div>
           )}
         </div>
 
         <div className="p-5 border-t shrink-0 flex gap-2">
           <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-border text-sm font-bold hover:bg-muted/50 transition-colors press-scale">
-            Abbrechen
+            {t("common.cancel")}
           </button>
           <button onClick={handleSubmit} disabled={saving}
             className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-md shadow-primary/25 press-scale flex items-center justify-center gap-2 disabled:opacity-60">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarDays className="w-4 h-4" />}
-            {saving ? "Wird gesendet…" : sendTiming === "manual" ? "Anfrage speichern" : "Anfrage senden"}
+            {saving ? t("common.loading") : sendTiming === "manual" ? t("meal_plan.save_request") : t("meal_plan.send_request")}
           </button>
         </div>
       </div>
@@ -432,6 +478,7 @@ function SetupReservationModal({
 // ─── Share Plan Sheet ─────────────────────────────────────────────────────────
 
 function SharePlanSheet({ plan, onClose }: { plan: GroupPlan; onClose: () => void }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const planUrl = `${window.location.origin}${import.meta.env.BASE_URL}plan/${plan.id}`;
   const dateStr = new Date(plan.date).toLocaleDateString("de-AT", { weekday: "short", day: "numeric", month: "short" });
@@ -462,13 +509,13 @@ function SharePlanSheet({ plan, onClose }: { plan: GroupPlan; onClose: () => voi
 
   const shareOptions = [
     {
-      label: "WhatsApp",
+      label: t("meal_plan.share_via_whatsapp"),
       icon: "💬",
       cls: "bg-[#25D366]/10 text-[#128C7E] border-[#25D366]/30 hover:bg-[#25D366]/20",
       href: `https://wa.me/?text=${encodeURIComponent(msgText)}`,
     },
     {
-      label: "E-Mail",
+      label: t("meal_plan.share_via_email"),
       icon: "✉️",
       cls: "bg-primary/8 text-primary border-primary/20 hover:bg-primary/15",
       href: `mailto:?subject=${encodeURIComponent(`Gruppenplan: ${plan.title}`)}&body=${encodeURIComponent(msgText)}`,
@@ -487,14 +534,14 @@ function SharePlanSheet({ plan, onClose }: { plan: GroupPlan; onClose: () => voi
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Share2 className="w-4 h-4 text-white" />
             </div>
-            <h2 className="font-bold text-base">Plan teilen</h2>
+            <h2 className="font-bold text-base">{t("meal_plan.share_btn")}</h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="p-5 space-y-3">
-          <p className="text-sm text-muted-foreground">Teile diesen Plan mit deinen Freunden.</p>
+          <p className="text-sm text-muted-foreground">{t("common.share_hint") || "Teile diesen Plan mit deinen Freunden."}</p>
           {shareOptions.map(o => (
             <a key={o.label} href={o.href} target="_blank" rel="noopener noreferrer"
               className={`flex items-center gap-3 p-3.5 rounded-2xl border font-semibold text-sm transition-all ${o.cls}`}>
@@ -510,13 +557,13 @@ function SharePlanSheet({ plan, onClose }: { plan: GroupPlan; onClose: () => voi
               : <Link2 className="w-5 h-5 text-muted-foreground shrink-0" />
             }
             <span className={copied ? "text-emerald-600" : "text-foreground"}>
-              {copied ? "Link kopiert!" : "Link kopieren"}
+              {copied ? t("meal_plan.link_copied") : t("common.copy_link") || "Link kopieren"}
             </span>
           </button>
           <button onClick={handleNative}
             className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-primary/20 bg-primary/5 font-semibold text-sm hover:bg-primary/10 transition-all text-primary">
             <Share2 className="w-5 h-5 shrink-0" />
-            <span>Mehr Optionen…</span>
+            <span>{t("common.more_options") || "Mehr Optionen\u2026"}</span>
           </button>
         </div>
       </div>
@@ -533,6 +580,7 @@ function RestaurantPickerSection({
   onSelect: (r: RestaurantRef) => void;
   onClear: () => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -555,9 +603,9 @@ function RestaurantPickerSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Restaurant (optional)</label>
+        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("meal_plan.reservation_to") || "Restaurant (optional)"}</label>
         {selected && (
-          <button onClick={onClear} className="text-xs text-destructive hover:opacity-70 transition-opacity">Entfernen</button>
+          <button onClick={onClear} className="text-xs text-destructive hover:opacity-70 transition-opacity">{t("common.remove")}</button>
         )}
       </div>
 
@@ -569,7 +617,7 @@ function RestaurantPickerSection({
             <p className="text-xs text-muted-foreground truncate">{selected.address}</p>
           </div>
           <button onClick={() => setOpen(!open)} className="text-xs text-primary font-semibold hover:opacity-70 press-scale shrink-0">
-            {open ? "Fertig" : "Ändern"}
+            {open ? t("common.done") : t("common.change")}
           </button>
         </div>
       ) : (
@@ -577,7 +625,7 @@ function RestaurantPickerSection({
           onClick={() => setOpen(!open)}
           className="w-full flex items-center gap-2 p-3 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/40 text-muted-foreground hover:text-primary transition-all press-scale text-sm"
         >
-          <Building2 className="w-4 h-4" /> Restaurant auswählen
+          <Building2 className="w-4 h-4" /> {t("meal_plan.search_restaurant")}
         </button>
       )}
 
@@ -589,7 +637,7 @@ function RestaurantPickerSection({
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Restaurant suchen…"
+                placeholder={t("meal_plan.search_restaurant")}
                 className="w-full pl-8 pr-3 py-2 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
                 autoFocus
               />
@@ -597,7 +645,7 @@ function RestaurantPickerSection({
           </div>
           <div className="max-h-48 overflow-y-auto divide-y divide-border/40">
             {filtered.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-4">Keine Restaurants gefunden</p>
+              <p className="text-xs text-muted-foreground text-center py-4">{t("meal_plan.no_matches")}</p>
             )}
             {filtered.map((r: any) => (
               <button
@@ -633,11 +681,14 @@ function GroupPlanCard({
   plan: GroupPlan; onDelete: () => void; onEdit: () => void;
   reservationRequest: ReservationRequest | null; onReservationChange: () => void;
 }) {
+  const { t } = useTranslation();
   const [showShare, setShowShare] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showSetupReservation, setShowSetupReservation] = useState(false);
   const [sendingNow, setSendingNow] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const FOOD_THEME_GROUPS = getFoodThemeGroups(t);
+  const REMINDER_OPTIONS = getReminderOptions(t);
   const ft = FOOD_THEME_GROUPS.find((f) => f.id === plan.foodTheme);
   const dateObj = new Date(plan.date);
   const isUpcoming = dateObj >= new Date(new Date().setHours(0,0,0,0));
@@ -660,7 +711,7 @@ function GroupPlanCard({
     } finally { setCancelling(false); }
   };
 
-  const rs = reservationRequest ? (RESERVATION_STATUS[reservationRequest.status] ?? RESERVATION_STATUS.planned) : null;
+  const rs = reservationRequest ? getReservationStatus(reservationRequest.status, t) : null;
 
   const { data: suggestions } = useQuery({
     queryKey: ["group-suggestions", plan.id],
@@ -717,7 +768,7 @@ function GroupPlanCard({
             <div className="flex items-start gap-2.5 bg-primary/5 border border-primary/15 rounded-2xl p-3 mb-3">
               <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">Treffpunkt</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">{t("common.meeting_point") || "Treffpunkt"}</p>
                 <p className="text-sm font-bold text-foreground truncate">{plan.restaurant.name}</p>
                 <p className="text-xs text-muted-foreground truncate">{plan.restaurant.address}</p>
               </div>
@@ -727,7 +778,7 @@ function GroupPlanCard({
           {/* Participants */}
           {participants.length > 0 && (
             <div className="mb-3">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Teilnehmer</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t("meal_plan.participants_label")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {participants.map((p, i) => (
                   <div key={i} className="flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-full px-2.5 py-1">
@@ -747,13 +798,13 @@ function GroupPlanCard({
                   onClick={() => setShowSetupReservation(true)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 text-primary text-xs font-bold hover:bg-primary/5 transition-all press-scale"
                 >
-                  <CalendarDays className="w-4 h-4" /> Reservierungsanfrage einrichten
+                  <CalendarDays className="w-4 h-4" /> {t("meal_plan.reservation_title")}
                 </button>
               ) : (
                 <div className={`rounded-2xl border p-3 ${rs!.cls}`}>
                   <div className="flex items-center gap-2 mb-2">
                     <div className={`w-2 h-2 rounded-full shrink-0 ${rs!.dotCls}`} />
-                    <p className="text-xs font-extrabold uppercase tracking-widest">Reservierungsstatus</p>
+                    <p className="text-xs font-extrabold uppercase tracking-widest">{t("common.reservation_status") || "Reservierungsstatus"}</p>
                     <span className="ml-auto text-xs font-bold">{rs!.label}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs opacity-80 mb-2">
@@ -771,14 +822,14 @@ function GroupPlanCard({
                       <button onClick={handleSendNow} disabled={sendingNow}
                         className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold press-scale disabled:opacity-60">
                         {sendingNow ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-                        Jetzt senden
+                        {t("meal_plan.send_now")}
                       </button>
                     )}
                     {["planned", "sent"].includes(reservationRequest.status) && (
                       <button onClick={handleCancelRequest} disabled={cancelling}
                         className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-current/20 bg-current/5 text-[11px] font-bold press-scale disabled:opacity-60">
                         {cancelling ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
-                        Stornieren
+                        {t("common.cancel_request") || "Stornieren"}
                       </button>
                     )}
                   </div>
@@ -793,7 +844,7 @@ function GroupPlanCard({
             className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors press-scale mb-3"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            {showSuggestions ? "Vorschläge verbergen" : "Passende Restaurants anzeigen"}
+            {showSuggestions ? t("meal_plan.hide_suggestions") : t("meal_plan.show_suggestions")}
           </button>
 
           {showSuggestions && suggestions && (
@@ -803,7 +854,7 @@ function GroupPlanCard({
                   <SmartMatchCard key={r.id} restaurant={r} foodType={plan.foodTheme} />
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-2">Keine passenden Restaurants gefunden</p>
+                <p className="text-xs text-muted-foreground text-center py-2">{t("meal_plan.no_matches")}</p>
               )}
             </div>
           )}
@@ -814,13 +865,13 @@ function GroupPlanCard({
               onClick={() => setShowShare(true)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 transition-colors press-scale"
             >
-              <Share2 className="w-3.5 h-3.5" /> Teilen
+              <Share2 className="w-3.5 h-3.5" /> {t("common.share")}
             </button>
             <button
               onClick={onEdit}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-muted-foreground bg-muted/40 hover:bg-muted/70 transition-colors press-scale"
             >
-              <Pencil className="w-3.5 h-3.5" /> Bearbeiten
+              <Pencil className="w-3.5 h-3.5" /> {t("common.edit")}
             </button>
             <button
               onClick={onDelete}
@@ -847,6 +898,10 @@ function GroupPlanCard({
 function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
   onClose: () => void; onCreated: () => void; email: string; userName: string;
 }) {
+  const { t } = useTranslation();
+  const MEAL_SLOT_OPTIONS = getMealSlotOptions(t);
+  const FOOD_THEME_GROUPS = getFoodThemeGroups(t);
+  const REMINDER_OPTIONS = getReminderOptions(t);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("19:00");
@@ -872,7 +927,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
   const canSave = !!title.trim() && !!date && !!foodTheme;
 
   const doCreate = async (): Promise<number | null> => {
-    if (!canSave) { setError("Bitte alle Pflichtfelder ausfüllen"); return null; }
+    if (!canSave) { setError(t("meal_plan.required_fields_error")); return null; }
     setError("");
     const validParticipants = participants.filter((p) => p.name.trim());
     const res = await fetch(`${API}/meal-plan/group`, {
@@ -902,7 +957,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
       onCreated();
       onClose();
     } catch {
-      setError("Fehler beim Erstellen. Bitte versuche es erneut.");
+      setError(t("meal_plan.create_error"));
     } finally {
       setSaving(false);
     }
@@ -918,7 +973,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
         setShowShareAfterSave(true);
       }
     } catch {
-      setError("Fehler beim Erstellen. Bitte versuche es erneut.");
+      setError(t("meal_plan.create_error"));
     } finally {
       setSharing(false);
     }
@@ -946,7 +1001,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Users className="w-4 h-4 text-white" />
             </div>
-            <h2 className="font-bold text-base">Gruppenplan erstellen</h2>
+            <h2 className="font-bold text-base">{t("meal_plan.create_group_plan_title")}</h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
             <X className="w-5 h-5" />
@@ -956,19 +1011,19 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
         <div className="overflow-y-auto flex-1 p-5 space-y-4">
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
-              Titel *
+              {t("meal_plan.title_label")}
             </label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="z.B. Schulklasse Abendessen, Geburtstag…"
+              placeholder={t("meal_plan.title_placeholder")}
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Datum *</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.date_label")}</label>
               <input
                 type="date"
                 value={date}
@@ -978,7 +1033,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Uhrzeit</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.time_label")}</label>
               <input
                 type="time"
                 value={time}
@@ -989,7 +1044,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Mahlzeit</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.meal_label")}</label>
             <div className="grid grid-cols-3 gap-2">
               {MEAL_SLOT_OPTIONS.map((opt) => (
                 <button
@@ -1009,7 +1064,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
 
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
-              Essensthema *
+              {t("meal_plan.food_theme_label")}
             </label>
             <div className="grid grid-cols-4 gap-2">
               {FOOD_THEME_GROUPS.map((ft) => (
@@ -1037,7 +1092,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Erinnerung</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.reminder_label")}</label>
             <div className="grid grid-cols-3 gap-2">
               {REMINDER_OPTIONS.map((opt) => (
                 <button
@@ -1057,12 +1112,12 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Teilnehmer</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("meal_plan.participants_label")}</label>
               <button
                 onClick={addParticipant}
                 className="text-xs font-semibold text-primary flex items-center gap-1 press-scale"
               >
-                <Plus className="w-3.5 h-3.5" /> Hinzufügen
+                <Plus className="w-3.5 h-3.5" /> {t("meal_plan.add_btn")}
               </button>
             </div>
             <div className="space-y-2">
@@ -1074,13 +1129,13 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
                   <input
                     value={p.name}
                     onChange={(e) => updateParticipant(i, "name", e.target.value)}
-                    placeholder="Name"
+                    placeholder={t("meal_plan.name_placeholder")}
                     className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                   <input
                     value={p.phone}
                     onChange={(e) => updateParticipant(i, "phone", e.target.value)}
-                    placeholder="📱 Telefon"
+                    placeholder={t("meal_plan.phone_placeholder")}
                     type="tel"
                     className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
@@ -1112,7 +1167,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
             onClick={onClose}
             className="flex-1 py-3 rounded-2xl border border-border text-sm font-bold text-foreground hover:bg-muted/50 transition-colors press-scale"
           >
-            Abbrechen
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSave}
@@ -1120,7 +1175,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
             className="flex-1 py-3 rounded-2xl bg-muted text-foreground text-sm font-bold press-scale flex items-center justify-center gap-1.5 disabled:opacity-50 hover:bg-muted/80 transition-colors"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            Speichern
+            {t("common.save")}
           </button>
           <button
             onClick={handleShareAndCreate}
@@ -1128,7 +1183,7 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
             className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-md shadow-primary/25 press-scale flex items-center justify-center gap-1.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
           >
             {sharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
-            Teilen
+            {t("common.share")}
           </button>
         </div>
       </div>
@@ -1141,6 +1196,10 @@ function CreateGroupPlanModal({ onClose, onCreated, email, userName }: {
 function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
   plan: GroupPlan; onClose: () => void; onUpdated: () => void; email: string;
 }) {
+  const { t } = useTranslation();
+  const MEAL_SLOT_OPTIONS = getMealSlotOptions(t);
+  const FOOD_THEME_GROUPS = getFoodThemeGroups(t);
+  const REMINDER_OPTIONS = getReminderOptions(t);
   const [title, setTitle] = useState(plan.title);
   const [date, setDate] = useState(plan.date);
   const [time, setTime] = useState(plan.time);
@@ -1163,7 +1222,7 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
   };
 
   const handleUpdate = async () => {
-    if (!title.trim() || !date || !foodTheme) { setError("Bitte alle Pflichtfelder ausfüllen"); return; }
+    if (!title.trim() || !date || !foodTheme) { setError(t("meal_plan.required_fields_error")); return; }
     setSaving(true); setError("");
     try {
       const validParticipants = participants.filter(p => p.name.trim());
@@ -1181,7 +1240,7 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
       if (!res.ok) throw new Error("Fehler");
       onUpdated();
     } catch {
-      setError("Fehler beim Speichern. Bitte versuche es erneut.");
+      setError(t("meal_plan.save_error_mp"));
     } finally {
       setSaving(false);
     }
@@ -1196,31 +1255,31 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Pencil className="w-4 h-4 text-white" />
             </div>
-            <h2 className="font-bold text-base">Plan bearbeiten</h2>
+            <h2 className="font-bold text-base">{t("meal_plan.edit_plan_title")}</h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-5 space-y-4">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Titel *</label>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="z.B. Schulklasse Abendessen…"
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.title_label")}</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder={t("meal_plan.title_placeholder")}
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Datum *</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.date_label")}</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Uhrzeit</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.time_label")}</label>
               <input type="time" value={time} onChange={e => setTime(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Mahlzeit</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.meal_label")}</label>
             <div className="grid grid-cols-3 gap-2">
               {MEAL_SLOT_OPTIONS.map(opt => (
                 <button key={opt.id} onClick={() => setMealSlot(opt.id)}
@@ -1231,7 +1290,7 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
             </div>
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Essensthema *</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.food_theme_label")}</label>
             <div className="grid grid-cols-4 gap-2">
               {FOOD_THEME_GROUPS.map(ft => (
                 <button key={ft.id} onClick={() => setFoodTheme(ft.id)} className="relative flex flex-col items-center gap-1.5 press-scale">
@@ -1247,7 +1306,7 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
             </div>
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Erinnerung</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">{t("meal_plan.reminder_label")}</label>
             <div className="grid grid-cols-3 gap-2">
               {REMINDER_OPTIONS.map(opt => (
                 <button key={opt.id} onClick={() => setReminderTiming(opt.id)}
@@ -1259,18 +1318,18 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Teilnehmer</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("meal_plan.participants_label")}</label>
               <button onClick={addParticipant} className="text-xs font-semibold text-primary flex items-center gap-1 press-scale">
-                <Plus className="w-3.5 h-3.5" /> Hinzufügen
+                <Plus className="w-3.5 h-3.5" /> {t("meal_plan.add_btn")}
               </button>
             </div>
             <div className="space-y-2">
               {participants.map((p, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">{i + 1}</div>
-                  <input value={p.name} onChange={e => updateParticipant(i, "name", e.target.value)} placeholder="Name"
+                  <input value={p.name} onChange={e => updateParticipant(i, "name", e.target.value)} placeholder={t("meal_plan.name_placeholder")}
                     className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                  <input value={p.phone} onChange={e => updateParticipant(i, "phone", e.target.value)} placeholder="📱 Telefon" type="tel"
+                  <input value={p.phone} onChange={e => updateParticipant(i, "phone", e.target.value)} placeholder={t("meal_plan.phone_placeholder")} type="tel"
                     className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   {participants.length > 1 && (
                     <button onClick={() => removeParticipant(i)} className="p-1 hover:text-destructive press-scale"><X className="w-4 h-4" /></button>
@@ -1287,12 +1346,12 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
 
         <div className="p-5 border-t shrink-0 flex gap-2">
           <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-border text-sm font-bold hover:bg-muted/50 transition-colors press-scale">
-            Abbrechen
+            {t("common.cancel")}
           </button>
           <button onClick={handleUpdate} disabled={saving}
             className="flex-[2] py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-md shadow-primary/25 press-scale flex items-center justify-center gap-2 disabled:opacity-60 hover:opacity-90 transition-opacity">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            {saving ? "Speichern…" : "Änderungen speichern"}
+            {saving ? t("meal_plan.saving") : t("common.update")}
           </button>
         </div>
       </div>
@@ -1302,6 +1361,8 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
 
 export default function MealPlan() {
   const { t } = useTranslation();
+  const DAYS = getDays(t);
+  const MEAL_SLOTS = getMealSlots(t);
   const [email, setEmail] = useState(() => localStorage.getItem("restosmart_email") ?? "");
   const [inputEmail, setInputEmail] = useState("");
 
@@ -1414,9 +1475,9 @@ export default function MealPlan() {
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/30 mb-4">
           <CalendarDays className="w-8 h-8 text-white" />
         </div>
-        <h1 className="font-bold text-2xl mb-2">Mahlzeitenplan</h1>
+        <h1 className="font-bold text-2xl mb-2">{t("meal_plan.login_title")}</h1>
         <p className="text-muted-foreground text-sm mb-6 max-w-xs">
-          Plane deine Woche, entdecke passende Restaurants und organisiere Gruppenessen.
+          {t("meal_plan.login_subtitle")}
         </p>
         <div className="w-full max-w-xs space-y-3">
           <input
@@ -1424,14 +1485,14 @@ export default function MealPlan() {
             value={inputEmail}
             onChange={(e) => setInputEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            placeholder="deine@email.de"
+            placeholder={t("meal_plan.login_email_placeholder")}
             className="w-full px-4 py-3 rounded-2xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-center"
           />
           <button
             onClick={handleLogin}
             className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale"
           >
-            Plan aufrufen
+            {t("meal_plan.login_btn_mp")}
           </button>
         </div>
       </div>
@@ -1455,8 +1516,8 @@ export default function MealPlan() {
             <CalendarDays className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-xl leading-tight">Mahlzeitenplan</h1>
-            <p className="text-xs text-muted-foreground">Hallo, {userName} 👋</p>
+            <h1 className="font-bold text-xl leading-tight">{t("meal_plan.login_title")}</h1>
+            <p className="text-xs text-muted-foreground">{t("meal_plan.greeting", { name: userName })}</p>
           </div>
         </div>
       </div>
@@ -1476,7 +1537,7 @@ export default function MealPlan() {
               : "text-muted-foreground"
           }`}
         >
-          <UtensilsCrossed className="w-4 h-4" /> Mein Wochenplan
+          <UtensilsCrossed className="w-4 h-4" /> {t("meal_plan.tab_personal")}
         </button>
         <button
           onClick={() => setActiveTab("group")}
@@ -1486,7 +1547,7 @@ export default function MealPlan() {
               : "text-muted-foreground"
           }`}
         >
-          <Users className="w-4 h-4" /> Gruppenplan
+          <Users className="w-4 h-4" /> {t("meal_plan.tab_group")}
           {upcomingGroupPlans.length > 0 && (
             <span className="ml-0.5 w-4 h-4 bg-gradient-to-br from-primary to-accent text-white text-[9px] font-bold rounded-full flex items-center justify-center">
               {upcomingGroupPlans.length}
@@ -1531,7 +1592,7 @@ export default function MealPlan() {
             <h2 className="font-bold text-base">
               {DAYS.find((d) => d.id === selectedDay)?.label}
               {selectedDay === TODAY_EN && (
-                <span className="ml-2 text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Heute</span>
+                <span className="ml-2 text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{t("common.today")}</span>
               )}
             </h2>
           </div>
@@ -1564,7 +1625,7 @@ export default function MealPlan() {
           {/* Weekly overview strip */}
           {plans.length > 0 && (
             <div className="mt-5">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Wochenübersicht</h3>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("meal_plan.week_overview")}</h3>
               <div className="grid grid-cols-7 gap-1">
                 {DAYS.map((day) => {
                   const dayPlans = plans.filter((p) => p.dayOfWeek === day.id);
@@ -1609,8 +1670,8 @@ export default function MealPlan() {
           {plans.length === 0 && !plansLoading && (
             <div className="mt-6 text-center py-8 text-muted-foreground">
               <ChefHat className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm font-medium">Noch keine Mahlzeiten geplant</p>
-              <p className="text-xs mt-1">Tippe auf „Gericht planen" um loszulegen</p>
+              <p className="text-sm font-medium">{t("meal_plan.no_meals_planned")}</p>
+              <p className="text-xs mt-1">{t("meal_plan.no_meals_hint")}</p>
             </div>
           )}
         </div>
@@ -1621,14 +1682,14 @@ export default function MealPlan() {
         <div>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="font-bold text-base">Gruppenpläne</h2>
-              <p className="text-xs text-muted-foreground">Organisiere gemeinsame Mahlzeiten</p>
+              <h2 className="font-bold text-base">{t("meal_plan.group_plans_title")}</h2>
+              <p className="text-xs text-muted-foreground">{t("meal_plan.group_plans_subtitle")}</p>
             </div>
             <button
               onClick={() => setShowCreateGroup(true)}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-bold shadow-lg shadow-primary/25 press-scale"
             >
-              <Plus className="w-4 h-4" /> Neu
+              <Plus className="w-4 h-4" /> {t("common.new")}
             </button>
           </div>
 
@@ -1641,22 +1702,22 @@ export default function MealPlan() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-primary/40" />
               </div>
-              <p className="font-semibold text-sm text-muted-foreground">Noch keine Gruppenpläne</p>
+              <p className="font-semibold text-sm text-muted-foreground">{t("meal_plan.group_empty")}</p>
               <p className="text-xs text-muted-foreground/70 mt-1 mb-4">
-                Erstelle einen Plan für deine Schulklasse, Familie oder Freunde.
+                {t("meal_plan.group_empty_subtitle")}
               </p>
               <button
                 onClick={() => setShowCreateGroup(true)}
                 className="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale"
               >
-                Ersten Plan erstellen
+                {t("meal_plan.create_first_plan")}
               </button>
             </div>
           ) : (
             <div className="space-y-4">
               {upcomingGroupPlans.length > 0 && (
                 <>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Bevorstehend</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("meal_plan.upcoming_section")}</p>
                   {upcomingGroupPlans.map((plan) => (
                     <GroupPlanCard
                       key={plan.id}
@@ -1671,7 +1732,7 @@ export default function MealPlan() {
               )}
               {pastGroupPlans.length > 0 && (
                 <>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-4">Vergangen</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-4">{t("meal_plan.past_section")}</p>
                   {pastGroupPlans.map((plan) => (
                     <GroupPlanCard
                       key={plan.id}

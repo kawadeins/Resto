@@ -17,13 +17,14 @@ import { useTranslation } from "react-i18next";
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const GRAD = "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))";
 
-function timeAgo(ts: string) {
+type TFn = (key: string) => string;
+function timeAgo(ts: string, t: TFn) {
   const d = Date.now() - new Date(ts).getTime();
   const m = Math.floor(d / 60000);
-  if (m < 1) return "Jetzt";
-  if (m < 60) return `${m} Min.`;
+  if (m < 1) return t("messages.time_now");
+  if (m < 60) return `${m}\u00a0${t("messages.time_min")}`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} Std.`;
+  if (h < 24) return `${h}\u00a0${t("messages.time_h")}`;
   return new Date(ts).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" });
 }
 
@@ -92,7 +93,7 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ creatorEmail: email, name: name.trim(), participantEmails: selected }),
       });
-      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
+      if (!r.ok) throw new Error((await r.json()).error || t("messages.error_send"));
       return r.json();
     },
     onSuccess: (d) => {
@@ -315,7 +316,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
 
   const conv = conversations.find(c => c.id === convId);
   const otherParticipant = conv?.participants?.[0];
-  const title = conv?.type === "group" ? (conv.name ?? "Gruppe") : (otherParticipant?.name || otherParticipant?.user_email?.split("@")[0] || "Chat");
+  const title = conv?.type === "group" ? (conv.name ?? t("messages.group_label")) : (otherParticipant?.name || otherParticipant?.user_email?.split("@")[0] || "Chat");
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -331,7 +332,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
       });
       const data = await r.json();
       if (!r.ok) {
-        const err: any = new Error(data.error || "Fehler");
+        const err: any = new Error(data.error || t("messages.send_error"));
         err.moderated = data.moderated;
         err.strikeMessage = data.strikeMessage;
         throw err;
@@ -341,10 +342,10 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
     onSuccess: () => qc.invalidateQueries({ queryKey: ["messages", convId, email] }),
     onError: (e: any) => {
       if (e.moderated) {
-        toast({ title: "Nachricht blockiert", description: e.message, variant: "destructive" });
-        if (e.strikeMessage) setTimeout(() => toast({ title: "Hinweis", description: e.strikeMessage }), 800);
+        toast({ title: t("messages.block_content"), description: e.message, variant: "destructive" });
+        if (e.strikeMessage) setTimeout(() => toast({ title: t("messages.toast_hint"), description: e.strikeMessage }), 800);
       } else {
-        toast({ title: e.message || "Fehler", variant: "destructive" });
+        toast({ title: e.message || t("messages.send_error"), variant: "destructive" });
       }
     },
   });
@@ -360,7 +361,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
       });
       const data = await r.json();
       if (!r.ok) {
-        const err: any = new Error(data.error || "Upload fehlgeschlagen");
+        const err: any = new Error(data.error || t("messages.upload_failed"));
         err.moderated = data.moderated;
         err.strikeMessage = data.strikeMessage;
         throw err;
@@ -376,10 +377,10 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
       setImageFile(null);
       setImagePreview(null);
       if (e.moderated) {
-        toast({ title: "Bild blockiert", description: e.message, variant: "destructive" });
-        if (e.strikeMessage) setTimeout(() => toast({ title: "Hinweis", description: e.strikeMessage }), 800);
+        toast({ title: t("messages.image_blocked"), description: e.message, variant: "destructive" });
+        if (e.strikeMessage) setTimeout(() => toast({ title: t("messages.toast_hint"), description: e.strikeMessage }), 800);
       } else {
-        toast({ title: e.message || "Upload fehlgeschlagen", variant: "destructive" });
+        toast({ title: e.message || t("messages.upload_failed"), variant: "destructive" });
       }
     },
   });
@@ -412,7 +413,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
       return r.json();
     },
     onSuccess: () => {
-      toast({ title: "Nutzer blockiert." });
+      toast({ title: t("messages.blocked_user") });
       setShowMenu(false);
     },
   });
@@ -562,7 +563,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
                   </div>
                 )}
                 <p className={`text-[10px] text-muted-foreground mt-1 ${isOwn ? "text-right mr-1" : "ml-3"}`}>
-                  {timeAgo(msg.created_at)}
+                  {timeAgo(msg.created_at, t)}
                   {isOwn && (msg.is_read ? <CheckCheck className="inline w-3 h-3 ml-1 text-primary" /> : <Check className="inline w-3 h-3 ml-1" />)}
                 </p>
               </div>
@@ -695,7 +696,7 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
         {conversations.map(conv => {
           const other = conv.participants?.[0];
           const displayName = conv.type === "group"
-            ? (conv.name ?? "Gruppe")
+            ? (conv.name ?? t("messages.group_label"))
             : (other?.name || other?.user_email?.split("@")[0] || "Chat");
           const photoUrl = conv.type === "direct" ? other?.photo_url : null;
 
@@ -720,7 +721,7 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
                   <div className="flex items-center gap-1.5 shrink-0">
                     {conv.muted && <VolumeX className="w-3 h-3 text-muted-foreground" />}
                     {conv.last_message_at && (
-                      <span className="text-[11px] text-muted-foreground">{timeAgo(conv.last_message_at)}</span>
+                      <span className="text-[11px] text-muted-foreground">{timeAgo(conv.last_message_at, t)}</span>
                     )}
                   </div>
                 </div>
@@ -767,7 +768,7 @@ function StartDMModal({ email, onClose, onStarted }: { email: string; onClose: (
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ senderEmail: email, recipientEmail }),
       });
-      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
+      if (!r.ok) throw new Error((await r.json()).error || t("messages.error_send"));
       return r.json();
     },
     onSuccess: (d) => {

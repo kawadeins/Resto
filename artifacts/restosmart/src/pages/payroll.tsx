@@ -91,11 +91,11 @@ export default function Payroll() {
       }).then(r => r.json());
     },
     onSuccess: () => {
-      toast({ title: "Stundenlohn aktualisiert" });
+      toast({ title: t("payroll.toast_rate_updated") });
       setEditingRate(null);
       queryClient.invalidateQueries({ queryKey: ["performance-summary"] });
     },
-    onError: () => toast({ title: "Stundenlohn konnte nicht aktualisiert werden", variant: "destructive" }),
+    onError: () => toast({ title: t("payroll.toast_rate_error"), variant: "destructive" }),
   });
 
   const totalMonthlyPayroll = summary?.reduce((s, e) => s + e.projectedMonthlyPay, 0) ?? 0;
@@ -116,8 +116,8 @@ export default function Payroll() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Personalleistung & Gehaltsabrechnung</h2>
-        <p className="text-muted-foreground mt-2">Anwesenheit, Stunden und Gehaltsprognosen für Ihr Team im Überblick.</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t("payroll.page_title")}</h2>
+        <p className="text-muted-foreground mt-2">{t("payroll.page_subtitle")}</p>
       </div>
 
       {/* KPI row */}
@@ -125,13 +125,13 @@ export default function Payroll() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Geplante Gehaltsabrechnung (Mo.)</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("payroll.kpi_scheduled_payroll")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">€{totalMonthlyPayroll.toFixed(0)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <DollarSign className="w-3 h-3" />
-                Basierend auf geplanten Schichten
+                {t("payroll.kpi_scheduled_hint")}
               </div>
             </CardContent>
           </Card>
@@ -140,13 +140,13 @@ export default function Payroll() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tatsächlicher Lohn (Dieser Monat)</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("payroll.kpi_actual_pay")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">€{totalActualPay.toFixed(0)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <CheckCircle className="w-3 h-3 text-emerald-500" />
-                Aus bestätigten Schichten
+                {t("payroll.kpi_actual_hint")}
               </div>
             </CardContent>
           </Card>
@@ -155,13 +155,13 @@ export default function Payroll() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Team-Anwesenheitsrate</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("payroll.kpi_attendance_rate")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{avgAttendanceRate !== null ? `${avgAttendanceRate}%` : "—"}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <Users className="w-3 h-3" />
-                Durchschnitt aller Mitarbeiter
+                {t("payroll.kpi_attendance_hint")}
               </div>
             </CardContent>
           </Card>
@@ -170,13 +170,13 @@ export default function Payroll() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Aktive Mitarbeiter</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("payroll.kpi_active_staff")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summary?.length ?? 0}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                Eingeplante Mitarbeiter
+                {t("payroll.kpi_active_hint")}
               </div>
             </CardContent>
           </Card>
@@ -191,9 +191,9 @@ export default function Payroll() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-yellow-500" />
-                  Zuverlässigkeits-Rangliste
+                  {t("payroll.leaderboard_title")}
                 </CardTitle>
-                <CardDescription>Sortiert nach Zuverlässigkeitspunktzahl</CardDescription>
+                <CardDescription>{t("payroll.leaderboard_subtitle")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {leaderboard.slice(0, 8).map((entry, idx) => (
@@ -210,7 +210,7 @@ export default function Payroll() {
                         <AttendanceBar rate={entry.reliabilityScore} />
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        {entry.confirmedCount} bestätigt · {entry.lateCount} verspätet · {entry.missedCount} verpasst
+                        {t("payroll.leaderboard_stats", { confirmed: entry.confirmedCount, late: entry.lateCount, missed: entry.missedCount })}
                       </div>
                     </div>
                   </div>
@@ -229,16 +229,16 @@ export default function Payroll() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Gehaltsdetails</CardTitle>
+              <CardTitle>{t("payroll.card_title")}</CardTitle>
               <CardDescription>
-                Stunden und Lohnberechnungen für den aktuellen Monat. Klicken Sie auf den Stundenlohn zum Bearbeiten.
+                {t("payroll.card_desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {loadingSummary ? (
-                <div className="p-8 text-center text-muted-foreground">Gehaltsdaten werden geladen…</div>
+                <div className="p-8 text-center text-muted-foreground">{t("payroll.loading")}</div>
               ) : !summary?.length ? (
-                <div className="p-8 text-center text-muted-foreground">Keine aktiven Mitarbeiter gefunden.</div>
+                <div className="p-8 text-center text-muted-foreground">{t("payroll.no_employees")}</div>
               ) : (
                 <div className="divide-y divide-border">
                   {summary.map((emp) => {
@@ -303,7 +303,7 @@ export default function Payroll() {
                                     onClick={() => { setEditingRate(emp.id); setRateInput(String(emp.hourlyRate)); }}
                                     className="flex items-center gap-1.5 text-sm font-medium bg-muted px-2 py-1 rounded-lg hover:bg-muted/80 transition-colors"
                                   >
-                                    €{emp.hourlyRate.toFixed(2)}/Std.
+                                    {t("payroll.hourly_rate_suffix", { rate: emp.hourlyRate.toFixed(2) })}
                                     <Edit2 className="w-3 h-3 text-muted-foreground" />
                                   </button>
                                 )}
@@ -313,19 +313,19 @@ export default function Payroll() {
                             {/* Metrics grid */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
                               <div className="bg-muted/40 rounded-lg p-2.5">
-                                <div className="text-xs text-muted-foreground mb-0.5">Geplante Std./Mo.</div>
+                                <div className="text-xs text-muted-foreground mb-0.5">{t("payroll.metric_scheduled_hours")}</div>
                                 <div className="font-bold text-sm">{emp.monthlyScheduledHours}h</div>
                               </div>
                               <div className="bg-muted/40 rounded-lg p-2.5">
-                                <div className="text-xs text-muted-foreground mb-0.5">Tatsächliche Std.</div>
+                                <div className="text-xs text-muted-foreground mb-0.5">{t("payroll.metric_actual_hours")}</div>
                                 <div className="font-bold text-sm">{emp.actualHoursThisMonth}h</div>
                               </div>
                               <div className="bg-muted/40 rounded-lg p-2.5">
-                                <div className="text-xs text-muted-foreground mb-0.5">Geplanter Lohn</div>
+                                <div className="text-xs text-muted-foreground mb-0.5">{t("payroll.metric_projected_pay")}</div>
                                 <div className="font-bold text-sm">€{emp.projectedMonthlyPay.toFixed(0)}</div>
                               </div>
                               <div className="bg-muted/40 rounded-lg p-2.5">
-                                <div className="text-xs text-muted-foreground mb-0.5">Tatsächlicher Lohn</div>
+                                <div className="text-xs text-muted-foreground mb-0.5">{t("payroll.metric_actual_pay")}</div>
                                 <div className="font-bold text-sm text-emerald-600">€{emp.actualPayThisMonth.toFixed(0)}</div>
                               </div>
                             </div>

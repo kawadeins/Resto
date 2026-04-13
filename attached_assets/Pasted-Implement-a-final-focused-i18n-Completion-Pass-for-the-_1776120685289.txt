@@ -1,0 +1,183 @@
+Implement a final focused "i18n Completion Pass" for the remaining unfinished areas only.
+
+IMPORTANT:
+- Do NOT rebuild the i18n architecture
+- Do NOT refactor already completed translation work
+- Do NOT touch pages that are already fully wired unless required for consistency
+- This is a completion pass for the remaining unfinished translation work only
+- Keep the scope tight and execution-focused
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Finish the remaining incomplete translation wiring so the app stops feeling half-translated.
+
+The diagnostic and repair work already completed large parts of:
+- restaurant.tsx
+- profile.tsx
+- feed.tsx
+- some messages.tsx work
+- paywall/premium nudge components
+
+Now complete the remaining unfinished files and close the gap.
+
+==================================================
+1. COMPLETE messages.tsx (CRITICAL)
+==================================================
+
+Finish the translation wiring in messages.tsx.
+
+Requirements:
+- replace all remaining hardcoded visible strings
+- ensure all sub-components use the live translation hook correctly
+- ensure chat list, chat view, start DM modal, image preview/fullscreen viewer, placeholders, empty states, action labels, and system labels all translate correctly
+- ensure reactive language switching works inside messages.tsx
+- add any missing translation keys needed for messages namespace
+- test at least de/en/fr
+
+Do NOT leave partially translated chat UI.
+
+==================================================
+2. COMPLETE meal-plan.tsx (CRITICAL)
+==================================================
+
+Fully wire meal-plan.tsx into the existing i18n system.
+
+Requirements:
+- replace all remaining hardcoded visible strings
+- translate titles, buttons, sections, empty states, helper text, labels, plan generation UI, save/share/cancel labels, modal text, and success/error messages
+- ensure reactive language switching works
+- add any missing translation keys needed for meal_plan namespace
+- test at least de/en/fr
+
+This page was identified earlier as heavily unwired and must now be completed.
+
+==================================================
+3. COMPLETE OWNER DASHBOARD HIGH-IMPACT PAGES
+==================================================
+
+Finish the remaining owner dashboard translation work for the pages still not fully wired.
+
+Priority pages:
+- reservations.tsx
+- overview.tsx
+- bookings.tsx
+- menu.tsx
+- onboarding.tsx
+- pos.tsx
+- payroll.tsx
+- inventory.tsx
+- tables.tsx
+- finances.tsx if applicable
+
+Requirements:
+- replace remaining hardcoded visible strings with existing translation keys where possible
+- add missing keys only when necessary
+- ensure sidebar language and page content language always match
+- translate cards, KPI labels, form labels, buttons, empty states, placeholders, modals, and status text
+- test at least de/en/fr
+
+Do NOT rewrite dashboard architecture.
+This is wiring completion only.
+
+==================================================
+4. FILL REMAINING HIGH-IMPACT NON-DE/EN KEYS
+==================================================
+
+Fill the most important missing keys for:
+- French
+- Italian
+- Spanish
+- Dutch
+- Turkish
+- Portuguese
+- Polish
+
+Priority namespaces/modules:
+- messages
+- meal_plan
+- restaurant
+- profile
+- feed
+- for_business
+- key owner dashboard modules above
+
+Goal:
+The app should not fall back to German in these high-traffic areas.
+
+Do NOT try to perfect every obscure key in the whole codebase.
+Complete the high-traffic visible user flows first.
+
+==================================================
+5. DO NOT TOUCH COMPLETED AREAS UNNECESSARILY
+==================================================
+
+Do NOT spend time reworking:
+- restaurant.tsx if already fully wired and working
+- profile.tsx if already wired and stable
+- feed.tsx if already wired and stable
+- soft-paywall.tsx
+- contextual-premium-trigger.tsx
+- global i18n setup
+- locale persistence/provider architecture
+
+Only fix consistency issues if directly needed.
+
+==================================================
+6. FINAL VALIDATION
+==================================================
+
+After completing the remaining work, validate in:
+- German
+- English
+- French
+
+Check specifically:
+
+CUSTOMER APP:
+- messages
+- meal plan
+- restaurant
+- profile
+- feed
+
+OWNER DASHBOARD:
+- sidebar
+- overview
+- reservations
+- bookings
+- menu
+- onboarding
+- POS
+- payroll
+- inventory
+- tables
+- billing/settings if affected
+
+Confirm:
+- no major visible hardcoded strings remain in these repaired areas
+- language switching updates content correctly
+- no mixed-language sidebar/content mismatch remains
+- no stale labels remain from frozen constants
+
+==================================================
+7. FINAL REPORT
+==================================================
+
+Return a concise completion report with:
+
+A. messages.tsx status
+B. meal-plan.tsx status
+C. owner dashboard pages completed
+D. missing non-DE/EN keys added
+E. any remaining follow-up items outside this pass
+
+==================================================
+FINAL RESULT
+==================================================
+
+The remaining unfinished translation areas must now be completed.
+
+After this pass, the app should no longer feel half-translated.
+The remaining major customer and owner dashboard pages must switch language correctly and consistently.

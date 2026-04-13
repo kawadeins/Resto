@@ -46,13 +46,13 @@ import {
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
-function getSteps(biz: BizType) {
+function getSteps(biz: BizType, t: (key: string) => string) {
   return [
     { label: BIZ_STEP1_LABEL[biz], icon: Store },
     { label: BIZ_STEP2_LABEL[biz], icon: UtensilsCrossed },
-    { label: "Personal", icon: Users },
-    { label: "Buchungen", icon: BookOpen },
-    { label: "Rabatt", icon: Megaphone },
+    { label: t("onboarding.step_personal"), icon: Users },
+    { label: t("onboarding.step_bookings"), icon: BookOpen },
+    { label: t("onboarding.step_discount"), icon: Megaphone },
   ];
 }
 
@@ -110,6 +110,7 @@ function Step1({
   isPending: boolean;
   biz: BizType;
 }) {
+  const { t } = useTranslation();
   const { data: restaurant, isLoading } = useGetMyRestaurant({
     query: { queryKey: getGetMyRestaurantQueryKey() },
   });
@@ -147,7 +148,7 @@ function Step1({
       <div>
         <h3 className="text-xl font-bold">{BIZ_ONBOARDING_TITLE[biz]}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Diese Informationen erscheinen im Kunden-Marktplatz.
+          {t("onboarding.step1_info_subtitle")}
         </p>
       </div>
 
@@ -169,7 +170,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Straße und Hausnummer *</Label>
+          <Label>{t("onboarding.step1_address")} *</Label>
           <Input
             value={form.address}
             onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
@@ -177,7 +178,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Stadt *</Label>
+          <Label>{t("onboarding.step1_city")} *</Label>
           <Input
             value={form.city}
             onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
@@ -185,7 +186,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Telefonnummer *</Label>
+          <Label>{t("onboarding.step1_phone")} *</Label>
           <Input
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -193,7 +194,7 @@ function Step1({
           />
         </div>
         <div className="space-y-1.5">
-          <Label>E-Mail</Label>
+          <Label>{t("onboarding.step1_email")}</Label>
           <Input
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -203,7 +204,7 @@ function Step1({
       </div>
 
       <div className="space-y-1.5">
-        <Label>Kurzbeschreibung</Label>
+        <Label>{t("onboarding.step1_description_label")}</Label>
         <Input
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -217,7 +218,7 @@ function Step1({
           onClick={() => onNext(form)}
           disabled={!isValid || isPending}
         >
-          Speichern & Weiter
+          {t("onboarding.step1_next")}
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
@@ -238,6 +239,7 @@ function Step2({
   menuCount: number;
   biz: BizType;
 }) {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   return (
     <div className="space-y-5">
@@ -256,12 +258,12 @@ function Step2({
           <p className="font-semibold">
             {menuCount === 0
               ? BIZ_MENU_EMPTY_STATE[biz]
-              : `${menuCount} Eintrag${menuCount !== 1 ? " hinzugefügt" : " hinzugefügt"}`}
+              : t("onboarding.step2_menu_count_added", { count: menuCount })}
           </p>
           <p className="text-sm text-muted-foreground">
             {menuCount === 0
-              ? "Einträge hinzufügen, damit Kunden wissen, was sie erwartet."
-              : "Guter Start! Sie können jederzeit weitere Einträge hinzufügen."}
+              ? t("onboarding.step2_menu_hint")
+              : t("onboarding.step2_menu_added")}
           </p>
         </div>
         {menuCount > 0 && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -282,14 +284,14 @@ function Step2({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Zurück
+          {t("onboarding.back")}
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onNext}>
-            Überspringen
+            {t("onboarding.skip")}
           </Button>
           <Button onClick={onNext} disabled={menuCount === 0} className="gap-2">
-            Weiter
+            {t("onboarding.next")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -309,13 +311,14 @@ function Step3({
   onBack: () => void;
   staffCount: number;
 }) {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Team hinzufügen</h3>
+        <h3 className="text-xl font-bold">{t("onboarding.step3_title")}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Richten Sie Ihr Personal ein, um Schichten zuzuweisen und Ihr Team zu verwalten.
+          {t("onboarding.step3_subtitle")}
         </p>
       </div>
 
@@ -326,13 +329,13 @@ function Step3({
         <div className="flex-1">
           <p className="font-semibold">
             {staffCount === 0
-              ? "Noch keine Mitarbeiter"
-              : `${staffCount} Teammitglied${staffCount !== 1 ? "er" : ""} hinzugefügt`}
+              ? t("onboarding.step3_no_staff")
+              : t("onboarding.step3_staff_count", { count: staffCount })}
           </p>
           <p className="text-sm text-muted-foreground">
             {staffCount === 0
-              ? "Fügen Sie Köche, Kellner und Manager hinzu, um mit der Schichtplanung zu beginnen."
-              : "Ihr Team ist eingerichtet. Sie können jederzeit weiteres Personal hinzufügen."}
+              ? t("onboarding.step3_no_staff_desc")
+              : t("onboarding.step3_staff_added_desc")}
           </p>
         </div>
         {staffCount > 0 && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -341,11 +344,11 @@ function Step3({
       {staffCount === 0 && (
         <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
           <p className="text-sm text-muted-foreground mb-3">
-            Gehen Sie zur Personalseite, um Ihr erstes Teammitglied hinzuzufügen.
+            {t("onboarding.step3_add_hint")}
           </p>
           <Button variant="outline" size="sm" onClick={() => navigate("/staff")} className="gap-1.5">
             <Users className="h-4 w-4" />
-            Zum Personal
+            {t("onboarding.step3_nav_label")}
           </Button>
         </div>
       )}
@@ -353,14 +356,14 @@ function Step3({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Zurück
+          {t("onboarding.back")}
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onNext}>
-            Überspringen
+            {t("onboarding.skip")}
           </Button>
           <Button onClick={onNext} className="gap-2">
-            {staffCount > 0 ? "Weiter" : "Überspringen & Weiter"}
+            {staffCount > 0 ? t("onboarding.next") : t("onboarding.step3_skip_next")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -386,10 +389,11 @@ function Step4({
   isPending: boolean;
   biz: BizType;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Online-Buchungen aktivieren</h3>
+        <h3 className="text-xl font-bold">{t("onboarding.step4_title")}</h3>
         <p className="text-sm text-muted-foreground mt-1">
           {BIZ_MARKETPLACE_ACTIVATE_DESC[biz]} Dies ist erforderlich, bevor Sie live gehen.
         </p>
@@ -410,12 +414,12 @@ function Step4({
           </div>
           <div className="flex-1">
             <p className="font-semibold">
-              {bookingsEnabled ? "Online-Buchungen sind aktiviert" : "Online-Buchungen sind deaktiviert"}
+              {bookingsEnabled ? t("onboarding.step4_booking_enabled") : t("onboarding.step4_booking_disabled")}
             </p>
             <p className="text-sm text-muted-foreground">
               {bookingsEnabled
                 ? BIZ_MARKETPLACE_ACTIVE_DESC[biz]
-                : "Aktivieren Sie dies, damit Kunden direkt über den Marktplatz buchen können — ohne Anruf."}
+                : t("onboarding.step4_booking_disabled_hint")}
             </p>
           </div>
           {bookingsEnabled && <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />}
@@ -429,7 +433,7 @@ function Step4({
               disabled={isPending}
             >
               <BookOpen className="h-4 w-4" />
-              Buchungen jetzt aktivieren
+              {t("onboarding.step4_enable_btn")}
             </Button>
           </div>
         )}
@@ -438,10 +442,10 @@ function Step4({
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Zurück
+          {t("onboarding.back")}
         </Button>
         <Button onClick={onNext} disabled={!bookingsEnabled} className="gap-2">
-          Weiter
+          {t("onboarding.next")}
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
@@ -460,13 +464,14 @@ function Step5({
   onBack: () => void;
   discountCount: number;
 }) {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xl font-bold">Erste Kunden gewinnen</h3>
+        <h3 className="text-xl font-bold">{t("onboarding.step5_title")}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Ein Eröffnungsrabatt ist der schnellste Weg zu Ihren ersten Buchungen. Sie können dies überspringen.
+          {t("onboarding.step5_subtitle")}
         </p>
       </div>
 
@@ -474,9 +479,9 @@ function Step5({
         <div className="flex items-start gap-3 mb-4">
           <Zap className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-amber-400">Warum einen Eröffnungsrabatt anbieten?</p>
+            <p className="font-semibold text-amber-400">{t("onboarding.step5_why_title")}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Neue Restaurants, die mit einem 15–25%-Angebot starten, erhalten in der ersten Woche typischerweise 3× mehr Buchungen.
+              {t("onboarding.step5_why_desc")}
             </p>
           </div>
         </div>
@@ -487,10 +492,10 @@ function Step5({
           </div>
           <div className="flex-1">
             <p className="font-medium text-sm">
-              {discountCount === 0 ? "Noch keine Rabatte" : `${discountCount} Rabatt${discountCount !== 1 ? "e" : ""} erstellt`}
+              {discountCount === 0 ? t("onboarding.step5_discount_count_zero") : t("onboarding.step5_discount_count", { count: discountCount })}
             </p>
             <p className="text-xs text-muted-foreground">
-              {discountCount === 0 ? "Erstellen Sie ein Blitzangebot oder geplanten Rabatt auf der Marketingseite." : "Sie sind startklar. Verwalten Sie Ihre Angebote jederzeit über Marketing."}
+              {discountCount === 0 ? t("onboarding.step5_no_discounts_desc") : t("onboarding.step5_discounts_added_desc")}
             </p>
           </div>
           {discountCount > 0 && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />}
@@ -498,21 +503,21 @@ function Step5({
 
         <Button variant="outline" size="sm" onClick={() => navigate("/marketing")} className="gap-1.5">
           <Megaphone className="h-4 w-4" />
-          Zum Marketing
+          {t("onboarding.step5_nav_label")}
         </Button>
       </div>
 
       <div className="flex justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Zurück
+          {t("onboarding.back")}
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onNext}>
-            Überspringen
+            {t("onboarding.skip")}
           </Button>
           <Button onClick={onNext} className="gap-2">
-            {discountCount > 0 ? "Weiter" : "Überspringen & Weiter"}
+            {discountCount > 0 ? t("onboarding.next") : t("onboarding.step5_skip_next")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -532,6 +537,7 @@ function StepSuccess({
   onGoLive: () => void;
   isPending: boolean;
 }) {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   return (
     <div className="space-y-6">
@@ -539,9 +545,9 @@ function StepSuccess({
         <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="h-9 w-9 text-emerald-500" />
         </div>
-        <h3 className="text-2xl font-bold">Fast startklar</h3>
+        <h3 className="text-2xl font-bold">{t("onboarding.success_title")}</h3>
         <p className="text-muted-foreground mt-2">
-          Überprüfen Sie Ihre Einrichtung, dann gehen Sie live und beginnen Sie mit der Annahme von Buchungen.
+          {t("onboarding.success_subtitle")}
         </p>
       </div>
 
@@ -558,9 +564,8 @@ function StepSuccess({
             </span>
             {!item.completed && (
               <Badge variant="outline" className="ml-auto text-xs text-muted-foreground">
-                Optional
+                {t("onboarding.success_optional")}
               </Badge>
-              
             )}
           </div>
         ))}
@@ -573,10 +578,10 @@ function StepSuccess({
           disabled={isPending}
         >
           <Zap className="h-4 w-4" />
-          Jetzt live gehen
+          {t("onboarding.success_btn_go_live")}
         </Button>
         <Button variant="outline" className="flex-1" onClick={() => navigate("/")}>
-          Zum Dashboard
+          {t("onboarding.success_btn_dashboard")}
         </Button>
       </div>
     </div>
@@ -590,13 +595,14 @@ function QuickActions({
 }: {
   checklist: { id: string; label: string; completed: boolean; href: string | null }[];
 }) {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const incomplete = checklist.filter((c) => !c.completed && c.href);
   if (incomplete.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2 mb-6">
-      <span className="text-xs text-muted-foreground self-center">Schnell hinzufügen:</span>
+      <span className="text-xs text-muted-foreground self-center">{t("onboarding.quick_add_label")}</span>
       {incomplete.map((item) => (
         <Button
           key={item.id}
@@ -621,7 +627,7 @@ export default function Onboarding() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState(1);
   const biz = getBizType();
-  const bizSteps = getSteps(biz);
+  const bizSteps = getSteps(biz, t);
 
   const { data: status, isLoading } = useGetOnboardingStatus({
     query: { queryKey: getGetOnboardingStatusQueryKey() },
@@ -650,7 +656,7 @@ export default function Onboarding() {
         queryClient.invalidateQueries({ queryKey: getGetMyRestaurantQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
       },
-      onError: () => toast({ title: "Betriebsdaten konnten nicht gespeichert werden", variant: "destructive" }),
+      onError: () => toast({ title: t("onboarding.toast_save_error"), variant: "destructive" }),
     },
   });
 
@@ -658,9 +664,9 @@ export default function Onboarding() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
-        toast({ title: "Buchungssystem aktiviert", description: BIZ_MARKETPLACE_ACTIVE_DESC[getBizType()] });
+        toast({ title: t("onboarding.toast_bookings_enabled"), description: BIZ_MARKETPLACE_ACTIVE_DESC[getBizType()] });
       },
-      onError: () => toast({ title: "Buchungssystem konnte nicht aktiviert werden", variant: "destructive" }),
+      onError: () => toast({ title: t("onboarding.toast_bookings_error"), variant: "destructive" }),
     },
   });
 
@@ -668,10 +674,10 @@ export default function Onboarding() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetOnboardingStatusQueryKey() });
-        toast({ title: "Sie sind live!", description: BIZ_LIVE_TOAST[getBizType()] });
+        toast({ title: t("onboarding.toast_live"), description: BIZ_LIVE_TOAST[getBizType()] });
         navigate("/");
       },
-      onError: () => toast({ title: "Etwas ist schiefgelaufen", variant: "destructive" }),
+      onError: () => toast({ title: t("onboarding.toast_error"), variant: "destructive" }),
     },
   });
 
@@ -722,9 +728,9 @@ export default function Onboarding() {
       {step < 6 && (
         <div className="mb-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground">Step {step} of 5</span>
+            <span className="text-xs text-muted-foreground">{t("onboarding.step_counter", { step, total: 5 })}</span>
             <span className="text-xs font-medium text-primary">
-              {status?.progressPercent ?? 0}% complete
+              {t("onboarding.progress_pct", { percent: status?.progressPercent ?? 0 })}
             </span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">

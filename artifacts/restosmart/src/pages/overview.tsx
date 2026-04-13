@@ -232,9 +232,9 @@ export default function Overview() {
       {/* ── Willkommen-Header ──────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Willkommen</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("overview.welcome_title")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {"Verwalten Sie Ihre Buchungen, Ihr Marketing, Ihre Bewertungen und Ihr Restaurant an einem Ort."}
+            {t("overview.welcome_subtitle")}
           </p>
         </div>
       </div>
@@ -296,24 +296,24 @@ export default function Overview() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-semibold text-amber-400 text-sm">Keine Buchungen in den ersten 24 Stunden</p>
+              <p className="font-semibold text-amber-400 text-sm">{t("overview.no_bookings_24h_title")}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {bizPossessive} ist live, aber noch kein Gast hat gebucht. So reagieren Sie jetzt:
+                {t("overview.no_bookings_24h_body", { biz: bizPossessive })}
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Link href="/campaigns">
                   <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
-                    Rabatt erhöhen
+                    {t("overview.no_bookings_raise_discount")}
                   </Button>
                 </Link>
                 <Link href="/campaigns">
                   <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
-                    Flash-Deal starten
+                    {t("overview.no_bookings_flash_deal")}
                   </Button>
                 </Link>
                 <Link href="/insights">
                   <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
-                    Tote Stunden füllen
+                    {t("overview.no_bookings_fill_dead_hours")}
                   </Button>
                 </Link>
               </div>
@@ -417,9 +417,9 @@ export default function Overview() {
           {shiftReminders.map(reminder => (
             <Alert key={`${reminder.employeeId}-${reminder.startTime}`} className="bg-amber-500/10 text-amber-600 border-amber-500/20">
               <Bell className="h-4 w-4 text-amber-600" />
-              <AlertTitle>Schicht beginnt bald</AlertTitle>
+              <AlertTitle>{t("overview.shift_reminder_title")}</AlertTitle>
               <AlertDescription>
-                {reminder.employeeName} ({reminder.role}) beginnt in {reminder.minutesUntilStart} Minuten um {reminder.startTime} Uhr.
+                {t("overview.shift_reminder_body", { name: reminder.employeeName, role: reminder.role, minutes: reminder.minutesUntilStart, time: reminder.startTime })}
               </AlertDescription>
             </Alert>
           ))}
@@ -431,21 +431,21 @@ export default function Overview() {
           <Zap className="h-5 w-5 text-emerald-500 flex-shrink-0" />
           <div className="flex-1">
             <span className="font-bold text-emerald-500">{activeDiscount.label}</span>
-            <span className="text-sm text-muted-foreground ml-2">{activeDiscount.percentage}% Rabatt ist gerade aktiv</span>
+            <span className="text-sm text-muted-foreground ml-2">{activeDiscount.percentage}{t("overview.active_discount_suffix")}</span>
             {activeDiscount.minutesRemaining != null && (
-              <span className="ml-2 text-sm text-emerald-500 font-mono">({activeDiscount.minutesRemaining} Min. verbleibend)</span>
+              <span className="ml-2 text-sm text-emerald-500 font-mono">{t("overview.active_discount_mins_remaining", { mins: activeDiscount.minutesRemaining })}</span>
             )}
           </div>
-          <Badge className="bg-emerald-500 text-white border-0 animate-pulse text-xs">LIVE-RABATT</Badge>
+          <Badge className="bg-emerald-500 text-white border-0 animate-pulse text-xs">{t("overview.live_discount_badge")}</Badge>
         </motion.div>
       )}
 
       {lowStockItems && lowStockItems.length > 0 && (
         <Alert className="border-rose-500/30 bg-rose-500/10">
           <ShoppingBag className="h-4 w-4 text-rose-500" />
-          <AlertTitle className="text-rose-500 font-bold">Handlungsbedarf — Niedriger Lagerbestand</AlertTitle>
+          <AlertTitle className="text-rose-500 font-bold">{t("overview.low_stock_title")}</AlertTitle>
           <AlertDescription>
-            <p className="mb-4">{lowStockItems.length} Zutat(en) haben den Mindestlagerbestand unterschritten und müssen sofort nachbestellt werden.</p>
+            <p className="mb-4">{t("overview.low_stock_body_other", { count: lowStockItems.length })}</p>
             <div className="space-y-2">
               {lowStockItems.map(item => (
                 <div key={item.id} className="flex items-center justify-between text-sm border-t border-rose-500/10 pt-2 first:border-0 first:pt-0">
@@ -454,7 +454,7 @@ export default function Overview() {
                     <span className="text-rose-500">{item.quantity} {item.unit}</span>
                     <span className="text-muted-foreground">→</span>
                     <span>{item.alertThreshold} {item.unit}</span>
-                    <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/5">Unter Minimum</Badge>
+                    <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/5">{t("overview.under_minimum")}</Badge>
                   </div>
                 </div>
               ))}
@@ -521,7 +521,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Heutiger Gewinn</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_today_profit")}</CardTitle>
               <DollarSign className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -540,7 +540,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Reservierungen</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_reservations_title")}</CardTitle>
               <Calendar className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
@@ -549,7 +549,7 @@ export default function Overview() {
               ) : (
                 <div className="text-2xl font-bold">{summary?.todayReservations || 0}</div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">{summary?.pendingReservations || 0} ausstehend</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("overview.card_pending", { count: summary?.pendingReservations || 0 })}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -557,7 +557,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aktives Personal</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_active_staff")}</CardTitle>
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
@@ -566,7 +566,7 @@ export default function Overview() {
               ) : (
                 <div className="text-2xl font-bold">{summary?.workingNowCount || summary?.activeStaff || 0}</div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Aktuell eingestempelt</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("overview.card_clocked_in")}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -574,7 +574,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Lagerwarnungen</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_stock_warnings")}</CardTitle>
               <AlertTriangle className={`h-4 w-4 ${summary?.lowStockAlerts && summary.lowStockAlerts > 0 ? "text-rose-500" : "text-muted-foreground"}`} />
             </CardHeader>
             <CardContent>
@@ -585,7 +585,7 @@ export default function Overview() {
                   {summary?.lowStockAlerts || 0}
                 </div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Artikel unter Schwellenwert</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("overview.card_below_threshold")}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -593,7 +593,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Auslastung</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_occupancy")}</CardTitle>
               <Utensils className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
@@ -602,7 +602,7 @@ export default function Overview() {
               ) : (
                 <div className="text-2xl font-bold text-amber-500">{summary?.tableOccupancyPercent || 0}%</div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">{summary?.tableOccupancy || 0} / {summary?.tableTotal || 0} Tische besetzt</p>
+              <p className="text-xs text-muted-foreground mt-1">{summary?.tableOccupancy || 0} / {summary?.tableTotal || 0} {t("overview.tables_occupied")}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -610,7 +610,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Live-Verkehr</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_live_traffic")}</CardTitle>
               <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
@@ -619,7 +619,7 @@ export default function Overview() {
               ) : (
                 <div className="text-2xl font-bold text-blue-500">{summary?.liveTraffic ?? 0}</div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Buchungen in den nächsten 2 Std.</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("overview.card_live_traffic_desc")}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -627,7 +627,7 @@ export default function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Gesch. Umsatz</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("overview.card_est_revenue")}</CardTitle>
               <TrendingUp className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
@@ -638,7 +638,7 @@ export default function Overview() {
                   {(summary?.expectedRevenue ?? 0).toLocaleString(locale, { style: "currency", currency: "EUR" })}
                 </div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Hochrechnung aus Buchungen</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("overview.card_est_revenue_desc")}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -648,7 +648,7 @@ export default function Overview() {
         <motion.div className="col-span-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Umsatz vs. Gewinn (monatlich)</CardTitle>
+              <CardTitle>{t("overview.chart_revenue_profit_title")}</CardTitle>
             </CardHeader>
             <CardContent className="pl-0">
               {loadingChart ? (
@@ -673,8 +673,8 @@ export default function Overview() {
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
                       formatter={(value: number, name: string) => [`€${value.toLocaleString(locale)}`, name === "revenue" ? t("analytics.chart_revenue_label") : t("analytics.chart_profit_label")]}
                     />
-                    <Area type="monotone" dataKey="revenue" stroke="#6366f1" fill="url(#colorRevenue)" strokeWidth={2} name="Umsatz" />
-                    <Area type="monotone" dataKey="profit" stroke="#10b981" fill="url(#colorProfit)" strokeWidth={2} name="Gewinn" />
+                    <Area type="monotone" dataKey="revenue" stroke="#6366f1" fill="url(#colorRevenue)" strokeWidth={2} name={t("overview.chart_revenue_label")} />
+                    <Area type="monotone" dataKey="profit" stroke="#10b981" fill="url(#colorProfit)" strokeWidth={2} name={t("overview.chart_profit_label")} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -698,15 +698,15 @@ export default function Overview() {
               ) : !attendanceToday || attendanceToday.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground text-sm">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                  Keine Schichten für heute geplant
+                  {t("overview.no_shifts_today")}
                 </div>
               ) : (
                 <div className="space-y-2">
                   <div className="flex justify-between items-center mb-3">
                     <div className="flex gap-3 text-xs">
-                      <span className="text-emerald-500 font-semibold">{attendanceToday.filter(a => a.status === "confirmed").length} bestätigt</span>
-                      <span className="text-amber-500 font-semibold">{attendanceToday.filter(a => a.status === "pending").length} ausstehend</span>
-                      <span className="text-rose-500 font-semibold">{attendanceToday.filter(a => a.status === "missed").length} verpasst</span>
+                      <span className="text-emerald-500 font-semibold">{t("overview.attendance_confirmed_count", { count: attendanceToday.filter(a => a.status === "confirmed").length })}</span>
+                      <span className="text-amber-500 font-semibold">{t("overview.attendance_pending_count", { count: attendanceToday.filter(a => a.status === "pending").length })}</span>
+                      <span className="text-rose-500 font-semibold">{t("overview.attendance_missed_count", { count: attendanceToday.filter(a => a.status === "missed").length })}</span>
                     </div>
                     <Button
                       size="sm"
@@ -716,7 +716,7 @@ export default function Overview() {
                       disabled={sendReminders.isPending}
                     >
                       <Send className="h-3 w-3" />
-                      Erinnerungen senden
+                      {t("overview.send_reminders")}
                     </Button>
                   </div>
                   {attendanceToday.slice(0, 5).map((rec) => (
@@ -726,9 +726,9 @@ export default function Overview() {
                         <p className="text-xs text-muted-foreground">{rec.role} · {rec.startTime}–{rec.endTime}</p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {rec.status === "confirmed" && <span className="text-xs text-emerald-500 font-semibold">Bestätigt</span>}
-                        {rec.status === "late" && <span className="text-xs text-amber-500 font-semibold">Verspätet</span>}
-                        {rec.status === "missed" && <span className="text-xs text-rose-500 font-semibold">Verpasst</span>}
+                        {rec.status === "confirmed" && <span className="text-xs text-emerald-500 font-semibold">{t("overview.attendance_confirmed")}</span>}
+                        {rec.status === "late" && <span className="text-xs text-amber-500 font-semibold">{t("overview.attendance_late")}</span>}
+                        {rec.status === "missed" && <span className="text-xs text-rose-500 font-semibold">{t("overview.attendance_missed_label")}</span>}
                         {rec.status === "pending" && (
                           <Button
                             size="sm"
@@ -738,7 +738,7 @@ export default function Overview() {
                             disabled={confirmAttendance.isPending}
                           >
                             <CheckCircle2 className="h-3 w-3" />
-                            Bestätigen
+                            {t("overview.confirm_attendance")}
                           </Button>
                         )}
                       </div>
@@ -747,7 +747,7 @@ export default function Overview() {
                   {attendanceToday.length > 5 && (
                     <Link href="/staff">
                       <Button variant="ghost" size="sm" className="w-full text-xs gap-1 mt-1">
-                        Alle {attendanceToday.length} Mitarbeiter anzeigen
+                        {t("overview.view_all_staff", { count: attendanceToday.length })}
                         <ArrowRight className="h-3 w-3" />
                       </Button>
                     </Link>
@@ -766,25 +766,25 @@ export default function Overview() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                Lokale Reichweite
+                {t("overview.local_reach_title")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Aktive Deals</p>
+                  <p className="text-xs text-muted-foreground">{t("overview.active_deals")}</p>
                   <p className="text-xl font-bold">{localReach.activeDeals}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Buchungen diese Woche</p>
+                  <p className="text-xs text-muted-foreground">{t("overview.bookings_this_week")}</p>
                   <p className="text-xl font-bold">{localReach.bookingsThisWeek}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Geschätzte Reichweite</p>
+                  <p className="text-xs text-muted-foreground">{t("overview.local_reach_estimated_reach")}</p>
                   <p className="text-xl font-bold">{localReach.totalEstimatedImpressions.toLocaleString("de-DE")}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Konversionsrate</p>
+                  <p className="text-xs text-muted-foreground">{t("overview.conversion_rate_label")}</p>
                   <p className="text-xl font-bold">{localReach.overallConversionRate.toFixed(1)}%</p>
                 </div>
               </div>
@@ -793,9 +793,9 @@ export default function Overview() {
                   <Target className="h-4 w-4 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{localReach.topDeal.label}</p>
-                    <p className="text-xs text-muted-foreground">{localReach.topDeal.bookingsDuringPeriod} Buchungen · {localReach.topDeal.conversionRate.toFixed(1)}% Konversion</p>
+                    <p className="text-xs text-muted-foreground">{localReach.topDeal.bookingsDuringPeriod} {t("overview.bookings_label")} · {localReach.topDeal.conversionRate.toFixed(1)}{t("overview.conversion_suffix")}</p>
                   </div>
-                  <Badge className="bg-primary/15 text-primary border-primary/30 text-xs shrink-0">Top-Deal</Badge>
+                  <Badge className="bg-primary/15 text-primary border-primary/30 text-xs shrink-0">{t("overview.top_deal_badge")}</Badge>
                 </div>
               )}
             </CardContent>

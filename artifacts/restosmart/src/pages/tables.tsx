@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, type TFunction } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { format } from "date-fns";
 import { Armchair, Users, Clock, TrendingUp, PauseCircle, PlayCircle, Save, Settings, BarChart2, Calendar, Zap, AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react";
@@ -61,18 +61,19 @@ function statusColor(s: AvailabilityStatus) {
   }
 }
 
-function statusLabel(s: AvailabilityStatus) {
+function statusLabel(s: AvailabilityStatus, t: TFunction) {
   switch (s) {
-    case "available": return "Verfügbar";
-    case "limited": return "Begrenzt";
-    case "nearly_full": return "Fast voll";
-    case "full": return "Voll";
-    case "closed": return "Geschlossen";
-    case "paused": return "Pausiert";
+    case "available": return t("tables.status_available");
+    case "limited": return t("tables.status_limited");
+    case "nearly_full": return t("tables.status_nearly_full");
+    case "full": return t("tables.status_full");
+    case "closed": return t("tables.status_closed");
+    case "paused": return t("tables.status_paused");
   }
 }
 
 function StatusBadge({ status }: { status: AvailabilityStatus }) {
+  const { t } = useTranslation();
   const classes: Record<AvailabilityStatus, string> = {
     available: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
     limited: "bg-amber-400/15 text-amber-400 border-amber-400/30",
@@ -84,7 +85,7 @@ function StatusBadge({ status }: { status: AvailabilityStatus }) {
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${classes[status]}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${statusColor(status)}`} />
-      {statusLabel(status)}
+      {statusLabel(status, t)}
     </span>
   );
 }
@@ -150,7 +151,7 @@ export default function Tables() {
         const updated = await res.json();
         setSettings(updated);
         setForm(updated);
-        toast({ title: "Einstellungen gespeichert", description: "Kapazitätseinstellungen wurden aktualisiert." });
+        toast({ title: t("tables.settings_saved_title"), description: t("tables.settings_saved_desc") });
         fetchAll(selectedDate);
       }
     } finally {
@@ -170,10 +171,10 @@ export default function Tables() {
       if (res.ok) {
         const data = await res.json();
         toast({
-          title: pause ? "Verfügbarkeit pausiert" : "Verfügbarkeit fortgesetzt",
+          title: pause ? t("tables.pause_success_title") : t("tables.resume_success_title"),
           description: pause
-            ? `Walk-ins und Buchungen pausiert${data.pausedUntil ? " für " + pauseDuration + " Min." : ""}.`
-            : "Das Restaurant nimmt wieder Buchungen an.",
+            ? t("tables.pause_success_desc", { durationSuffix: data.pausedUntil ? t("tables.pause_for_mins", { mins: pauseDuration }) : "" })
+            : t("tables.resume_success_desc"),
         });
         fetchAll(selectedDate);
       }
@@ -206,9 +207,9 @@ export default function Tables() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <Armchair className="w-8 h-8 text-primary" />
-            Tische & Verfügbarkeit
+            {t("tables.page_title")}
           </h1>
-          <p className="text-muted-foreground mt-1">Kapazitätseinstellungen verwalten und Auslastung live überwachen</p>
+          <p className="text-muted-foreground mt-1">{t("tables.page_subtitle")}</p>
         </div>
 
         {/* Pause / Fortsetzen */}
@@ -217,14 +218,14 @@ export default function Tables() {
             <div className="flex items-center gap-2">
               <Badge variant="destructive" className="animate-pulse px-3 py-1">
                 <PauseCircle className="w-3.5 h-3.5 mr-1" />
-                Buchungen pausiert
+                {t("tables.paused_badge")}
                 {pausedUntil && (
-                  <span className="ml-1 opacity-75">· bis {format(new Date(pausedUntil), "HH:mm")} Uhr</span>
+                  <span className="ml-1 opacity-75">· {t("tables.paused_until", { time: format(new Date(pausedUntil), "HH:mm") })}</span>
                 )}
               </Badge>
               <Button size="sm" variant="outline" onClick={() => handlePause(false)} disabled={pausing} className="gap-1.5">
                 <PlayCircle className="w-4 h-4" />
-                Fortsetzen
+                {t("tables.resume_btn")}
               </Button>
             </div>
           ) : (
@@ -234,15 +235,15 @@ export default function Tables() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="30">30 Min. pausieren</SelectItem>
-                  <SelectItem value="60">1 Std. pausieren</SelectItem>
-                  <SelectItem value="120">2 Std. pausieren</SelectItem>
-                  <SelectItem value="0">Unbegrenzt pausieren</SelectItem>
+                  <SelectItem value="30">{t("tables.pause_30min")}</SelectItem>
+                  <SelectItem value="60">{t("tables.pause_60min")}</SelectItem>
+                  <SelectItem value="120">{t("tables.pause_120min")}</SelectItem>
+                  <SelectItem value="0">{t("tables.pause_unlimited")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button size="sm" variant="outline" className="gap-1.5 text-orange-400 border-orange-400/40 hover:bg-orange-500/10" onClick={() => handlePause(true)} disabled={pausing}>
                 <PauseCircle className="w-4 h-4" />
-                Pausieren
+                {t("tables.pause_btn")}
               </Button>
             </div>
           )}
@@ -253,28 +254,28 @@ export default function Tables() {
       {overview && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Jetzt</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">{t("tables.card_now")}</div>
             <div className="flex items-end gap-2">
               <StatusBadge status={nowSlot?.status ?? (isPaused ? "paused" : "closed")} />
             </div>
             <div className="text-xs text-muted-foreground mt-1.5">
-              {nowSlot ? `${nowSlot.availableSeats} Plätze frei` : "Kein aktiver Zeitslot"}
+              {nowSlot ? t("tables.card_seats_free", { count: nowSlot.availableSeats }) : t("tables.card_no_active_slot")}
             </div>
           </div>
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Heutige Gäste</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">{t("tables.card_today_guests")}</div>
             <div className="text-2xl font-bold">{overview.summary.totalGuests}</div>
-            <div className="text-xs text-muted-foreground">{overview.summary.totalReservations} Reservierungen</div>
+            <div className="text-xs text-muted-foreground">{t("tables.card_reservations", { count: overview.summary.totalReservations })}</div>
           </div>
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Spitzenzeit</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">{t("tables.card_peak_time")}</div>
             <div className="text-2xl font-bold">{overview.summary.peakSlot ?? "—"}</div>
-            <div className="text-xs text-muted-foreground">{overview.summary.peakOccupancy}% Auslastung</div>
+            <div className="text-xs text-muted-foreground">{t("tables.card_peak_occupancy", { percent: overview.summary.peakOccupancy })}</div>
           </div>
           <div className="bg-card border rounded-xl p-4">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">Noch verfügbar</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">{t("tables.card_available_remaining")}</div>
             <div className="text-2xl font-bold">{overview.summary.remainingCapacity}</div>
-            <div className="text-xs text-muted-foreground">von {overview.seatingCapacity} Plätzen</div>
+            <div className="text-xs text-muted-foreground">{t("tables.card_of_seats", { count: overview.seatingCapacity })}</div>
           </div>
         </div>
       )}
@@ -284,13 +285,13 @@ export default function Tables() {
         <div className="bg-card border rounded-2xl p-6 space-y-5">
           <div className="flex items-center gap-2 mb-2">
             <Settings className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-base">Kapazitätseinstellungen</h2>
+            <h2 className="font-semibold text-base">{t("tables.settings_title")}</h2>
           </div>
 
           {form && (
             <>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Tische gesamt</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("tables.label_total_tables")}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -302,7 +303,7 @@ export default function Tables() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Sitzkapazität (Gäste)</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("tables.label_seating")}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -314,7 +315,7 @@ export default function Tables() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Slotdauer (Min.)</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("tables.label_slot_duration")}</Label>
                 <Select
                   value={String(form.slotDurationMinutes)}
                   onValueChange={(v) => setForm({ ...form, slotDurationMinutes: parseInt(v) })}
@@ -323,18 +324,18 @@ export default function Tables() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="60">60 Min. (1 Std.)</SelectItem>
-                    <SelectItem value="90">90 Min. (1,5 Std.)</SelectItem>
-                    <SelectItem value="120">120 Min. (2 Std.)</SelectItem>
-                    <SelectItem value="150">150 Min. (2,5 Std.)</SelectItem>
-                    <SelectItem value="180">180 Min. (3 Std.)</SelectItem>
+                    <SelectItem value="60">{t("tables.slot_60")}</SelectItem>
+                    <SelectItem value="90">{t("tables.slot_90")}</SelectItem>
+                    <SelectItem value="120">{t("tables.slot_120")}</SelectItem>
+                    <SelectItem value="150">{t("tables.slot_150")}</SelectItem>
+                    <SelectItem value="180">{t("tables.slot_180")}</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">Wie lange ein Tisch pro Buchung belegt ist</p>
+                <p className="text-xs text-muted-foreground">{t("tables.slot_duration_hint")}</p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Max. Gruppengröße</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("tables.label_max_party")}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -347,8 +348,8 @@ export default function Tables() {
 
               <div className="flex items-center justify-between py-1 border-t border-border">
                 <div>
-                  <div className="text-sm font-medium">Walk-ins akzeptieren</div>
-                  <div className="text-xs text-muted-foreground">Walk-in-Verfügbarkeit für Kunden anzeigen</div>
+                  <div className="text-sm font-medium">{t("tables.label_walk_ins")}</div>
+                  <div className="text-xs text-muted-foreground">{t("tables.label_walk_ins_hint")}</div>
                 </div>
                 <Switch
                   checked={form.walkInsEnabled}
@@ -358,7 +359,7 @@ export default function Tables() {
 
               <Button onClick={handleSave} disabled={saving} className="w-full gap-2">
                 <Save className="w-4 h-4" />
-                {saving ? "Wird gespeichert..." : "Einstellungen speichern"}
+                {saving ? t("tables.saving_btn") : t("tables.save_settings_btn")}
               </Button>
             </>
           )}
@@ -369,7 +370,7 @@ export default function Tables() {
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <BarChart2 className="w-4 h-4 text-primary" />
-              <h2 className="font-semibold text-base">Slot-Auslastung</h2>
+              <h2 className="font-semibold text-base">{t("tables.slot_heatmap_title")}</h2>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -394,7 +395,7 @@ export default function Tables() {
                 {(["available", "limited", "nearly_full", "full"] as AvailabilityStatus[]).map((s) => (
                   <span key={s} className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${statusColor(s)}`} />
-                    {statusLabel(s)}
+                    {statusLabel(s, t)}
                   </span>
                 ))}
               </div>
@@ -405,7 +406,7 @@ export default function Tables() {
                   <div key={slot.time} className={`flex items-center gap-3 rounded-lg px-2 py-1.5 ${isNow ? "bg-primary/10 ring-1 ring-primary/30" : ""}`}>
                     <span className={`text-xs font-mono w-12 shrink-0 ${isNow ? "text-primary font-bold" : "text-muted-foreground"}`}>
                       {slot.time}
-                      {isNow && <span className="ml-1 text-[10px]">jetzt</span>}
+                      {isNow && <span className="ml-1 text-[10px]">{t("tables.now_label")}</span>}
                     </span>
                     <div className="flex-1 bg-muted rounded-full h-4 relative overflow-hidden">
                       <div
@@ -424,7 +425,7 @@ export default function Tables() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
               <Calendar className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-sm">Keine Slot-Daten für dieses Datum</p>
+              <p className="text-sm">{t("tables.no_slot_data")}</p>
             </div>
           )}
         </div>
@@ -437,8 +438,8 @@ export default function Tables() {
           <div className="bg-card border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="font-semibold text-base">Wöchentliches Auslastungsmuster</h2>
-              <span className="text-xs text-muted-foreground ml-auto">Ø letzte 4 Wochen</span>
+              <h2 className="font-semibold text-base">{t("tables.weekly_pattern_title")}</h2>
+              <span className="text-xs text-muted-foreground ml-auto">{t("tables.weekly_avg_label")}</span>
             </div>
             <div className="flex items-end gap-2 h-28">
               {overview.weeklyPattern.map((day) => {
@@ -464,8 +465,8 @@ export default function Tables() {
           <div className="bg-card border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <Zap className="w-4 h-4 text-amber-400" />
-              <h2 className="font-semibold text-base">Schnellst ausgebuchte Slots</h2>
-              <span className="text-xs text-muted-foreground ml-auto">historisch am stärksten</span>
+              <h2 className="font-semibold text-base">{t("tables.fastest_slots_title")}</h2>
+              <span className="text-xs text-muted-foreground ml-auto">{t("tables.fastest_slots_subtitle")}</span>
             </div>
             {overview.fastestSlots.length > 0 ? (
               <div className="space-y-3">
@@ -476,18 +477,18 @@ export default function Tables() {
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{slot.time}</div>
-                      <div className="text-xs text-muted-foreground">{slot.guests} Gäste gesamt im Zeitraum</div>
+                      <div className="text-xs text-muted-foreground">{t("tables.slot_guests_total", { count: slot.guests })}</div>
                     </div>
-                    {i === 0 && <Badge className="bg-amber-400/15 text-amber-400 border-amber-400/30 text-xs">Spitze</Badge>}
+                    {i === 0 && <Badge className="bg-amber-400/15 text-amber-400 border-amber-400/30 text-xs">{t("tables.peak_badge")}</Badge>}
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground pt-1">Erwägen Sie, zu Stoßzeiten zusätzliche Tische zu öffnen oder einen Deal zu starten, um die Auslastung zu maximieren.</p>
+                <p className="text-xs text-muted-foreground pt-1">{t("tables.fastest_tip")}</p>
               </div>
             ) : (
               <div className="text-center py-10 text-muted-foreground text-sm">
                 <Clock className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                Noch nicht genug historische Daten
+                {t("tables.no_history")}
               </div>
             )}
           </div>

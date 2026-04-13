@@ -67,9 +67,9 @@ export default function Inventory() {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             setDialogOpen(false);
-            toast({ title: "Artikel erfolgreich aktualisiert" });
+            toast({ title: t("inventory.toast_updated") });
           },
-          onError: () => toast({ title: "Artikel konnte nicht aktualisiert werden", variant: "destructive" })
+          onError: () => toast({ title: t("inventory.toast_update_error"), variant: "destructive" })
         }
       );
     } else {
@@ -80,9 +80,9 @@ export default function Inventory() {
             queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             setDialogOpen(false);
             form.reset();
-            toast({ title: "Artikel erfolgreich erstellt" });
+            toast({ title: t("inventory.toast_created") });
           },
-          onError: () => toast({ title: "Artikel konnte nicht erstellt werden", variant: "destructive" })
+          onError: () => toast({ title: t("inventory.toast_create_error"), variant: "destructive" })
         }
       );
     }
@@ -102,13 +102,13 @@ export default function Inventory() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Möchten Sie diesen Artikel wirklich löschen?")) {
+    if (confirm(t("inventory.delete_confirm"))) {
       deleteItem.mutate(
         { id },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
-            toast({ title: "Artikel gelöscht" });
+            toast({ title: t("inventory.toast_deleted") });
           }
         }
       );
@@ -119,8 +119,8 @@ export default function Inventory() {
     <div className="space-y-8 pb-10">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Inventar</h2>
-          <p className="text-muted-foreground mt-2">Lagerbestände verwalten und Zutatenkosten verfolgen.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("inventory.page_title")}</h2>
+          <p className="text-muted-foreground mt-2">{t("inventory.page_subtitle")}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => {
           setDialogOpen(open);
@@ -130,11 +130,11 @@ export default function Inventory() {
           }
         }}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" /> Artikel hinzufügen</Button>
+            <Button><Plus className="mr-2 h-4 w-4" /> {t("inventory.btn_add_item")}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingItem ? "Artikel bearbeiten" : "Neuen Artikel hinzufügen"}</DialogTitle>
+              <DialogTitle>{editingItem ? t("inventory.dialog_title_edit") : t("inventory.dialog_title_new")}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -143,7 +143,7 @@ export default function Inventory() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Artikelname</FormLabel>
+                      <FormLabel>{t("inventory.form_item_name")}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -154,8 +154,8 @@ export default function Inventory() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Kategorie</FormLabel>
-                      <FormControl><Input {...field} placeholder="z. B. Fleisch, Gemüse, Getränke" /></FormControl>
+                      <FormLabel>{t("inventory.form_category")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("inventory.form_category_placeholder")} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -166,7 +166,7 @@ export default function Inventory() {
                     name="quantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Aktueller Bestand</FormLabel>
+                        <FormLabel>{t("inventory.form_quantity")}</FormLabel>
                         <FormControl><Input type="number" step="0.1" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -177,8 +177,8 @@ export default function Inventory() {
                     name="unit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Einheit</FormLabel>
-                        <FormControl><Input {...field} placeholder="z. B. kg, L, Stk." /></FormControl>
+                        <FormLabel>{t("inventory.form_unit")}</FormLabel>
+                        <FormControl><Input {...field} placeholder={t("inventory.form_unit_placeholder")} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -190,7 +190,7 @@ export default function Inventory() {
                     name="alertThreshold"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mindestbestand-Alarm bei</FormLabel>
+                        <FormLabel>{t("inventory.form_alert_threshold")}</FormLabel>
                         <FormControl><Input type="number" step="0.1" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -201,7 +201,7 @@ export default function Inventory() {
                     name="costPerUnit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Kosten pro Einheit (€)</FormLabel>
+                        <FormLabel>{t("inventory.form_cost_per_unit")}</FormLabel>
                         <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -209,7 +209,7 @@ export default function Inventory() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={createItem.isPending || updateItem.isPending}>
-                  {editingItem ? "Änderungen speichern" : "Artikel erstellen"}
+                  {editingItem ? t("inventory.btn_save") : t("inventory.btn_create")}
                 </Button>
               </form>
             </Form>
@@ -220,7 +220,7 @@ export default function Inventory() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Lagerliste</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> {t("inventory.card_title")}</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -233,11 +233,11 @@ export default function Inventory() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Artikel</TableHead>
-                    <TableHead>Kategorie</TableHead>
-                    <TableHead className="text-right">Bestand</TableHead>
-                    <TableHead className="text-right">Kosten</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("inventory.col_item")}</TableHead>
+                    <TableHead>{t("inventory.col_category")}</TableHead>
+                    <TableHead className="text-right">{t("inventory.col_stock")}</TableHead>
+                    <TableHead className="text-right">{t("inventory.col_cost")}</TableHead>
+                    <TableHead>{t("inventory.col_status")}</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -260,9 +260,9 @@ export default function Inventory() {
                         </TableCell>
                         <TableCell>
                           {isLowStock ? (
-                            <Badge variant="destructive" className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-rose-500/20">Niedriger Bestand</Badge>
+                            <Badge variant="destructive" className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-rose-500/20">{t("inventory.badge_low_stock")}</Badge>
                           ) : (
-                            <Badge variant="default" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">OK</Badge>
+                            <Badge variant="default" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">{t("inventory.badge_ok")}</Badge>
                           )}
                         </TableCell>
                         <TableCell>
@@ -272,10 +272,10 @@ export default function Inventory() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleEdit(item)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Bearbeiten
+                                <Pencil className="mr-2 h-4 w-4" /> {t("inventory.menu_edit")}
                               </DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                                <Trash2 className="mr-2 h-4 w-4" /> {t("inventory.menu_delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -286,7 +286,7 @@ export default function Inventory() {
                   {!inventory?.length && (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                        Keine Inventarartikel gefunden.
+                        {t("inventory.no_inventory_items")}
                       </TableCell>
                     </TableRow>
                   )}

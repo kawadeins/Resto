@@ -14,13 +14,6 @@ import { useSession } from "@/contexts/session-context";
 
 const GRP_API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
 
-const GRP_STATUS: Record<string, { label: string; cls: string }> = {
-  planned:   { label: "Geplant",            cls: "bg-slate-100 text-slate-600 border-slate-200" },
-  sent:      { label: "Warten auf Antwort", cls: "bg-blue-50 text-blue-600 border-blue-200" },
-  confirmed: { label: "Bestätigt",          cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  rejected:  { label: "Abgelehnt",          cls: "bg-rose-50 text-rose-600 border-rose-200" },
-  cancelled: { label: "Storniert",          cls: "bg-slate-50 text-slate-400 border-slate-200" },
-};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -65,25 +58,32 @@ const statusColors = {
   cancelled: "bg-rose-500/10 text-rose-500 border-rose-500/20",
 };
 
-const statusLabels: Record<string, string> = {
-  pending: "Ausstehend",
-  confirmed: "Bestätigt",
-  seated: "Platziert",
-  completed: "Abgeschlossen",
-  cancelled: "Storniert",
-};
-
-const sourceLabels: Record<string, string> = {
-  phone: "Telefon",
-  online: "Online",
-  walkin: "Walk-in",
-  direct: "Direkt",
-};
 
 export default function Reservations() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const statusLabels: Record<string, string> = {
+    pending: t("reservations.status_pending"),
+    confirmed: t("reservations.status_confirmed"),
+    seated: t("reservations.status_seated"),
+    completed: t("reservations.status_completed"),
+    cancelled: t("reservations.status_cancelled"),
+  };
+  const sourceLabels: Record<string, string> = {
+    phone: t("reservations.source_phone"),
+    online: t("reservations.source_online"),
+    walkin: t("reservations.source_walkin"),
+    direct: t("reservations.source_direct"),
+  };
+  const GRP_STATUS: Record<string, { label: string; cls: string }> = {
+    planned:   { label: t("reservations.grp_planned"),   cls: "bg-slate-100 text-slate-600 border-slate-200" },
+    sent:      { label: t("reservations.grp_sent"),      cls: "bg-blue-50 text-blue-600 border-blue-200" },
+    confirmed: { label: t("reservations.grp_confirmed"), cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    rejected:  { label: t("reservations.grp_rejected"),  cls: "bg-rose-50 text-rose-600 border-rose-200" },
+    cancelled: { label: t("reservations.grp_cancelled"), cls: "bg-slate-50 text-slate-400 border-slate-200" },
+  };
   
   const { csrfToken } = useSession();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -125,10 +125,9 @@ export default function Reservations() {
       queryClient.setQueryData<any[]>(["group-reservations-owner"], (prev = []) =>
         prev.map((r) => (r.id === id ? { ...r, ...updated } : r))
       );
-      const labels: Record<string, string> = { confirmed: "Bestätigt", rejected: "Abgelehnt", cancelled: "Storniert" };
-      toast({ title: `Anfrage ${labels[status]}` });
+      toast({ title: t("reservations.grp_request_updated", { status: t(`reservations.grp_${status}`) }) });
     } catch (err: any) {
-      toast({ title: err.message || "Fehler beim Aktualisieren", variant: "destructive" });
+      toast({ title: err.message || t("reservations.grp_update_error"), variant: "destructive" });
     } finally {
       setUpdatingId(null);
     }
@@ -177,9 +176,9 @@ export default function Reservations() {
             queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
             setSheetOpen(false);
-            toast({ title: "Reservierung aktualisiert" });
+            toast({ title: t("reservations.update_success") });
           },
-          onError: () => toast({ title: "Aktualisierung fehlgeschlagen", variant: "destructive" })
+          onError: () => toast({ title: t("reservations.update_error"), variant: "destructive" })
         }
       );
     } else {
@@ -191,9 +190,9 @@ export default function Reservations() {
             queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
             setSheetOpen(false);
             form.reset();
-            toast({ title: "Reservierung erstellt" });
+            toast({ title: t("reservations.create_success") });
           },
-          onError: () => toast({ title: "Erstellen fehlgeschlagen", variant: "destructive" })
+          onError: () => toast({ title: t("reservations.create_error"), variant: "destructive" })
         }
       );
     }
@@ -226,21 +225,21 @@ export default function Reservations() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
-          toast({ title: `Status auf "${statusLabels[status]}" gesetzt` });
+          toast({ title: t("reservations.status_changed", { status: statusLabels[status] }) });
         }
       }
     );
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Möchten Sie diese Reservierung wirklich löschen?")) {
+    if (confirm(t("reservations.delete_confirm"))) {
       deleteReservation.mutate(
         { id },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey() });
             queryClient.invalidateQueries({ queryKey: getGetReservationStatsQueryKey() });
-            toast({ title: "Reservierung gelöscht" });
+            toast({ title: t("reservations.delete_success") });
           }
         }
       );
@@ -251,20 +250,20 @@ export default function Reservations() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Reservierungen</h2>
-          <p className="text-muted-foreground mt-2">Tische und Buchungen verwalten.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("reservations.title")}</h2>
+          <p className="text-muted-foreground mt-2">{t("reservations.page_subtitle")}</p>
           <div className="flex gap-2 mt-3">
             <button
               onClick={() => setMainTab("reservations")}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${mainTab === "reservations" ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
             >
-              Reservierungen
+              {t("reservations.tab_reservations")}
             </button>
             <button
               onClick={() => { setMainTab("gruppenanfragen"); refetchGroupRequests(); }}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${mainTab === "gruppenanfragen" ? "bg-primary text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
             >
-              Gruppenanfragen
+              {t("reservations.tab_group")}
               {groupRequests.filter(r => r.status === "sent").length > 0 && (
                 <span className="ml-1.5 bg-rose-500 text-white text-[10px] rounded-full px-1.5 py-0.5 font-bold">
                   {groupRequests.filter(r => r.status === "sent").length}
@@ -281,11 +280,11 @@ export default function Reservations() {
           }
         }}>
           <SheetTrigger asChild>
-            <Button size="lg" className="shadow-lg"><Plus className="mr-2 h-5 w-5" /> Neue Reservierung</Button>
+            <Button size="lg" className="shadow-lg"><Plus className="mr-2 h-5 w-5" /> {t("reservations.new_btn")}</Button>
           </SheetTrigger>
           <SheetContent className="sm:max-w-[500px] overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle>{editingReservation ? "Reservierung bearbeiten" : "Neue Reservierung"}</SheetTitle>
+              <SheetTitle>{editingReservation ? t("reservations.edit_title") : t("reservations.create_title")}</SheetTitle>
             </SheetHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -294,7 +293,7 @@ export default function Reservations() {
                   name="customerName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name des Gastes</FormLabel>
+                      <FormLabel>{t("reservations.form_guest_name")}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -306,7 +305,7 @@ export default function Reservations() {
                     name="customerPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Telefon</FormLabel>
+                        <FormLabel>{t("reservations.form_phone")}</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -317,7 +316,7 @@ export default function Reservations() {
                     name="customerEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>E-Mail (optional)</FormLabel>
+                        <FormLabel>{t("reservations.form_email_opt")}</FormLabel>
                         <FormControl><Input type="email" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -330,7 +329,7 @@ export default function Reservations() {
                     name="date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Datum</FormLabel>
+                        <FormLabel>{t("reservations.form_date")}</FormLabel>
                         <FormControl><Input type="date" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -341,7 +340,7 @@ export default function Reservations() {
                     name="time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Uhrzeit</FormLabel>
+                        <FormLabel>{t("reservations.form_time")}</FormLabel>
                         <FormControl><Input type="time" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -354,7 +353,7 @@ export default function Reservations() {
                     name="partySize"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Personenzahl</FormLabel>
+                        <FormLabel>{t("reservations.form_party")}</FormLabel>
                         <FormControl><Input type="number" min={1} max={20} {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -365,7 +364,7 @@ export default function Reservations() {
                     name="tableNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tischnr. (optional)</FormLabel>
+                        <FormLabel>{t("reservations.form_table_opt")}</FormLabel>
                         <FormControl><Input type="number" {...field} value={field.value || ''} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -378,16 +377,16 @@ export default function Reservations() {
                     name="source"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Quelle</FormLabel>
+                        <FormLabel>{t("reservations.form_source")}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger><SelectValue placeholder="Quelle wählen" /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder={t("reservations.form_source_placeholder")} /></SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="phone">Telefon</SelectItem>
-                            <SelectItem value="online">Online</SelectItem>
-                            <SelectItem value="walkin">Walk-in</SelectItem>
-                            <SelectItem value="direct">Direkt</SelectItem>
+                            <SelectItem value="phone">{t("reservations.source_phone")}</SelectItem>
+                            <SelectItem value="online">{t("reservations.source_online")}</SelectItem>
+                            <SelectItem value="walkin">{t("reservations.source_walkin")}</SelectItem>
+                            <SelectItem value="direct">{t("reservations.source_direct")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -400,17 +399,17 @@ export default function Reservations() {
                       name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Status</FormLabel>
+                          <FormLabel>{t("reservations.form_status")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Status wählen" /></SelectTrigger>
+                              <SelectTrigger><SelectValue placeholder={t("reservations.form_status_placeholder")} /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="pending">Ausstehend</SelectItem>
-                              <SelectItem value="confirmed">Bestätigt</SelectItem>
-                              <SelectItem value="seated">Platziert</SelectItem>
-                              <SelectItem value="completed">Abgeschlossen</SelectItem>
-                              <SelectItem value="cancelled">Storniert</SelectItem>
+                              <SelectItem value="pending">{t("reservations.status_pending")}</SelectItem>
+                              <SelectItem value="confirmed">{t("reservations.status_confirmed")}</SelectItem>
+                              <SelectItem value="seated">{t("reservations.status_seated")}</SelectItem>
+                              <SelectItem value="completed">{t("reservations.status_completed")}</SelectItem>
+                              <SelectItem value="cancelled">{t("reservations.status_cancelled")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -424,14 +423,14 @@ export default function Reservations() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hinweise (optional)</FormLabel>
+                      <FormLabel>{t("reservations.form_notes_opt")}</FormLabel>
                       <FormControl><Textarea className="resize-none" {...field} value={field.value || ''} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" className="w-full mt-6" disabled={createReservation.isPending || updateReservation.isPending}>
-                  {editingReservation ? "Änderungen speichern" : "Reservierung erstellen"}
+                  {editingReservation ? t("reservations.save_changes") : t("reservations.create_submit")}
                 </Button>
               </form>
             </Form>
@@ -443,7 +442,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Heute gesamt</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("reservations.stat_today_total")}</CardTitle>
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -456,7 +455,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ausstehend</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("reservations.stat_pending")}</CardTitle>
               <Clock className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
@@ -469,7 +468,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Bestätigt</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("reservations.stat_confirmed")}</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
@@ -482,7 +481,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Platziert</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("reservations.stat_seated")}</CardTitle>
               <CheckSquare className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -495,7 +494,7 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Gäste gesamt</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("reservations.stat_guests")}</CardTitle>
               <Users className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -511,24 +510,24 @@ export default function Reservations() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold">Gruppenanfragen</CardTitle>
-              <p className="text-sm text-muted-foreground">Von Kunden per Gruppen-Essensplan gesendete Reservierungsanfragen.</p>
+              <CardTitle className="text-lg font-bold">{t("reservations.grp_title")}</CardTitle>
+              <p className="text-sm text-muted-foreground">{t("reservations.grp_subtitle")}</p>
             </CardHeader>
             <CardContent>
               {groupRequests.length === 0 ? (
-                <div className="py-12 text-center text-muted-foreground text-sm">Keine Gruppenanfragen vorhanden.</div>
+                <div className="py-12 text-center text-muted-foreground text-sm">{t("reservations.grp_no_requests")}</div>
               ) : (
                 <div className="rounded-md border overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Gruppe</TableHead>
-                        <TableHead>Datum / Uhrzeit</TableHead>
-                        <TableHead>Personen</TableHead>
-                        <TableHead>Anfragesteller</TableHead>
-                        <TableHead>Notiz</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aktionen</TableHead>
+                        <TableHead>{t("reservations.grp_group_col")}</TableHead>
+                        <TableHead>{t("reservations.grp_datetime_col")}</TableHead>
+                        <TableHead>{t("reservations.grp_persons_col")}</TableHead>
+                        <TableHead>{t("reservations.grp_requester_col")}</TableHead>
+                        <TableHead>{t("reservations.grp_note_col")}</TableHead>
+                        <TableHead>{t("reservations.grp_status_col")}</TableHead>
+                        <TableHead>{t("reservations.grp_actions_col")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -564,7 +563,7 @@ export default function Reservations() {
                                       onClick={() => updateGroupRequestStatus(req.id, "confirmed")}>
                                       {updatingId === req.id ? (
                                         <span className="flex items-center gap-1"><svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> …</span>
-                                      ) : "Bestätigen"}
+                                      ) : t("reservations.grp_action_confirm")}
                                     </Button>
                                     <Button size="sm" variant="outline"
                                       className="h-7 text-xs border-rose-300 text-rose-600 hover:bg-rose-50 disabled:opacity-60"
@@ -572,7 +571,7 @@ export default function Reservations() {
                                       onClick={() => updateGroupRequestStatus(req.id, "rejected")}>
                                       {updatingId === req.id ? (
                                         <span className="flex items-center gap-1"><svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> …</span>
-                                      ) : "Ablehnen"}
+                                      ) : t("reservations.grp_action_reject")}
                                     </Button>
                                   </>
                                 )}
@@ -581,7 +580,7 @@ export default function Reservations() {
                                     className="h-7 text-xs text-muted-foreground disabled:opacity-60"
                                     disabled={updatingId !== null}
                                     onClick={() => updateGroupRequestStatus(req.id, "cancelled")}>
-                                    {updatingId === req.id ? "…" : "Stornieren"}
+                                    {updatingId === req.id ? "…" : t("reservations.grp_action_cancel")}
                                   </Button>
                                 )}
                               </div>
@@ -604,22 +603,22 @@ export default function Reservations() {
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6">
             <Tabs defaultValue="today" onValueChange={(v) => setDateFilter(v as any)} className="w-[400px]">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="today">Heute</TabsTrigger>
-                <TabsTrigger value="week">Diese Woche</TabsTrigger>
-                <TabsTrigger value="all">Alle</TabsTrigger>
+                <TabsTrigger value="today">{t("reservations.filter_today_tab")}</TabsTrigger>
+                <TabsTrigger value="week">{t("reservations.filter_week_tab")}</TabsTrigger>
+                <TabsTrigger value="all">{t("reservations.filter_all_tab")}</TabsTrigger>
               </TabsList>
             </Tabs>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status filtern" />
+                <SelectValue placeholder={t("reservations.filter_status_placeholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Status</SelectItem>
-                <SelectItem value="pending">Ausstehend</SelectItem>
-                <SelectItem value="confirmed">Bestätigt</SelectItem>
-                <SelectItem value="seated">Platziert</SelectItem>
-                <SelectItem value="completed">Abgeschlossen</SelectItem>
-                <SelectItem value="cancelled">Storniert</SelectItem>
+                <SelectItem value="all">{t("reservations.filter_all_status")}</SelectItem>
+                <SelectItem value="pending">{t("reservations.status_pending")}</SelectItem>
+                <SelectItem value="confirmed">{t("reservations.status_confirmed")}</SelectItem>
+                <SelectItem value="seated">{t("reservations.status_seated")}</SelectItem>
+                <SelectItem value="completed">{t("reservations.status_completed")}</SelectItem>
+                <SelectItem value="cancelled">{t("reservations.status_cancelled")}</SelectItem>
               </SelectContent>
             </Select>
           </CardHeader>
@@ -636,12 +635,12 @@ export default function Reservations() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Uhrzeit</TableHead>
-                      <TableHead>Gast</TableHead>
-                      <TableHead>Personen</TableHead>
-                      <TableHead>Tisch</TableHead>
-                      <TableHead>Quelle</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("reservations.col_time")}</TableHead>
+                      <TableHead>{t("reservations.col_guest")}</TableHead>
+                      <TableHead>{t("reservations.col_persons")}</TableHead>
+                      <TableHead>{t("reservations.col_table")}</TableHead>
+                      <TableHead>{t("reservations.col_source")}</TableHead>
+                      <TableHead>{t("reservations.col_status")}</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -684,22 +683,22 @@ export default function Reservations() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "confirmed")}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-indigo-500" /> Bestätigen
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-indigo-500" /> {t("reservations.action_confirm")}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "seated")}>
-                                <CheckSquare className="mr-2 h-4 w-4 text-emerald-500" /> Platzieren
+                                <CheckSquare className="mr-2 h-4 w-4 text-emerald-500" /> {t("reservations.action_seat")}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "completed")}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-slate-500" /> Abschließen
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-slate-500" /> {t("reservations.action_complete")}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleStatusChange(res.id, "cancelled")}>
-                                <XCircle className="mr-2 h-4 w-4 text-rose-500" /> Stornieren
+                                <XCircle className="mr-2 h-4 w-4 text-rose-500" /> {t("reservations.action_cancel")}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleEdit(res)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Details bearbeiten
+                                <Pencil className="mr-2 h-4 w-4" /> {t("reservations.action_edit")}
                               </DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(res.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                                <Trash2 className="mr-2 h-4 w-4" /> {t("reservations.action_delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -709,7 +708,7 @@ export default function Reservations() {
                     {!reservations?.length && (
                       <TableRow>
                         <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                          Keine Reservierungen gefunden.
+                          {t("reservations.no_reservations_found")}
                         </TableCell>
                       </TableRow>
                     )}

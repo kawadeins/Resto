@@ -31,19 +31,20 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 // ─── Reservation helpers ───────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  pending: { label: "Ausstehend", className: "text-amber-500 border-amber-500/30 bg-amber-500/5" },
-  confirmed: { label: "Bestätigt", className: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5" },
-  rejected: { label: "Abgelehnt", className: "text-rose-500 border-rose-500/30 bg-rose-500/5" },
-  arrived: { label: "Eingetroffen", className: "text-blue-500 border-blue-500/30 bg-blue-500/5" },
-  cancelled: { label: "Storniert", className: "text-muted-foreground border-border bg-muted/20" },
+const STATUS_CONFIG: Record<string, { className: string }> = {
+  pending: { className: "text-amber-500 border-amber-500/30 bg-amber-500/5" },
+  confirmed: { className: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5" },
+  rejected: { className: "text-rose-500 border-rose-500/30 bg-rose-500/5" },
+  arrived: { className: "text-blue-500 border-blue-500/30 bg-blue-500/5" },
+  cancelled: { className: "text-muted-foreground border-border bg-muted/20" },
 };
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   return (
     <Badge variant="outline" className={`text-xs ${cfg.className}`}>
-      {cfg.label}
+      {t("bookings.status_" + status)}
     </Badge>
   );
 }
@@ -223,6 +224,7 @@ function ShareCard({ plan }: { plan: BookingPlan }) {
 // ─── Share Modal ────────────────────────────────────────────────────────────────
 
 function ShareModal({ plan, onClose }: { plan: BookingPlan; onClose: () => void }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const summaryText = `📋 Buchungsplan: ${plan.title}
@@ -239,9 +241,9 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(summaryText);
-      toast({ title: "Zusammenfassung kopiert!", description: "In die Zwischenablage eingefügt." });
+      toast({ title: t("bookings.copied"), description: t("bookings.copied_desc") });
     } catch {
-      toast({ title: "Fehler", description: "Kopieren nicht möglich.", variant: "destructive" });
+      toast({ title: t("bookings.copy_error_title"), description: t("bookings.copy_error"), variant: "destructive" });
     }
   };
 
@@ -250,7 +252,7 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <Share2 className="h-5 w-5 text-primary" />
-          Plan teilen
+          {t("bookings.share_modal_title")}
         </DialogTitle>
       </DialogHeader>
 
@@ -264,8 +266,8 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
             <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
               <Mail className="h-5 w-5 text-blue-400" />
             </div>
-            <span className="text-xs font-semibold text-foreground">E-Mail senden</span>
-            <span className="text-[10px] text-muted-foreground">Vorbefüllte E-Mail öffnen</span>
+            <span className="text-xs font-semibold text-foreground">{t("bookings.share_email")}</span>
+            <span className="text-[10px] text-muted-foreground">{t("bookings.share_email_desc")}</span>
           </a>
 
           <button
@@ -275,8 +277,8 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
             <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
               <Copy className="h-5 w-5 text-emerald-400" />
             </div>
-            <span className="text-xs font-semibold text-foreground">Text kopieren</span>
-            <span className="text-[10px] text-muted-foreground">In Zwischenablage</span>
+            <span className="text-xs font-semibold text-foreground">{t("bookings.share_copy")}</span>
+            <span className="text-[10px] text-muted-foreground">{t("bookings.share_copy_desc")}</span>
           </button>
 
           <a
@@ -289,7 +291,7 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
               <Send className="h-5 w-5 text-[#25D366]" />
             </div>
             <span className="text-xs font-semibold text-foreground">WhatsApp</span>
-            <span className="text-[10px] text-muted-foreground">Direkt teilen</span>
+            <span className="text-[10px] text-muted-foreground">{t("bookings.share_whatsapp_desc")}</span>
           </a>
 
           <button
@@ -299,26 +301,26 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 flex items-center justify-center group-hover:from-purple-500/20 group-hover:to-pink-500/20 transition-colors">
               <Instagram className="h-5 w-5 text-pink-400" />
             </div>
-            <span className="text-xs font-semibold text-foreground">Instagram / Facebook</span>
-            <span className="text-[10px] text-muted-foreground">Karte kopieren & posten</span>
+            <span className="text-xs font-semibold text-foreground">{t("bookings.share_instagram")}</span>
+            <span className="text-[10px] text-muted-foreground">{t("bookings.share_instagram_desc")}</span>
           </button>
         </div>
 
         {/* Visual share card */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Visuelle Share-Karte</p>
-            <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Screenshot & teilen</span>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("bookings.share_card_title")}</p>
+            <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{t("bookings.share_card_desc")}</span>
           </div>
           <ShareCard plan={plan} />
           <p className="text-[10px] text-muted-foreground text-center mt-2">
-            Screenshot machen → direkt auf Instagram / Facebook / Status teilen
+            {t("bookings.share_card_screenshot_hint")}
           </p>
         </div>
 
         {/* Raw text summary */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Textzusammenfassung</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("bookings.share_text_label")}</p>
           <div className="relative">
             <pre className="text-xs text-muted-foreground bg-muted/30 rounded-xl p-4 whitespace-pre-wrap border border-border/40 leading-relaxed max-h-40 overflow-y-auto font-mono">
               {summaryText}
@@ -381,18 +383,18 @@ function PlanEditorModal({
         {/* Title + Description */}
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Titel *</Label>
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("bookings.form_title_label")}</Label>
             <Input
-              placeholder="z.B. Samstagabend-Service 15. Juni"
+              placeholder={t("bookings.form_title_placeholder")}
               value={form.title ?? ""}
               onChange={(e) => update("title", e.target.value)}
               className="text-sm"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Beschreibung</Label>
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("bookings.form_desc_label")}</Label>
             <Textarea
-              placeholder="Kurze Beschreibung des Plans – Anlass, besondere Anforderungen..."
+              placeholder={t("bookings.form_desc_placeholder")}
               value={form.description ?? ""}
               onChange={(e) => update("description", e.target.value)}
               className="text-sm resize-none min-h-[72px]"
@@ -402,10 +404,10 @@ function PlanEditorModal({
 
         {/* Date & Time */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Datum & Zeitraum</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("bookings.form_datetime_section")}</p>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5 col-span-3 sm:col-span-1">
-              <Label className="text-xs text-muted-foreground">Datum</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_date_label")}</Label>
               <Input
                 type="date"
                 value={form.date ?? ""}
@@ -414,7 +416,7 @@ function PlanEditorModal({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Beginn</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_start_label")}</Label>
               <Input
                 type="time"
                 value={form.startTime ?? "18:00"}
@@ -423,7 +425,7 @@ function PlanEditorModal({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Ende</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_end_label")}</Label>
               <Input
                 type="time"
                 value={form.endTime ?? "23:00"}
@@ -436,10 +438,10 @@ function PlanEditorModal({
 
         {/* Covers */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Kapazitätsgrenzen</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("bookings.form_covers_section")}</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Mindestgäste</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_min_covers")}</Label>
               <Input
                 type="number"
                 placeholder="z.B. 10"
@@ -449,7 +451,7 @@ function PlanEditorModal({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Maximalgäste</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_max_covers")}</Label>
               <Input
                 type="number"
                 placeholder="z.B. 80"
@@ -463,10 +465,10 @@ function PlanEditorModal({
 
         {/* Target Audience, Status, Visibility */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Konfiguration</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("bookings.form_config_section")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Zielgruppe</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_audience_label")}</Label>
               <Select value={form.targetAudience ?? "Allgemein"} onValueChange={(v) => update("targetAudience", v)}>
                 <SelectTrigger className="text-sm h-9">
                   <Target className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
@@ -478,29 +480,29 @@ function PlanEditorModal({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_status_label")}</Label>
               <Select value={form.status ?? "draft"} onValueChange={(v) => update("status", v)}>
                 <SelectTrigger className="text-sm h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Entwurf</SelectItem>
-                  <SelectItem value="active">Aktiv</SelectItem>
-                  <SelectItem value="finalized">Abgeschlossen</SelectItem>
-                  <SelectItem value="archived">Archiviert</SelectItem>
+                  <SelectItem value="draft">{t("bookings.plan_status_draft")}</SelectItem>
+                  <SelectItem value="active">{t("bookings.plan_status_active")}</SelectItem>
+                  <SelectItem value="finalized">{t("bookings.plan_status_finalized")}</SelectItem>
+                  <SelectItem value="archived">{t("bookings.plan_status_archived")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Sichtbarkeit</Label>
+              <Label className="text-xs text-muted-foreground">{t("bookings.form_visibility_label")}</Label>
               <Select value={form.visibility ?? "team"} onValueChange={(v) => update("visibility", v)}>
                 <SelectTrigger className="text-sm h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="private">🔒 Privat</SelectItem>
-                  <SelectItem value="team">🛡️ Team</SelectItem>
-                  <SelectItem value="public">🌐 Öffentlich</SelectItem>
+                  <SelectItem value="private">{t("bookings.form_visibility_private")}</SelectItem>
+                  <SelectItem value="team">{t("bookings.form_visibility_team")}</SelectItem>
+                  <SelectItem value="public">{t("bookings.form_visibility_public")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -509,9 +511,9 @@ function PlanEditorModal({
 
         {/* Created By */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Erstellt von</Label>
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("bookings.form_created_by_label")}</Label>
           <Input
-            placeholder="Name des Managers / Erstellers"
+            placeholder={t("bookings.form_created_by_placeholder")}
             value={form.createdBy ?? "Manager"}
             onChange={(e) => update("createdBy", e.target.value)}
             className="text-sm"
@@ -520,7 +522,7 @@ function PlanEditorModal({
 
         {/* Tags */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Tags</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("bookings.form_tags_label")}</p>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {(form.tags ?? []).map((tag) => (
               <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20">
@@ -533,7 +535,7 @@ function PlanEditorModal({
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Tag hinzufügen..."
+              placeholder={t("bookings.form_tag_placeholder")}
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(tagInput); } }}
@@ -558,9 +560,9 @@ function PlanEditorModal({
 
         {/* Notes */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Manager-Notizen</Label>
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("bookings.form_notes_label")}</Label>
           <Textarea
-            placeholder="Interne Notizen, Sonderanweisungen, Hinweise für das Team..."
+            placeholder={t("bookings.form_notes_placeholder")}
             value={form.notes ?? ""}
             onChange={(e) => update("notes", e.target.value)}
             className="text-sm resize-none min-h-[80px]"
@@ -654,7 +656,7 @@ function PlanCard({
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
-              {plan.startTime} – {plan.endTime} Uhr
+              {t("bookings.plan_time_uhr", { start: plan.startTime, end: plan.endTime })}
             </span>
             <span className="flex items-center gap-1.5">
               <Target className="h-3.5 w-3.5" />
@@ -663,7 +665,7 @@ function PlanCard({
             {plan.maxCovers && (
               <span className="flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5" />
-                max. {plan.maxCovers} Gäste
+                {t("bookings.plan_capacity_max", { count: plan.maxCovers })}
               </span>
             )}
           </div>
@@ -685,7 +687,7 @@ function PlanCard({
               onClick={onFinalize}
             >
               <FileCheck2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Abschließen</span>
+              <span className="hidden sm:inline">{t("bookings.plan_finalize_btn")}</span>
             </Button>
           )}
           <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onShare} title="Teilen">
@@ -757,11 +759,11 @@ function BookingPlansTab() {
       return r.json();
     },
     onSuccess: () => {
-      toast({ title: editingPlan.id ? "Plan aktualisiert!" : "Plan erstellt!" });
+      toast({ title: editingPlan.id ? t("bookings.plan_updated") : t("bookings.plan_created") });
       invalidate();
       setEditorOpen(false);
     },
-    onError: () => toast({ title: "Fehler beim Speichern", variant: "destructive" }),
+    onError: () => toast({ title: t("bookings.save_error"), variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
@@ -773,8 +775,8 @@ function BookingPlansTab() {
       });
       if (!r.ok) throw new Error("Delete failed");
     },
-    onSuccess: () => { toast({ title: "Plan gelöscht." }); invalidate(); },
-    onError: () => toast({ title: "Fehler beim Löschen", variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("bookings.plan_deleted") }); invalidate(); },
+    onError: () => toast({ title: t("bookings.delete_error"), variant: "destructive" }),
   });
 
   const duplicateMutation = useMutation({
@@ -787,8 +789,8 @@ function BookingPlansTab() {
       if (!r.ok) throw new Error("Duplicate failed");
       return r.json();
     },
-    onSuccess: () => { toast({ title: "Plan dupliziert!" }); invalidate(); },
-    onError: () => toast({ title: "Fehler beim Duplizieren", variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("bookings.plan_duplicated") }); invalidate(); },
+    onError: () => toast({ title: t("bookings.duplicate_error"), variant: "destructive" }),
   });
 
   const patchStatus = async (id: number, status: BookingPlan["status"]) => {
@@ -821,10 +823,10 @@ function BookingPlansTab() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Pläne gesamt", value: stats.total, color: "text-foreground" },
-          { label: "Aktive Pläne", value: stats.active, color: "text-emerald-500" },
-          { label: "Abgeschlossen", value: stats.finalized, color: "text-primary" },
-          { label: "Entwürfe", value: stats.draft, color: "text-slate-400" },
+          { label: t("bookings.plans_stat_total"), value: stats.total, color: "text-foreground" },
+          { label: t("bookings.plans_stat_active"), value: stats.active, color: "text-emerald-500" },
+          { label: t("bookings.plans_stat_finalized"), value: stats.finalized, color: "text-primary" },
+          { label: t("bookings.plans_stat_draft"), value: stats.draft, color: "text-slate-400" },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4 pb-4">
@@ -838,8 +840,8 @@ function BookingPlansTab() {
       {/* Header + actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-semibold text-lg">Buchungspläne</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Planung, Verwaltung und Weitergabe Ihrer Service-Pläne.</p>
+          <h3 className="font-semibold text-lg">{t("bookings.plans_heading")}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("bookings.plans_subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -847,16 +849,16 @@ function BookingPlansTab() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle Status</SelectItem>
-              <SelectItem value="draft">Entwurf</SelectItem>
-              <SelectItem value="active">Aktiv</SelectItem>
-              <SelectItem value="finalized">Abgeschlossen</SelectItem>
-              <SelectItem value="archived">Archiviert</SelectItem>
+              <SelectItem value="all">{t("bookings.filter_status_all")}</SelectItem>
+              <SelectItem value="draft">{t("bookings.plan_status_draft")}</SelectItem>
+              <SelectItem value="active">{t("bookings.plan_status_active")}</SelectItem>
+              <SelectItem value="finalized">{t("bookings.plan_status_finalized")}</SelectItem>
+              <SelectItem value="archived">{t("bookings.plan_status_archived")}</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={openCreate} className="h-9 gap-2 px-4">
             <Plus className="h-4 w-4" />
-            Neuer Plan
+            {t("bookings.new_plan")}
           </Button>
         </div>
       </div>
@@ -869,10 +871,10 @@ function BookingPlansTab() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground border border-dashed border-border/40 rounded-xl">
           <ClipboardList className="h-12 w-12 mx-auto mb-3 opacity-20" />
-          <p className="font-medium">Noch keine Buchungspläne</p>
-          <p className="text-sm mt-1">Erstellen Sie Ihren ersten Plan für einen bevorstehenden Service.</p>
+          <p className="font-medium">{t("bookings.no_plans")}</p>
+          <p className="text-sm mt-1">{t("bookings.no_plans_desc")}</p>
           <Button variant="outline" onClick={openCreate} className="mt-4 gap-2">
-            <Plus className="h-4 w-4" /> Ersten Plan erstellen
+            <Plus className="h-4 w-4" /> {t("bookings.no_plans_cta")}
           </Button>
         </div>
       ) : (
@@ -935,10 +937,10 @@ export default function Bookings() {
       { id, data: { status } },
       {
         onSuccess: () => {
-          toast({ title: `Buchung als "${STATUS_CONFIG[status]?.label ?? status}" markiert.` });
+          toast({ title: t("bookings.booking_marked_as", { status: t("bookings.status_" + status) }) });
           queryClient.invalidateQueries({ queryKey: getListReservationsQueryKey(params) });
         },
-        onError: () => toast({ title: "Buchung konnte nicht aktualisiert werden", variant: "destructive" }),
+        onError: () => toast({ title: t("bookings.booking_update_error"), variant: "destructive" }),
       }
     );
   };
@@ -970,9 +972,9 @@ export default function Bookings() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Buchungen</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("bookings.page_title")}</h2>
         <p className="text-muted-foreground mt-2">
-          Reservierungen verwalten und Servicepläne erstellen & teilen.
+          {t("bookings.page_subtitle")}
         </p>
       </div>
 
@@ -980,11 +982,11 @@ export default function Bookings() {
         <TabsList className="mb-6">
           <TabsTrigger value="reservations" className="gap-2">
             <Calendar className="h-4 w-4" />
-            Reservierungen
+            {t("bookings.tab_reservations")}
           </TabsTrigger>
           <TabsTrigger value="plans" className="gap-2">
             <ClipboardList className="h-4 w-4" />
-            Buchungspläne
+            {t("bookings.tab_booking_plans")}
           </TabsTrigger>
         </TabsList>
 
@@ -996,9 +998,9 @@ export default function Bookings() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Buchungen gesamt</p>
+                      <p className="text-xs text-muted-foreground font-medium">{t("bookings.stat_total_bookings")}</p>
                       <p className="text-2xl font-bold mt-1">{filtered.length}</p>
-                      <p className="text-xs text-muted-foreground mt-1">für ausgewähltes Datum</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("bookings.stat_for_date")}</p>
                     </div>
                     <Calendar className="h-8 w-8 text-primary/30" />
                   </div>
@@ -1010,11 +1012,11 @@ export default function Bookings() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Gesch. Umsatz (Ø €35/Gast)</p>
+                      <p className="text-xs text-muted-foreground font-medium">{t("bookings.stat_est_revenue")}</p>
                       <p className="text-2xl font-bold mt-1 text-emerald-500">
                         {expectedRevenue.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">{totalCoversConfirmed} bestätigte Gäste</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("bookings.stat_confirmed_guests", { count: totalCoversConfirmed })}</p>
                     </div>
                     <CheckCircle2 className="h-8 w-8 text-emerald-500/30" />
                   </div>
@@ -1026,9 +1028,9 @@ export default function Bookings() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Live-Verkehr</p>
+                      <p className="text-xs text-muted-foreground font-medium">{t("bookings.stat_live_traffic")}</p>
                       <p className="text-2xl font-bold mt-1 text-blue-500">{liveTraffic}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Buchungen in den nächsten 2 Std.</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("bookings.stat_live_traffic_desc")}</p>
                     </div>
                     <Clock className="h-8 w-8 text-blue-500/30" />
                   </div>
@@ -1041,14 +1043,14 @@ export default function Bookings() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1">
-                  <CardTitle>Reservierungsübersicht</CardTitle>
-                  <CardDescription>Bestätigen, ablehnen oder Gäste als eingetroffen markieren.</CardDescription>
+                  <CardTitle>{t("bookings.card_title_reservations")}</CardTitle>
+                  <CardDescription>{t("bookings.card_desc_reservations")}</CardDescription>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Nach Name suchen..."
+                      placeholder={t("bookings.search_placeholder")}
                       className="pl-9 w-48"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
@@ -1062,15 +1064,15 @@ export default function Bookings() {
                   />
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Alle Status" />
+                      <SelectValue placeholder={t("bookings.filter_status_all")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Alle Status</SelectItem>
-                      <SelectItem value="pending">Ausstehend</SelectItem>
-                      <SelectItem value="confirmed">Bestätigt</SelectItem>
-                      <SelectItem value="arrived">Eingetroffen</SelectItem>
-                      <SelectItem value="rejected">Abgelehnt</SelectItem>
-                      <SelectItem value="cancelled">Storniert</SelectItem>
+                      <SelectItem value="all">{t("bookings.filter_status_all")}</SelectItem>
+                      <SelectItem value="pending">{t("bookings.filter_pending")}</SelectItem>
+                      <SelectItem value="confirmed">{t("bookings.filter_confirmed")}</SelectItem>
+                      <SelectItem value="arrived">{t("bookings.filter_arrived")}</SelectItem>
+                      <SelectItem value="rejected">{t("bookings.filter_rejected")}</SelectItem>
+                      <SelectItem value="cancelled">{t("bookings.filter_cancelled")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1084,8 +1086,8 @@ export default function Bookings() {
               ) : filtered.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
                   <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                  <p className="font-medium">Keine Buchungen gefunden</p>
-                  <p className="text-sm mt-1">Datum oder Statusfilter anpassen.</p>
+                  <p className="font-medium">{t("bookings.no_bookings_found")}</p>
+                  <p className="text-sm mt-1">{t("bookings.no_bookings_hint")}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1105,11 +1107,11 @@ export default function Bookings() {
                           </div>
                           <div className="flex items-center gap-1.5 text-sm">
                             <Users className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                            <span>{r.partySize} Gäste</span>
+                            <span>{t("bookings.party_size", { count: r.partySize })}</span>
                           </div>
                           <div className="flex items-center gap-1.5 text-sm">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                            <span>{formatDate(r.date)} um {r.time} Uhr</span>
+                            <span>{formatDate(r.date)} {t("bookings.time_at", { time: r.time })}</span>
                           </div>
                           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                             {r.notes ? (
@@ -1118,7 +1120,7 @@ export default function Bookings() {
                                 <span className="truncate">{r.notes}</span>
                               </>
                             ) : (
-                              <span className="italic opacity-50">Keine besonderen Wünsche</span>
+                              <span className="italic opacity-50">{t("bookings.no_special_requests")}</span>
                             )}
                           </div>
                         </div>
@@ -1132,7 +1134,7 @@ export default function Bookings() {
                                 onClick={() => handleStatusChange(r.id, "confirmed")}
                                 disabled={patchStatus.isPending}
                               >
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Bestätigen
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t("bookings.action_confirm_label")}
                               </Button>
                               <Button
                                 size="sm"
@@ -1141,7 +1143,7 @@ export default function Bookings() {
                                 onClick={() => handleStatusChange(r.id, "rejected")}
                                 disabled={patchStatus.isPending}
                               >
-                                <XCircle className="h-3.5 w-3.5 mr-1" /> Ablehnen
+                                <XCircle className="h-3.5 w-3.5 mr-1" /> {t("bookings.action_reject_label")}
                               </Button>
                             </>
                           )}
@@ -1152,7 +1154,7 @@ export default function Bookings() {
                               onClick={() => handleStatusChange(r.id, "arrived")}
                               disabled={patchStatus.isPending}
                             >
-                              <ChevronRight className="h-3.5 w-3.5 mr-1" /> Eingetroffen
+                              <ChevronRight className="h-3.5 w-3.5 mr-1" /> {t("bookings.action_arrived_label")}
                             </Button>
                           )}
                         </div>
