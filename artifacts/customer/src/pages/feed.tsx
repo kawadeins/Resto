@@ -190,6 +190,7 @@ function SkeletonCard() {
 function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
   postId: number; email: string; userName: string; userPhoto: string | null; onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -210,12 +211,12 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
     },
     onError: (err: any) => {
       if (err.moderated) {
-        toast({ title: "Inhalt blockiert", description: err.message, variant: "destructive" });
+        toast({ title: t("feed.block_content"), description: err.message, variant: "destructive" });
         if (err.strikeMessage) {
-          setTimeout(() => toast({ title: "Hinweis", description: err.strikeMessage }), 800);
+          setTimeout(() => toast({ title: t("feed.hint_blocked"), description: err.strikeMessage }), 800);
         }
       } else {
-        toast({ title: "Fehler", description: "Kommentar konnte nicht gesendet werden." });
+        toast({ title: t("common.error"), description: t("feed.comment_error") });
       }
     },
   });
@@ -237,7 +238,7 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
         </div>
 
         <div className="flex items-center justify-between px-5 py-3.5 border-b shrink-0">
-          <h3 className="font-bold">{"Kommentare"}</h3>
+          <h3 className="font-bold">{t("feed.comments_heading")}</h3>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/70 transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -249,8 +250,8 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
           ) : comments.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-4xl mb-3">{"💬"}</p>
-              <p className="font-semibold">{"Noch keine Kommentare"}</p>
-              <p className="text-sm text-muted-foreground mt-1">{"Schreib den ersten Kommentar!"}</p>
+              <p className="font-semibold">{t("feed.no_comments")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("feed.be_first_comment")}</p>
             </div>
           ) : (
             comments.map((c: any) => (
@@ -276,7 +277,7 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
               <Textarea
                 value={text}
                 onChange={e => setText(e.target.value)}
-                placeholder={"Kommentar schreiben…"}
+                placeholder={t("feed.comment_placeholder")}
                 className="resize-none min-h-[40px] max-h-[100px] pr-10 rounded-2xl text-sm py-2.5"
                 rows={1}
                 onKeyDown={e => {
@@ -301,7 +302,7 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
         ) : (
           <div className="px-5 py-4 border-t text-center">
             <Link href="/profile" className="text-primary text-sm font-semibold hover:underline">
-              {"Anmelden zum Kommentieren"}
+              {t("feed.signin_to_comment")}
             </Link>
           </div>
         )}
@@ -374,6 +375,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
   email: string; userName: string; userPhoto: string | null;
   onClose: () => void; onCreated: () => void;
 }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<CreateStep>("upload");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -408,28 +410,28 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
       const data = await r.json();
       if (!r.ok) {
         if (data.moderated) {
-          toast({ title: "Inhalt blockiert", description: data.error, variant: "destructive" });
+          toast({ title: t("feed.block_content"), description: data.error, variant: "destructive" });
           if (data.strikeMessage) {
-            setTimeout(() => toast({ title: "Hinweis", description: data.strikeMessage }), 800);
+            setTimeout(() => toast({ title: t("feed.hint_blocked"), description: data.strikeMessage }), 800);
           }
         } else {
-          toast({ title: "Fehler", description: "Beitrag konnte nicht erstellt werden." });
+          toast({ title: t("common.error"), description: t("feed.post_error") });
         }
         return;
       }
       setStep("success");
       onCreated();
     } catch {
-      toast({ title: "Fehler", description: "Beitrag konnte nicht erstellt werden." });
+      toast({ title: t("common.error"), description: t("feed.post_error") });
     } finally {
       setLoading(false);
     }
   };
 
   const stepTitle: Record<CreateStep, string> = {
-    upload: "Neuer Beitrag",
-    compose: "Details hinzufügen",
-    preview: "Vorschau",
+    upload: t("feed.step_upload"),
+    compose: t("feed.step_compose"),
+    preview: t("feed.step_preview"),
     success: "",
   };
 
@@ -454,15 +456,15 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
               <Check className="w-10 h-10 text-white" strokeWidth={3} />
             </div>
             <div>
-              <p className="font-bold text-xl">{"Beitrag veröffentlicht!"}</p>
-              <p className="text-muted-foreground text-sm mt-1.5">{"Dein Post ist jetzt im Feed sichtbar."}</p>
+              <p className="font-bold text-xl">{t("feed.post_published")}</p>
+              <p className="text-muted-foreground text-sm mt-1.5">{t("feed.post_published_desc")}</p>
             </div>
             <button
               onClick={onClose}
               className="font-bold text-white px-8 py-3 rounded-2xl text-sm mt-2 hover:opacity-90 active:scale-95 transition-all"
               style={{ background: GRAD }}
             >
-              {"Feed ansehen"}
+              {t("feed.view_feed")}
             </button>
           </div>
         ) : (
@@ -478,7 +480,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                 </button>
               ) : (
                 <button onClick={onClose} className="text-sm text-muted-foreground font-medium hover:text-foreground transition-colors">
-                  {"Abbrechen"}
+                  {t("feed.cancel")}
                 </button>
               )}
               <p className="font-bold text-[15px]">{stepTitle[step]}</p>
@@ -489,7 +491,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                   disabled={!image}
                   onClick={() => setStep("preview")}
                 >
-                  {"Vorschau"} <ChevronRight className="w-4 h-4" />
+                  {t("feed.step_preview")} <ChevronRight className="w-4 h-4" />
                 </button>
               ) : step === "preview" ? (
                 <button
@@ -498,7 +500,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                   disabled={loading || !image}
                   onClick={submit}
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Veröffentlichen"}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("feed.publish")}
                 </button>
               ) : (
                 <div className="w-16" />
@@ -518,7 +520,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                 {/* Required badge */}
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                  <span className="text-[11px] font-semibold text-amber-600">{"Foto erforderlich zum Posten"}</span>
+                  <span className="text-[11px] font-semibold text-amber-600">{t("feed.photo_required")}</span>
                 </div>
 
                 {/* Upload zone with dashed border */}
@@ -534,8 +536,8 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                     <Camera className="w-10 h-10 text-primary" />
                   </div>
                   <div className="text-center">
-                    <p className="font-bold text-[17px]">{"Foto hinzufügen"}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{"Tippe, um ein Foto auszuwählen"}</p>
+                    <p className="font-bold text-[17px]">{t("feed.add_photo")}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("feed.tap_to_select")}</p>
                   </div>
                 </button>
 
@@ -546,10 +548,10 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                   style={{ background: GRAD }}
                   onClick={() => fileRef.current?.click()}
                 >
-                  {"Foto auswählen"}
+                  {t("feed.choose_photo")}
                 </button>
 
-                <p className="text-[11px] text-muted-foreground">{"JPG, PNG oder HEIC · max. 10 MB"}</p>
+                <p className="text-[11px] text-muted-foreground">{t("feed.photo_formats")}</p>
               </div>
             )}
 
@@ -571,12 +573,12 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                     <button
                       className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white hover:bg-black/80 transition-colors"
                       onClick={() => { setImage(null); setPreview(null); setStep("upload"); }}
-                      title={"Foto ändern"}
+                      title={t("feed.change_photo")}
                     >
                       <X className="w-4 h-4" />
                     </button>
                     <span className="absolute bottom-2.5 left-3 text-[11px] font-semibold text-white/80 flex items-center gap-1">
-                      <Camera className="w-3 h-3" /> {"Foto ändern"}
+                      <Camera className="w-3 h-3" /> {t("feed.change_photo")}
                     </span>
                   </div>
                 )}
@@ -584,7 +586,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                 <div className="px-5 py-4 space-y-4">
                   {/* Caption */}
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{"Beschriftung"}</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{t("feed.caption_label")}</label>
                     <div className="flex gap-3 items-start">
                       <Avatar photoUrl={userPhoto} name={userName} />
                       <Textarea
@@ -592,7 +594,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                         value={caption}
                         onChange={e => setCaption(e.target.value.slice(0, 500))}
                         maxLength={500}
-                        placeholder={"Was erlebst du? Schreib etwas…"}
+                        placeholder={t("feed.compose_placeholder")}
                         className="flex-1 resize-none min-h-[90px] rounded-2xl text-sm border-border/60 focus:border-primary/50"
                       />
                     </div>
@@ -617,7 +619,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                     <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
                     <div className="w-2 h-2 rounded-full" style={{ background: "hsl(263,70%,52%)" }} />
                   </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{"So sieht dein Beitrag aus"}</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("feed.preview_label")}</p>
 
                   {/* Preview card */}
                   <div className="bg-card rounded-2xl overflow-hidden border" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
@@ -635,7 +637,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                               <MapPin className="w-2.5 h-2.5" /> {restaurant.name}
                             </span>
                           )}
-                          <span className="text-[11px] text-muted-foreground">{"Gerade eben"}</span>
+                          <span className="text-[11px] text-muted-foreground">{t("feed.ago_just_now")}</span>
                         </div>
                       </div>
                     </div>
@@ -661,7 +663,7 @@ function CreatePostModal({ email, userName, userPhoto, onClose, onCreated }: {
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground text-center mt-4">{"Alles gut? Drücke oben auf »Veröffentlichen«."}</p>
+                  <p className="text-xs text-muted-foreground text-center mt-4">{t("feed.preview_confirm")}</p>
                 </div>
               </div>
             )}
@@ -680,6 +682,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
   onOpenComments: (id: number) => void;
   onLiked?: () => void;
 }) {
+  const { t } = useTranslation();
   const { gainXp } = useXpGain();
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -912,7 +915,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
                 className="text-muted-foreground font-semibold ml-1 hover:text-foreground transition-colors text-xs"
                 onClick={() => setCaptionExpanded(true)}
               >
-                {"mehr anzeigen"}
+                {t("feed.read_more")}
               </button>
             )}
           </div>
@@ -924,7 +927,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
             className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
             onClick={() => onOpenComments(post.id)}
           >
-            {"Alle "}{post.commentCount}{" Kommentar"}{post.commentCount !== 1 ? "e" : ""}{" ansehen"}
+            {t(post.commentCount === 1 ? "feed.view_all_comments_one" : "feed.view_all_comments_other", { count: post.commentCount })}
           </button>
         )}
       </div>
@@ -1033,6 +1036,7 @@ function RewardCard({ idx }: { idx: number }) {
 
 // ── Premium Nudge Card ─────────────────────────────────────────────────────────
 function PremiumNudgeCard({ onDismiss }: { onDismiss: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="nudge-pop rounded-[20px] overflow-hidden border" style={{
       background: "linear-gradient(135deg,hsl(263,70%,52%,0.07),hsl(330,85%,58%,0.07))",
@@ -1045,9 +1049,9 @@ function PremiumNudgeCard({ onDismiss }: { onDismiss: () => void }) {
             {"✨"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm leading-tight">{"Du bist aktiv — maximiere dein Erlebnis"}</p>
+            <p className="font-bold text-sm leading-tight">{t("feed.nudge_title")}</p>
             <p className="text-muted-foreground text-xs mt-0.5 leading-snug">
-              {"Mit Premium siehst du exklusive Deals, frühe Reservierungen & mehr"}
+              {t("feed.nudge_desc")}
             </p>
           </div>
           <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5">
@@ -1059,7 +1063,7 @@ function PremiumNudgeCard({ onDismiss }: { onDismiss: () => void }) {
           className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-white py-2.5 rounded-xl active:scale-95 transition-all hover:opacity-90"
           style={{ background: GRAD }}
         >
-          {"14 Tage kostenlos testen"} <ChevronRight className="w-4 h-4" />
+          {t("feed.nudge_cta")} <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
     </div>
@@ -1091,17 +1095,18 @@ function buildFeedItems(posts: any[], showNudge: boolean): FeedItem[] {
 
 // ── Guest Banner ──────────────────────────────────────────────────────────────
 function GuestBanner() {
+  const { t } = useTranslation();
   return (
     <div className="rounded-2xl p-5 text-center" style={{ background: GRAD_SOFT, border: "1px solid hsl(263,70%,52%,0.15)" }}>
       <p className="text-3xl mb-2">{"📸"}</p>
-      <p className="font-bold text-sm mb-1">{"Meld dich an, um zu posten & zu liken"}</p>
-      <p className="text-xs text-muted-foreground mb-3.5">{"Der Feed ist öffentlich – du kannst ohne Login alles lesen"}</p>
+      <p className="font-bold text-sm mb-1">{t("feed.guest_title")}</p>
+      <p className="text-xs text-muted-foreground mb-3.5">{t("feed.guest_desc")}</p>
       <Link
         href="/profile"
         className="inline-flex items-center text-xs font-bold text-white px-5 py-2.5 rounded-xl hover:opacity-90 active:scale-95 transition-all"
         style={{ background: GRAD }}
       >
-        {"Anmelden"}
+        {t("feed.login_btn")}
       </Link>
     </div>
   );
@@ -1214,8 +1219,8 @@ export default function FeedPage() {
       <div className="sticky top-0 z-30" style={{ background: "hsl(var(--background)/0.92)", backdropFilter: "blur(18px)" }}>
         <div className="px-4 py-3.5 flex items-center justify-between border-b" style={{ borderColor: "hsl(var(--border)/0.5)" }}>
           <div>
-            <h1 className="font-serif font-bold text-[20px] leading-tight">{"Feed"}</h1>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{"Food-Erlebnisse der Community"}</p>
+            <h1 className="font-serif font-bold text-[20px] leading-tight">{t("feed.title")}</h1>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{t("feed.community_subtitle")}</p>
           </div>
           {email && (
             <button
@@ -1223,7 +1228,7 @@ export default function FeedPage() {
               style={{ background: GRAD, boxShadow: "0 4px 14px hsl(263,70%,52%,0.38)" }}
               onClick={() => setShowCreate(true)}
             >
-              <Plus className="w-4 h-4" />{"Posten"}
+              <Plus className="w-4 h-4" />{t("feed.post_btn")}
             </button>
           )}
         </div>
@@ -1245,8 +1250,8 @@ export default function FeedPage() {
           <div className="flex flex-col items-center gap-5 py-20 text-center fade-in">
             <div className="w-24 h-24 rounded-3xl flex items-center justify-center text-5xl" style={{ background: GRAD_SOFT }}>{"✨"}</div>
             <div>
-              <p className="font-bold text-xl">{"Noch keine Beiträge"}</p>
-              <p className="text-muted-foreground text-sm mt-1.5">{"Sei der Erste und teile dein Food-Erlebnis!"}</p>
+              <p className="font-bold text-xl">{t("feed.no_posts")}</p>
+              <p className="text-muted-foreground text-sm mt-1.5">{t("feed.no_posts_cta")}</p>
             </div>
             {email && (
               <button
@@ -1254,7 +1259,7 @@ export default function FeedPage() {
                 style={{ background: GRAD }}
                 onClick={() => setShowCreate(true)}
               >
-                <Camera className="w-4 h-4" />{"Ersten Post erstellen"}
+                <Camera className="w-4 h-4" />{t("feed.create_first_post")}
               </button>
             )}
           </div>
@@ -1297,7 +1302,7 @@ export default function FeedPage() {
             {!hasMore && allPosts.length > 0 && (
               <div className="text-center py-8 text-muted-foreground text-sm font-medium fade-in">
                 <div className="text-2xl mb-2">{"🍽️"}</div>
-                {"Du hast alles gesehen — komm morgen wieder!"}
+                {t("feed.all_seen")}
               </div>
             )}
           </>
@@ -1310,7 +1315,7 @@ export default function FeedPage() {
           className="fixed bottom-24 right-4 z-20 w-14 h-14 rounded-full text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
           style={{ background: GRAD, boxShadow: "0 6px 24px hsl(263,70%,52%,0.5)" }}
           onClick={() => setShowCreate(true)}
-          aria-label="Neuer Post"
+          aria-label={t("feed.new_post_aria")}
         >
           <Plus className="w-6 h-6" />
         </button>

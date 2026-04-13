@@ -78,42 +78,48 @@ interface CustomerProfile {
   }>;
 }
 
-// ─── Food Identity Data ───────────────────────────────────────────────────────
+// ─── Food Identity Data (factory functions — labels resolved via t()) ──────────
 
-const FOOD_TYPES = [
-  { id: "Italian",        emoji: "🍝", label: "Italienisch",   from: "from-rose-400",    to: "to-red-500" },
-  { id: "Japanese",       emoji: "🍣", label: "Japanisch",     from: "from-sky-400",     to: "to-blue-600" },
-  { id: "French",         emoji: "🥐", label: "Französisch",   from: "from-violet-400",  to: "to-purple-600" },
-  { id: "Indian",         emoji: "🍛", label: "Indisch",       from: "from-yellow-400",  to: "to-orange-400" },
-  { id: "Mexican",        emoji: "🌮", label: "Mexikanisch",   from: "from-amber-400",   to: "to-orange-500" },
-  { id: "Thai",           emoji: "🍜", label: "Thailändisch",  from: "from-emerald-400", to: "to-teal-600" },
-  { id: "American",       emoji: "🍔", label: "Amerikanisch",  from: "from-orange-400",  to: "to-red-400" },
-  { id: "Middle Eastern", emoji: "🧆", label: "Orientalisch",  from: "from-amber-500",   to: "to-yellow-600" },
-  { id: "Chinese",        emoji: "🥟", label: "Chinesisch",    from: "from-red-400",     to: "to-rose-600" },
-  { id: "Mediterranean",  emoji: "🫒", label: "Mediterran",    from: "from-green-400",   to: "to-emerald-600" },
-  { id: "Seafood",        emoji: "🦞", label: "Meeresfrüchte", from: "from-cyan-400",    to: "to-blue-500" },
-  { id: "Steakhouse",     emoji: "🥩", label: "Steakhaus",     from: "from-red-600",     to: "to-rose-800" },
-];
+function getFoodTypes(t: (k: string) => string) {
+  return [
+    { id: "Italian",        emoji: "🍝", label: t("profile.food_italian"),       from: "from-rose-400",    to: "to-red-500" },
+    { id: "Japanese",       emoji: "🍣", label: t("profile.food_japanese"),      from: "from-sky-400",     to: "to-blue-600" },
+    { id: "French",         emoji: "🥐", label: t("profile.food_french"),        from: "from-violet-400",  to: "to-purple-600" },
+    { id: "Indian",         emoji: "🍛", label: t("profile.food_indian"),        from: "from-yellow-400",  to: "to-orange-400" },
+    { id: "Mexican",        emoji: "🌮", label: t("profile.food_mexican"),       from: "from-amber-400",   to: "to-orange-500" },
+    { id: "Thai",           emoji: "🍜", label: t("profile.food_thai"),          from: "from-emerald-400", to: "to-teal-600" },
+    { id: "American",       emoji: "🍔", label: t("profile.food_american"),      from: "from-orange-400",  to: "to-red-400" },
+    { id: "Middle Eastern", emoji: "🧆", label: t("profile.food_middle_eastern"),from: "from-amber-500",   to: "to-yellow-600" },
+    { id: "Chinese",        emoji: "🥟", label: t("profile.food_chinese"),       from: "from-red-400",     to: "to-rose-600" },
+    { id: "Mediterranean",  emoji: "🫒", label: t("profile.food_mediterranean"), from: "from-green-400",   to: "to-emerald-600" },
+    { id: "Seafood",        emoji: "🦞", label: t("profile.food_seafood"),       from: "from-cyan-400",    to: "to-blue-500" },
+    { id: "Steakhouse",     emoji: "🥩", label: t("profile.food_steakhouse"),    from: "from-red-600",     to: "to-rose-800" },
+  ];
+}
 
-const DIETARY_STYLES = [
-  { id: "no_preference", icon: Utensils, emoji: "🍽️", label: "Keine Präferenz",   from: "from-slate-400",   to: "to-gray-500",    color: "text-muted-foreground" },
-  { id: "vegetarian",    icon: Leaf,     emoji: "🥗",  label: "Vegetarisch",       from: "from-emerald-400", to: "to-green-600",   color: "text-emerald-600" },
-  { id: "vegan",         icon: Sparkles, emoji: "🌿",  label: "Vegan",             from: "from-green-400",   to: "to-teal-500",    color: "text-green-600" },
-  { id: "meat_lover",    icon: Beef,     emoji: "🥩",  label: "Fleischliebhaber",  from: "from-red-400",     to: "to-rose-600",    color: "text-red-600" },
-  { id: "halal",         icon: Moon,     emoji: "🌙",  label: "Halal",             from: "from-violet-400",  to: "to-purple-600",  color: "text-violet-600" },
-  { id: "seafood",       icon: Fish,     emoji: "🐟",  label: "Meeresfrüchte",     from: "from-sky-400",     to: "to-blue-600",    color: "text-blue-600" },
-];
+function getDietaryStyles(t: (k: string) => string) {
+  return [
+    { id: "no_preference", icon: Utensils, emoji: "🍽️", label: t("profile.diet_no_preference"), from: "from-slate-400",   to: "to-gray-500",    color: "text-muted-foreground" },
+    { id: "vegetarian",    icon: Leaf,     emoji: "🥗",  label: t("profile.diet_vegetarian"),    from: "from-emerald-400", to: "to-green-600",   color: "text-emerald-600" },
+    { id: "vegan",         icon: Sparkles, emoji: "🌿",  label: t("profile.diet_vegan"),         from: "from-green-400",   to: "to-teal-500",    color: "text-green-600" },
+    { id: "meat_lover",    icon: Beef,     emoji: "🥩",  label: t("profile.diet_meat_lover"),    from: "from-red-400",     to: "to-rose-600",    color: "text-red-600" },
+    { id: "halal",         icon: Moon,     emoji: "🌙",  label: t("profile.diet_halal"),         from: "from-violet-400",  to: "to-purple-600",  color: "text-violet-600" },
+    { id: "seafood",       icon: Fish,     emoji: "🐟",  label: t("profile.diet_seafood"),       from: "from-sky-400",     to: "to-blue-600",    color: "text-blue-600" },
+  ];
+}
 
-const ALLERGIES = [
-  { id: "gluten",      label: "Gluten",         emoji: "🌾", from: "from-amber-300",   to: "to-yellow-500" },
-  { id: "lactose",     label: "Laktose",         emoji: "🥛", from: "from-blue-200",    to: "to-sky-400" },
-  { id: "nuts",        label: "Nüsse",           emoji: "🥜", from: "from-amber-500",   to: "to-orange-600" },
-  { id: "shellfish",   label: "Schalentiere",    emoji: "🦐", from: "from-rose-300",    to: "to-pink-500" },
-  { id: "eggs",        label: "Eier",            emoji: "🥚", from: "from-yellow-300",  to: "to-amber-400" },
-  { id: "soy",         label: "Soja",            emoji: "🫘", from: "from-green-300",   to: "to-emerald-500" },
-  { id: "fish",        label: "Fisch",           emoji: "🐟", from: "from-cyan-400",    to: "to-blue-500" },
-  { id: "no_allergies",label: "Keine Allergien", emoji: "✅", from: "from-emerald-400", to: "to-green-600" },
-];
+function getAllergies(t: (k: string) => string) {
+  return [
+    { id: "gluten",       label: t("profile.allergy_gluten"),      emoji: "🌾", from: "from-amber-300",   to: "to-yellow-500" },
+    { id: "lactose",      label: t("profile.allergy_lactose"),      emoji: "🥛", from: "from-blue-200",    to: "to-sky-400" },
+    { id: "nuts",         label: t("profile.allergy_nuts"),         emoji: "🥜", from: "from-amber-500",   to: "to-orange-600" },
+    { id: "shellfish",    label: t("profile.allergy_shellfish"),    emoji: "🦐", from: "from-rose-300",    to: "to-pink-500" },
+    { id: "eggs",         label: t("profile.allergy_eggs"),         emoji: "🥚", from: "from-yellow-300",  to: "to-amber-400" },
+    { id: "soy",          label: t("profile.allergy_soy"),         emoji: "🫘", from: "from-green-300",   to: "to-emerald-500" },
+    { id: "fish",         label: t("profile.allergy_fish"),         emoji: "🐟", from: "from-cyan-400",    to: "to-blue-500" },
+    { id: "no_allergies", label: t("profile.allergy_none"),         emoji: "✅", from: "from-emerald-400", to: "to-green-600" },
+  ];
+}
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
 
@@ -135,56 +141,60 @@ interface LevelInfo {
   color: string;
 }
 
-const LEVELS = [
-  { level: 1, title: "Neuer Entdecker",  emoji: "🔍", minXP: 0,   maxXP: 49,  color: "text-slate-600"  },
-  { level: 2, title: "Food Explorer",    emoji: "🍕", minXP: 50,  maxXP: 149, color: "text-emerald-600" },
-  { level: 3, title: "City Insider",     emoji: "🏙️", minXP: 150, maxXP: 349, color: "text-blue-600"   },
-  { level: 4, title: "Social Planner",   emoji: "🎉", minXP: 350, maxXP: 699, color: "text-violet-600" },
-  { level: 5, title: "Wiener Kenner",    emoji: "🌟", minXP: 700, maxXP: 9999,color: "text-yellow-600" },
+const LEVELS_BASE = [
+  { level: 1, key: "level_1", emoji: "🔍", minXP: 0,   maxXP: 49,  color: "text-slate-600"  },
+  { level: 2, key: "level_2", emoji: "🍕", minXP: 50,  maxXP: 149, color: "text-emerald-600" },
+  { level: 3, key: "level_3", emoji: "🏙️", minXP: 150, maxXP: 349, color: "text-blue-600"   },
+  { level: 4, key: "level_4", emoji: "🎉", minXP: 350, maxXP: 699, color: "text-violet-600" },
+  { level: 5, key: "level_5", emoji: "🌟", minXP: 700, maxXP: 9999,color: "text-yellow-600" },
 ];
 
-function computeLevel(bookings: number, reviews: number, friendCount: number): LevelInfo {
+function computeLevel(bookings: number, reviews: number, friendCount: number, t: (k: string) => string): LevelInfo {
   const xp = bookings * 10 + reviews * 5 + friendCount * 3;
-  const cur = LEVELS.slice().reverse().find((l) => xp >= l.minXP) ?? LEVELS[0];
-  const next = LEVELS.find((l) => l.level === cur.level + 1);
+  const cur = LEVELS_BASE.slice().reverse().find((l) => xp >= l.minXP) ?? LEVELS_BASE[0];
+  const next = LEVELS_BASE.find((l) => l.level === cur.level + 1);
   const rangeStart = cur.minXP;
   const rangeEnd   = next ? next.minXP : cur.maxXP;
   const pct = Math.min(100, Math.round(((xp - rangeStart) / (rangeEnd - rangeStart)) * 100));
-  return { level: cur.level, title: cur.title, emoji: cur.emoji, xp, nextXP: rangeEnd, pct: isNaN(pct) ? 100 : pct, color: cur.color };
+  return { level: cur.level, title: t(`profile.${cur.key}`), emoji: cur.emoji, xp, nextXP: rangeEnd, pct: isNaN(pct) ? 100 : pct, color: cur.color };
 }
 
-// ─── Premium plan features ────────────────────────────────────────────────────
+// ─── Premium plan features (factory) ─────────────────────────────────────────
 
-const PREMIUM_FEATURES = [
-  { icon: Calendar, label: "Buchungs- & Reservierungsverwaltung", desc: "Gäste & Buchungen in Echtzeit verwalten" },
-  { icon: Store, label: "Verfügbarkeit & Belegungsplan", desc: "Visueller Grundriss, flexible Zeitslots" },
-  { icon: Users, label: "Mitarbeiter & Schichten", desc: "Dienstpläne, Zeiterfassung, Erinnerungen" },
-  { icon: FileText, label: "Angebots- & Menü-Editor", desc: "Speisekarte oder Getränkekarte digital pflegen" },
-  { icon: BarChart2, label: "Analytics & Berichte", desc: "Umsatz, Auslastung, Gästeverhalten" },
-  { icon: Megaphone, label: "Marketing & Kampagnen", desc: "E-Mail-Kampagnen, Rückgewinnungs-Tools" },
-  { icon: Star, label: "Bewertungsmanagement", desc: "Bewertungen lesen und professionell antworten" },
-  { icon: Zap, label: "POS-System", desc: "Kassenbereich direkt im Dashboard" },
-  { icon: Crown, label: "Treue-Programme", desc: "Kundenbindung durch Punkte & Prämien" },
-];
+function getPremiumFeatures(t: (k: string) => string) {
+  return [
+    { icon: Calendar, label: t("profile.pf_bookings"),    desc: t("profile.pf_bookings_desc") },
+    { icon: Store,    label: t("profile.pf_availability"), desc: t("profile.pf_availability_desc") },
+    { icon: Users,    label: t("profile.pf_staff"),        desc: t("profile.pf_staff_desc") },
+    { icon: FileText, label: t("profile.pf_menu"),         desc: t("profile.pf_menu_desc") },
+    { icon: BarChart2,label: t("profile.pf_analytics"),    desc: t("profile.pf_analytics_desc") },
+    { icon: Megaphone,label: t("profile.pf_marketing"),    desc: t("profile.pf_marketing_desc") },
+    { icon: Star,     label: t("profile.pf_reviews"),      desc: t("profile.pf_reviews_desc") },
+    { icon: Zap,      label: t("profile.pf_pos"),          desc: t("profile.pf_pos_desc") },
+    { icon: Crown,    label: t("profile.pf_loyalty"),      desc: t("profile.pf_loyalty_desc") },
+  ];
+}
 
 type BusinessType = "restaurant" | "cafe" | "bar";
 
-const BUSINESS_TYPE_OPTIONS: { value: BusinessType; label: string; emoji: string; desc: string }[] = [
-  { value: "restaurant", label: "Restaurant", emoji: "🍽️", desc: "Speisekarte, Tische, Reservierungen" },
-  { value: "cafe", label: "Café", emoji: "☕", desc: "Frühstück, Take-away, Kaffeespezialitäten" },
-  { value: "bar", label: "Bar", emoji: "🍸", desc: "Happy Hour, Getränke, Nachtbetrieb" },
-];
-
-function getBusinessLabel(biz?: string | null): string {
-  if (biz === "cafe") return "Café";
-  if (biz === "bar") return "Bar";
-  return "Restaurant";
+function getBusinessTypeOptions(t: (k: string) => string): { value: BusinessType; label: string; emoji: string; desc: string }[] {
+  return [
+    { value: "restaurant", label: t("profile.biz_restaurant"), emoji: "🍽️", desc: t("profile.biz_restaurant_desc") },
+    { value: "cafe",       label: t("profile.biz_cafe"),       emoji: "☕",  desc: t("profile.biz_cafe_desc") },
+    { value: "bar",        label: t("profile.biz_bar"),        emoji: "🍸",  desc: t("profile.biz_bar_desc") },
+  ];
 }
 
-function getOwnerBadgeLabel(biz?: string | null): string {
-  if (biz === "cafe") return "Verifizierter Cafébesitzer";
-  if (biz === "bar") return "Verifizierter Barbesitzer";
-  return "Verifizierter Restaurantbesitzer";
+function getBusinessLabel(biz?: string | null, t?: (k: string) => string): string {
+  if (biz === "cafe") return t ? t("profile.biz_cafe") : "Caf\u00e9";
+  if (biz === "bar") return t ? t("profile.biz_bar") : "Bar";
+  return t ? t("profile.biz_restaurant") : "Restaurant";
+}
+
+function getOwnerBadgeLabel(biz?: string | null, t?: (k: string) => string): string {
+  if (biz === "cafe") return t ? t("profile.owner_badge_cafe") : "Verifizierter Caf\u00e9besitzer";
+  if (biz === "bar") return t ? t("profile.owner_badge_bar") : "Verifizierter Barbesitzer";
+  return t ? t("profile.owner_badge_restaurant") : "Verifizierter Restaurantbesitzer";
 }
 
 function getBusinessEmoji(biz?: string | null): string {
@@ -195,31 +205,32 @@ function getBusinessEmoji(biz?: string | null): string {
 
 // ─── Smart Insight Generator ──────────────────────────────────────────────────
 
-function getInsight(profile: CustomerProfile): { message: string; cta?: string; ctaHref?: string } {
+function getInsight(profile: CustomerProfile, t: (k: string, opts?: Record<string, unknown>) => string): { message: string; cta?: string; ctaHref?: string } {
   const { loyalty, stats, favoriteCuisines, dietaryStyle, allergies } = profile;
   if (loyalty.tier === "Gold")
-    return { message: "Glückwunsch! Du bist Gold-Mitglied – unser höchstes Level. Genieße exklusive Vorteile und VIP-Service.", cta: "Tische entdecken", ctaHref: "/explore" };
+    return { message: t("profile.insight_gold"), cta: t("profile.insight_gold_cta"), ctaHref: "/explore" };
   if (loyalty.pointsToNext <= 30)
-    return { message: `Nur noch ${loyalty.pointsToNext} Punkte bis zum ${loyalty.nextTier}-Status! Deine nächste Buchung könnte es schaffen.`, cta: "Jetzt buchen", ctaHref: "/explore" };
+    return { message: t("profile.insight_close", { points: loyalty.pointsToNext, tier: loyalty.nextTier }), cta: t("profile.insight_close_cta"), ctaHref: "/explore" };
   if (stats.totalBookings === 0)
-    return { message: "Willkommen! Deine erste Tischreservierung bringt dir Bonuspunkte und startet deine Treue-Reise.", cta: "Restaurants entdecken", ctaHref: "/explore" };
+    return { message: t("profile.insight_no_bookings"), cta: t("profile.insight_no_bookings_cta"), ctaHref: "/explore" };
   if (favoriteCuisines.length === 0)
-    return { message: "Teile uns deine Lieblingsküchen mit – wir empfehlen dir dann passende Restaurants in deiner Nähe.", cta: "Geschmack festlegen", ctaHref: undefined };
+    return { message: t("profile.insight_no_cuisines"), cta: t("profile.insight_no_cuisines_cta"), ctaHref: undefined };
   if (dietaryStyle === "no_preference" && allergies.length === 0)
-    return { message: "Ergänze deine Ernährungsweise und Allergien für personalisierte Restaurant-Empfehlungen.", cta: "Präferenzen setzen", ctaHref: undefined };
+    return { message: t("profile.insight_no_diet"), cta: t("profile.insight_no_diet_cta"), ctaHref: undefined };
   if (stats.totalReviews === 0)
-    return { message: "Schreibe deine erste Bewertung und hilf anderen Gästen – du bekommst dafür auch Bonuspunkte.", cta: "Buchungen ansehen", ctaHref: "/my-bookings" };
-  return { message: `Du hast ${stats.totalBookings} Buchungen gemacht und ${loyalty.totalEarned} Punkte gesammelt. Weiter so!`, cta: "Weiter entdecken", ctaHref: "/explore" };
+    return { message: t("profile.insight_no_reviews"), cta: t("profile.insight_no_reviews_cta"), ctaHref: "/my-bookings" };
+  return { message: t("profile.insight_default", { bookings: stats.totalBookings, points: loyalty.totalEarned }), cta: t("profile.insight_default_cta"), ctaHref: "/explore" };
 }
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const map: Record<string, { label: string; cls: string }> = {
-    confirmed: { label: "Bestätigt", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
-    pending: { label: "Ausstehend", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
-    cancelled: { label: "Storniert", cls: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" },
-    completed: { label: "Abgeschlossen", cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+    confirmed: { label: t("profile.status_confirmed"), cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+    pending: { label: t("profile.status_pending"), cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+    cancelled: { label: t("profile.status_cancelled"), cls: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" },
+    completed: { label: t("profile.status_completed"), cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
   };
   const c = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
   return <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${c.cls}`}>{c.label}</span>;
@@ -242,6 +253,7 @@ function AvatarUpload({
   size?: "sm" | "lg";
   isPremium?: boolean;
 }) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -260,15 +272,15 @@ function AvatarUpload({
       const data = await r.json();
       if (!r.ok) {
         if (data.moderated) {
-          toast({ title: "Bild blockiert", description: data.error, variant: "destructive" });
+          toast({ title: t("profile.upload_blocked"), description: data.error, variant: "destructive" });
         } else {
-          toast({ title: "Fehler", description: "Upload fehlgeschlagen." });
+          toast({ title: t("common.error"), description: t("profile.upload_failed") });
         }
         return;
       }
       onUpload(`${API_BASE}${data.url}`);
     } catch {
-      toast({ title: "Fehler", description: "Upload fehlgeschlagen." });
+      toast({ title: t("common.error"), description: t("profile.upload_failed") });
     } finally {
       setUploading(false);
     }
@@ -355,6 +367,7 @@ function EditableField({
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 
 function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
+  const { t } = useTranslation();
   const [signingIn, setSigningIn] = useState<"apple" | "google" | null>(null);
   const [showEmailFallback, setShowEmailFallback] = useState(false);
   const [draft, setDraft] = useState("");
@@ -414,7 +427,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
               <span className="text-foreground">Smart</span>
             </div>
             <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed max-w-[220px]">
-              Dein persönliches Restauranterlebnis — entdecke, buche, genieße.
+              {t("profile.login_subtitle")}
             </p>
           </div>
         </div>
@@ -434,7 +447,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
             )}
-            <span>{signingIn === "apple" ? "Wird vorbereitet…" : "Als Apple-Gerät fortfahren (Demo)"}</span>
+            <span>{signingIn === "apple" ? t("profile.login_preparing") : t("profile.login_apple")}</span>
           </button>
 
           {/* Google */}
@@ -453,15 +466,15 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
             )}
-            <span>{signingIn === "google" ? "Wird vorbereitet…" : "Als Google-Konto fortfahren (Demo)"}</span>
+            <span>{signingIn === "google" ? t("profile.login_preparing") : t("profile.login_google")}</span>
           </button>
         </div>
 
         {/* Demo notice */}
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/70">
-          <span className="flex items-center gap-1"><Smartphone className="w-3 h-3" /> Gerätebezogene Demo-ID</span>
+          <span className="flex items-center gap-1"><Smartphone className="w-3 h-3" /> {t("profile.login_device_id")}</span>
           <span className="w-px h-3 bg-border" />
-          <span>Keine Werbung</span>
+          <span>{t("profile.login_no_ads")}</span>
         </div>
 
         {/* Email fallback — two-step OTP flow for real email addresses */}
@@ -470,7 +483,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
             onClick={() => setShowEmailFallback(true)}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
           >
-            Andere E-Mail-Adresse verwenden
+            {t("profile.login_other_email")}
           </button>
         ) : otpStep === "email" ? (
           <form
@@ -490,7 +503,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
                 if (data.devCode) setDevCode(data.devCode);
                 setOtpStep("code");
               } catch {
-                setOtpError("Fehler beim Senden. Bitte versuche es erneut.");
+                setOtpError(t("profile.otp_send_error"));
               } finally {
                 setOtpLoading(false);
               }
@@ -499,7 +512,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
           >
             <Input
               type="email"
-              placeholder="deine@email.de"
+              placeholder={t("profile.otp_email_ph")}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               className="h-11 text-center rounded-xl"
@@ -508,7 +521,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
             />
             {otpError && <p className="text-xs text-destructive text-center">{otpError}</p>}
             <Button type="submit" variant="outline" className="w-full h-11 rounded-xl" disabled={!draft.includes("@") || otpLoading}>
-              {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Code senden"}
+              {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("profile.otp_send_code")}
             </Button>
           </form>
         ) : (
@@ -527,12 +540,12 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
                 });
                 if (!res.ok) {
                   const data = await res.json();
-                  setOtpError(data.error ?? "Ungültiger Code.");
+                  setOtpError(data.error ?? t("profile.otp_invalid_code"));
                   return;
                 }
                 onEnter(draft.trim().toLowerCase());
               } catch {
-                setOtpError("Fehler beim Verifizieren. Bitte erneut versuchen.");
+                setOtpError(t("profile.otp_verify_error"));
               } finally {
                 setOtpLoading(false);
               }
@@ -540,7 +553,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
             className="w-full space-y-2"
           >
             <p className="text-sm text-center text-muted-foreground">
-              {"Code gesendet an "}<span className="font-medium text-foreground">{draft}</span>
+              {t("profile.otp_sent_to")} <span className="font-medium text-foreground">{draft}</span>
             </p>
             {devCode && (
               <p className="text-xs text-center text-primary font-mono bg-primary/10 rounded-lg py-2">
@@ -552,7 +565,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
               inputMode="numeric"
               pattern="[0-9]{6}"
               maxLength={6}
-              placeholder="6-stelliger Code"
+              placeholder={t("profile.otp_code_ph")}
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               className="h-11 text-center rounded-xl tracking-[0.4em] text-lg font-mono"
@@ -560,14 +573,14 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
             />
             {otpError && <p className="text-xs text-destructive text-center">{otpError}</p>}
             <Button type="submit" className="w-full h-11 rounded-xl" disabled={otpCode.length !== 6 || otpLoading}>
-              {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verifizieren"}
+              {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("profile.otp_verify")}
             </Button>
             <button
               type="button"
               onClick={() => { setOtpStep("email"); setOtpCode(""); setOtpError(null); setDevCode(null); }}
               className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Andere E-Mail verwenden
+              {t("profile.login_other_email")}
             </button>
           </form>
         )}
@@ -578,7 +591,7 @@ function LoginScreen({ onEnter }: { onEnter: (email: string) => void }) {
 
       {/* Footer */}
       <p className="relative pb-8 text-[11px] text-muted-foreground/50 text-center px-6">
-        Durch die Anmeldung stimmst du unseren Nutzungsbedingungen und der Datenschutzrichtlinie zu.
+        {t("profile.login_terms")}
       </p>
     </div>
   );
@@ -595,6 +608,9 @@ function PremiumModal({
   onClose: () => void;
   onActivate: (businessType: BusinessType, mode: "trial" | "active", trialEndDate?: string) => void;
 }) {
+  const { t } = useTranslation();
+  const BUSINESS_TYPE_OPTIONS = getBusinessTypeOptions(t);
+  const PREMIUM_FEATURES = getPremiumFeatures(t);
   const [step, setStep] = useState(0);
   const [selectedBusinessType, setSelectedBusinessType] = useState<BusinessType>("restaurant");
   const [processing, setProcessing] = useState(false);
@@ -613,7 +629,7 @@ function PremiumModal({
       if (data.success && data.trialEndDate) {
         setTrialEndDate(data.trialEndDate);
       } else if (data.error === "trial_used") {
-        setTrialError("Ihre Testphase wurde bereits genutzt. Sie können direkt ein Abonnement starten.");
+        setTrialError(t("profile.trial_used_error"));
         setProcessing(false);
         return;
       } else if (data.error === "trial_active") {
@@ -648,21 +664,21 @@ function PremiumModal({
                   <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                     <Crown className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">RestoSmart Business Premium</span>
+                  <span className="text-xs font-bold tracking-widest uppercase text-white/80">{t("profile.pm_brand")}</span>
                 </div>
-                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">Mehr Sichtbarkeit. Mehr Kunden. Mehr Wachstum.</h2>
-                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2">Für Restaurants, Cafés &amp; Bars</p>
-                <p className="text-white/75 text-sm leading-relaxed">Mit RestoSmart Premium erreichst du mehr Kunden in deiner Nähe, wirst häufiger gefunden und stärkst die Präsenz deines Betriebs im Alltag.</p>
+                <h2 className="font-serif text-2xl font-bold leading-tight mb-1">{t("profile.pm_headline")}</h2>
+                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2">{t("profile.pm_subheadline")}</p>
+                <p className="text-white/75 text-sm leading-relaxed">{t("profile.pm_body")}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="text-2xl font-serif font-bold">14 Tage kostenlos</span>
-                  <span className="text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">danach 39,90€ / Monat</span>
+                  <span className="text-2xl font-serif font-bold">{t("profile.pm_trial_label")}</span>
+                  <span className="text-xs bg-white/20 text-white font-semibold px-2.5 py-1 rounded-full">{t("profile.pm_price")}</span>
                 </div>
               </div>
             </div>
 
             {/* Features */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Was Sie erhalten</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">{t("profile.pm_features_title")}</p>
               <div className="grid grid-cols-1 gap-2.5">
                 {PREMIUM_FEATURES.map((f) => (
                   <div key={f.label} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted/60 transition-colors">
@@ -681,7 +697,7 @@ function PremiumModal({
 
             {/* Business type selector */}
             <div className="px-6 pb-2 space-y-3">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Für welchen Betrieb?</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("profile.pm_biz_selector")}</p>
               <div className="grid grid-cols-3 gap-2">
                 {BUSINESS_TYPE_OPTIONS.map((opt) => (
                   <button
@@ -708,7 +724,7 @@ function PremiumModal({
                   <svg className="w-2.5 h-2.5 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
                 </div>
                 <p className="text-xs text-destructive/80 leading-relaxed">
-                  <span className="font-semibold text-destructive">Dein Betrieb ist aktuell weniger sichtbar.</span> Du verpasst potenzielle Kunden in deiner Nähe. Premium-Betriebe werden häufiger angezeigt.
+                  <span className="font-semibold text-destructive">{t("profile.pm_nudge_bold")}</span> {t("profile.pm_nudge_body")}
                 </p>
               </div>
             </div>
@@ -719,16 +735,16 @@ function PremiumModal({
                 className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/25"
                 onClick={() => setStep(1)}
               >
-                Jetzt 14 Tage kostenlos starten
+                {t("profile.pm_cta")}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                Keine Zahlung heute · danach 39,90€ / Monat
+                {t("profile.pm_cta_note")}
               </p>
               <p className="text-center text-[11px] text-muted-foreground/60">
-                Jederzeit kündbar. Keine langfristige Verpflichtung.
+                {t("profile.pm_cancel_note")}
               </p>
               <button onClick={onClose} className="w-full text-xs text-muted-foreground/50 hover:text-foreground transition-colors py-1">
-                Vielleicht später
+                {t("profile.pm_later")}
               </button>
             </div>
           </div>
@@ -745,28 +761,28 @@ function PremiumModal({
                 <ChevronLeft className="w-4 h-4 text-white" />
               </button>
               <div className="text-center pt-2">
-                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">14 Tage kostenlos</div>
-                <div className="font-serif text-xl font-bold">{getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType)} Dashboard</div>
-                <div className="text-white/80 text-sm mt-1">Vollzugriff · Keine Zahlung heute</div>
+                <div className="text-xs font-bold tracking-widest uppercase text-white/75 mb-1">{t("profile.pm_trial_label")}</div>
+                <div className="font-serif text-xl font-bold">{getBusinessEmoji(selectedBusinessType)} {getBusinessLabel(selectedBusinessType, t)} Dashboard</div>
+                <div className="text-white/80 text-sm mt-1">{t("profile.pm_full_access")}</div>
               </div>
             </div>
 
             <div className="p-6 space-y-5">
               <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 space-y-1.5">
-                <p className="text-sm font-semibold text-emerald-900">Was Sie heute bekommen</p>
+                <p className="text-sm font-semibold text-emerald-900">{t("profile.pm_today_title")}</p>
                 <p className="text-sm text-emerald-800 leading-relaxed">
-                  Voller Premium-Zugang für <strong>14 Tage — kostenlos</strong>. Keine Zahlungsmethode heute. Nach der Testphase können Sie für €39,90/Monat upgraden.
+                  {t("profile.pm_today_body")}
                 </p>
               </div>
 
               <div className="space-y-2.5">
-                {[
-                  { text: "Vollständiges Analytics-Dashboard", sub: "Umsatz, Gäste, Trends" },
-                  { text: "Buchungs- & Tischmanagement", sub: "Alle Reservierungen verwalten" },
-                  { text: "Marketing, Kampagnen & Smart Offers", sub: "Sichtbarkeit steigern" },
-                  { text: "Personal, Schichten & Gehaltsabrechnung", sub: "Team organisieren" },
-                  { text: "Revenue Optimizer & Boost", sub: "Umsatz automatisch optimieren" },
-                ].map((item) => (
+                {([
+                  { text: t("profile.pm_f1"), sub: t("profile.pm_f1_sub") },
+                  { text: t("profile.pm_f2"), sub: t("profile.pm_f2_sub") },
+                  { text: t("profile.pm_f3"), sub: t("profile.pm_f3_sub") },
+                  { text: t("profile.pm_f4"), sub: t("profile.pm_f4_sub") },
+                  { text: t("profile.pm_f5"), sub: t("profile.pm_f5_sub") },
+                ] as { text: string; sub: string }[]).map((item) => (
                   <div key={item.text} className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     <div>
@@ -789,17 +805,17 @@ function PremiumModal({
                 disabled={processing}
               >
                 {processing ? (
-                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Testphase wird gestartet…</span>
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> {t("profile.pm_starting")}</span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
-                    Kostenlos starten
+                    {t("profile.pm_start_free")}
                   </span>
                 )}
               </Button>
 
               <p className="text-[11px] text-center text-muted-foreground leading-relaxed">
-                Keine Kreditkarte erforderlich · Nach 14 Tagen: €39,90/Monat oder kostenlos kündigen.
+                {t("profile.pm_no_cc_note")}
               </p>
             </div>
           </div>
@@ -817,32 +833,32 @@ function PremiumModal({
               </div>
             </div>
             <div>
-              <div className="text-xs font-bold tracking-widest uppercase text-primary mb-1">14-Tage Testphase</div>
-              <h3 className="font-serif text-2xl font-bold mb-2">Testphase gestartet!</h3>
+              <div className="text-xs font-bold tracking-widest uppercase text-primary mb-1">{t("profile.pm_trial_label")}</div>
+              <h3 className="font-serif text-2xl font-bold mb-2">{t("profile.pm_trial_started")}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-                Ihr {getBusinessLabel(selectedBusinessType)}-Dashboard ist jetzt aktiv. Vollzugriff für 14 Tage — kostenlos.
+                {t("profile.trial_started_desc", { label: getBusinessLabel(selectedBusinessType, t) })}
               </p>
             </div>
             <div className="w-full space-y-2.5">
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">Vollständiger Premium-Zugang aktiviert</span>
+                <span className="text-sm">{t("profile.pm_access_activated")}</span>
               </div>
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-muted/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm">Alle Dashboard-Module freigeschaltet</span>
+                <span className="text-sm">{t("profile.pm_modules_unlocked")}</span>
               </div>
               {trialEndDate && (
                 <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-violet-50 border border-violet-100">
                   <svg className="w-4 h-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3"/></svg>
                   <span className="text-sm text-violet-800">
-                    Testphase läuft bis {new Date(trialEndDate).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                    {t("profile.pm_trial_until", { date: new Date(trialEndDate).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" }) })}
                   </span>
                 </div>
               )}
               <div className="flex items-center gap-3 text-left p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
                 <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span className="text-sm text-emerald-800">Keine Zahlung heute · kein Risiko</span>
+                <span className="text-sm text-emerald-800">{t("profile.pm_no_risk")}</span>
               </div>
             </div>
             <Button
@@ -850,7 +866,7 @@ function PremiumModal({
               onClick={handleGoToDashboard}
             >
               <Building2 className="w-4 h-4 mr-2" />
-              Dashboard jetzt öffnen
+              {t("profile.pm_open_dashboard")}
               <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-70" />
             </Button>
           </div>
@@ -869,8 +885,9 @@ function OwnerPremiumCard({
   isPremium: boolean;
   onOpenModal: () => void;
 }) {
+  const { t } = useTranslation();
   const storedBiz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
-  const bizLabel = getBusinessLabel(storedBiz);
+  const bizLabel = getBusinessLabel(storedBiz, t);
   const bizEmoji = getBusinessEmoji(storedBiz);
 
   if (isPremium) {
@@ -888,10 +905,10 @@ function OwnerPremiumCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-[10px] font-bold tracking-widest uppercase text-white/70">{bizLabel} Premium</span>
-                <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Aktiv</span>
+                <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">{t("profile.opc_active")}</span>
               </div>
-              <div className="font-serif text-lg font-bold text-white leading-tight">Mein {bizLabel}-Dashboard</div>
-              <div className="text-white/70 text-xs mt-0.5">Tippen zum Öffnen</div>
+              <div className="font-serif text-lg font-bold text-white leading-tight">{t("profile.opc_my_dashboard", { label: bizLabel })}</div>
+              <div className="text-white/70 text-xs mt-0.5">{t("profile.opc_tap_to_open")}</div>
             </div>
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <ChevronRight className="w-4 h-4 text-white" />
@@ -915,22 +932,22 @@ function OwnerPremiumCard({
               <Crown className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="text-[10px] font-bold tracking-widest uppercase text-primary">Für {bizLabel}besitzer</span>
+              <span className="text-[10px] font-bold tracking-widest uppercase text-primary">{t("profile.opc_for_owners", { label: bizLabel })}</span>
             </div>
-            <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text border border-primary/30 px-2.5 py-0.5 rounded-full">Business Premium</span>
+            <span className="ml-auto text-[10px] font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text border border-primary/30 px-2.5 py-0.5 rounded-full">{t("profile.pm_brand")}</span>
           </div>
 
           {/* Headline */}
           <h3 className="font-serif text-xl font-bold leading-snug mb-1.5">
-            {bizEmoji} {bizLabel} professionell führen
+            {bizEmoji} {t("profile.opc_headline", { label: bizLabel })}
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Sichtbarkeit, Buchungen, Personal, Marketing und Analytics — alles in einem Betriebsdashboard.
+            {t("profile.opc_body")}
           </p>
 
           {/* Mini feature chips */}
           <div className="flex flex-wrap gap-1.5 mb-4">
-            {["Reservierungen", "Personal", "Analytics", "Marketing", "POS", "+ 4 weitere"].map((f) => (
+            {[t("profile.opc_chip_reservations"), t("profile.opc_chip_staff"), t("profile.opc_chip_analytics"), t("profile.opc_chip_marketing"), t("profile.opc_chip_pos"), t("profile.opc_chip_more")].map((f) => (
               <span key={f} className="text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full">
                 {f}
               </span>
@@ -940,14 +957,14 @@ function OwnerPremiumCard({
           {/* CTA */}
           <div className="flex items-center gap-2">
             <div className="flex-1 h-10 rounded-xl bg-gradient-to-r from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-              <span className="text-sm font-bold text-white">Premium freischalten</span>
+              <span className="text-sm font-bold text-white">{t("profile.unlock_premium")}</span>
             </div>
             <div className="h-10 w-10 rounded-xl border border-primary/20 flex items-center justify-center">
               <ChevronRight className="w-4 h-4 text-primary" />
             </div>
           </div>
 
-          <p className="text-[10px] text-muted-foreground mt-2 text-center">{"14 Tage kostenlos testen \u00B7 Jederzeit k\u00FCndbar"}</p>
+          <p className="text-[10px] text-muted-foreground mt-2 text-center">{t("profile.opc_trial_note")}</p>
         </div>
       </div>
     </button>
@@ -957,6 +974,7 @@ function OwnerPremiumCard({
 // ─── Privacy & Security Section ───────────────────────────────────────────────
 
 function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [notifBookings, setNotifBookings] = useState(true);
   const [notifMarketing, setNotifMarketing] = useState(false);
@@ -969,7 +987,7 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
       <div className="bg-card border rounded-2xl p-5 space-y-5">
         <h3 className="font-bold text-base flex items-center gap-2">
           <Shield className="w-4 h-4 text-primary" />
-          Datenschutz &amp; Sicherheit
+          {t("settings.privacy")} &amp; {t("profile.security")}
         </h3>
 
         {/* Data info */}
@@ -977,9 +995,9 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
           <div className="flex items-start gap-3">
             <Lock className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium">Ihre Daten sind geschützt</p>
+              <p className="text-sm font-medium">{t("settings.data_protected")}</p>
               <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                Ihre persönlichen Daten werden verschlüsselt gespeichert und niemals an Dritte weitergegeben. Wir nutzen Ihre Daten ausschließlich zur Verbesserung Ihrer Restauranterlebnisse.
+                {t("profile.data_protected_body")}
               </p>
             </div>
           </div>
@@ -987,12 +1005,12 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
 
         {/* Data points */}
         <div className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gespeicherte Daten</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("profile.stored_data_title")}</p>
           {[
-            { label: "Profilinformationen", detail: "Name, E-Mail, Foto", icon: User },
-            { label: "Buchungshistorie", detail: "Restaurantbesuche und Reservierungen", icon: Calendar },
-            { label: "Geschmackspräferenzen", detail: "Küchen, Ernährung, Allergien", icon: Utensils },
-            { label: "Treuepunkte", detail: "Punkte und Tier-Status", icon: Award },
+            { label: t("settings.privacy_profile"), detail: t("settings.privacy_profile_detail"), icon: User },
+            { label: t("settings.privacy_bookings"), detail: t("settings.privacy_bookings_detail"), icon: Calendar },
+            { label: t("settings.privacy_taste"), detail: t("settings.privacy_taste_detail"), icon: Utensils },
+            { label: t("settings.privacy_loyalty"), detail: t("settings.privacy_loyalty_detail"), icon: Award },
           ].map((item) => (
             <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
               <div className="flex items-center gap-3">
@@ -1002,7 +1020,7 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
                   <div className="text-xs text-muted-foreground">{item.detail}</div>
                 </div>
               </div>
-              <Badge variant="secondary" className="text-[10px]">Gespeichert</Badge>
+              <Badge variant="secondary" className="text-[10px]">{t("settings.data_status")}</Badge>
             </div>
           ))}
         </div>
@@ -1011,10 +1029,10 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
         <Button
           variant="outline"
           className="w-full rounded-xl h-10 text-sm"
-          onClick={() => toast({ title: "Export angefordert", description: "Ihre Daten werden per E-Mail zugesendet." })}
+          onClick={() => toast({ title: t("settings.export_requested"), description: t("settings.export_desc") })}
         >
           <ExternalLink className="w-4 h-4 mr-2" />
-          Meine Daten exportieren
+          {t("settings.export_data")}
         </Button>
       </div>
 
@@ -1022,13 +1040,13 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
       <div className="bg-card border rounded-2xl p-5 space-y-4">
         <h3 className="font-bold text-base flex items-center gap-2">
           <Bell className="w-4 h-4 text-primary" />
-          Benachrichtigungen
+          {t("settings.notifications")}
         </h3>
         <div className="space-y-3">
           {[
-            { label: "Buchungsbestätigungen", detail: "E-Mail bei neuer Reservierung", value: notifBookings, onChange: setNotifBookings },
-            { label: "Bewertungserinnerungen", detail: "Nach dem Besuch eine Bewertung hinterlassen", value: notifReviews, onChange: setNotifReviews },
-            { label: "Angebote & Neuigkeiten", detail: "Blitzangebote und personalisierte Empfehlungen", value: notifMarketing, onChange: setNotifMarketing },
+            { label: t("settings.notif_bookings"), detail: t("settings.notif_bookings_detail"), value: notifBookings, onChange: setNotifBookings },
+            { label: t("settings.notif_reviews"), detail: t("settings.notif_reviews_detail"), value: notifReviews, onChange: setNotifReviews },
+            { label: t("settings.notif_marketing"), detail: t("settings.notif_marketing_detail"), value: notifMarketing, onChange: setNotifMarketing },
           ].map((item) => (
             <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
               <div className="flex-1 mr-4">
@@ -1048,11 +1066,11 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
       <div className="bg-card border rounded-2xl p-5 space-y-4">
         <h3 className="font-bold text-base flex items-center gap-2">
           <Smartphone className="w-4 h-4 text-primary" />
-          Aktive Sitzungen
+          {t("settings.sessions")}
         </h3>
         <div className="space-y-2.5">
           {[
-            { device: "Dieses Gerät", detail: "Zuletzt aktiv: Gerade eben", current: true },
+            { device: t("settings.this_device"), detail: t("settings.last_active"), current: true },
           ].map((s) => (
             <div key={s.device} className="flex items-center justify-between p-3 rounded-xl bg-muted/40">
               <div className="flex items-center gap-3">
@@ -1062,7 +1080,7 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
                   <div className="text-xs text-muted-foreground">{s.detail}</div>
                 </div>
               </div>
-              {s.current && <Badge variant="secondary" className="text-[10px] text-emerald-600 bg-emerald-50">Aktuell</Badge>}
+              {s.current && <Badge variant="secondary" className="text-[10px] text-emerald-600 bg-emerald-50">{t("settings.current_session")}</Badge>}
             </div>
           ))}
         </div>
@@ -1071,7 +1089,7 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
           className="w-full rounded-xl h-10 text-sm"
           onClick={onLogout}
         >
-          Alle Sitzungen beenden
+          {t("settings.end_all_sessions")}
         </Button>
       </div>
 
@@ -1079,11 +1097,11 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
       <div className="bg-card border border-red-200 dark:border-red-900/50 rounded-2xl p-5 space-y-3">
         <h3 className="font-bold text-base flex items-center gap-2 text-red-600">
           <AlertTriangle className="w-4 h-4" />
-          Gefahrenzone
+          {t("settings.danger_zone")}
         </h3>
         {showDeleteConfirm ? (
           <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 space-y-3">
-            <p className="text-sm font-medium text-red-700 dark:text-red-400">Sind Sie sicher? Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <p className="text-sm font-medium text-red-700 dark:text-red-400">{t("settings.delete_warning")}</p>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -1091,17 +1109,17 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
                 className="rounded-xl flex-1"
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Abbrechen
+                {t("settings.cancel")}
               </Button>
               <Button
                 size="sm"
                 className="rounded-xl flex-1 bg-red-600 hover:bg-red-700 text-white border-0"
                 onClick={() => {
                   setShowDeleteConfirm(false);
-                  toast({ title: "Anfrage eingereicht", description: "Ihr Konto wird innerhalb von 30 Tagen gelöscht." });
+                  toast({ title: t("profile.delete_requested"), description: t("profile.delete_requested_desc") });
                 }}
               >
-                Endgültig löschen
+                {t("profile.delete_confirm_btn")}
               </Button>
             </div>
           </div>
@@ -1113,7 +1131,7 @@ function PrivacySecuritySection({ onLogout }: { onLogout: () => void }) {
             <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center shrink-0">
               <Trash2 className="w-4 h-4 text-red-600" />
             </div>
-            Konto löschen
+            {t("settings.delete_account")}
           </button>
         )}
       </div>
@@ -1136,6 +1154,10 @@ function EditProfileSheet({
   email: string;
   onSave: (updates: Partial<CustomerProfile & { bio: string | null; city: string | null; country: string | null; age: number | null }>) => void;
 }) {
+  const { t } = useTranslation();
+  const FOOD_TYPES = getFoodTypes(t);
+  const DIETARY_STYLES = getDietaryStyles(t);
+  const ALLERGIES = getAllergies(t);
   const [draft, setDraft] = useState({
     name: profile.name,
     bio: profile.bio ?? "",
@@ -1391,6 +1413,11 @@ function EditProfileSheet({
 
 export default function Profile() {
   const { t } = useTranslation();
+  const FOOD_TYPES = getFoodTypes(t);
+  const DIETARY_STYLES = getDietaryStyles(t);
+  const ALLERGIES = getAllergies(t);
+  const PREMIUM_FEATURES = getPremiumFeatures(t);
+  const BUSINESS_TYPE_OPTIONS = getBusinessTypeOptions(t);
   useSeo({ title: t("profile.title"), description: "Dein persönliches RestoSmart-Profil." });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -1483,8 +1510,8 @@ export default function Profile() {
     toast({
       title: mode === "trial" ? "14-Tage Testphase gestartet!" : "Premium aktiviert!",
       description: mode === "trial"
-        ? `Vollzugriff auf Ihr ${getBusinessLabel(businessType)}-Dashboard für 14 Tage.`
-        : `Willkommen im ${getBusinessLabel(businessType)}-Dashboard.`,
+        ? t("profile.trial_toast_desc", { label: getBusinessLabel(businessType, t) })
+        : t("profile.premium_toast_desc", { label: getBusinessLabel(businessType, t) }),
     });
   };
 
@@ -1547,8 +1574,8 @@ export default function Profile() {
   if (!profile) return <LoginScreen onEnter={handleEnterEmail} />;
 
   const tierCfg = TIER_CONFIG[profile.loyalty.tier];
-  const insight = getInsight(profile);
-  const levelInfo = computeLevel(profile.stats.totalBookings, profile.stats.totalReviews, friends.length);
+  const insight = getInsight(profile, t);
+  const levelInfo = computeLevel(profile.stats.totalBookings, profile.stats.totalReviews, friends.length, t);
   const visitedRestaurants = profile.recentBookings.filter((b) =>
     b.status === "completed" || b.status === "confirmed"
   );
@@ -1589,7 +1616,7 @@ export default function Profile() {
                     <div className="flex items-center gap-1.5 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/25 px-3 py-1 rounded-full">
                       <Shield className="w-3 h-3 text-primary" />
                       <span className="text-[11px] font-bold text-primary tracking-wide uppercase">
-                        {getOwnerBadgeLabel(biz)}
+                        {getOwnerBadgeLabel(biz, t)}
                       </span>
                       <CheckCircle2 className="w-3 h-3 text-primary" />
                     </div>
@@ -1597,7 +1624,7 @@ export default function Profile() {
                 );
               })()}
               <h1 className="font-serif text-2xl md:text-3xl font-bold leading-tight">
-                {profile.name || "Kein Name gesetzt"}
+                {profile.name || t("settings.no_name")}
               </h1>
               {/* Food identity status / bio */}
               <p className="text-muted-foreground text-sm flex items-center gap-1.5 justify-center sm:justify-start">
@@ -1640,26 +1667,26 @@ export default function Profile() {
                 onClick={() => setShowEditProfile(true)}
                 className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-border bg-background/80 hover:bg-muted transition-colors text-xs font-semibold text-foreground shadow-sm"
               >
-                <Edit2 className="w-3 h-3" /> {"Profil bearbeiten"}
+                <Edit2 className="w-3 h-3" /> {t("profile.edit_profile")}
               </button>
             </div>
             {/* Social stats row */}
             <div className="flex gap-5 sm:gap-6 text-center shrink-0">
               <div>
                 <div className="text-xl font-bold font-serif">{friends.length}</div>
-                <div className="text-[11px] text-muted-foreground">Freunde</div>
+                <div className="text-[11px] text-muted-foreground">{t("profile.friends")}</div>
               </div>
               <div>
                 <div className="text-xl font-bold font-serif">{instantPlans.length}</div>
-                <div className="text-[11px] text-muted-foreground">{"Pläne"}</div>
+                <div className="text-[11px] text-muted-foreground">{t("profile.plans_label")}</div>
               </div>
               <div>
                 <div className="text-xl font-bold font-serif">{visitedRestaurants.length}</div>
-                <div className="text-[11px] text-muted-foreground">{"Besuche"}</div>
+                <div className="text-[11px] text-muted-foreground">{t("profile.visits_label")}</div>
               </div>
               <div>
                 <div className="text-xl font-bold font-serif">{profile.favoriteRestaurantIds.length}</div>
-                <div className="text-[11px] text-muted-foreground">{"Gespeichert"}</div>
+                <div className="text-[11px] text-muted-foreground">{t("profile.saved_label")}</div>
               </div>
             </div>
           </div>
@@ -1697,10 +1724,10 @@ export default function Profile() {
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-base flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-primary" /> {"Meine Pläne"}
+                  <CalendarDays className="w-4 h-4 text-primary" /> {t("profile.my_plans")}
                 </h3>
                 <Link href="/meal-plan" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  {"Alle ansehen"} <ChevronRight className="w-3.5 h-3.5" />
+                  {t("profile.see_all")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-3">
@@ -1708,26 +1735,26 @@ export default function Profile() {
                   <div className="flex flex-col gap-2 p-4 rounded-xl bg-primary/5 border border-primary/15 hover:border-primary/40 transition-colors cursor-pointer">
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-primary" />
-                      <span className="text-sm font-bold">{"Solo-Pläne"}</span>
+                      <span className="text-sm font-bold">{t("profile.solo_plans")}</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{"Wochenplan & persönliche Slots"}</p>
-                    <span className="text-xs font-semibold text-primary">{"Öffnen →"}</span>
+                    <p className="text-[11px] text-muted-foreground">{t("profile.solo_plans_desc")}</p>
+                    <span className="text-xs font-semibold text-primary">{t("profile.open_arrow")}</span>
                   </div>
                 </Link>
                 <Link href="/meal-plan">
                   <div className="flex flex-col gap-2 p-4 rounded-xl bg-accent/5 border border-accent/15 hover:border-accent/40 transition-colors cursor-pointer">
                     <div className="flex items-center gap-2">
                       <Users className="w-5 h-5 text-accent" />
-                      <span className="text-sm font-bold">{"Gruppenpläne"}</span>
+                      <span className="text-sm font-bold">{t("profile.group_plans")}</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{"Gemeinsam planen & abstimmen"}</p>
-                    <span className="text-xs font-semibold text-accent">{"Öffnen →"}</span>
+                    <p className="text-[11px] text-muted-foreground">{t("profile.group_plans_desc")}</p>
+                    <span className="text-xs font-semibold text-accent">{t("profile.open_arrow")}</span>
                   </div>
                 </Link>
               </div>
               {instantPlans.length > 0 ? (
                 <div className="space-y-2">
-                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1">{"Aktive Pläne"}</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1">{t("profile.active_plans")}</p>
                   {instantPlans.slice(0, 3).map((plan: any) => (
                     <Link key={plan.id} href="/meal-plan">
                       <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
@@ -1735,8 +1762,8 @@ export default function Profile() {
                           <Users className="w-4 h-4 text-accent" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{plan.title || plan.restaurantName || "Gruppenplan"}</div>
-                          <div className="text-[11px] text-muted-foreground">{plan.partySize || plan.memberCount || "—"} {"Personen"}</div>
+                          <div className="text-sm font-medium truncate">{plan.title || plan.restaurantName || t("profile.group_plan_default")}</div>
+                          <div className="text-[11px] text-muted-foreground">{plan.partySize || plan.memberCount || "—"} {t("profile.persons_label")}</div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                       </div>
@@ -1746,7 +1773,7 @@ export default function Profile() {
               ) : (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
                   <Plus className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <p className="text-xs text-muted-foreground">{"Noch kein Plan aktiv – starte einen neuen Solo- oder Gruppenplan"}</p>
+                  <p className="text-xs text-muted-foreground">{t("profile.no_plans_hint")}</p>
                 </div>
               )}
             </div>
@@ -1755,13 +1782,13 @@ export default function Profile() {
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-base flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" /> {"Freunde"}
+                  <Users className="w-4 h-4 text-primary" /> {t("profile.friends")}
                   {friends.length > 0 && (
                     <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">{friends.length}</span>
                   )}
                 </h3>
                 <Link href="/friends" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  {"Verwalten"} <ChevronRight className="w-3.5 h-3.5" />
+                  {t("profile.manage")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
               {friends.length === 0 ? (
@@ -1770,11 +1797,11 @@ export default function Profile() {
                     <UserPlus className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{"Noch keine Freunde"}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{"Lade Freunde ein und plane gemeinsame Abende"}</p>
+                    <p className="text-sm font-medium">{t("profile.no_friends")}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{t("profile.no_friends_hint")}</p>
                   </div>
                   <Link href="/friends" className="text-xs font-semibold text-white bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-                    {"+ Freund hinzufügen"}
+                    {t("profile.add_friend_cta")}
                   </Link>
                 </div>
               ) : (

@@ -45,43 +45,21 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
-const DAY_DE: Record<string, string> = {
-  Monday: "Mo", Tuesday: "Di", Wednesday: "Mi", Thursday: "Do",
-  Friday: "Fr", Saturday: "Sa", Sunday: "So",
-};
-
 const DAYS_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
-const CUISINE_DE: Record<string, string> = {
-  Austrian:      "Österreichisch",
-  Burgers:       "Burger",
-  French:        "Französisch",
-  Indian:        "Indisch",
-  International: "International",
-  Italian:       "Italienisch",
-  Japanese:      "Japanisch",
-  Vegetarian:    "Vegetarisch",
-  Cocktails:     "Cocktails",
-  "Café":        "Café",
+const DAY_KEYS: Record<string, string> = {
+  Monday: "day_mon", Tuesday: "day_tue", Wednesday: "day_wed", Thursday: "day_thu",
+  Friday: "day_fri", Saturday: "day_sat", Sunday: "day_sun",
 };
 
-function formatOpenDays(days: string[] | undefined): string {
-  if (!days || days.length === 0) return "–";
-  const sorted = [...days].sort((a, b) => DAYS_ORDER.indexOf(a) - DAYS_ORDER.indexOf(b));
-  if (sorted.length === 7) return "Täglich";
-  const ranges: string[] = [];
-  let start = sorted[0], prev = sorted[0];
-  for (let i = 1; i <= sorted.length; i++) {
-    const cur = sorted[i];
-    if (cur && DAYS_ORDER.indexOf(cur) === DAYS_ORDER.indexOf(prev) + 1) {
-      prev = cur;
-    } else {
-      ranges.push(start === prev ? DAY_DE[start] : `${DAY_DE[start]}–${DAY_DE[prev]}`);
-      start = cur; prev = cur;
-    }
-  }
-  return ranges.join(", ");
-}
+const CUISINE_KEYS: Record<string, string> = {
+  Austrian: "cuisine_austrian", Burgers: "cuisine_burgers", French: "cuisine_french",
+  Indian: "cuisine_indian", International: "cuisine_international", Italian: "cuisine_italian",
+  Japanese: "cuisine_japanese", Vegetarian: "cuisine_vegetarian", Cocktails: "cuisine_cocktails",
+  "Café": "cuisine_cafe", Mexican: "cuisine_mexican", Thai: "cuisine_thai",
+  American: "cuisine_american", Chinese: "cuisine_chinese", Mediterranean: "cuisine_mediterranean",
+  Seafood: "cuisine_seafood", Steakhouse: "cuisine_steakhouse",
+};
 
 interface SlotInfo {
   time: string;
@@ -100,15 +78,6 @@ interface SlotData {
   walkInsEnabled: boolean;
 }
 
-function slotLabel(status: string) {
-  switch (status) {
-    case "limited": return " · Wenige Plätze";
-    case "nearly_full": return " · Fast ausgebucht";
-    case "full": return " · Ausgebucht";
-    default: return "";
-  }
-}
-
 function slotClass(status: string) {
   switch (status) {
     case "available": return "";
@@ -119,26 +88,14 @@ function slotClass(status: string) {
   }
 }
 
-const bookingSchema = z.object({
-  customerName: z.string().min(2, "Name muss mindestens 2 Zeichen haben"),
-  customerEmail: z.string().email("Ungültige E-Mail-Adresse"),
-  customerPhone: z.string().min(5, "Telefonnummer erforderlich"),
-  date: z.string().min(1, "Datum erforderlich"),
-  time: z.string().min(1, "Uhrzeit erforderlich"),
-  partySize: z.coerce.number().min(1, "Mindestens 1 Person").max(20, "Maximal 20 Personen"),
-  notes: z.string().optional(),
-});
+type BookingFormValues = {
+  customerName: string; customerEmail: string; customerPhone: string;
+  date: string; time: string; partySize: number; notes?: string;
+};
 
-type BookingFormValues = z.infer<typeof bookingSchema>;
-
-const reviewSchema = z.object({
-  customerName: z.string().min(2, "Name erforderlich"),
-  customerEmail: z.string().email("Ungültige E-Mail"),
-  rating: z.number().min(1).max(5),
-  comment: z.string().min(5, "Kommentar muss mindestens 5 Zeichen haben")
-});
-
-type ReviewFormValues = z.infer<typeof reviewSchema>;
+type ReviewFormValues = {
+  customerName: string; customerEmail: string; rating: number; comment: string;
+};
 
 function extractYouTubeId(url: string): string {
   const match = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
@@ -258,6 +215,59 @@ export default function Restaurant() {
   const restaurantId = parseInt(id || "0", 10);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Reactive schema factory (uses current t() so errors are in active language)
+  const bookingSchema = z.object({
+    customerName: z.string().min(2, t("restaurant.val_name_min")),
+    customerEmail: z.string().email(t("restaurant.val_email")),
+    customerPhone: z.string().min(5, t("restaurant.val_phone")),
+    date: z.string().min(1, t("restaurant.val_date")),
+    time: z.string().min(1, t("restaurant.val_time")),
+    partySize: z.coerce.number().min(1, t("restaurant.val_party_min")).max(20, t("restaurant.val_party_max")),
+    notes: z.string().optional(),
+  });
+
+  const reviewSchema = z.object({
+    customerName: z.string().min(2, t("restaurant.val_review_name")),
+    customerEmail: z.string().email(t("restaurant.val_review_email")),
+    rating: z.number().min(1).max(5),
+    comment: z.string().min(5, t("restaurant.val_comment_min")),
+  });
+
+  // Reactive formatOpenDays using current t()
+  function formatOpenDays(days: string[] | undefined): string {
+    if (!days || days.length === 0) return "\u2013";
+    const sorted = [...days].sort((a, b) => DAYS_ORDER.indexOf(a) - DAYS_ORDER.indexOf(b));
+    if (sorted.length === 7) return t("restaurant.daily");
+    const ranges: string[] = [];
+    let start = sorted[0], prev = sorted[0];
+    for (let i = 1; i <= sorted.length; i++) {
+      const cur = sorted[i];
+      if (cur && DAYS_ORDER.indexOf(cur) === DAYS_ORDER.indexOf(prev) + 1) {
+        prev = cur;
+      } else {
+        const startKey = DAY_KEYS[start] ?? "day_mon";
+        const prevKey = DAY_KEYS[prev] ?? "day_mon";
+        ranges.push(start === prev ? t(`restaurant.${startKey}`) : `${t(`restaurant.${startKey}`)}\u2013${t(`restaurant.${prevKey}`)}`);
+        start = cur; prev = cur;
+      }
+    }
+    return ranges.join(", ");
+  }
+
+  function slotLabel(status: string) {
+    switch (status) {
+      case "limited": return t("restaurant.slot_limited");
+      case "nearly_full": return t("restaurant.slot_nearly_full");
+      case "full": return t("restaurant.slot_full");
+      default: return "";
+    }
+  }
+
+  function cuisineLabel(cuisine: string) {
+    const key = CUISINE_KEYS[cuisine];
+    return key ? t(`restaurant.${key}`) : cuisine;
+  }
   
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -321,7 +331,7 @@ export default function Restaurant() {
     mutation: {
       onSuccess: () => {
         recordHabitEvent("review_submit");
-        toast({ title: "Bewertung eingereicht!", description: "Danke für Ihr Feedback." });
+        toast({ title: t("restaurant.review_success"), description: t("restaurant.review_submit_desc") });
         setShowReviewForm(false);
         reviewForm.reset();
         setReviewRating(5);
@@ -330,7 +340,7 @@ export default function Restaurant() {
         queryClient.invalidateQueries({ queryKey: getGetMarketplaceRestaurantQueryKey(restaurantId) });
       },
       onError: () => {
-        toast({ title: "Fehler", description: "Bewertung konnte nicht eingereicht werden.", variant: "destructive" });
+        toast({ title: t("common.error"), description: t("restaurant.review_error"), variant: "destructive" });
       }
     }
   });
@@ -342,8 +352,8 @@ export default function Restaurant() {
         setBookingSuccess(true);
         recordHabitEvent("booking_complete");
         toast({
-          title: "Buchung bestätigt! 🎉",
-          description: "Bestätigung per E-Mail. Treuepunkte werden nach Ihrem Besuch gutgeschrieben.",
+          title: t("restaurant.booking_confirmed_toast"),
+          description: t("restaurant.booking_confirmed_toast_desc"),
         });
         // Record social activity (fire-and-forget — non-blocking)
         const userEmail = typeof window !== "undefined"
@@ -366,8 +376,8 @@ export default function Restaurant() {
       },
       onError: () => {
         toast({
-          title: "Buchung fehlgeschlagen",
-          description: "Bei der Buchung Ihrer Reservierung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+          title: t("restaurant.booking_failed_toast"),
+          description: t("restaurant.booking_failed_toast_desc"),
           variant: "destructive"
         });
       }
@@ -533,10 +543,10 @@ export default function Restaurant() {
   if (!restaurant) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
-        <h1 className="font-serif text-4xl font-bold mb-4">Restaurant nicht gefunden</h1>
-        <p className="text-muted-foreground mb-8">Dieses Restaurant wurde möglicherweise entfernt oder ist derzeit nicht verfügbar.</p>
+        <h1 className="font-serif text-4xl font-bold mb-4">{t("restaurant.not_found")}</h1>
+        <p className="text-muted-foreground mb-8">{t("restaurant.not_found_desc", "Dieses Restaurant wurde m\u00f6glicherweise entfernt oder ist derzeit nicht verf\u00fcgbar.")}</p>
         <Button asChild>
-          <Link href="/explore">Alle Restaurants durchsuchen</Link>
+          <Link href="/explore">{t("restaurant.back_to_list")}</Link>
         </Button>
       </div>
     );
@@ -587,17 +597,17 @@ export default function Restaurant() {
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="text-2xl">{restaurant.cuisineEmoji}</span>
                   <Badge variant="secondary" className="font-medium text-sm">
-                    {CUISINE_DE[restaurant.cuisine] ?? restaurant.cuisine}
+                    {cuisineLabel(restaurant.cuisine)}
                   </Badge>
                   <span className="text-muted-foreground font-medium">{"€".repeat(restaurant.priceRange || 2)}</span>
                   {restaurant.isOpenNow && (
-                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">Jetzt geöffnet</Badge>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">{t("restaurant.open_now_badge")}</Badge>
                   )}
                   {/* Verified operator badge — only for registered platform partners */}
                   {restaurant.isPartner && (
                     <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/8 border border-primary/25 px-2.5 py-1 rounded-full">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      Geprüfter Betreiber
+                      {t("restaurant.verified_operator")}
                     </span>
                   )}
                 </div>
@@ -609,7 +619,7 @@ export default function Restaurant() {
                 {restaurant.hasActiveFlash && (
                   <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive font-semibold px-3 py-1.5 rounded-lg mt-2 border border-destructive/20">
                     <Star className="w-4 h-4 fill-current" />
-                    {restaurant.flashPercentage}% RABATT heute
+                    {restaurant.flashPercentage}{t("restaurant.discount_today")}
                   </div>
                 )}
               </div>
@@ -631,7 +641,7 @@ export default function Restaurant() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Adresse</div>
+                  <div className="font-medium">{t("restaurant.address")}</div>
                   <div className="text-muted-foreground">{restaurant.address}</div>
                   <div className="text-muted-foreground">{restaurant.city}</div>
                 </div>
@@ -639,26 +649,26 @@ export default function Restaurant() {
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Öffnungszeiten</div>
+                  <div className="font-medium">{t("restaurant.opening_hours")}</div>
                   <div className="text-muted-foreground">
                     {formatOpenDays(restaurant.openDays)}
                   </div>
                   <div className="text-muted-foreground">
-                    {restaurant.openTime} – {restaurant.closeTime}
+                    {restaurant.openTime} \u2013 {restaurant.closeTime}
                   </div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Kontakt</div>
+                  <div className="font-medium">{t("restaurant.phone")}</div>
                   <div className="text-muted-foreground">{restaurant.phone}</div>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">E-Mail</div>
+                  <div className="font-medium">{t("restaurant.email", "E-Mail")}</div>
                   <div className="text-muted-foreground">{restaurant.email}</div>
                 </div>
               </div>
@@ -726,7 +736,7 @@ export default function Restaurant() {
             <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
               <div className="px-6 pt-6 pb-3 flex items-center gap-2">
                 <PlayCircle className="w-5 h-5 text-primary" />
-                <h2 className="font-serif text-2xl font-bold">Unser Restaurant</h2>
+                <h2 className="font-serif text-2xl font-bold">{t("restaurant.our_restaurant")}</h2>
               </div>
               <div className="aspect-video w-full bg-muted">
                 {restaurant.videoUrl.includes("youtube.com") || restaurant.videoUrl.includes("youtu.be") ? (
@@ -752,14 +762,14 @@ export default function Restaurant() {
           {/* About / Story */}
           {restaurant.about && (
             <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
-              <h2 className="font-serif text-3xl font-bold mb-4">Unsere Geschichte</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4">{t("restaurant.our_story")}</h2>
               <p className="text-muted-foreground text-lg leading-relaxed whitespace-pre-line">{restaurant.about}</p>
             </div>
           )}
 
           {/* Menu */}
           <div className="bg-card border rounded-2xl p-6 md:p-8 shadow-sm">
-            <h2 className="font-serif text-3xl font-bold mb-6">Speisekarte</h2>
+            <h2 className="font-serif text-3xl font-bold mb-6">{t("restaurant.menu")}</h2>
             
             {categories.length > 0 ? (
               <Tabs defaultValue={categories[0]}>
@@ -793,7 +803,7 @@ export default function Restaurant() {
               </Tabs>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                Speisekarte derzeit nicht online verfügbar.
+                {t("restaurant.menu_not_available")}
               </div>
             )}
           </div>
@@ -814,7 +824,7 @@ export default function Restaurant() {
                     ))}
                   </div>
                   <div className="text-muted-foreground font-medium">
-                    {reviewStats.totalCount} Bewertungen
+                    {reviewStats.totalCount} {t("restaurant.reviews")}
                   </div>
                 </div>
                 
@@ -836,7 +846,7 @@ export default function Restaurant() {
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground border-b border-dashed">
-                Noch keine Bewertungen. Seien Sie der Erste!
+                {t("restaurant.no_reviews_yet")}
               </div>
             )}
 
@@ -869,7 +879,7 @@ export default function Restaurant() {
                   {review.ownerReply && (
                     <div className="mt-4 bg-muted/50 border rounded-xl p-4 ml-4 md:ml-12">
                       <div className="flex items-center gap-2 mb-2 text-sm font-bold">
-                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Antwort des Inhabers</Badge>
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">{t("restaurant.owner_reply")}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {review.ownerReply}
@@ -891,43 +901,43 @@ export default function Restaurant() {
                       <AlertTriangle className="w-5 h-5 text-amber-500" />
                     )}
                     <span className="font-semibold text-sm">
-                      {recoveryReview.status === "resolved" ? "Der Betrieb hat geantwortet" : "In Kl\u00E4rung"}
+                      {recoveryReview.status === "resolved" ? t("restaurant.recovery_resolved") : t("restaurant.recovery_pending_label")}
                     </span>
                     {recoveryReview.status === "pending" && (
-                      <span className="ml-auto text-xs text-muted-foreground animate-pulse">Wartet auf Antwort\u2026</span>
+                      <span className="ml-auto text-xs text-muted-foreground animate-pulse">{t("restaurant.recovery_waiting")}</span>
                     )}
                   </div>
 
                   {recoveryReview.businessResponse && (
                     <div className="bg-white/70 dark:bg-gray-900/40 rounded-xl p-4 mb-4 border border-border/30">
-                      <p className="text-xs font-semibold text-muted-foreground mb-1.5">Antwort des Betriebs:</p>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1.5">{t("restaurant.recovery_business_response")}</p>
                       <p className="text-sm leading-relaxed">{recoveryReview.businessResponse}</p>
                     </div>
                   )}
 
                   {recoveryReview.status === "resolved" && (
                     <div className="space-y-3">
-                      <p className="text-xs text-muted-foreground">M\u00F6chtest du deine Bewertung jetzt ver\u00F6ffentlichen?</p>
+                      <p className="text-xs text-muted-foreground">{t("restaurant.recovery_publish_now")}</p>
                       {/* Optional rating adjustment */}
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground mr-1">Neue Bewertung:</span>
+                        <span className="text-xs text-muted-foreground mr-1">{t("restaurant.recovery_new_rating")}</span>
                         {[1,2,3,4,5].map(s => (
                           <button key={s} type="button" onClick={() => setPublishEditRating(s)} className="p-0.5 hover:scale-110 transition-transform">
                             <Star className={`w-5 h-5 ${s <= (publishEditRating ?? recoveryReview.rating) ? "fill-amber-400 text-amber-400" : "text-muted stroke-muted-foreground"}`} />
                           </button>
                         ))}
                         {publishEditRating && publishEditRating !== recoveryReview.rating && (
-                          <span className="text-xs ml-1 text-emerald-600 font-medium">ge\u00E4ndert</span>
+                          <span className="text-xs ml-1 text-emerald-600 font-medium">{t("restaurant.recovery_changed")}</span>
                         )}
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" className="gap-1.5 rounded-full flex-1" onClick={publishRecoveryReview}>
                           <Send className="w-3.5 h-3.5" />
-                          Bewertung ver\u00F6ffentlichen
+                          {t("restaurant.recovery_publish_btn")}
                         </Button>
                         <Button size="sm" variant="outline" className="gap-1.5 rounded-full" onClick={closeRecoveryReview}>
                           <XCircle className="w-3.5 h-3.5" />
-                          Schlie\u00DFen
+                          {t("restaurant.recovery_close")}
                         </Button>
                       </div>
                     </div>
@@ -937,11 +947,11 @@ export default function Restaurant() {
                     <div className="flex gap-2 mt-2">
                       <Button size="sm" variant="outline" className="gap-1.5 rounded-full text-xs" onClick={() => publishRecoveryReview()}>
                         <Send className="w-3 h-3" />
-                        Trotzdem ver\u00F6ffentlichen
+                        {t("restaurant.recovery_publish_anyway")}
                       </Button>
                       <Button size="sm" variant="ghost" className="gap-1.5 rounded-full text-xs text-muted-foreground" onClick={closeRecoveryReview}>
                         <XCircle className="w-3 h-3" />
-                        Abbrechen
+                        {t("restaurant.cancel")}
                       </Button>
                     </div>
                   )}
@@ -958,9 +968,9 @@ export default function Restaurant() {
                       <MessageCircle className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg leading-tight">M\u00F6chtest du dein Problem zuerst mit dem Betrieb kl\u00E4ren?</h3>
+                      <h3 className="font-bold text-lg leading-tight">{t("restaurant.recovery_dialog_title")}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Der Betrieb hat die M\u00F6glichkeit, dein Anliegen direkt zu l\u00F6sen, bevor deine Bewertung ver\u00F6ffentlicht wird.
+                        {t("restaurant.recovery_dialog_desc")}
                       </p>
                     </div>
                   </div>
@@ -979,7 +989,7 @@ export default function Restaurant() {
                       disabled={recoverySubmitting}
                     >
                       <MessageCircle className="w-4 h-4" />
-                      Problem kl\u00E4ren
+                      {t("restaurant.recovery_resolve_cta")}
                     </Button>
                     <Button
                       variant="outline"
@@ -987,14 +997,14 @@ export default function Restaurant() {
                       onClick={() => submitWithRecovery(false)}
                       disabled={recoverySubmitting}
                     >
-                      Trotzdem ver\u00F6ffentlichen
+                      {t("restaurant.recovery_publish_anyway")}
                     </Button>
                     <button
                       className="text-xs text-muted-foreground mt-1 hover:underline"
                       onClick={() => setRecoveryDialog({ open: false, formData: null })}
                       disabled={recoverySubmitting}
                     >
-                      Abbrechen
+                      {t("restaurant.cancel")}
                     </button>
                   </div>
                 </div>
@@ -1010,7 +1020,7 @@ export default function Restaurant() {
                   onClick={async () => {
                     const customerEmail = savedEmail;
                     if (!customerEmail) {
-                      toast({ title: "Anmeldung erforderlich", description: "Bitte melde dich an, um eine Bewertung zu schreiben.", variant: "destructive" });
+                      toast({ title: t("restaurant.login_required"), description: t("restaurant.login_to_review"), variant: "destructive" });
                       return;
                     }
                     setReviewEligibility({ loading: true, checked: false, eligible: false, bookingId: null });
@@ -1036,25 +1046,25 @@ export default function Restaurant() {
                   }}
                 >
                   {reviewEligibility.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}
-                  Bewertung schreiben
-                  <span className="ml-1 text-xs font-bold bg-white/20 rounded-full px-2 py-0.5">+5 Punkte</span>
+                  {t("restaurant.write_review")}
+                  <span className="ml-1 text-xs font-bold bg-white/20 rounded-full px-2 py-0.5">{t("restaurant.review_points")}</span>
                 </Button>
               ) : null}
               {reviewEligibility.checked && !reviewEligibility.eligible && !showReviewForm && (
                 <div className="mt-3 rounded-xl bg-muted/50 border border-border px-4 py-4 text-sm text-muted-foreground text-center space-y-2">
-                  <p>{"Für eine Bewertung ist eine abgeschlossene Reservierung hier erforderlich."}</p>
+                  <p>{t("restaurant.review_eligibility_hint")}</p>
                   <a href="/my-bookings" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
                     <CalendarCheck className="w-3.5 h-3.5" />
-                    Meine Buchungen ansehen
+                    {t("restaurant.my_bookings_link")}
                   </a>
                 </div>
               )}
               {showReviewForm && (
                 <div className="bg-muted/30 p-6 rounded-2xl border">
-                  <h3 className="font-serif text-xl font-bold mb-4">Teilen Sie Ihre Erfahrung</h3>
+                  <h3 className="font-serif text-xl font-bold mb-4">{t("restaurant.share_experience")}</h3>
                   <form onSubmit={reviewForm.handleSubmit(onReviewSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Bewertung</Label>
+                      <Label>{t("restaurant.rating_label")}</Label>
                       <div className="flex gap-1 text-amber-400">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <button
@@ -1074,20 +1084,20 @@ export default function Restaurant() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="review-name">Name</Label>
-                        <Input id="review-name" placeholder="Max M." {...reviewForm.register("customerName")} />
+                        <Label htmlFor="review-name">{t("restaurant.name_label")}</Label>
+                        <Input id="review-name" placeholder={t("restaurant.name_placeholder")} {...reviewForm.register("customerName")} />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="review-email">E-Mail</Label>
-                        <Input id="review-email" type="email" placeholder="max@beispiel.de" {...reviewForm.register("customerEmail")} />
+                        <Label htmlFor="review-email">{t("restaurant.email", "E-Mail")}</Label>
+                        <Input id="review-email" type="email" placeholder={t("restaurant.email_placeholder")} {...reviewForm.register("customerEmail")} />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="review-comment">Kommentar</Label>
+                      <Label htmlFor="review-comment">{t("restaurant.comment_label")}</Label>
                       <Textarea 
                         id="review-comment" 
-                        placeholder="Wie war das Essen und der Service?" 
+                        placeholder={t("restaurant.comment_placeholder")} 
                         className="min-h-[100px] resize-none"
                         {...reviewForm.register("comment")} 
                       />
@@ -1095,10 +1105,10 @@ export default function Restaurant() {
 
                     <div className="flex gap-3 pt-2">
                       <Button type="submit" disabled={createReview.isPending} className="flex-1 rounded-full">
-                        {createReview.isPending ? "Wird eingereicht..." : "Bewertung einreichen"}
+                        {createReview.isPending ? t("restaurant.review_submitting") : t("restaurant.review_submit")}
                       </Button>
                       <Button type="button" variant="outline" className="rounded-full" onClick={() => setShowReviewForm(false)}>
-                        Abbrechen
+                        {t("restaurant.cancel")}
                       </Button>
                     </div>
                   </form>
@@ -1126,31 +1136,31 @@ export default function Restaurant() {
           <div className="sticky top-24">
             <div className="bg-card border rounded-2xl shadow-lg overflow-hidden">
               <div className="bg-primary/10 p-6 text-center border-b border-primary/10">
-                <h3 className="font-serif text-2xl font-bold text-foreground">Tisch reservieren</h3>
+                <h3 className="font-serif text-2xl font-bold text-foreground">{t("restaurant.reserve_table")}</h3>
                 {restaurant.availabilityStatus && restaurant.isOpenNow && (
                   <div className="mt-3">
                     {restaurant.availabilityStatus === "available" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/15 text-emerald-700 border border-emerald-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Tische jetzt verfügbar
+                        {t("restaurant.avail_available")}
                       </span>
                     )}
                     {restaurant.availabilityStatus === "limited" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-400/15 text-amber-700 border border-amber-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        Wenige Plätze — bald buchen
+                        {t("restaurant.avail_limited")}
                       </span>
                     )}
                     {restaurant.availabilityStatus === "nearly_full" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-orange-400/15 text-orange-700 border border-orange-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                        Fast ausgebucht — Tisch sichern
+                        {t("restaurant.avail_nearly_full")}
                       </span>
                     )}
                     {restaurant.availabilityStatus === "full" && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-red-400/15 text-red-700 border border-red-300/40 px-3 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                        {restaurant.nextAvailableSlot ? `Ausgebucht · nächster Slot: ${restaurant.nextAvailableSlot}` : "Momentan ausgebucht"}
+                        {restaurant.nextAvailableSlot ? t("restaurant.avail_full_next", { slot: restaurant.nextAvailableSlot }) : t("restaurant.avail_full")}
                       </span>
                     )}
                   </div>
@@ -1166,25 +1176,25 @@ export default function Restaurant() {
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-serif text-2xl font-bold mb-1">Tisch bestätigt!</h3>
+                      <h3 className="font-serif text-2xl font-bold mb-1">{t("restaurant.booking_success_title")}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Reservierung bei {restaurant.name} ist gespeichert. Details wurden per E-Mail gesendet.
+                        {t("restaurant.booking_success_desc", { name: restaurant.name })}
                       </p>
                     </div>
                     {/* Reward hint */}
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
                       <span className="text-2xl">⭐</span>
                       <div className="text-left">
-                        <p className="text-sm font-bold text-amber-800">Treuepunkte warten auf Sie</p>
-                        <p className="text-xs text-amber-700">Punkte werden nach Ihrem Besuch gutgeschrieben.</p>
+                        <p className="text-sm font-bold text-amber-800">{t("restaurant.loyalty_points_title")}</p>
+                        <p className="text-xs text-amber-700">{t("restaurant.loyalty_points_desc")}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button asChild size="sm" className="flex-1 rounded-full bg-gradient-to-r from-primary to-accent text-white border-0">
-                        <Link href="/my-bookings">Meine Buchungen</Link>
+                        <Link href="/my-bookings">{t("restaurant.my_bookings_link")}</Link>
                       </Button>
                       <Button onClick={() => setBookingSuccess(false)} variant="outline" size="sm" className="flex-1 rounded-full">
-                        Nochmal buchen
+                        {t("restaurant.book_again")}
                       </Button>
                     </div>
                   </div>
@@ -1192,7 +1202,7 @@ export default function Restaurant() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="date">Datum</Label>
+                        <Label htmlFor="date">{t("restaurant.date_label")}</Label>
                         <div className="relative">
                           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input 
@@ -1213,14 +1223,14 @@ export default function Restaurant() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="time">Uhrzeit</Label>
+                        <Label htmlFor="time">{t("restaurant.time_label")}</Label>
                         <Select 
                           onValueChange={(val) => form.setValue("time", val)} 
                           defaultValue={form.getValues("time")}
                         >
                           <SelectTrigger className="w-full">
                             <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder="Uhrzeit wählen" />
+                            <SelectValue placeholder={t("restaurant.time_select_placeholder")} />
                           </SelectTrigger>
                           <SelectContent>
                             {slotData ? (
@@ -1252,7 +1262,7 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="partySize">Personenzahl</Label>
+                      <Label htmlFor="partySize">{t("restaurant.party_size_label")}</Label>
                       <div className="relative">
                         <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input 
@@ -1270,10 +1280,10 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customerName">Vollständiger Name</Label>
+                      <Label htmlFor="customerName">{t("restaurant.full_name_label")}</Label>
                       <Input 
                         id="customerName"
-                        placeholder="Max Mustermann"
+                        placeholder={t("restaurant.name_placeholder")}
                         {...form.register("customerName")} 
                       />
                       {form.formState.errors.customerName && (
@@ -1282,11 +1292,11 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customerEmail">E-Mail</Label>
+                      <Label htmlFor="customerEmail">{t("restaurant.email", "E-Mail")}</Label>
                       <Input 
                         id="customerEmail"
                         type="email"
-                        placeholder="max@beispiel.de"
+                        placeholder={t("restaurant.email_placeholder")}
                         {...form.register("customerEmail")} 
                       />
                       {form.formState.errors.customerEmail && (
@@ -1295,7 +1305,7 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customerPhone">Telefonnummer</Label>
+                      <Label htmlFor="customerPhone">{t("restaurant.phone_label")}</Label>
                       <Input 
                         id="customerPhone"
                         type="tel"
@@ -1308,10 +1318,10 @@ export default function Restaurant() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Besondere Wünsche (Optional)</Label>
+                      <Label htmlFor="notes">{t("restaurant.notes_label")}</Label>
                       <Textarea 
                         id="notes"
-                        placeholder="Jubiläum, Allergien, Kinderstuhl..."
+                        placeholder={t("restaurant.notes_placeholder")}
                         className="resize-none h-20"
                         {...form.register("notes")} 
                       />
@@ -1323,25 +1333,25 @@ export default function Restaurant() {
                       disabled={createBooking.isPending}
                     >
                       {createBooking.isPending ? (
-                        <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Wird bestätigt...</span>
+                        <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />{t("restaurant.booking_confirming")}</span>
                       ) : (
-                        <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />Tisch jetzt kostenlos reservieren</span>
+                        <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />{t("restaurant.booking_submit")}</span>
                       )}
                     </Button>
                     <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
                       <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                         <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                        Kostenlos
+                        {t("restaurant.trust_free")}
                       </span>
                       <span className="text-muted-foreground/40 text-[11px]">·</span>
                       <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                         <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                        Keine Kreditkarte
+                        {t("restaurant.trust_no_cc")}
                       </span>
                       <span className="text-muted-foreground/40 text-[11px]">·</span>
                       <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                         <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                        Bestätigung per E-Mail
+                        {t("restaurant.trust_email_confirm")}
                       </span>
                     </div>
                   </form>
@@ -1360,11 +1370,11 @@ export default function Restaurant() {
             <div className="text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
                 <Store className="w-4 h-4 text-primary" />
-                <span className="text-xs font-bold uppercase tracking-widest text-primary/70">Betreiber?</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-primary/70">{t("restaurant.claim_label")}</span>
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-1">Gehört Ihnen <span className="text-primary">{restaurant.name}</span>?</h3>
+              <h3 className="text-xl font-bold text-foreground mb-1">{t("restaurant.claim_title", { name: restaurant.name })}</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
-                Verwalten Sie Ihre Seite, antworten Sie auf Buchungen, und erreichen Sie tausende Wiener Lokalgänger direkt über RestoSmart.
+                {t("restaurant.claim_desc")}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
@@ -1373,7 +1383,7 @@ export default function Restaurant() {
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors shadow-md"
               >
                 <Store className="w-4 h-4" />
-                Listing beanspruchen
+                {t("restaurant.claim_cta")}
               </a>
               <a
                 href="tel:+4317201234"

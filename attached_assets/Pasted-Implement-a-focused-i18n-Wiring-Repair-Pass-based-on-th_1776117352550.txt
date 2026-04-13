@@ -1,0 +1,216 @@
+Implement a focused "i18n Wiring Repair Pass" based on the diagnostic report.
+
+IMPORTANT:
+- Do NOT rebuild the i18n architecture
+- Do NOT add a new translation library
+- Do NOT refactor the whole app
+- The diagnostic confirmed the architecture is fundamentally sound
+- This is a targeted repair pass only
+- Focus on the exact root causes already identified
+- Work in priority order and fix the highest-impact broken areas first
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Fix the translation system by repairing the actual broken wiring:
+
+1. remove stale module-scope translated arrays/constants
+2. replace remaining hardcoded visible strings with translation keys
+3. make affected components re-render correctly on language change
+4. fill the most important missing non-DE/EN translation keys
+
+Do NOT waste time on broad architectural rewrites.
+
+==================================================
+1. FIX THE STALE MODULE-SCOPE TRANSLATION BUG (CRITICAL FIRST)
+==================================================
+
+Repair the exact stale-language sources identified in the report.
+
+Priority targets:
+- customer/restaurant.tsx:
+  - DAY_DE
+  - CUISINE_DE
+- customer/profile.tsx:
+  - FOOD_TYPES
+  - DIETARY_STYLES
+  - ALLERGIES
+- any similar module-scope arrays/constants with user-visible labels
+- soft-paywall.tsx FEATURES and SUCCESS_STATS if they are module-scope
+- contextual-premium-trigger.tsx if copy is static inline
+
+Rules:
+- move translated label generation inside the component render path
+OR
+- create helper factories that take t as input
+OR
+- otherwise ensure labels are computed reactively after language changes
+
+Do NOT leave any user-visible translated label frozen at module load time.
+
+==================================================
+2. FIX ZOD / VALIDATION MESSAGE LOCALIZATION
+==================================================
+
+In customer/restaurant.tsx and any similar files:
+
+- move Zod schemas with translated error strings out of module-scope static initialization
+- use schema factory functions that accept t
+OR define schemas inside a hook/component so validation messages match the active language
+
+Validation messages must update correctly after language switching.
+
+==================================================
+3. FIX CUSTOMER HIGH-IMPACT PAGES (IN THIS ORDER)
+==================================================
+
+Wire these pages fully to the existing i18n system:
+
+A. customer/restaurant.tsx
+- replace remaining hardcoded visible German strings
+- use existing translation keys where already available
+- add missing keys only if needed
+- ensure booking flow, reviews, hours, cuisine labels, day labels, messages all react to locale
+
+B. customer/profile.tsx
+- replace remaining hardcoded visible German strings
+- wire chips/labels/preferences to translations
+- ensure profile sections react to locale changes
+
+C. customer/meal-plan.tsx
+- replace hardcoded visible text with translation keys
+
+D. customer/feed.tsx
+- replace hardcoded visible text with translation keys
+
+E. customer/messages.tsx
+- replace hardcoded visible text with translation keys
+
+Do not spend time on lower-priority pages before these are done.
+
+==================================================
+4. FIX OWNER DASHBOARD ZERO-USAGE / LOW-WIRED PAGES
+==================================================
+
+Repair the pages identified in the report where translation keys already exist but JSX is still mostly hardcoded.
+
+Priority targets:
+- reservations.tsx
+- overview.tsx
+- bookings.tsx
+- menu.tsx
+- onboarding.tsx
+- pos.tsx
+- payroll.tsx
+- inventory.tsx
+- tables.tsx
+- finances.tsx if applicable
+
+Rules:
+- use the already existing translation keys where possible
+- do not create unnecessary duplicate keys
+- replace hardcoded German strings in visible owner UI
+- ensure dashboard content changes with the sidebar language
+
+==================================================
+5. FILL THE MOST IMPORTANT MISSING NON-DE/EN KEYS
+==================================================
+
+The report showed that FR/IT/ES/NL/TR/PT/PL are missing many keys, especially in the customer app.
+
+Fix the highest-impact missing translation coverage first:
+
+Priority namespaces/modules:
+- for_business
+- home
+- restaurant
+- profile
+- meal_plan
+- feed
+- messages
+
+Requirements:
+- add missing translation keys for:
+  - French
+  - Italian
+  - Spanish
+  - Dutch
+  - Turkish
+  - Portuguese
+  - Polish
+
+Do NOT attempt a giant perfect translation rewrite of the whole app in one pass.
+Instead:
+- fill the missing keys for the high-traffic user-visible areas identified above
+- make these pages feel fully translated in those languages
+
+==================================================
+6. DO NOT TOUCH WHAT IS ALREADY WORKING
+==================================================
+
+Do NOT waste time rewriting:
+- the global i18n architecture
+- provider setup
+- locale persistence
+- nav/layout areas already confirmed reactive
+- fully translated pages that already behave correctly
+
+Only repair broken/stale/incomplete areas.
+
+==================================================
+7. FINAL VALIDATION (MANDATORY)
+==================================================
+
+After repairs, verify in at least:
+- German
+- English
+- French
+
+Test specifically:
+
+CUSTOMER:
+- restaurant page
+- profile page
+- meal plan
+- feed
+- messages
+
+OWNER DASHBOARD:
+- sidebar
+- overview
+- reservations
+- bookings
+- menu
+- billing/settings if affected
+
+Confirm:
+- no stale German day/cuisine labels remain
+- no frozen preference chips remain
+- no hardcoded German text remains in the repaired pages
+- page content changes when language changes
+- dashboard sidebar and content match language
+- customer app no longer feels half-translated in the repaired areas
+
+==================================================
+8. FINAL REPORT
+==================================================
+
+Return a concise repair report with:
+
+A. Which stale module-scope arrays/constants were fixed
+B. Which Zod schema/localized validation issues were fixed
+C. Which customer pages were fully wired
+D. Which owner dashboard pages were fully wired
+E. Which missing language key sets were added
+F. Any remaining follow-up items outside this pass
+
+==================================================
+FINAL RESULT
+==================================================
+
+The app should no longer feel structurally broken in translation.
+
+The repaired high-impact pages must now switch language correctly and completely, without mixed stale German text.
+
+This is a targeted repair pass, not a rewrite.

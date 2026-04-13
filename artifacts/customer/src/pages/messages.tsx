@@ -67,6 +67,7 @@ interface Friend { email: string; name: string | null; photoUrl: string | null }
 
 // ── CreateGroupModal ───────────────────────────────────────────────────────────
 function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose: () => void; onCreate: (id: number) => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -108,18 +109,18 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors">
             <X className="w-4 h-4" />
           </button>
-          <p className="font-bold text-base flex-1">{"Gruppenchat erstellen"}</p>
+          <p className="font-bold text-base flex-1">{t("messages.create_group_chat")}</p>
           <button
             onClick={() => mutation.mutate()}
             disabled={!name.trim() || selected.length === 0 || mutation.isPending}
             className="text-sm font-bold text-primary disabled:opacity-40"
           >
-            {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Erstellen"}
+            {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("messages.create_btn")}
           </button>
         </div>
         <div className="px-5 py-3 border-b">
           <input
-            placeholder="Gruppenname…"
+            placeholder={t("messages.group_name_placeholder")}
             value={name}
             onChange={e => setName(e.target.value)}
             className="w-full bg-muted/40 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -129,7 +130,7 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
-              placeholder="Freunde suchen…"
+              placeholder={t("messages.search_friends_placeholder")}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full bg-muted/40 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -138,7 +139,7 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
         </div>
         <div className="overflow-y-auto max-h-64 px-2 py-2">
           {filtered.length === 0 ? (
-            <p className="text-center py-8 text-sm text-muted-foreground">{"Keine Freunde gefunden."}</p>
+            <p className="text-center py-8 text-sm text-muted-foreground">{t("messages.no_friends_found")}</p>
           ) : filtered.map(f => {
             const isSelected = selected.includes(f.email);
             return (
@@ -158,7 +159,7 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
         </div>
         {selected.length > 0 && (
           <div className="px-5 py-3 border-t bg-muted/20 text-xs text-muted-foreground font-medium">
-            {selected.length} {selected.length === 1 ? "Person" : "Personen"} {"ausgewählt"}
+            {t("messages.selected_count", { count: selected.length, label: selected.length === 1 ? t("messages.person_singular") : t("messages.person_plural") })}
           </div>
         )}
       </div>
@@ -168,6 +169,7 @@ function CreateGroupModal({ email, onClose, onCreate }: { email: string; onClose
 
 // ── Fullscreen Image Viewer ────────────────────────────────────────────────────
 function FullscreenViewer({ src, onClose }: { src: string; onClose: () => void }) {
+  const { t } = useTranslation();
   const [scale, setScale] = useState(1);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -198,13 +200,13 @@ function FullscreenViewer({ src, onClose }: { src: string; onClose: () => void }
             className="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium hover:bg-white/25 transition-colors"
             onClick={() => setScale(s => Math.min(s + 0.5, 3))}
           >
-            <ZoomIn className="inline w-4 h-4 mr-1" />{"Vergrößern"}
+            <ZoomIn className="inline w-4 h-4 mr-1" />{t("messages.zoom_in")}
           </button>
           <button
             className="px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium hover:bg-white/25 transition-colors"
             onClick={() => setScale(1)}
           >
-            {"Zurücksetzen"}
+            {t("messages.reset")}
           </button>
         </div>
       </div>
@@ -245,6 +247,7 @@ function ChatImageBubble({ src, isOwn, onExpand }: { src: string; isOwn: boolean
 function ImagePreviewModal({ preview, onSend, onCancel, isPending }: {
   preview: string; onSend: () => void; onCancel: () => void; isPending: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center"
@@ -256,7 +259,7 @@ function ImagePreviewModal({ preview, onSend, onCancel, isPending }: {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b">
-          <p className="font-bold text-[15px]">{"Bild senden"}</p>
+          <p className="font-bold text-[15px]">{t("messages.image_send")}</p>
           <button onClick={onCancel} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/70 transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -269,7 +272,7 @@ function ImagePreviewModal({ preview, onSend, onCancel, isPending }: {
             onClick={onCancel}
             className="flex-1 py-3 rounded-2xl border text-sm font-semibold hover:bg-muted/60 transition-colors"
           >
-            {"Abbrechen"}
+            {t("common.cancel")}
           </button>
           <button
             onClick={onSend}
@@ -278,7 +281,7 @@ function ImagePreviewModal({ preview, onSend, onCancel, isPending }: {
             style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
           >
             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            {"Senden"}
+            {t("messages.send")}
           </button>
         </div>
       </div>
@@ -288,6 +291,7 @@ function ImagePreviewModal({ preview, onSend, onCancel, isPending }: {
 
 // ── Chat View ──────────────────────────────────────────────────────────────────
 function ChatView({ convId, email, onBack }: { convId: number; email: string; onBack: () => void }) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -463,7 +467,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
           <p className="font-bold text-sm truncate">{title}</p>
           {conv?.type === "group" && conv.allParticipants && (
             <p className="text-xs text-muted-foreground truncate">
-              {conv.allParticipants.length} {"Mitglieder"}
+              {conv.allParticipants.length} {t("messages.members")}
             </p>
           )}
         </div>
@@ -481,13 +485,13 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-left"
                   >
                     {conv.muted ? <Volume2 className="w-4 h-4 text-muted-foreground" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
-                    {conv.muted ? "Stummschalten aufheben" : "Stummschalten"}
+                    {conv.muted ? t("messages.unmute") : t("messages.mute")}
                   </button>
                   <button
                     onClick={() => blockMutation.mutate()}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-destructive/10 text-destructive transition-colors text-left"
                   >
-                    <ShieldOff className="w-4 h-4" /> {"Blockieren"}
+                    <ShieldOff className="w-4 h-4" /> {t("messages.block_btn")}
                   </button>
                 </>
               )}
@@ -497,7 +501,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-left"
                 >
                   {conv.muted ? <Volume2 className="w-4 h-4 text-muted-foreground" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
-                  {conv.muted ? "Stummschalten aufheben" : "Stummschalten"}
+                  {conv.muted ? t("messages.unmute") : t("messages.mute")}
                 </button>
               )}
             </div>
@@ -515,8 +519,8 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
         {!isLoading && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <p className="text-3xl mb-3">{"👋"}</p>
-            <p className="font-bold text-base mb-1">{"Fangt an zu schreiben!"}</p>
-            <p className="text-sm text-muted-foreground">{"Noch keine Nachrichten."}</p>
+            <p className="font-bold text-base mb-1">{t("messages.start_writing")}</p>
+            <p className="text-sm text-muted-foreground">{t("messages.no_messages_yet")}</p>
           </div>
         )}
         {messages.map((msg, i) => {
@@ -582,7 +586,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
           {/* Image picker button */}
           <button
             onClick={() => imgInputRef.current?.click()}
-            title="Bild senden"
+            title={t("messages.image_send")}
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors shrink-0"
           >
             <ImageIcon className="w-5 h-5 text-muted-foreground" />
@@ -592,7 +596,7 @@ function ChatView({ convId, email, onBack }: { convId: number; email: string; on
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={"Nachricht…"}
+            placeholder={t("messages.type_message")}
             className="flex-1 bg-muted/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
           <button
@@ -634,6 +638,7 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
   onCreateGroup: () => void;
   onStartDM: () => void;
 }) {
+  const { t } = useTranslation();
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
     queryKey: ["conversations", email],
     queryFn: () => fetch(`${API_BASE}/api/messages/conversations/${encodeURIComponent(email)}`, { credentials: "include" }).then(r => r.json()),
@@ -648,19 +653,19 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
         className="flex items-center justify-between px-5 py-4 border-b shrink-0"
         style={{ background: "hsl(var(--background)/0.96)", backdropFilter: "blur(14px)" }}
       >
-        <p className="text-xl font-black">{"Nachrichten"}</p>
+        <p className="text-xl font-black">{t("messages.title")}</p>
         <div className="flex items-center gap-2">
           <button
             onClick={onStartDM}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors"
-            title="Neue Nachricht"
+            title={t("messages.new_message")}
           >
             <MessageCircle className="w-5 h-5" />
           </button>
           <button
             onClick={onCreateGroup}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors"
-            title="Gruppe erstellen"
+            title={t("messages.create_group")}
           >
             <Users className="w-5 h-5" />
           </button>
@@ -676,14 +681,14 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
         {!isLoading && conversations.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
             <p className="text-4xl mb-4">{"💬"}</p>
-            <p className="font-bold text-lg mb-1">{"Keine Nachrichten"}</p>
-            <p className="text-sm text-muted-foreground mb-6">{"Schreib deinen Freunden oder erstelle eine Gruppe."}</p>
+            <p className="font-bold text-lg mb-1">{t("messages.empty_title")}</p>
+            <p className="text-sm text-muted-foreground mb-6">{t("messages.empty_hint_full")}</p>
             <button
               onClick={onStartDM}
               className="text-sm font-bold text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-all"
               style={{ background: GRAD }}
             >
-              {"Neue Nachricht"}
+              {t("messages.new_message")}
             </button>
           </div>
         )}
@@ -721,7 +726,7 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
                 </div>
                 <div className="flex items-center justify-between">
                   <p className={`text-xs truncate ${conv.unread_count > 0 ? "text-foreground/70 font-semibold" : "text-muted-foreground"}`}>
-                    {conv.last_message ?? "Noch keine Nachrichten"}
+                    {conv.last_message ?? t("messages.no_messages_yet")}
                   </p>
                   {conv.unread_count > 0 && (
                     <span
@@ -743,6 +748,7 @@ function ConversationList({ email, activeId, onSelect, onCreateGroup, onStartDM 
 
 // ── Start DM Modal ─────────────────────────────────────────────────────────────
 function StartDMModal({ email, onClose, onStarted }: { email: string; onClose: () => void; onStarted: (id: number) => void }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -782,14 +788,14 @@ function StartDMModal({ email, onClose, onStarted }: { email: string; onClose: (
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors">
             <X className="w-4 h-4" />
           </button>
-          <p className="font-bold text-base">{"Neue Nachricht"}</p>
+          <p className="font-bold text-base">{t("messages.new_message")}</p>
         </div>
         <div className="px-5 py-3 border-b">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               autoFocus
-              placeholder="Freunde suchen…"
+              placeholder={t("messages.search_friends_placeholder")}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full bg-muted/40 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -798,7 +804,7 @@ function StartDMModal({ email, onClose, onStarted }: { email: string; onClose: (
         </div>
         <div className="overflow-y-auto max-h-80">
           {filtered.length === 0 && (
-            <p className="text-center py-10 text-sm text-muted-foreground">{"Keine Freunde gefunden."}</p>
+            <p className="text-center py-10 text-sm text-muted-foreground">{t("messages.no_friends_found")}</p>
           )}
           {filtered.map(f => (
             <button
@@ -839,10 +845,10 @@ export default function MessagesPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-8 pb-28">
         <p className="text-5xl mb-4">{"💬"}</p>
-        <p className="font-bold text-xl mb-2">{"Nachrichten"}</p>
-        <p className="text-sm text-muted-foreground mb-6">{"Melde dich an, um Nachrichten zu senden."}</p>
+        <p className="font-bold text-xl mb-2">{t("messages.title")}</p>
+        <p className="text-sm text-muted-foreground mb-6">{t("messages.login_hint")}</p>
         <Link href="/profile" className="text-sm font-bold text-white px-6 py-3 rounded-2xl" style={{ background: GRAD }}>
-          {"Anmelden"}
+          {t("messages.login_btn")}
         </Link>
       </div>
     );
