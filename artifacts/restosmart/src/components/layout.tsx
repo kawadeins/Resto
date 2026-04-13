@@ -3,16 +3,64 @@ import {
   LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
   UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
   Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
-  Clock, X, Flame, UsersRound, LogOut,
+  Clock, X, Flame, UsersRound, LogOut, AlertTriangle, RefreshCw,
 } from "lucide-react";
 import { OwnerNotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Component, type ReactNode } from "react";
 import { track } from "@/lib/conversion-tracking";
 import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick } from "@/lib/variant-system";
 import { usePermissions, type TeamRole } from "@/hooks/use-permissions";
 import { useSession } from "@/contexts/session-context";
 import { RestoLogo } from "@/components/resto-logo";
+
+// ─── Page Error Boundary ──────────────────────────────────────────────────────
+// Catches rendering errors inside dashboard pages so the sidebar stays visible
+// and the user sees a helpful message instead of a blank dark panel.
+// The `key` prop (set to the current route in Layout) resets the boundary
+// automatically whenever the user navigates to a different page.
+
+interface ErrorBoundaryState { error: Error | null }
+
+class PageErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: { componentStack: string }) {
+    console.error("[RestoSmart] Page render error:", error.message, info.componentStack);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center max-w-md px-6 space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-8 h-8 text-red-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white">Seite konnte nicht geladen werden</h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              {this.state.error.message || "Ein unerwarteter Fehler ist aufgetreten."}
+            </p>
+            <button
+              onClick={() => this.setState({ error: null })}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Erneut versuchen
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getTrialState() {
   const premium = localStorage.getItem("restosmart_owner_premium");
@@ -330,9 +378,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Hauptinhalt */}
       <main className="flex-1 md:pl-64 overflow-y-auto pb-16 md:pb-0 flex flex-col">
         <TrialBanner />
-        <div className="flex-1 p-8 relative">
-          {children}
-        </div>
+        <PageErrorBoundary key={location}>
+          <div className="flex-1 p-8 relative">
+            {children}
+          </div>
+        </PageErrorBoundary>
       </main>
 
       {/* Mobile-Navigation unten */}

@@ -1,0 +1,351 @@
+Perform a strict "Owner Dashboard Actions + Buttons Audit and Repair Pass".
+
+IMPORTANT:
+- This task is ONLY for the restaurant owner dashboard
+- Do NOT work on the customer app
+- Do NOT redesign the dashboard
+- This is a full interaction audit for owner-side actions, buttons, forms, toggles, and controls
+- Only start this after the owner dashboard pages are rendering correctly
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Audit and repair all interactive elements inside the restaurant owner dashboard so that every important action actually works.
+
+This includes:
+- buttons
+- toggles
+- menu actions
+- form submits
+- save/update actions
+- filters
+- tabs
+- CTA buttons
+- modal actions
+- management tools
+
+No dead buttons.
+No silent failures.
+No fake clickable UI.
+
+==================================================
+1. OWNER DASHBOARD SCOPE ONLY
+==================================================
+
+Work ONLY on the restaurant owner dashboard, including sections such as:
+- Übersicht / dashboard home
+- Mein Profil / business profile
+- Buchungen / Reservierungen
+- Tische
+- Personal
+- Gehaltsabrechnung
+- Team
+- Inventar
+- Speisekarte
+- Kassenterminal
+- Finanzen
+- Analyse
+- Sichtbarkeit & Boost
+- Marketing
+- Tote Stunden
+- Wachstum
+- Optimizer
+- Bewertungen
+- Abonnement / Billing / Premium
+
+Do NOT audit the customer app in this pass.
+
+==================================================
+2. FULL BUTTON AUDIT (CRITICAL)
+==================================================
+
+Inspect every important button in the owner dashboard.
+
+For each button verify:
+- visible
+- clickable
+- correct target/action
+- proper loading state
+- proper disabled state if needed
+- proper success or error feedback
+- no broken route
+- no dead click
+- no blank screen after click
+
+Examples:
+- save/update buttons
+- create buttons
+- delete buttons
+- edit buttons
+- confirm/cancel buttons
+- premium buttons
+- wallet top-up buttons
+- boost/campaign buttons
+- review reply buttons
+- reservation accept/reject buttons
+
+Fix all broken actions.
+
+==================================================
+3. TOGGLES / SWITCHES / FILTERS AUDIT
+==================================================
+
+Inspect all toggles, switches, filters, tabs, and segmented controls.
+
+Verify:
+- they respond immediately
+- they change state correctly
+- they trigger the intended update
+- they do not visually change without real logic
+- no stuck toggle state
+- no broken filter causing empty page by mistake
+
+Fix all broken interactions.
+
+==================================================
+4. FORMS AUDIT
+==================================================
+
+Inspect all owner dashboard forms.
+
+Examples:
+- profile/business profile forms
+- team/staff forms
+- menu/inventory forms
+- campaign forms
+- subscription/billing forms
+- reservation settings
+- table settings
+
+Verify:
+- fields editable
+- save works
+- validation works
+- success feedback appears
+- no silent submission failure
+- errors are shown clearly in German
+- no broken submit buttons
+
+==================================================
+5. MODAL / DIALOG ACTIONS AUDIT
+==================================================
+
+Inspect every modal/dialog in the owner dashboard.
+
+Verify:
+- opens correctly
+- close/cancel works
+- confirm/submit works
+- no trapped overlay
+- no stuck dark backdrop
+- no blank modal content
+- no broken escape path
+
+Examples:
+- delete confirmation
+- team invite modal
+- campaign modal
+- reservation modal
+- wallet top-up modal
+- premium activation modal if present
+
+==================================================
+6. ROUTE-ACTION CONSISTENCY
+==================================================
+
+Check owner dashboard actions that navigate.
+
+Examples:
+- clicking cards
+- CTA buttons
+- sidebar sub-actions
+- links inside tables/cards
+
+Verify:
+- route opens correctly
+- target page renders
+- no 404
+- no blank screen
+- no wrong route
+- no route loop
+
+==================================================
+7. OWNER HOME / OVERVIEW ACTIONS
+==================================================
+
+Specifically audit the owner dashboard landing/home/overview page.
+
+Verify:
+- home cards are clickable only if real
+- welcome/home CTAs work
+- no placeholder cards pretending to be active
+- no broken quick actions
+- no fake dashboard widgets
+
+If a widget/card is not ready:
+- render it as a proper disabled/coming soon/empty state
+- not as a fake action
+
+==================================================
+8. BOOKINGS / RESERVATIONS ACTIONS
+==================================================
+
+Audit reservation-related owner actions.
+
+Verify and repair:
+- open reservation detail
+- confirm reservation
+- reject/cancel reservation
+- update status
+- filters/date views work
+- no stale state
+- no dead action buttons
+
+==================================================
+9. REVIEWS ACTIONS
+==================================================
+
+Audit review-related owner actions.
+
+Verify:
+- reviews page loads
+- AI/reply tools work if implemented
+- reply buttons work
+- save reply works
+- moderation/flags if present work
+- no blank state when interacting
+
+==================================================
+10. MARKETING / BOOST / CAMPAIGN ACTIONS
+==================================================
+
+Audit all owner growth/marketing controls.
+
+Verify:
+- wallet usage actions
+- top-up
+- boost activation
+- campaign start/pause
+- settings save
+- recommendation/optimizer actions
+- no dead CTA
+- no partial fake UI
+
+==================================================
+11. BILLING / PREMIUM / SUBSCRIPTION ACTIONS
+==================================================
+
+Audit all premium/business actions.
+
+Verify:
+- premium CTA works
+- checkout opens correctly
+- portal/manage subscription works
+- no wrong trial text
+- no conflicting business messaging
+- no dead billing buttons
+
+==================================================
+12. TEAM / STAFF / PAYROLL ACTIONS
+==================================================
+
+Audit all staff-related owner actions.
+
+Verify:
+- invite team member
+- edit role
+- remove member
+- save payroll/hourly updates
+- no dead HR forms/buttons
+
+==================================================
+13. ICONS / TAP TARGETS
+==================================================
+
+Inspect important icons and small controls in owner dashboard.
+
+Verify:
+- icons are actually tappable/clickable
+- tool buttons have enough touch area
+- no clipped targets
+- no tiny broken actions on mobile/desktop
+- no icon that looks clickable but does nothing
+
+==================================================
+14. LOADING / ERROR / SUCCESS STATES
+==================================================
+
+For all async owner-side actions verify:
+- loading spinner/state exists
+- button disables during request
+- success message appears
+- error is understandable in German
+- no silent fail
+- no stuck loading forever
+
+==================================================
+15. DATA CONNECTION / API AUDIT
+==================================================
+
+Inspect owner dashboard API actions for:
+- wrong endpoint
+- wrong auth/session use
+- CSRF issue
+- missing credentials
+- bad payload
+- bad state sync
+- 401/403/404/409/500 after action
+
+Fix all real owner-side action failures.
+
+==================================================
+16. FINAL CLICK-THROUGH VALIDATION
+==================================================
+
+Perform a real owner-dashboard-only interaction test:
+
+A. Open owner dashboard
+B. Open each sidebar section
+C. Click every major CTA in that section
+D. Submit forms where relevant
+E. Open/close modals
+F. Confirm actions persist correctly
+G. Confirm no button is dead
+H. Confirm no route breaks
+I. Confirm no action wipes content or returns blank page
+
+==================================================
+17. FINAL REPORT
+==================================================
+
+Return a structured report with:
+
+A. Owner sections audited
+B. Buttons audited
+C. Broken actions found
+D. Broken actions fixed
+E. Modals/forms/toggles status
+F. Billing/premium status
+G. Marketing/boost status
+H. Reservations/reviews/team status
+I. Remaining blockers if any
+
+For each item classify:
+- Working
+- Broken before / Fixed now
+- Still needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+The restaurant owner dashboard must not only render correctly —
+all major owner-side actions must also work correctly.
+
+Every important button, toggle, form, CTA, and modal must be:
+- functional
+- connected
+- visible
+- stable
+- production-ready

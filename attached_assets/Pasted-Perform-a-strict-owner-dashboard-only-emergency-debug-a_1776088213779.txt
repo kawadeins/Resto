@@ -1,0 +1,257 @@
+Perform a strict owner-dashboard-only emergency debug and repair pass.
+
+IMPORTANT:
+- This task is ONLY for the restaurant owner dashboard
+- Do NOT work on the customer app
+- Do NOT work on feed/profile/social/user routes
+- Do NOT redesign the dashboard
+- This is a pure debugging, routing, rendering, and functionality repair task
+- You must inspect the real cause of the broken owner dashboard pages and fix it safely
+
+==================================================
+PRIMARY ISSUE
+==================================================
+
+Inside the restaurant owner dashboard, the sidebar/navigation appears, but when opening dashboard sections/pages, the content area becomes blank / dark / wiped / not rendered.
+
+This means the owner dashboard is broken.
+
+You must debug and repair ONLY the restaurant owner dashboard.
+
+==================================================
+1. SCOPE LIMIT (CRITICAL)
+==================================================
+
+Work ONLY on:
+- owner dashboard
+- owner dashboard routes
+- owner dashboard layout
+- owner dashboard sidebar navigation
+- owner dashboard content pages
+- owner dashboard auth/session/data rendering
+
+Do NOT modify:
+- customer app
+- social feed
+- customer profile
+- user settings
+- customer routing
+unless absolutely required by a shared bug clearly affecting owner dashboard rendering.
+
+==================================================
+2. FIND THE EXACT ROOT CAUSE
+==================================================
+
+Investigate why owner dashboard pages are not rendering.
+
+Check all of the following:
+
+- owner dashboard root route
+- nested owner routes
+- route registration
+- dashboard layout
+- content wrapper
+- Outlet usage
+- index/default owner page
+- redirects
+- sidebar link targets
+- route path mismatches
+- auth/role guard failures
+- data fetching failures causing null render
+- runtime React errors
+- broken imports/exports
+- loading states that never resolve
+- overlays or modal backdrops hiding the content
+- CSS causing invisible content
+- conditional rendering returning null
+- not-found/fallback logic interfering with owner pages
+
+Do NOT guess.
+Trace the actual render path and identify the real cause.
+
+==================================================
+3. CHECK OWNER DASHBOARD RENDER CHAIN
+==================================================
+
+Verify this full chain:
+
+- owner dashboard route
+- owner dashboard layout mounts
+- sidebar mounts
+- main content area mounts
+- Outlet (or equivalent content renderer) mounts
+- target owner page mounts visibly
+
+If any step breaks, fix it.
+
+==================================================
+4. FIX BLANK / WIPED CONTENT AREA
+==================================================
+
+Repair the cause of the blank content area.
+
+Possible issues to inspect and fix:
+- stuck dark overlay
+- loading state never resolving
+- content wrapped in hidden container
+- page component throwing runtime error
+- incorrect route target
+- missing dashboard index page
+- broken nested route
+- null/undefined data crash
+- wrong auth state causing empty render
+- incorrect suspense fallback behavior
+
+After fix:
+- owner content must visibly render
+- no blank dark panel
+- no disappearing page content
+
+==================================================
+5. OWNER DASHBOARD HOME PAGE
+==================================================
+
+Ensure the owner dashboard root opens to a real, visible owner home page.
+
+If no stable home/index page exists, create a safe default dashboard home page.
+
+The default owner home page must show:
+
+TITLE:
+"Willkommen"
+
+TEXT:
+"Verwalten Sie Ihre Buchungen, Ihr Marketing, Ihre Bewertungen und Ihr Restaurant an einem Ort."
+
+This must appear as a real dashboard home screen, not as an error fallback.
+
+==================================================
+6. AUDIT ALL OWNER SIDEBAR PAGES
+==================================================
+
+After fixing dashboard root, audit every owner dashboard section reachable from the sidebar.
+
+At minimum verify and repair these owner-side sections if they exist:
+
+- Übersicht / dashboard home
+- Mein Profil / owner business profile
+- Buchungen
+- Reservierungen
+- Tische
+- Personal
+- Gehaltsabrechnung
+- Team
+- Inventar
+- Speisekarte
+- Kassenterminal
+- Finanzen
+- Analyse
+- Sichtbarkeit & Boost
+- Marketing
+- Tote Stunden
+- Wachstum
+- Optimizer
+- Bewertungen
+- Abonnement / Billing / Premium
+
+For EACH section verify:
+- route opens
+- content renders visibly
+- no blank screen
+- no wipe/disappear behavior
+- no 404/not-found inside dashboard shell
+- no runtime crash
+- no broken loading loop
+
+==================================================
+7. AUTH / ROLE / SESSION VALIDATION
+==================================================
+
+Confirm owner dashboard pages are not failing because of:
+- missing owner auth
+- broken session usage
+- wrong owner role gating
+- business identity mismatch
+- silent redirect to empty state
+
+Fix these properly for valid owner accounts.
+Do not bypass security.
+Do not break role checks.
+Just make valid owner flow render correctly.
+
+==================================================
+8. EMPTY STATES MUST BE REAL, NOT BLANK
+==================================================
+
+If a dashboard page has no data yet:
+- show a proper empty state
+- not a blank panel
+- not null
+- not a hidden component
+
+Examples:
+- no bookings yet
+- no reviews yet
+- no campaigns yet
+
+These states must feel intentional and visible.
+
+==================================================
+9. DO NOT APPLY COSMETIC-ONLY FIXES
+==================================================
+
+Do NOT just:
+- hide the blank area
+- overlay a static card
+- hardcode fake text over a broken render system
+
+You must fix the actual owner dashboard page rendering.
+
+==================================================
+10. FINAL CLICK-THROUGH TEST
+==================================================
+
+Perform a real owner-dashboard-only validation:
+
+A. Open owner dashboard root
+B. Confirm visible home content appears
+C. Click every sidebar section
+D. Confirm each section renders visible content
+E. Confirm no page becomes blank/dark/wiped
+F. Confirm no dashboard page lands on 404
+G. Confirm returning to dashboard root works
+H. Confirm sidebar remains functional throughout
+
+==================================================
+11. FINAL REPORT
+==================================================
+
+Return a strict report with:
+
+A. Exact root cause of owner dashboard breakage
+B. Which route/layout/component was broken
+C. What was fixed
+D. Whether owner dashboard home now renders visibly
+E. Which owner pages were audited
+F. Which owner pages were broken and fixed
+G. Any remaining blockers
+
+For each issue classify:
+- Found
+- Fixed
+- Still needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+The restaurant owner dashboard must work again.
+
+- sidebar visible
+- pages open correctly
+- content renders visibly
+- no blank dark content area
+- no wiped page
+- no broken owner route flow
+
+This task is ONLY successful if the restaurant owner dashboard becomes fully navigable and visibly functional again.
