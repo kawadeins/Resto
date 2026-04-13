@@ -1,0 +1,134 @@
+Do NOT implement fixes yet.
+
+I need a strict diagnostic report only for the app’s translation/i18n system.
+
+IMPORTANT:
+- This is a READ + ANALYZE + REPORT task only
+- Do NOT refactor
+- Do NOT add new translation libraries
+- Do NOT remove files
+- Do NOT rewrite components
+- Do NOT spend time on broad fixes
+- Only inspect the current translation system and explain exactly why it is failing
+
+==================================================
+GOAL
+==================================================
+
+Identify the exact root causes of the broken translation behavior in the app.
+
+Current symptom:
+- part of the app translates
+- part of the app stays in German or another language
+- some screens are mixed-language
+- changing language does not fully update the full app
+
+I want to know precisely WHY this is happening before any more repair attempts.
+
+==================================================
+WHAT TO INVESTIGATE
+==================================================
+
+Inspect the existing i18n/localization system and report on:
+
+1. Translation architecture
+- What translation library/system is currently being used?
+- Is there one i18n system or multiple overlapping ones?
+- Are there duplicate providers, duplicate configs, or duplicate hooks?
+
+2. Locale source of truth
+- Where is the active language actually stored?
+- Is there one global locale state, or multiple states?
+- Is localStorage or another persistence mechanism involved?
+- Is device-language detection competing with manual language choice?
+
+3. Provider scope
+- Is the translation provider wrapping the entire app correctly?
+- Are customer app and owner dashboard both inside the same translation scope?
+- Are any layouts/routes/components rendered outside the provider?
+
+4. Hardcoded strings
+- Which major areas still use visible hardcoded text?
+- List exact files/components where hardcoded UI strings remain
+- Separate customer app vs owner dashboard
+
+5. Non-reactive components
+- Which components do not re-render when language changes?
+- Are there static arrays, constants, memoized values, or precomputed labels causing stale language?
+- Are sidebar/menu items defined outside render and therefore stuck in one language?
+
+6. Translation resource coverage
+- Which namespaces/files/resources exist?
+- Which areas are missing translation keys?
+- Are some modules partially translated and others not?
+
+7. Mixed-language causes
+- Why exactly are some pages/sidebar items/cards/buttons translating and others not?
+- Is the issue missing keys, stale state, duplicate systems, or wrong provider placement?
+- Identify the main causes ranked by importance
+
+8. Dashboard-specific issue
+- Why does the owner dashboard mix languages internally?
+- Is the sidebar reading from a different source than the content pages?
+- Are dashboard pages using hardcoded strings or a different translation mechanism?
+
+9. Customer-app-specific issue
+- Why does the customer app still show mixed text?
+- Which sections are still not connected correctly to the translation system?
+
+10. Fallback behavior
+- What happens when translation keys are missing?
+- Are raw keys shown, fallback language used, or hardcoded text shown instead?
+
+==================================================
+OUTPUT FORMAT
+==================================================
+
+Return a structured diagnostic report only.
+
+Use this exact structure:
+
+A. Executive summary
+- Is the system structurally broken? Yes/No
+- Main reason in 3–5 lines
+
+B. Current translation architecture
+- what system/library is being used
+- whether there are duplicates/conflicts
+
+C. Root causes
+List the top root causes ranked by severity:
+1.
+2.
+3.
+...
+
+D. Hardcoded string locations
+- list the main files/components with visible hardcoded UI text
+
+E. Non-reactive/stale language areas
+- list components that fail to update when language changes
+
+F. Customer app status
+- what is working
+- what is broken
+
+G. Owner dashboard status
+- what is working
+- what is broken
+
+H. Recommended minimal repair strategy
+- NOT a big rewrite
+- just the smallest correct repair sequence needed
+
+I. Estimated repair scope
+- small / medium / large
+- mention which areas should be fixed first
+
+==================================================
+CRITICAL RULE
+==================================================
+
+Do NOT fix anything yet.
+Do NOT rewrite anything yet.
+I only want the diagnostic report so I can review the real root cause first.
