@@ -1,0 +1,303 @@
+Perform a strict "Owner Dashboard Translation System Repair + Full Localization Cleanup" pass.
+
+IMPORTANT:
+- This task is ONLY for the restaurant owner dashboard
+- Do NOT work on the customer app in this pass
+- Do NOT redesign the dashboard
+- Do NOT add new features
+- This is a translation architecture cleanup + hardcoded string elimination task
+- The goal is to completely fix mixed-language UI inside the owner dashboard
+
+==================================================
+PRIMARY PROBLEM
+==================================================
+
+The restaurant owner dashboard currently has mixed-language UI.
+
+Examples of the issue:
+- sidebar items appear in French
+- content cards/text remain in German
+- some labels are inconsistent or untranslated
+- language switching is not applied uniformly across the owner dashboard
+
+This is not acceptable.
+
+The owner dashboard must switch language completely and consistently.
+
+No mixed German/French/English UI may remain.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Repair the owner dashboard translation system from the root so that:
+
+1. the entire owner dashboard uses one unified i18n source
+2. all visible strings are translated consistently
+3. language switching affects ALL dashboard areas
+4. no hardcoded dashboard strings remain visible
+5. no mixed-language pages remain anywhere in the owner dashboard
+
+==================================================
+1. OWNER DASHBOARD ONLY — SCOPE LOCK
+==================================================
+
+Work ONLY on:
+- owner dashboard
+- owner sidebar
+- owner dashboard pages
+- owner forms/modals/cards
+- owner empty states
+- owner settings/billing/reviews/analytics etc.
+
+Do NOT spend this pass on:
+- customer app
+- feed
+- user profile
+- customer settings
+unless a shared translation utility is clearly broken and directly affects the owner dashboard.
+
+==================================================
+2. FIND THE ROOT CAUSE OF MIXED TRANSLATION
+==================================================
+
+Investigate the actual reason the dashboard is mixing languages.
+
+Check all of the following:
+
+- owner dashboard translation namespaces/resources
+- hardcoded strings inside dashboard components
+- sidebar labels source
+- page title source
+- card title source
+- modal/dialog text source
+- fallback language logic
+- missing translation keys
+- components bypassing i18n and using literal strings
+- components reading stale locale state
+- language switcher applying only partially
+- translation provider scope issues
+- nested dashboard components using wrong translation context
+
+Do NOT guess.
+Find the real structural cause.
+
+==================================================
+3. ELIMINATE ALL HARDCODED DASHBOARD STRINGS
+==================================================
+
+Search the owner dashboard codebase for all visible hardcoded strings and move them into the translation system.
+
+This includes all owner-visible strings such as:
+
+- sidebar labels
+- page titles
+- card titles
+- KPI labels
+- chart titles
+- chart legends
+- section headers
+- button text
+- form labels
+- helper text
+- placeholders
+- status labels
+- badges
+- empty states
+- toast messages
+- validation text
+- modal titles and actions
+- settings labels
+- premium/billing copy
+- review/reply text
+- reservation actions
+- marketing/boost labels
+
+No visible literal strings should remain outside the i18n system.
+
+==================================================
+4. FIX SIDEBAR + CONTENT CONSISTENCY
+==================================================
+
+The owner dashboard must use the SAME active locale for:
+- sidebar
+- top-level page headers
+- dashboard cards
+- content sections
+- status chips
+- metrics labels
+- inner actions
+
+If the sidebar is French, the content must also be French.
+If the dashboard is German, everything visible must be German.
+If the dashboard is English, everything visible must be English.
+
+No section may lag behind in another language.
+
+==================================================
+5. UNIFY TERMINOLOGY
+==================================================
+
+Use consistent terminology across the owner dashboard.
+
+Examples:
+- Reservations / Buchungen / Réservations must be handled consistently by locale
+- Team / Équipe / Team
+- Analytics / Analyse / Analyses
+- Billing / Abonnement / Finanzen
+- Marketing / Growth / Visibility / Boost labels
+
+Do not use mixed synonyms randomly across pages.
+
+If one concept has one dashboard meaning, keep it consistent in that language.
+
+==================================================
+6. CHECK ALL OWNER DASHBOARD MODULES
+==================================================
+
+Audit and fix translations for ALL owner dashboard modules, including at minimum:
+
+- dashboard home / overview
+- owner profile / business profile
+- bookings / reservations
+- tables
+- staff / team
+- payroll
+- inventory
+- menu
+- payment terminal / POS
+- finance
+- analytics
+- visibility & boost
+- marketing
+- off-peak / dead hours
+- growth
+- optimizer
+- reviews
+- subscription / billing / premium
+- settings
+- notification labels if shown inside dashboard
+
+==================================================
+7. MODALS / FORMS / EMPTY STATES
+==================================================
+
+Translation bugs often remain in:
+- modals
+- form labels
+- placeholders
+- validation errors
+- empty states
+- no-data states
+- buttons inside dialogs
+
+Audit these carefully and ensure they fully switch language too.
+
+No mixed-language modal allowed.
+
+==================================================
+8. FORCE CLEAN LANGUAGE SWITCHING
+==================================================
+
+When the owner changes language from the dashboard language switcher:
+
+- sidebar must update immediately
+- current page content must update immediately
+- card titles must update
+- form labels must update
+- page titles must update
+- no stale German strings may remain on a French page
+- no reload confusion if avoidable
+
+If a controlled refresh is required for architecture reasons, make it clean and consistent.
+
+==================================================
+9. TRANSLATION FALLBACK SAFETY
+==================================================
+
+If a translation key is missing:
+- use fallback language safely
+- do not show raw keys in UI
+- do not leave mixed fragments
+- do not crash
+- log/report missing keys for cleanup
+
+But the target after this pass is:
+- no important missing keys left in owner dashboard
+
+==================================================
+10. DATE / STATUS / METRIC LABELS
+==================================================
+
+Also localize owner dashboard support text such as:
+- time/date labels
+- last 30 days
+- critical cases
+- resolved cases
+- premium labels
+- rating distribution
+- chart axis/legend labels
+- percentage descriptions
+- reservation status text
+
+Do not only translate navigation.
+Translate the operational dashboard text too.
+
+==================================================
+11. STRICT QA WALKTHROUGH
+==================================================
+
+Perform a real owner-dashboard-only translation QA walkthrough in multiple languages, at minimum:
+
+- German
+- English
+- French
+- Italian
+
+For each language, inspect:
+A. sidebar
+B. dashboard home
+C. reviews
+D. bookings
+E. analytics
+F. billing/premium
+G. marketing/boost
+H. team/staff
+I. settings
+J. dialogs/modals
+K. empty states
+
+Identify every remaining mixed or untranslated string and fix it.
+
+==================================================
+12. FINAL REPORT
+==================================================
+
+Return a strict structured report with:
+
+A. Root cause of mixed-language dashboard
+B. Which dashboard modules had hardcoded strings
+C. Which modules were fully fixed
+D. Sidebar translation status
+E. Dashboard content translation status
+F. Modal/form/empty-state translation status
+G. Remaining untranslated strings if any
+H. Whether owner dashboard now switches language completely
+
+For each area classify:
+- Fully fixed
+- Partially fixed
+- Still needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+The restaurant owner dashboard must become fully and consistently translated.
+
+No mixed-language sidebar/content mismatch.
+No hardcoded German text on French pages.
+No untranslated dashboard cards.
+No partial localization.
+
+Changing the language must fully translate the entire visible owner dashboard.
