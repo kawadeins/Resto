@@ -28,8 +28,9 @@ async function getRestaurantPilotMode(): Promise<boolean> {
 }
 
 function getFrontendBase(): string {
-  const domain = process.env.REPLIT_DOMAINS?.split(",")[0] ?? "localhost";
-  return `https://${domain}/restosmart`;
+  const domain = process.env.REPLIT_DOMAINS?.split(",")[0];
+  if (!domain || domain === "localhost") return "http://localhost:21476";
+  return `https://${domain}`;
 }
 
 const router = Router();

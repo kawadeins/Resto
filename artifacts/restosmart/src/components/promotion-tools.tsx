@@ -694,9 +694,33 @@ export function PromotionTools() {
   });
 
   const promoAuthHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
-  const pauseMutation  = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/pause`,  { method: "PUT", credentials: "include", headers: promoAuthHdr }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); } });
-  const resumeMutation = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT", credentials: "include", headers: promoAuthHdr }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); } });
-  const stopMutation   = useMutation({ mutationFn: (id: number) => fetch(`${API_BASE}/api/promotions/${id}/stop`,   { method: "PUT", credentials: "include", headers: promoAuthHdr }).then(r => r.json()), onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); } });
+  const pauseMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const r = await fetch(`${API_BASE}/api/promotions/${id}/pause`, { method: "PUT", credentials: "include", headers: promoAuthHdr });
+      if (!r.ok) throw new Error("Fehler");
+      return r.json();
+    },
+    onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); },
+    onError: () => toast({ title: "Aktion fehlgeschlagen", variant: "destructive" }),
+  });
+  const resumeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const r = await fetch(`${API_BASE}/api/promotions/${id}/resume`, { method: "PUT", credentials: "include", headers: promoAuthHdr });
+      if (!r.ok) throw new Error("Fehler");
+      return r.json();
+    },
+    onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); },
+    onError: () => toast({ title: "Aktion fehlgeschlagen", variant: "destructive" }),
+  });
+  const stopMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const r = await fetch(`${API_BASE}/api/promotions/${id}/stop`, { method: "PUT", credentials: "include", headers: promoAuthHdr });
+      if (!r.ok) throw new Error("Fehler");
+      return r.json();
+    },
+    onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); },
+    onError: () => toast({ title: "Aktion fehlgeschlagen", variant: "destructive" }),
+  });
 
   // ── Wallet ──────────────────────────────────────────────────────────────────
   const { data: walletData } = useQuery<{ restaurantId: number; balance: number; isLow: boolean; isEmpty: boolean; transactions: unknown[] }>({

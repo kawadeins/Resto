@@ -1,0 +1,161 @@
+Perform a full forensic repair pass specifically for the owner dashboard page/section:
+
+"Sichtbarkeit & Boost"
+
+Context:
+This page has been heavily broken by recent changes.
+It is no longer reliable and appears to be causing multiple regressions, including:
+- runtime crashes
+- failed page loading
+- broken promo/boost data handling
+- possible broken Stripe upgrade / payment redirection
+- damaged actions/buttons inside the page
+
+This is a repair task, not a redesign task.
+
+PRIMARY GOAL
+Restore "Sichtbarkeit & Boost" to a fully working, production-safe state.
+
+Do not patch symptoms only.
+Find and fix the real causes.
+
+==================================================
+KNOWN FAILURE
+==================================================
+
+Current observed crash:
+"promos?.filter is not a function"
+
+This indicates the page expects promos to be an array, but it is receiving a wrong shape.
+
+You must fully investigate:
+- where promos comes from
+- what the API returns
+- what the frontend expects
+- whether recent changes altered the contract
+- whether the page is receiving object/null/string/undefined instead of array
+
+Do NOT solve this with superficial optional chaining only.
+Fix the actual contract or normalize the data properly.
+
+==================================================
+SCOPE OF REPAIR
+==================================================
+
+Audit and repair the full "Sichtbarkeit & Boost" flow, including:
+
+1. Route + Page Mount
+- ensure the page route is correct
+- ensure sidebar navigation opens the correct page
+- ensure the component mounts without crash
+- ensure no embedded fallback/not-found screen appears
+
+2. Data Fetching
+- inspect all loaders/hooks/API calls used by this page
+- validate response shapes
+- normalize malformed data
+- make all array/object assumptions defensive and typed
+- remove any invalid map/filter/find/reduce calls on unchecked values
+
+3. UI State Logic
+- fix loading state
+- fix empty state
+- fix error state
+- prevent the page from crashing on partial/missing data
+- ensure the page still renders meaningfully when there are no active promos/boosts
+
+4. Boost / Promo Logic
+- verify all promo/boost cards
+- verify active/inactive promo filtering
+- verify status handling
+- verify date handling
+- verify pricing display
+- verify action buttons
+- verify any create/edit/pause/cancel promo flow
+
+5. Stripe / Upgrade / Payment Flow
+This is critical:
+The page may also have broken the payment or upgrade flow.
+
+Fully audit and repair:
+- all upgrade buttons
+- all “Boost” purchase actions
+- all Stripe checkout triggers
+- all premium/boost plan purchase redirects
+- portal/manage subscription actions if present
+- success/cancel return handling
+- frontend-to-backend checkout session creation
+- required auth/session data sent to checkout
+- plan/product/price IDs
+- error handling if Stripe session creation fails
+
+If clicking upgrade/purchase/boost is supposed to redirect to Stripe:
+- it must work reliably again
+- no dead buttons
+- no silent failures
+- no broken redirects
+- no invalid payloads
+
+6. Auth / Access / State
+- verify the logged-in owner context is available
+- verify the page is using the correct restaurant/owner ID
+- verify boost/promo actions are scoped correctly to the authenticated owner
+- verify no stale/mock/demo data is conflicting with real billing state
+
+==================================================
+STRICT RULES
+==================================================
+
+1. Do NOT redesign the page.
+2. Do NOT replace real functionality with placeholders.
+3. Do NOT remove Stripe/payment behavior just to hide the bug.
+4. Do NOT suppress crashes without fixing the root cause.
+5. Do NOT break existing premium or subscription logic.
+6. Preserve the current styling and information architecture where valid.
+7. Use production-safe defensive coding and proper typing.
+
+==================================================
+REQUIRED TECHNICAL FIXES
+==================================================
+
+Apply these standards while repairing:
+
+- Use Array.isArray(promos) before filter/map
+- Normalize incoming API payloads before render
+- Ensure all hooks/loaders return stable typed values
+- Ensure page actions fail gracefully with visible feedback
+- Ensure checkout actions are disabled only when truly invalid
+- Ensure all async actions have loading/error handling
+- Ensure button handlers are actually wired
+- Ensure no stale imports or broken route references remain
+- Ensure no not-found/fallback component is injected into this page
+
+==================================================
+DELIVERABLES
+==================================================
+
+After fixing, report clearly:
+
+1. Root causes found in Sichtbarkeit & Boost
+2. Exact files/components/functions fixed
+3. What caused the promos crash
+4. What was wrong in the Stripe/upgrade flow
+5. Which buttons/actions were broken and are now repaired
+6. Whether data contract mismatches were fixed in frontend, backend, or both
+7. Any remaining risk that still needs follow-up
+
+==================================================
+EXPECTED RESULT
+==================================================
+
+After the repair:
+
+- "Sichtbarkeit & Boost" opens normally
+- no crash like "promos?.filter is not a function"
+- page loads even when there are no promos
+- boost/promo UI works correctly
+- upgrade/purchase actions work again
+- Stripe redirect works correctly where expected
+- no dead buttons
+- no embedded error page
+- page is stable and production-ready
