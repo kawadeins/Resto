@@ -447,6 +447,8 @@ function AuthenticatedApp() {
               <Layout>
                 <Switch>
                   <Route path="/login"><Redirect to="/" /></Route>
+                  {/* Handle trailing-slash strip edge case: empty string → home */}
+                  <Route path=""><Redirect to="/" /></Route>
                   <Route path="/" component={Overview} />
                   <Route path="/profile" component={Profile} />
                   <Route path="/bookings" component={Bookings} />
