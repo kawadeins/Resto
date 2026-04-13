@@ -1212,6 +1212,8 @@ function SuggestionIcon({ type }: { type: string }) {
 function SmartPricingDashboard({ businessType, restaurantId }: { businessType: string; restaurantId: number | null }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { csrfToken: pricingCsrfToken } = useSession();
+  const pricingCsrfHdr = pricingCsrfToken ? { "X-CSRF-Token": pricingCsrfToken } : {};
 
   const { data: pricing, isLoading: pricingLoading } = useQuery<PricingData>({
     queryKey: ["pricing-current", businessType],
@@ -1248,7 +1250,9 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
   const autoOptMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
       const res = await fetch(`${API_BASE}/api/pricing/auto-optimize`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...pricingCsrfHdr },
         body: JSON.stringify({ restaurantId: restaurantId ?? 1, enabled }),
       });
       if (!res.ok) throw new Error("Failed");

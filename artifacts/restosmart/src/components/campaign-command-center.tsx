@@ -97,7 +97,7 @@ export function CampaignCommandCenter() {
   const [, setLocation] = useLocation();
   const { csrfToken: _csrfToken } = useSession(); // reserved for future mutations
   const premiumVal = typeof window !== "undefined" ? localStorage.getItem("restosmart_owner_premium") : null;
-  const isPremium  = premiumVal === "true" || premiumVal === "trial";
+  const isPremium  = premiumVal === "active" || premiumVal === "trial";
 
   const copy = BIZ_COPY[biz] ?? BIZ_COPY.restaurant;
 
