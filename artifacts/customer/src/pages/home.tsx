@@ -17,6 +17,7 @@ import {
 import { RestaurantCard } from "@/components/restaurant-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSeo } from "@/hooks/use-seo";
+import { useTranslation } from "react-i18next";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Input } from "@/components/ui/input";
 import { NearYouNow } from "@/components/near-you-now";
@@ -349,6 +350,7 @@ function RotatingHeroHeadline() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const { t } = useTranslation();
   useSeo({
     title: "RestoSmart Wien — Restaurants, Cafés & Bars entdecken",
     description: "Die besten Restaurants, Cafés und Bars in Wien. Jetzt entdecken, buchen und exklusive Angebote sichern.",

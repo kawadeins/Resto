@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   useListMenuItems, 
   getListMenuItemsQueryKey, 
@@ -24,6 +25,7 @@ import type { MenuItem, PosSale } from "@workspace/api-client-react";
 const CATEGORIES = ["Alle", "Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Grill", "Desserts", "Getränke", "Beilagen"];
 
 export default function Pos() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState("Alle");

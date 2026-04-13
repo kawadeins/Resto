@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -240,6 +241,7 @@ function PeakHoursBar({ peakHours }: { peakHours: { hour: number; count: number 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Optimizer() {
+  const { t } = useTranslation();
   const [autoMode, setAutoMode] = useState(false);
   const { toast } = useToast();
 

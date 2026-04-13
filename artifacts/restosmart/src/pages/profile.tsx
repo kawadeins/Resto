@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { getCsrfToken } from "@workspace/api-client-react";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -286,6 +287,7 @@ const DAYS_DE: Record<string, string> = {
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { data: profile, isLoading } = useProfile();
   const queryClient = useQueryClient();
   const { toast } = useToast();

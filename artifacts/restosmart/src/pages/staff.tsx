@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -380,6 +381,7 @@ function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: s
 }
 
 export default function Staff() {
+  const { t } = useTranslation();
   const { csrfToken } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();

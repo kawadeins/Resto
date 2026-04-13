@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { format } from "date-fns";
 import { Armchair, Users, Clock, TrendingUp, PauseCircle, PlayCircle, Save, Settings, BarChart2, Calendar, Zap, AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react";
@@ -89,6 +90,7 @@ function StatusBadge({ status }: { status: AvailabilityStatus }) {
 }
 
 export default function Tables() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { csrfToken } = useSession();
   const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};

@@ -34,6 +34,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
+import { useTranslation } from "react-i18next";
 import { recordHabitEvent } from "@/lib/habit-engine";
 import { PostBookingTrigger } from "@/components/return-trigger";
 import {
@@ -252,6 +253,7 @@ function LiveMap({
 }
 
 export default function Restaurant() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const restaurantId = parseInt(id || "0", 10);
   const { toast } = useToast();

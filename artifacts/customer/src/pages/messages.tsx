@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const GRAD = "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))";
@@ -819,7 +820,8 @@ function StartDMModal({ email, onClose, onStarted }: { email: string; onClose: (
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function MessagesPage() {
-  useSeo({ title: "Nachrichten – RestoSmart", description: "Schreib deinen Freunden und erstelle Gruppen." });
+  const { t } = useTranslation();
+  useSeo({ title: `${t("nav.messages")} – RestoSmart`, description: t("messages.no_conversations") });
 
   const email = localStorage.getItem("restosmart_email") ?? "";
   const [, params] = useRoute("/messages/:convId");

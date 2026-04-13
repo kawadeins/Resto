@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import PremiumConversionPanel from "@/components/premium-conversion-panel";
@@ -4064,6 +4065,7 @@ function FounderCompetitionInsights({ founderKey }: { founderKey: string }) {
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export default function Founder() {
+  const { t } = useTranslation();
   const [authed, setAuthed] = useState<boolean>(() => {
     return localStorage.getItem(FOUNDER_KEY_STORAGE) === CORRECT_KEY;
   });

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   getBizType, BizType,
   BIZ_STEP1_LABEL, BIZ_STEP2_LABEL,
@@ -614,6 +615,7 @@ function QuickActions({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Onboarding() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [, navigate] = useLocation();

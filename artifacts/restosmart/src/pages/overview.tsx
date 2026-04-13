@@ -1,4 +1,5 @@
 import { 
+import { useTranslation } from "react-i18next";
   useGetOverviewSummary, 
   getGetOverviewSummaryQueryKey, 
   useGetMonthlySalesChart, 
@@ -58,6 +59,7 @@ const FEEDBACK_CATEGORIES = [
 ] as const;
 
 export default function Overview() {
+  const { t } = useTranslation();
   useEffect(() => {
     if (localStorage.getItem("restosmart_owner_premium") === "trial") {
       track("dashboard_accessed");

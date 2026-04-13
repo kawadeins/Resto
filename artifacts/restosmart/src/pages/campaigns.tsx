@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useGetRetentionMetrics,
   getGetRetentionMetricsQueryKey,
@@ -411,6 +412,7 @@ function CreateCampaignModal({
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 export default function Campaigns() {
+  const { t } = useTranslation();
   const [selectedTemplate, setSelectedTemplate] = useState<CampaignTemplate | null>(null);
   const [viewingSendsId, setViewingSendsId] = useState<number | null>(null);
   const { toast } = useToast();

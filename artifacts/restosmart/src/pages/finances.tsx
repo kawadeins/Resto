@@ -1,4 +1,5 @@
 import { useGetFinancesSummary, getGetFinancesSummaryQueryKey } from "@workspace/api-client-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -8,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 
 export default function Finances() {
+  const { t } = useTranslation();
   const { data: summary, isLoading: loadingSummary } = useGetFinancesSummary({
     query: { queryKey: getGetFinancesSummaryQueryKey() }
   });

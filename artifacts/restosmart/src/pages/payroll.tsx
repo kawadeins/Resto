@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -60,6 +61,7 @@ function AttendanceBar({ rate }: { rate: number | null }) {
 }
 
 export default function Payroll() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { csrfToken } = useSession();
   const queryClient = useQueryClient();

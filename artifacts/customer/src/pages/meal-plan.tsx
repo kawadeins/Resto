@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarDays, Users, Plus, Trash2, ChevronRight, MapPin, Star,
@@ -1300,6 +1301,7 @@ function EditGroupPlanModal({ plan, onClose, onUpdated, email }: {
 }
 
 export default function MealPlan() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState(() => localStorage.getItem("restosmart_email") ?? "");
   const [inputEmail, setInputEmail] = useState("");
 

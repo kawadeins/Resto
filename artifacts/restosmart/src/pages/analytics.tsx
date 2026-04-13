@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { track } from "@/lib/conversion-tracking";
 import { Link } from "wouter";
 import { useGetPerformanceAnalytics, getGetPerformanceAnalyticsQueryKey, useGetDailyAnalytics, getGetDailyAnalyticsQueryKey, useGetMenuAnalytics, getGetMenuAnalyticsQueryKey, useGetSubscription, getGetSubscriptionQueryKey } from "@workspace/api-client-react";
@@ -17,6 +18,7 @@ import { PromotionPerformance } from "@/components/promotion-performance";
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function Analytics() {
+  const { t } = useTranslation();
   const { data: subscription, isLoading: loadingSubscription } = useGetSubscription({
     query: { queryKey: getGetSubscriptionQueryKey() }
   });

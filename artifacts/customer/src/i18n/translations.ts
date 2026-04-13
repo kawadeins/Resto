@@ -260,19 +260,25 @@ const translations = {
     },
     booking: {
       title: "Reservierungen",
+      my_title: "Meine Buchungen",
       upcoming: "Bevorstehend",
+      upcoming_long: "Bevorstehende Reservierungen",
       past: "Vergangen",
+      past_long: "Vergangene Reservierungen",
       cancelled: "Storniert",
       no_upcoming: "Keine bevorstehenden Reservierungen",
       no_past: "Keine vergangenen Reservierungen",
       cancel_confirm: "Reservierung wirklich stornieren?",
+      confirm_cancel_short: "Wirklich stornieren?",
       cancel_success: "Reservierung wurde storniert",
+      cancel_success_toast: "Reservierung erfolgreich storniert.",
       cancel_error: "Stornierung fehlgeschlagen",
       details: "Details",
       restaurant: "Restaurant",
       date: "Datum",
       time: "Uhrzeit",
       guests: "Gäste",
+      persons: "{{count}} Personen",
       status_confirmed: "Bestätigt",
       status_pending: "Ausstehend",
       status_cancelled: "Storniert",
@@ -287,6 +293,28 @@ const translations = {
       confirmation_code: "Buchungsnummer",
       loading: "Buchungen werden geladen…",
       refresh: "Aktualisieren",
+      email_hint: "Geben Sie die E-Mail-Adresse ein, mit der Sie Ihre Reservierungen vorgenommen haben.",
+      find_cta: "Meine Buchungen finden",
+      no_registration: "Keine Registrierung",
+      your_only: "Nur Ihre Buchungen",
+      logged_in_as: "Angemeldet als",
+      change: "(Ändern)",
+      book_another: "Weiteren Tisch buchen",
+      booked_for: "Gebucht auf {{name}}",
+      review_success_toast: "Bewertung eingereicht — danke! Sie haben 5 Treuepunkte verdient.",
+      review_error_toast: "Bewertung konnte nicht eingereicht werden",
+      review_experience: "Wie war Ihr Besuch bei {{name}}?",
+      review_describe: "Erzählen Sie von Ihrem Besuch...",
+      points: "Punkte",
+      total_earned: "Gesamt verdient: {{count}} Pkt.",
+      current_tier: "Aktuelle Stufe",
+      next_tier: "Nächste Stufe",
+      max_tier: "Sie haben die höchste Stufe erreicht!",
+      points_to_gold: "{{count}} Punkte bis Gold",
+      points_to_silver: "{{count}} Punkte bis Silber",
+      how_to_earn: "So sammeln Sie Punkte:",
+      earn_per_visit: "10 Pkt. pro abgeschlossenen Besuch",
+      earn_per_review: "5 Pkt. pro Bewertung",
     },
     explore: {
       title: "Entdecken",
@@ -544,6 +572,9 @@ const translations = {
       page_title: "Etwas ist schiefgelaufen",
       page_body: "Ein unerwarteter Fehler ist aufgetreten.",
       page_cta: "Seite neu laden",
+      not_found: "Seite nicht gefunden",
+      not_found_hint: "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+      go_home: "Zur Startseite",
     },
   },
 
@@ -567,7 +598,7 @@ const translations = {
     notifications: { title: "Notifications", empty: "No notifications", empty_hint: "Future notifications will appear here", mark_all_read: "Mark all as read", booking_confirmed: "Booking confirmed", booking_reminder: "Reminder: Booking tomorrow", friend_request: "New friend request", new_deal: "New deal near you", review_reply: "Someone replied to your review", new_follower: "New follower" },
     premium: { title: "RestoSmart Premium", subtitle: "The best restaurant experience in Vienna", cta: "Upgrade Now", benefit_priority: "Priority Bookings", benefit_priority_desc: "Book first, even at busy restaurants", benefit_exclusive: "Exclusive Deals", benefit_exclusive_desc: "First access to Flash Deals", benefit_rewards: "More Points & Rewards", benefit_rewards_desc: "Earn double XP on every booking", benefit_concierge: "Personal Concierge", benefit_concierge_desc: "AI-powered restaurant recommendations" },
     language_picker: { title: "Select Language", subtitle: "Choose your preferred language", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Something went wrong", page_body: "An unexpected error occurred.", page_cta: "Reload Page" },
+    error: { page_title: "Something went wrong", page_body: "An unexpected error occurred.", page_cta: "Reload Page", not_found: "Page not found", not_found_hint: "The page you're looking for doesn't exist or has been moved.", go_home: "Go Home" },
   },
 
   fr: {
@@ -590,7 +621,7 @@ const translations = {
     notifications: { title: "Notifications", empty: "Aucune notification", empty_hint: "Les futures notifications apparaîtront ici", mark_all_read: "Tout marquer comme lu", booking_confirmed: "Réservation confirmée", booking_reminder: "Rappel : réservation demain", friend_request: "Nouvelle demande d'amitié", new_deal: "Nouvelle offre près de vous", review_reply: "Quelqu'un a répondu à votre avis", new_follower: "Nouvel abonné" },
     premium: { title: "RestoSmart Premium", subtitle: "La meilleure expérience restaurant à Vienne", cta: "Passer à Premium", benefit_priority: "Réservations prioritaires", benefit_priority_desc: "Réservez en priorité, même dans les restaurants bondés", benefit_exclusive: "Offres exclusives", benefit_exclusive_desc: "Accès en avant-première aux Flash Deals", benefit_rewards: "Plus de points & récompenses", benefit_rewards_desc: "Gagnez le double de XP à chaque réservation", benefit_concierge: "Concierge personnel", benefit_concierge_desc: "Recommandations de restaurants basées sur l'IA" },
     language_picker: { title: "Choisir la langue", subtitle: "Sélectionnez votre langue préférée", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Une erreur s'est produite", page_body: "Une erreur inattendue s'est produite.", page_cta: "Recharger la page" },
+    error: { page_title: "Une erreur s'est produite", page_body: "Une erreur inattendue s'est produite.", page_cta: "Recharger la page", not_found: "Page introuvable", not_found_hint: "La page que vous cherchez n'existe pas ou a été déplacée.", go_home: "Retour à l'accueil" },
   },
 
   it: {
@@ -613,7 +644,7 @@ const translations = {
     notifications: { title: "Notifiche", empty: "Nessuna notifica", empty_hint: "Le notifiche future appariranno qui", mark_all_read: "Segna tutto come letto", booking_confirmed: "Prenotazione confermata", booking_reminder: "Promemoria: prenotazione domani", friend_request: "Nuova richiesta di amicizia", new_deal: "Nuova offerta vicino a te", review_reply: "Qualcuno ha risposto alla tua recensione", new_follower: "Nuovo follower" },
     premium: { title: "RestoSmart Premium", subtitle: "La migliore esperienza ristorante a Vienna", cta: "Passa a Premium", benefit_priority: "Prenotazioni prioritarie", benefit_priority_desc: "Prenota prima, anche nei ristoranti affollati", benefit_exclusive: "Offerte esclusive", benefit_exclusive_desc: "Accesso anticipato ai Flash Deals", benefit_rewards: "Più punti e premi", benefit_rewards_desc: "Guadagna doppio XP ad ogni prenotazione", benefit_concierge: "Concierge personale", benefit_concierge_desc: "Raccomandazioni di ristoranti basate sull'IA" },
     language_picker: { title: "Seleziona lingua", subtitle: "Scegli la tua lingua preferita", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Qualcosa è andato storto", page_body: "Si è verificato un errore imprevisto.", page_cta: "Ricarica pagina" },
+    error: { page_title: "Qualcosa è andato storto", page_body: "Si è verificato un errore imprevisto.", page_cta: "Ricarica pagina", not_found: "Pagina non trovata", not_found_hint: "La pagina che cerchi non esiste o è stata spostata.", go_home: "Torna alla home" },
   },
 
   es: {
@@ -636,7 +667,7 @@ const translations = {
     notifications: { title: "Notificaciones", empty: "Sin notificaciones", empty_hint: "Las notificaciones futuras aparecerán aquí", mark_all_read: "Marcar todo como leído", booking_confirmed: "Reserva confirmada", booking_reminder: "Recordatorio: reserva mañana", friend_request: "Nueva solicitud de amistad", new_deal: "Nueva oferta cerca de ti", review_reply: "Alguien respondió a tu reseña", new_follower: "Nuevo seguidor" },
     premium: { title: "RestoSmart Premium", subtitle: "La mejor experiencia de restaurante en Viena", cta: "Actualizar ahora", benefit_priority: "Reservas prioritarias", benefit_priority_desc: "Reserva primero, incluso en restaurantes llenos", benefit_exclusive: "Ofertas exclusivas", benefit_exclusive_desc: "Acceso anticipado a Flash Deals", benefit_rewards: "Más puntos y recompensas", benefit_rewards_desc: "Gana el doble de XP en cada reserva", benefit_concierge: "Concierge personal", benefit_concierge_desc: "Recomendaciones de restaurantes basadas en IA" },
     language_picker: { title: "Seleccionar idioma", subtitle: "Elige tu idioma preferido", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Algo salió mal", page_body: "Se produjo un error inesperado.", page_cta: "Recargar página" },
+    error: { page_title: "Algo salió mal", page_body: "Se produjo un error inesperado.", page_cta: "Recargar página", not_found: "Página no encontrada", not_found_hint: "La página que buscas no existe o ha sido movida.", go_home: "Ir al inicio" },
   },
 
   nl: {
@@ -659,7 +690,7 @@ const translations = {
     notifications: { title: "Meldingen", empty: "Geen meldingen", empty_hint: "Toekomstige meldingen verschijnen hier", mark_all_read: "Alles als gelezen markeren", booking_confirmed: "Reservering bevestigd", booking_reminder: "Herinnering: reservering morgen", friend_request: "Nieuw vriendschapsverzoek", new_deal: "Nieuwe aanbieding in uw buurt", review_reply: "Iemand heeft op uw beoordeling gereageerd", new_follower: "Nieuwe volger" },
     premium: { title: "RestoSmart Premium", subtitle: "De beste restaurantervaring in Wenen", cta: "Nu upgraden", benefit_priority: "Prioriteitsboekingen", benefit_priority_desc: "Boek als eerste, ook bij drukke restaurants", benefit_exclusive: "Exclusieve aanbiedingen", benefit_exclusive_desc: "Eerste toegang tot Flash Deals", benefit_rewards: "Meer punten & beloningen", benefit_rewards_desc: "Verdien dubbele XP bij elke boeking", benefit_concierge: "Persoonlijke conciërge", benefit_concierge_desc: "AI-gestuurde restaurantaanbevelingen" },
     language_picker: { title: "Taal selecteren", subtitle: "Kies uw voorkeurstaal", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Er is iets misgegaan", page_body: "Er is een onverwachte fout opgetreden.", page_cta: "Pagina herladen" },
+    error: { page_title: "Er is iets misgegaan", page_body: "Er is een onverwachte fout opgetreden.", page_cta: "Pagina herladen", not_found: "Pagina niet gevonden", not_found_hint: "De pagina die je zoekt bestaat niet of is verplaatst.", go_home: "Naar startpagina" },
   },
 
   tr: {
@@ -682,7 +713,7 @@ const translations = {
     notifications: { title: "Bildirimler", empty: "Bildirim yok", empty_hint: "Gelecekteki bildirimler burada görünecek", mark_all_read: "Tümünü okundu olarak işaretle", booking_confirmed: "Rezervasyon onaylandı", booking_reminder: "Hatırlatma: yarın rezervasyon", friend_request: "Yeni arkadaşlık isteği", new_deal: "Yakınında yeni fırsat", review_reply: "Biri değerlendirmenize yanıt verdi", new_follower: "Yeni takipçi" },
     premium: { title: "RestoSmart Premium", subtitle: "Viyana'daki en iyi restoran deneyimi", cta: "Şimdi yükselt", benefit_priority: "Öncelikli rezervasyonlar", benefit_priority_desc: "Yoğun restoranlarda bile önce rezervasyon yapın", benefit_exclusive: "Özel fırsatlar", benefit_exclusive_desc: "Flash Deal'lara ilk erişim", benefit_rewards: "Daha fazla puan ve ödül", benefit_rewards_desc: "Her rezervasyonda çift XP kazanın", benefit_concierge: "Kişisel concierge", benefit_concierge_desc: "Yapay zeka destekli restoran önerileri" },
     language_picker: { title: "Dil seç", subtitle: "Tercih ettiğiniz dili seçin", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Bir şeyler ters gitti", page_body: "Beklenmeyen bir hata oluştu.", page_cta: "Sayfayı yenile" },
+    error: { page_title: "Bir şeyler ters gitti", page_body: "Beklenmeyen bir hata oluştu.", page_cta: "Sayfayı yenile", not_found: "Sayfa bulunamadı", not_found_hint: "Aradığınız sayfa mevcut değil veya taşındı.", go_home: "Ana sayfaya git" },
   },
 
   pt: {
@@ -705,7 +736,7 @@ const translations = {
     notifications: { title: "Notificações", empty: "Sem notificações", empty_hint: "As notificações futuras aparecerão aqui", mark_all_read: "Marcar tudo como lido", booking_confirmed: "Reserva confirmada", booking_reminder: "Lembrete: reserva amanhã", friend_request: "Novo pedido de amizade", new_deal: "Nova oferta perto de si", review_reply: "Alguém respondeu à sua avaliação", new_follower: "Novo seguidor" },
     premium: { title: "RestoSmart Premium", subtitle: "A melhor experiência de restaurante em Viena", cta: "Atualizar agora", benefit_priority: "Reservas prioritárias", benefit_priority_desc: "Reserve primeiro, mesmo em restaurantes cheios", benefit_exclusive: "Ofertas exclusivas", benefit_exclusive_desc: "Primeiro acesso a Flash Deals", benefit_rewards: "Mais pontos e recompensas", benefit_rewards_desc: "Ganhe o dobro de XP em cada reserva", benefit_concierge: "Concierge pessoal", benefit_concierge_desc: "Recomendações de restaurantes baseadas em IA" },
     language_picker: { title: "Selecionar idioma", subtitle: "Escolha o seu idioma preferido", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Algo correu mal", page_body: "Ocorreu um erro inesperado.", page_cta: "Recarregar página" },
+    error: { page_title: "Algo correu mal", page_body: "Ocorreu um erro inesperado.", page_cta: "Recarregar página", not_found: "Página não encontrada", not_found_hint: "A página que procura não existe ou foi movida.", go_home: "Ir para o início" },
   },
 
   pl: {
@@ -728,7 +759,7 @@ const translations = {
     notifications: { title: "Powiadomienia", empty: "Brak powiadomień", empty_hint: "Przyszłe powiadomienia pojawią się tutaj", mark_all_read: "Oznacz wszystkie jako przeczytane", booking_confirmed: "Rezerwacja potwierdzona", booking_reminder: "Przypomnienie: rezerwacja jutro", friend_request: "Nowe zaproszenie do znajomych", new_deal: "Nowa oferta w pobliżu", review_reply: "Ktoś odpowiedział na Twoją opinię", new_follower: "Nowy obserwujący" },
     premium: { title: "RestoSmart Premium", subtitle: "Najlepsze doświadczenie restauracyjne w Wiedniu", cta: "Ulepsz teraz", benefit_priority: "Priorytetowe rezerwacje", benefit_priority_desc: "Rezerwuj jako pierwszy, nawet w popularnych restauracjach", benefit_exclusive: "Ekskluzywne oferty", benefit_exclusive_desc: "Pierwszy dostęp do Flash Deals", benefit_rewards: "Więcej punktów i nagród", benefit_rewards_desc: "Zarabiaj podwójne XP przy każdej rezerwacji", benefit_concierge: "Osobisty concierge", benefit_concierge_desc: "Rekomendacje restauracji oparte na AI" },
     language_picker: { title: "Wybierz język", subtitle: "Wybierz preferowany język", languages: { de: "Deutsch", en: "English", fr: "Français", it: "Italiano", es: "Español", nl: "Nederlands", pt: "Português", tr: "Türkçe", pl: "Polski", ro: "Română", cs: "Čeština" } },
-    error: { page_title: "Coś poszło nie tak", page_body: "Wystąpił nieoczekiwany błąd.", page_cta: "Odśwież stronę" },
+    error: { page_title: "Coś poszło nie tak", page_body: "Wystąpił nieoczekiwany błąd.", page_cta: "Odśwież stronę", not_found: "Strona nie znaleziona", not_found_hint: "Szukana strona nie istnieje lub została przeniesiona.", go_home: "Idź do strony głównej" },
   },
 };
 

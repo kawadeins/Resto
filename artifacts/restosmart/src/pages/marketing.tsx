@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { track } from "@/lib/conversion-tracking";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
@@ -69,6 +70,7 @@ function ActiveDiscountBanner() {
 }
 
 export default function Marketing() {
+  const { t } = useTranslation();
   useEffect(() => {
     if (localStorage.getItem("restosmart_owner_premium") === "trial") {
       track("marketing_tools_viewed");

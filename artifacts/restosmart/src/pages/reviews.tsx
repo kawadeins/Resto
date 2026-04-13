@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { useListReviews, getListReviewsQueryKey, useGetReviewStats, getGetReviewStatsQueryKey, useReplyToReview } from "@workspace/api-client-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -92,6 +93,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function Reviews() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [replyingTo, setReplyingTo] = useState<number | null>(null);

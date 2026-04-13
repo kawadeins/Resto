@@ -3,11 +3,13 @@
  */
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { track } from "@/lib/conversion-tracking";
 import { CampaignCommandCenter } from "@/components/campaign-command-center";
 import { TrialConversionBanner } from "@/components/layout";
 
 export default function Boost() {
+  const { t } = useTranslation();
   const isTrial = typeof window !== "undefined" && localStorage.getItem("restosmart_owner_premium") === "trial";
   useEffect(() => { track("boost_page_opened"); }, []);
 

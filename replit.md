@@ -113,6 +113,32 @@ All 8 pages verified:
 
 All critical API endpoints return 200 and correct data.
 
+## i18n Migration (COMPLETE)
+
+Full internationalization (8 languages: de/en/fr/it/es/nl/pt/tr + pl) wired across both apps.
+
+**Customer app (14/14 pages migrated):**
+`explore.tsx`, `feed.tsx`, `for-business.tsx`, `friends.tsx`, `home.tsx`, `meal-plan.tsx`,
+`messages.tsx`, `my-bookings.tsx`, `not-found.tsx`, `plan-detail.tsx`, `profile.tsx`,
+`public-profile.tsx`, `restaurant.tsx`, `settings.tsx`
+
+**RestoSmart dashboard (25/25 pages migrated):**
+`analytics.tsx`, `billing.tsx`, `bookings.tsx`, `boost.tsx`, `campaigns.tsx`, `finances.tsx`,
+`founder.tsx`, `insights.tsx`, `inventory.tsx`, `login.tsx`, `marketing.tsx`, `menu.tsx`,
+`not-found.tsx`, `onboarding.tsx`, `optimizer.tsx`, `overview.tsx`, `payroll.tsx`, `pos.tsx`,
+`profile.tsx`, `reservations.tsx`, `reviews.tsx`, `staff.tsx`, `super-admin.tsx`, `tables.tsx`, `team.tsx`
+
+**Translation files:** `artifacts/customer/src/i18n/translations.ts` (~770+ lines, all namespaces),
+`artifacts/restosmart/src/i18n/translations.ts` (~1106 lines, all namespaces)
+
+**i18n setup:** `localStorage` key `restosmart_lang` (dashboard) / `restosmart_customer_lang` (customer), fallback `de`.
+
+## Monetization System (COMPLETE)
+
+- `artifacts/restosmart/src/components/soft-paywall.tsx` — blurred ghost preview, 24h countdown, one-tap upgrade CTA
+- `artifacts/customer/src/components/contextual-premium-trigger.tsx` — RestaurantBrowseTrigger (view count), PostBookingPremiumNudge
+- Wired into: `restosmart/analytics.tsx` (SoftPaywall), `customer/restaurant.tsx` (both triggers)
+
 ## External Dependencies
 
 -   **Database:** PostgreSQL

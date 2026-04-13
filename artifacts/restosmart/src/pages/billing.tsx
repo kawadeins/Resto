@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { track } from "@/lib/conversion-tracking";
 import { useSession } from "@/contexts/session-context";
@@ -75,6 +76,7 @@ function getUrlParams() {
 }
 
 export default function Billing() {
+  const { t } = useTranslation();
   useEffect(() => { track("premium_page_opened"); }, []);
   const { toast } = useToast();
   const { logout, csrfToken } = useSession();

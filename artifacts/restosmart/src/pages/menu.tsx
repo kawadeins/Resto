@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   useListMenuItems, 
   getListMenuItemsQueryKey, 
@@ -43,6 +44,7 @@ const dishSchema = z.object({
 type DishFormValues = z.infer<typeof dishSchema>;
 
 export default function Menu() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [sheetOpen, setSheetOpen] = useState(false);

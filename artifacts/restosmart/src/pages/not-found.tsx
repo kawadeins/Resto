@@ -1,15 +1,18 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { LayoutDashboard, BookOpen, BarChart3, Star, ArrowRight } from "lucide-react";
-
-const QUICK_LINKS = [
-  { label: "Übersicht", href: "/", icon: LayoutDashboard },
-  { label: "Buchungen", href: "/bookings", icon: BookOpen },
-  { label: "Analyse", href: "/analytics", icon: BarChart3 },
-  { label: "Bewertungen", href: "/reviews", icon: Star },
-];
+import { useTranslation } from "react-i18next";
 
 export default function NotFound() {
+  const { t } = useTranslation();
+
+  const QUICK_LINKS = [
+    { label: t("nav.overview"), href: "/", icon: LayoutDashboard },
+    { label: t("nav.bookings"), href: "/bookings", icon: BookOpen },
+    { label: t("nav.analytics"), href: "/analytics", icon: BarChart3 },
+    { label: t("nav.reviews"), href: "/reviews", icon: Star },
+  ];
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 py-16">
       <motion.div
@@ -25,9 +28,9 @@ export default function NotFound() {
           >
             <LayoutDashboard className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Willkommen</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("overview.welcome_title")}</h1>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
-            Verwalten Sie Ihre Buchungen, Ihr Marketing, Ihre Bewertungen und Ihr Restaurant an einem Ort.
+            {t("overview.welcome_subtitle")}
           </p>
         </div>
 
@@ -50,7 +53,7 @@ export default function NotFound() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg shadow-violet-500/25 hover:opacity-90 transition-opacity"
             style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
           >
-            Zur Übersicht
+            {t("nav.overview")}
             <ArrowRight className="w-4 h-4" />
           </button>
         </Link>

@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSeo } from "@/hooks/use-seo";
+import { useTranslation } from "react-i18next";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -175,7 +176,8 @@ function StatCard({ value, label, icon: Icon, color }: {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ForBusiness() {
-  useSeo({ title: "Für Betriebe | RestoSmart — Mehr Gäste, mehr Umsatz", description: "RestoSmart für Restaurants, Cafés und Bars in Wien: Sichtbarkeit, Buchungen, Boost & mehr." });
+  const { t } = useTranslation();
+  useSeo({ title: t("for_business.title"), description: t("for_business.hero_subtitle") });
 
   const [activeBiz, setActiveBiz] = useState<BizType>("restaurant");
   const [formStep, setFormStep]   = useState<"idle" | "open" | "success">("idle");
@@ -343,7 +345,7 @@ export default function ForBusiness() {
                   className="h-13 px-8 rounded-2xl bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg shadow-primary/25 font-bold text-base hover:opacity-90 transition-opacity"
                   onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
                 >
-                  14 Tage kostenlos testen
+                  {t("for_business.pricing_trial")}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 <Button
@@ -352,17 +354,17 @@ export default function ForBusiness() {
                   className="h-13 px-6 rounded-2xl font-semibold border-border hover:border-primary/40 hover:bg-primary/5"
                   onClick={() => document.getElementById("value-section")?.scrollIntoView({ behavior: "smooth" })}
                 >
-                  Mehr erfahren
+                  {t("for_business.cta_learn")}
                   <ChevronDown className="w-4 h-4 ml-1" />
                 </Button>
               </div>
 
               {/* Trust pills */}
               <div className="flex items-center justify-center gap-5 mt-4 flex-wrap">
-                {["14 Tage kostenlos", "Keine Kreditkarte", "In 2 Min. live"].map(t => (
-                  <span key={t} className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                {[t("for_business.pricing_trial"), "Keine Kreditkarte", "In 2 Min. live"].map(pill => (
+                  <span key={pill} className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    {t}
+                    {pill}
                   </span>
                 ))}
               </div>
@@ -484,7 +486,7 @@ export default function ForBusiness() {
               className={`h-12 px-8 rounded-2xl bg-gradient-to-r ${cfg.gradient} text-white border-0 shadow-lg font-bold`}
               onClick={() => { setFormStep("open"); setTimeout(() => document.getElementById("claim-form")?.scrollIntoView({ behavior: "smooth" }), 50); }}
             >
-              Jetzt Profil aktivieren
+              {t("for_business.cta_start")}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>

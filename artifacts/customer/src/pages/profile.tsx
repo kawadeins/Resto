@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
+import { useTranslation } from "react-i18next";
 import { ProfileFeedbackWidget } from "@/components/app-rating-prompt";
 import { useHabitLoop } from "@/hooks/use-habit-loop";
 import { getActivityFeed, getFriends, activityLabel, timeAgo, type SocialActivity, type FriendProfile } from "@/lib/social-api";
@@ -1389,7 +1390,8 @@ function EditProfileSheet({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Profile() {
-  useSeo({ title: "Mein Profil", description: "Dein persönliches RestoSmart-Profil." });
+  const { t } = useTranslation();
+  useSeo({ title: t("profile.title"), description: "Dein persönliches RestoSmart-Profil." });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState<string>("");

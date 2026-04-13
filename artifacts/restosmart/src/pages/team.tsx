@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, UserPlus, Shield, ShieldCheck, ShieldAlert, Mail, MoreVertical, Check, X, RefreshCw, Trash2, Copy, Info } from "lucide-react";
@@ -49,6 +50,7 @@ const STATUS_LABELS: Record<string, { label: string; dot: string }> = {
 };
 
 export default function Team() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [showInvite, setShowInvite] = useState(false);
   const [inviteName, setInviteName] = useState("");

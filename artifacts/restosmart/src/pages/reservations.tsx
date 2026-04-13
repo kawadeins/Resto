@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   useListReservations, 
   getListReservationsQueryKey,
@@ -80,6 +81,7 @@ const sourceLabels: Record<string, string> = {
 };
 
 export default function Reservations() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   

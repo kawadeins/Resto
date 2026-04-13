@@ -1,0 +1,226 @@
+Perform a FINAL full translation QA and detection pass across the entire app.
+
+IMPORTANT:
+- The i18n system is already implemented
+- This task is NOT about building translation
+- This task is about finding ALL remaining translation issues
+- You must behave like a strict QA inspector, not a developer adding features
+- Your job is to detect every visible translation flaw in the UI
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Ensure the app is 100% fully translated with ZERO mixed-language UI.
+
+There must NOT be:
+- mixed German + English
+- mixed English + French
+- untranslated buttons
+- untranslated tabs
+- untranslated placeholders
+- untranslated modals
+- untranslated empty states
+
+Everything must switch language completely.
+
+==================================================
+1. FORCE MULTI-LANGUAGE TESTING
+==================================================
+
+You must test the app in multiple languages:
+
+- German (de)
+- English (en)
+- French (fr)
+- Italian (it)
+
+Switch between them and inspect differences.
+
+==================================================
+2. FULL APP WALKTHROUGH (MANDATORY)
+==================================================
+
+Manually simulate a real user and check ALL flows:
+
+CUSTOMER APP:
+
+A. Home screen
+- hero text
+- subtext
+- CTA buttons
+- search placeholder
+- category chips
+
+B. Bottom navigation
+- Home
+- Explore
+- Meal Plan
+- Feed
+- Profile
+- Settings
+
+C. Discover / Explore page
+- filters
+- sorting labels
+- tags
+
+D. Restaurant page
+- booking button
+- labels
+- sections
+
+E. Booking flow
+- form labels
+- date/time
+- confirmation messages
+
+F. Meal Plan / Group Plan
+- buttons
+- labels
+- modal text
+
+G. Feed (social)
+- post actions (like/comment/save)
+- captions UI
+- empty states
+- create post modal
+
+H. Profile (private + public)
+- buttons (add friend / message)
+- stats labels
+- tabs (Beiträge / Freunde / Geschmack)
+- settings access
+
+I. Settings page
+- all sections
+- toggles
+- descriptions
+- notifications
+
+J. Notifications
+- titles
+- messages
+- timestamps
+
+K. Chat system
+- send button
+- placeholders
+- system messages
+
+==================================================
+OWNER DASHBOARD:
+
+L. Dashboard home
+- welcome text
+- cards
+- labels
+
+M. Sidebar
+- ALL navigation labels
+
+N. Bookings
+- status labels
+- filters
+- actions
+
+O. Reviews
+- labels
+- buttons
+
+P. Analytics
+- metrics
+- chart labels
+
+Q. Billing
+- subscription text
+- buttons
+
+R. Marketing / Boost
+- CTA text
+- descriptions
+
+S. Settings
+- all labels
+
+==================================================
+3. DETECT ALL TRANSLATION FAILURES
+==================================================
+
+You must detect and list ALL of the following:
+
+- hardcoded strings still visible
+- strings not changing after language switch
+- mixed-language UI sections
+- partially translated sentences
+- untranslated placeholders
+- untranslated modals
+- untranslated toast messages
+- untranslated error messages
+- untranslated empty states
+- untranslated navigation labels
+- untranslated badges
+
+==================================================
+4. EDGE CASES (IMPORTANT)
+==================================================
+
+Also verify:
+
+- switching language updates UI instantly
+- no page requires manual refresh to translate
+- no flickering between languages
+- no stale text after navigation
+- no broken keys like: "home.title"
+- no fallback language leaking incorrectly
+
+==================================================
+5. USER CONTENT RULE CHECK
+==================================================
+
+Ensure that:
+
+- user-generated content is NOT translated automatically
+- system UI IS translated
+
+==================================================
+6. OUTPUT FORMAT (STRICT)
+==================================================
+
+Return a structured report:
+
+A. Summary
+- Is the app fully translated? (Yes / No)
+
+B. Critical issues
+- list all major translation failures
+
+C. Medium issues
+- partially translated areas
+
+D. Minor issues
+- small inconsistencies
+
+E. Exact locations of issues
+- page name
+- component/section
+- text example
+
+F. Language switching behavior
+- working correctly? (Yes / No)
+
+G. Bottom navigation status
+- fully translated? (Yes / No)
+
+H. Owner dashboard status
+- fully translated? (Yes / No)
+
+==================================================
+FINAL RULE
+==================================================
+
+This task is ONLY complete if:
+
+- NO visible mixed-language UI remains
+- ALL navigation, buttons, and labels change correctly
+- ALL screens feel native in each language

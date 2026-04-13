@@ -31,6 +31,7 @@ import {
   ArrowUpRight,
   Activity,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // ─── Heatmap ─────────────────────────────────────────────────────────────────
 
@@ -414,6 +415,7 @@ function DailyInsightBanner() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Insights() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-8 pb-10">
       <div>

@@ -11,6 +11,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
+import { useTranslation } from "react-i18next";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useXpGain } from "@/components/xp-toast";
@@ -1110,7 +1111,8 @@ function GuestBanner() {
 const PAGE_SIZE = 12;
 
 export default function FeedPage() {
-  useSeo({ title: "Feed – RestoSmart" });
+  const { t } = useTranslation();
+  useSeo({ title: `${t("nav.home")} Feed – RestoSmart` });
 
   const [email, setEmail] = useState(() => localStorage.getItem("restosmart_email") ?? "");
   const [userName, setUserName] = useState("");
