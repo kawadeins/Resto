@@ -1,0 +1,193 @@
+Perform a FINAL strict QA inspection for translation consistency in the restaurant owner dashboard ONLY.
+
+IMPORTANT:
+- This is a detection-only task
+- Do NOT implement fixes in this pass
+- Do NOT add features
+- Do NOT modify UI
+- Your job is to detect every remaining translation issue with high precision
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Ensure the restaurant owner dashboard is 100% fully localized with ZERO mixed-language UI.
+
+If even one visible section uses the wrong language, the dashboard is NOT ready.
+
+==================================================
+1. MULTI-LANGUAGE VALIDATION
+==================================================
+
+Test the owner dashboard in at least:
+
+- German (de)
+- English (en)
+- French (fr)
+- Italian (it)
+
+Switch languages and carefully inspect differences.
+
+==================================================
+2. FULL OWNER DASHBOARD WALKTHROUGH
+==================================================
+
+Simulate a real restaurant owner and inspect ALL sections:
+
+A. Sidebar navigation
+- every label
+- icons + text consistency
+
+B. Dashboard home
+- welcome section
+- KPI cards
+- stats text
+- percentage labels
+- premium badges
+
+C. Reviews section
+- labels
+- actions (reply, delete, etc.)
+- status text
+
+D. Reservations / Bookings
+- filters
+- status labels
+- action buttons
+
+E. Tables / POS / Menu
+- all labels and controls
+
+F. Team / Staff / Payroll
+- titles
+- buttons
+- descriptions
+
+G. Analytics
+- chart titles
+- axis labels
+- legends
+- time filters (e.g. last 30 days)
+
+H. Billing / Subscription
+- premium text
+- CTA buttons
+- pricing labels
+
+I. Marketing / Boost / Growth
+- feature names
+- CTA text
+- descriptions
+
+J. Settings
+- sections
+- toggles
+- helper text
+
+K. Modals & dialogs
+- titles
+- confirm/cancel buttons
+- body text
+
+L. Empty states
+- no data messages
+- hints
+- actions
+
+==================================================
+3. DETECT ALL TRANSLATION ISSUES
+==================================================
+
+You must detect and list:
+
+- mixed-language UI (e.g. French sidebar + German content)
+- hardcoded strings still visible
+- untranslated labels
+- partially translated sentences
+- inconsistent terminology (same concept translated differently)
+- untranslated placeholders
+- untranslated modals
+- untranslated buttons
+- untranslated chart labels
+- untranslated metrics text
+- untranslated empty states
+
+==================================================
+4. LANGUAGE SWITCH BEHAVIOR
+==================================================
+
+Verify:
+
+- switching language updates sidebar immediately
+- switching language updates current page content
+- no need for manual refresh (or clearly documented if required)
+- no stale text remains after switching
+- no flickering between languages
+
+==================================================
+5. CONSISTENCY CHECK
+==================================================
+
+Check that terminology is consistent across dashboard:
+
+Example:
+- "Reservations" should not appear as 3 different translations in same language
+- "Analytics" should not be mixed with "Analyse" randomly
+- "Team / Staff / Équipe" must be consistent per language
+
+==================================================
+6. EDGE CASES
+==================================================
+
+Check:
+
+- dropdown menus
+- hover tooltips
+- notification labels inside dashboard
+- badge text (Premium, Active, etc.)
+- date/time labels
+- "last 30 days" style text
+- percentages and stat descriptions
+
+==================================================
+7. OUTPUT FORMAT (STRICT)
+==================================================
+
+Return a structured report:
+
+A. Overall status
+- Fully translated? (Yes / No)
+
+B. Critical issues
+- major mixed-language areas
+
+C. Medium issues
+- partial translations / inconsistencies
+
+D. Minor issues
+- small text inconsistencies
+
+E. Exact locations
+- page
+- component
+- example text
+
+F. Sidebar status
+- fully consistent? (Yes / No)
+
+G. Dashboard content status
+- fully consistent? (Yes / No)
+
+H. Language switching behavior
+- correct? (Yes / No)
+
+==================================================
+FINAL RULE
+==================================================
+
+The dashboard is only considered READY if:
+
+- no mixed-language UI remains
+- all sections follow the selected language
+- terminology is consistent
+- switching language updates everything correctly
