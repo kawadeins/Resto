@@ -49,6 +49,7 @@ export default function Analytics() {
         <SoftPaywall
           title="Analysen & Intelligenz"
           subtitle="Datenbasierte Entscheidungen, die deinen Betrieb täglich voranbringen."
+          onUpgrade={() => { window.location.href = "/billing"; }}
         />
       </div>
     );

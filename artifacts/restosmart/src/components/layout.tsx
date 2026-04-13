@@ -126,11 +126,7 @@ function TrialBanner() {
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <button
-          onClick={() => {
-            localStorage.setItem("restosmart_owner_premium", "active");
-            localStorage.removeItem("restosmart_trial_end");
-            window.location.reload();
-          }}
+          onClick={() => { window.location.href = "/billing"; }}
           className={cn(
             "text-xs font-bold px-3 py-1.5 rounded-full transition-colors cursor-pointer",
             isUrgent
@@ -230,9 +226,7 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
         <button
           onClick={() => {
             if (trialCtaId) trackVariantClick(trialCtaId, true);
-            localStorage.setItem("restosmart_owner_premium", "active");
-            localStorage.removeItem("restosmart_trial_end");
-            window.location.reload();
+            window.location.href = "/billing";
           }}
           className={cn(
             "text-xs font-bold px-3 py-2 rounded-xl text-white hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer",
