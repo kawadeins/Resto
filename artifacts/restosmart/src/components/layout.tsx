@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Package, DollarSign, Calendar, BarChart3,
   UtensilsCrossed, ShoppingCart, BookOpen, Megaphone, CreditCard, Star,
   Lightbulb, TrendingUp, Armchair, Wallet, ArrowLeft, UserCircle, Zap,
-  Clock, X, Flame, UsersRound, LogOut, AlertTriangle, RefreshCw,
+  Clock, X, Flame, UsersRound, LogOut, AlertTriangle, RefreshCw, Globe,
 } from "lucide-react";
 import { OwnerNotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
@@ -13,12 +13,10 @@ import { useVariants, getVariantCopy, trackVariantImpression, trackVariantClick 
 import { usePermissions, type TeamRole } from "@/hooks/use-permissions";
 import { useSession } from "@/contexts/session-context";
 import { RestoLogo } from "@/components/resto-logo";
+import { useTranslation } from "react-i18next";
+import { LanguagePicker } from "@/components/language-picker";
 
 // ─── Page Error Boundary ──────────────────────────────────────────────────────
-// Catches rendering errors inside dashboard pages so the sidebar stays visible
-// and the user sees a helpful message instead of a blank dark panel.
-// The `key` prop (set to the current route in Layout) resets the boundary
-// automatically whenever the user navigates to a different page.
 
 interface ErrorBoundaryState { error: Error | null }
 
@@ -35,29 +33,34 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundary
 
   render() {
     if (this.state.error) {
-      return (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center max-w-md px-6 space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-white">Seite konnte nicht geladen werden</h2>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              {this.state.error.message || "Ein unerwarteter Fehler ist aufgetreten."}
-            </p>
-            <button
-              onClick={() => this.setState({ error: null })}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Erneut versuchen
-            </button>
-          </div>
-        </div>
-      );
+      return <PageErrorFallback error={this.state.error} onReset={() => this.setState({ error: null })} />;
     }
     return this.props.children;
   }
+}
+
+function PageErrorFallback({ error, onReset }: { error: Error; onReset: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-center max-w-md px-6 space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto">
+          <AlertTriangle className="w-8 h-8 text-red-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-white">{t("error.page_title")}</h2>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          {error.message || t("error.page_body")}
+        </p>
+        <button
+          onClick={onReset}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors cursor-pointer"
+        >
+          <RefreshCw className="w-4 h-4" />
+          {t("error.page_cta")}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,6 +77,7 @@ function getTrialState() {
 }
 
 function TrialBanner() {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
   const trial = getTrialState();
   if (!trial || dismissed) return null;
@@ -87,25 +91,25 @@ function TrialBanner() {
   let ctaLabel: string;
 
   if (daysLeft <= 0) {
-    mainMsg = "Deine Testphase endet heute";
-    subMsg = "Jeder Tag ohne Premium bedeutet weniger Sichtbarkeit";
-    ctaLabel = "Jetzt sichtbar werden";
+    mainMsg = t("trial.ends_today");
+    subMsg = t("trial.visibility_hint");
+    ctaLabel = t("trial.cta_visible");
   } else if (daysLeft === 1) {
-    mainMsg = "Letzter Tag deiner Testphase";
-    subMsg = "Behalte deine Sichtbarkeit und deinen Vorteil";
-    ctaLabel = "F\u00fcr 39,90\u20ac sichern";
+    mainMsg = t("trial.last_day");
+    subMsg = t("trial.keep_advantage");
+    ctaLabel = t("trial.cta_secure");
   } else if (isUrgent) {
-    mainMsg = `Testphase endet in ${daysLeft} Tagen`;
-    subMsg = "Verliere keine Reichweite";
-    ctaLabel = "Jetzt sichtbar werden";
+    mainMsg = t("trial.ends_in_days", { count: daysLeft });
+    subMsg = t("trial.lose_reach");
+    ctaLabel = t("trial.cta_visible");
   } else if (isWarning) {
-    mainMsg = `Noch ${daysLeft} Tage Testzugang`;
-    subMsg = "Mehr Sichtbarkeit = mehr Kunden";
-    ctaLabel = "Jetzt sichtbar werden";
+    mainMsg = t("trial.days_remaining", { count: daysLeft });
+    subMsg = t("trial.more_customers");
+    ctaLabel = t("trial.cta_visible");
   } else {
-    mainMsg = `Noch ${daysLeft} Tage kostenloser Testzugang`;
+    mainMsg = t("trial.days_remaining_long", { count: daysLeft });
     subMsg = null;
-    ctaLabel = "Jetzt sichtbar werden";
+    ctaLabel = t("trial.cta_visible");
   }
 
   return (
@@ -121,7 +125,7 @@ function TrialBanner() {
         <Clock className="w-4 h-4 shrink-0" />
         <span className="truncate font-semibold">{mainMsg}</span>
         {subMsg && (
-          <span className="hidden sm:inline text-xs opacity-60 font-normal">— {subMsg}</span>
+          <span className="hidden sm:inline text-xs opacity-60 font-normal">{"— "}{subMsg}</span>
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0">
@@ -150,6 +154,7 @@ function TrialBanner() {
 }
 
 export function TrialConversionBanner({ context }: { context: "overview" | "analytics" | "marketing" | "insights" | "billing" }) {
+  const { t } = useTranslation();
   const isTrial = typeof window !== "undefined" && localStorage.getItem("restosmart_owner_premium") === "trial";
   useEffect(() => {
     if (isTrial) track("trial_conversion_banner_viewed", { messageLabel: context });
@@ -171,32 +176,33 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
   const daysLeft = Math.ceil((end.getTime() - now.getTime()) / 86400000);
   const biz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
   const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
+  const dayLabel = daysLeft === 1 ? t("trial.day_singular") : t("trial.day_plural");
 
   const contextual: Record<string, { headline: string; body: string; cta: string }> = {
     overview: {
-      headline: "Du k\u00f6nntest mehr Kunden erreichen",
-      body: `Mit Premium erscheint dein ${bizLabel} h\u00e4ufiger in Suche, Empfehlungen und lokalen Vorschl\u00e4gen. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
-      cta: "Jetzt sichtbar werden",
+      headline: t("trial.banner_overview_headline"),
+      body: t("trial.banner_overview_body", { biz: bizLabel, count: daysLeft, dayLabel }),
+      cta: t("trial.cta_visible"),
     },
     analytics: {
-      headline: "Volle Analysen verf\u00fcgbar \u2014 behalte den Einblick",
-      body: "Schon ein zus\u00e4tzlicher Kunde pro Woche kann deine Investition mehr als ausgleichen.",
-      cta: "F\u00fcr 39,90\u20ac fortsetzen",
+      headline: t("trial.banner_analytics_headline"),
+      body: t("trial.banner_analytics_body"),
+      cta: t("trial.cta_continue"),
     },
     marketing: {
-      headline: "Mehr Sichtbarkeit = mehr Kunden",
-      body: `Boost-Tools aktiv f\u00fcr dein ${bizLabel}. Noch ${daysLeft} ${daysLeft === 1 ? "Tag" : "Tage"} kostenlos.`,
-      cta: "Premium aktivieren",
+      headline: t("trial.banner_marketing_headline"),
+      body: t("trial.banner_marketing_body", { biz: bizLabel, count: daysLeft, dayLabel }),
+      cta: t("trial.cta_activate"),
     },
     insights: {
-      headline: "Kunden suchen genau jetzt nach Angeboten wie deinem",
-      body: "Erkenne Sto\u00dfzeiten und optimiere dein Angebot. Behalte alle Einblicke mit Premium.",
-      cta: "Jetzt sichtbar werden",
+      headline: t("trial.banner_insights_headline"),
+      body: t("trial.banner_insights_body"),
+      cta: t("trial.cta_visible"),
     },
     billing: {
-      headline: "Behalte deine Sichtbarkeit und deinen Vorteil",
-      body: "39,90\u20ac im Monat \u2014 schon ein zus\u00e4tzlicher Kunde pro Woche gleicht die Investition aus.",
-      cta: "F\u00fcr 39,90\u20ac fortsetzen",
+      headline: t("trial.banner_billing_headline"),
+      body: t("trial.banner_billing_body"),
+      cta: t("trial.cta_continue"),
     },
   };
 
@@ -219,8 +225,8 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
       <div className="flex items-center gap-3 shrink-0">
         {!isUrgent && (
           <div className="hidden sm:block text-right">
-            <div className="text-[10px] text-violet-400/50 uppercase tracking-widest">Testphase</div>
-            <div className="text-sm font-bold text-violet-300">{daysLeft} Tage</div>
+            <div className="text-[10px] text-violet-400/50 uppercase tracking-widest">{t("trial.testphase_label")}</div>
+            <div className="text-sm font-bold text-violet-300">{daysLeft} {t("trial.day_plural")}</div>
           </div>
         )}
         <button
@@ -242,38 +248,42 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
   );
 }
 
-type NavItem = { name: string; href: string; icon: typeof LayoutDashboard; roles?: TeamRole[] };
+type NavItem = { key: string; href: string; icon: typeof LayoutDashboard; roles?: TeamRole[] };
 
-const navigation: NavItem[] = [
-  { name: "Übersicht", href: "/", icon: LayoutDashboard },
-  { name: "Mein Profil", href: "/profile", icon: UserCircle },
-  { name: "Buchungen", href: "/bookings", icon: BookOpen },
-  { name: "Reservierungen", href: "/reservations", icon: Calendar },
-  { name: "Tische", href: "/tables", icon: Armchair },
-  { name: "Personal", href: "/staff", icon: Users, roles: ["owner", "manager"] },
-  { name: "Gehaltsabrechnung", href: "/payroll", icon: Wallet, roles: ["owner"] },
-  { name: "Team", href: "/team", icon: UsersRound, roles: ["owner"] },
-  { name: "Inventar", href: "/inventory", icon: Package, roles: ["owner", "manager"] },
-  { name: "Speisekarte", href: "/menu", icon: UtensilsCrossed, roles: ["owner", "manager"] },
-  { name: "Kassenterminal", href: "/pos", icon: ShoppingCart },
-  { name: "Finanzen", href: "/finances", icon: DollarSign, roles: ["owner"] },
-  { name: "Analyse", href: "/analytics", icon: BarChart3, roles: ["owner", "manager"] },
-  { name: "Sichtbarkeit & Boost", href: "/boost", icon: Flame, roles: ["owner", "manager"] },
-  { name: "Marketing", href: "/marketing", icon: Megaphone, roles: ["owner", "manager"] },
-  { name: "Tote Stunden", href: "/insights", icon: Lightbulb, roles: ["owner", "manager"] },
-  { name: "Wachstum", href: "/campaigns", icon: TrendingUp, roles: ["owner", "manager"] },
-  { name: "Optimizer", href: "/optimizer", icon: Zap, roles: ["owner", "manager"] },
-  { name: "Bewertungen", href: "/reviews", icon: Star },
-  { name: "Abonnement", href: "/billing", icon: CreditCard, roles: ["owner"] },
-];
+function getNavigation(t: (k: string) => string): NavItem[] {
+  return [
+    { key: "nav.overview",      href: "/",            icon: LayoutDashboard },
+    { key: "nav.profile",       href: "/profile",     icon: UserCircle },
+    { key: "nav.bookings",      href: "/bookings",    icon: BookOpen },
+    { key: "nav.reservations",  href: "/reservations",icon: Calendar },
+    { key: "nav.tables",        href: "/tables",      icon: Armchair },
+    { key: "nav.staff",         href: "/staff",       icon: Users,        roles: ["owner", "manager"] },
+    { key: "nav.payroll",       href: "/payroll",     icon: Wallet,       roles: ["owner"] },
+    { key: "nav.team",          href: "/team",        icon: UsersRound,   roles: ["owner"] },
+    { key: "nav.inventory",     href: "/inventory",   icon: Package,      roles: ["owner", "manager"] },
+    { key: "nav.menu",          href: "/menu",        icon: UtensilsCrossed, roles: ["owner", "manager"] },
+    { key: "nav.pos",           href: "/pos",         icon: ShoppingCart },
+    { key: "nav.finances",      href: "/finances",    icon: DollarSign,   roles: ["owner"] },
+    { key: "nav.analytics",     href: "/analytics",   icon: BarChart3,    roles: ["owner", "manager"] },
+    { key: "nav.boost",         href: "/boost",       icon: Flame,        roles: ["owner", "manager"] },
+    { key: "nav.marketing",     href: "/marketing",   icon: Megaphone,    roles: ["owner", "manager"] },
+    { key: "nav.deadhours",     href: "/insights",    icon: Lightbulb,    roles: ["owner", "manager"] },
+    { key: "nav.growth",        href: "/campaigns",   icon: TrendingUp,   roles: ["owner", "manager"] },
+    { key: "nav.optimizer",     href: "/optimizer",   icon: Zap,          roles: ["owner", "manager"] },
+    { key: "nav.reviews",       href: "/reviews",     icon: Star },
+    { key: "nav.billing",       href: "/billing",     icon: CreditCard,   roles: ["owner"] },
+  ];
+}
 
-const mobileNavigation: NavItem[] = [
-  { name: "Übersicht", href: "/", icon: LayoutDashboard },
-  { name: "Buchungen", href: "/bookings", icon: BookOpen },
-  { name: "Marketing", href: "/marketing", icon: Megaphone, roles: ["owner", "manager"] },
-  { name: "Bewertungen", href: "/reviews", icon: Star },
-  { name: "Personal", href: "/staff", icon: Users, roles: ["owner", "manager"] },
-];
+function getMobileNavigation(t: (k: string) => string): NavItem[] {
+  return [
+    { key: "nav.overview",   href: "/",          icon: LayoutDashboard },
+    { key: "nav.bookings",   href: "/bookings",  icon: BookOpen },
+    { key: "nav.marketing",  href: "/marketing", icon: Megaphone,  roles: ["owner", "manager"] },
+    { key: "nav.reviews",    href: "/reviews",   icon: Star },
+    { key: "nav.staff",      href: "/staff",     icon: Users,      roles: ["owner", "manager"] },
+  ];
+}
 
 function getOwnerInfo() {
   const email = localStorage.getItem("restosmart_owner_email") ?? "";
@@ -291,6 +301,7 @@ function getOwnerInfo() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { t } = useTranslation();
   const { email, name, initials } = getOwnerInfo();
   const { role } = usePermissions();
   const { logout } = useSession();
@@ -298,6 +309,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   async function handleLogout() {
     await logout();
   }
+
+  const navigation = getNavigation(t);
+  const mobileNavigation = getMobileNavigation(t);
 
   const filteredNavigation = navigation.filter((item) => {
     if (!item.roles) return true;
@@ -321,9 +335,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav className="flex-1 space-y-1">
             {filteredNavigation.map((item) => {
               const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+              const label = t(item.key);
               return (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   className={cn(
                     isActive
@@ -339,11 +354,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     )}
                     aria-hidden="true"
                   />
-                  {item.name}
+                  {label}
                 </Link>
               );
             })}
           </nav>
+
+          {/* Language picker in sidebar */}
+          <div className="mt-4 pt-4 border-t border-sidebar-border">
+            <LanguagePicker compact />
+          </div>
         </div>
 
         {/* Owner section */}
@@ -360,7 +380,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={handleLogout}
-              title="Abmelden"
+              title={t("common.logout")}
               className="shrink-0 p-1.5 rounded-lg text-sidebar-foreground/40 hover:text-red-400 hover:bg-red-500/8 transition-all duration-150 cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
@@ -369,7 +389,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Hauptinhalt */}
+      {/* Main content */}
       <main className="flex-1 md:pl-64 overflow-y-auto pb-16 md:pb-0 flex flex-col">
         <TrialBanner />
         <PageErrorBoundary key={location}>
@@ -379,13 +399,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </PageErrorBoundary>
       </main>
 
-      {/* Mobile-Navigation unten */}
+      {/* Mobile bottom nav */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-sidebar border-t border-border flex justify-around items-center h-16 px-2">
         {filteredMobileNav.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+          const label = t(item.key);
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
@@ -393,7 +414,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
             >
               <item.icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium">{item.name}</span>
+              <span className="text-[10px] font-medium">{label}</span>
             </Link>
           );
         })}
@@ -402,13 +423,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <OwnerNotificationBell />
           <span className="text-[10px] font-medium text-muted-foreground">Alerts</span>
         </div>
-        {/* Mobile profile button */}
+        {/* Mobile profile */}
         <Link
           href="/profile"
           className="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Profil</span>
+          <span className="text-[10px] font-medium">{t("nav.profile")}</span>
         </Link>
       </div>
     </div>

@@ -1,0 +1,312 @@
+Build a full production-grade internationalization (i18n) and localization system for the app.
+
+Context:
+This is not a simple text replacement task.
+We need a robust, scalable, high-quality multilingual system for a real app used across Europe.
+
+PRIMARY GOAL
+Implement a complete app-wide language system so the entire app can be used in multiple languages with consistent, accurate, high-quality translations.
+
+The system must:
+- translate the full app properly
+- support automatic device-language detection on first launch
+- allow manual language switching from inside the app
+- apply language changes across the entire app instantly and consistently
+- avoid mixed-language UI at all costs
+- be scalable for future languages and future app growth
+
+==================================================
+CORE REQUIREMENTS
+==================================================
+
+1. FULL APP TRANSLATION SYSTEM
+Implement a real i18n architecture across the full app.
+
+Do NOT hardcode scattered translations in components.
+Do NOT use ad-hoc string replacements.
+Do NOT leave some pages translated and others not.
+
+All user-facing text must be translatable, including:
+- navigation labels
+- tab labels
+- page titles
+- buttons
+- forms
+- placeholders
+- validation messages
+- empty states
+- loading states
+- error messages
+- alerts
+- banners
+- onboarding
+- auth screens
+- restaurant/customer dashboard content
+- settings
+- checkout/payment related text
+- subscription text
+- marketing text
+- notifications text shown inside the UI
+- modal content
+- confirmations
+- legal/support/help text where applicable
+
+No mixed-language rendering is allowed.
+If the app is switched to a language, the app must feel fully in that language.
+
+==================================================
+2. LANGUAGES TO SUPPORT
+==================================================
+
+Implement support for these languages first:
+
+Core European languages:
+- German (de)
+- English (en)
+- French (fr)
+- Italian (it)
+- Spanish (es)
+- Dutch (nl)
+- Portuguese (pt)
+- Turkish (tr)
+
+Optional but recommended if architecture allows clean rollout:
+- Polish (pl)
+- Romanian (ro)
+- Czech (cs)
+- Hungarian (hu)
+- Greek (el)
+- Swedish (sv)
+
+Do NOT add Arabic for now.
+
+German and English should be treated as top-priority quality baselines.
+
+==================================================
+3. DEVICE LANGUAGE AUTO-DETECTION
+==================================================
+
+On first app launch:
+- detect the device/system language automatically
+- if the device language is one of the supported app languages, use it automatically
+- if the device language is not supported, fall back safely to German or English (prefer the current business default if one already exists)
+
+Rules:
+- first launch should feel native to the user
+- user should not be forced to manually choose language unless needed
+- detection must be reliable on mobile
+- after the user manually changes the language, their choice must override device language going forward
+
+==================================================
+4. MANUAL LANGUAGE SWITCHER
+==================================================
+
+Add a clear in-app language switcher.
+
+Requirements:
+- place a language selector in a logical and visible place (for example settings, profile, or top/home area as appropriate)
+- optionally also add a language icon on the home/main entry area if it fits the product cleanly
+- changing language must update the entire app consistently
+- selected language must persist across app restarts
+- language selection UI must be clean and premium
+
+Do not build an ugly developer-style dropdown.
+It should feel intentional and polished.
+
+==================================================
+5. ZERO MIXED LANGUAGE POLICY
+==================================================
+
+This is critical.
+
+The system must prevent cases like:
+- one button in English and another in German
+- page header translated but form fields not translated
+- errors still shown in original language
+- tab labels untranslated
+- modal text left behind in old language
+- server/client mismatch causing flicker into another language
+
+Audit and fix all user-visible strings.
+Move all translatable strings into the i18n system.
+
+If there are dynamic labels, enums, statuses, or backend-driven keys:
+- map them properly into translated labels
+- do not expose raw internal values directly to the UI
+
+==================================================
+6. TRANSLATION QUALITY
+==================================================
+
+Translations must feel natural, native, and product-appropriate.
+
+Requirements:
+- do not use crude literal machine-style phrasing
+- keep terminology consistent across the app
+- use professional UX wording
+- use appropriate tone for a premium consumer/business app
+- ensure German, English, and French especially feel polished
+- do not translate brand names or protected product names incorrectly
+- keep subscription/payment/legal wording careful and precise
+
+Where necessary:
+- define shared terminology rules/glossary
+- reuse consistent wording across similar sections
+
+Examples:
+- the same concept should not be translated 3 different ways in different pages
+- “Bookings”, “Reservations”, “Reviews”, “Subscription”, “Profile”, “Boost”, “Marketing”, etc. should each have consistent labels across the app
+
+==================================================
+7. ARCHITECTURE REQUIREMENTS
+==================================================
+
+Build the language system properly for long-term scalability.
+
+Requirements:
+- centralized translation resources
+- clear namespace structure by feature/module if needed
+- support interpolation/variables
+- support pluralization where needed
+- support dynamic values in sentences
+- support formatted dates/numbers/currencies per locale where applicable
+- avoid rerender glitches or hydration issues
+- persist selected locale in storage
+- initialize locale early so the app does not visibly flash the wrong language
+
+The architecture should be easy to extend later with more languages and more app modules.
+
+==================================================
+8. LOCALIZATION BEYOND STATIC TEXT
+==================================================
+
+Do not stop at translating labels.
+
+Also localize where relevant:
+- dates
+- times
+- numbers
+- currencies
+- form examples/placeholders
+- relative time text
+- plural forms
+- region-sensitive formatting
+
+If the app already uses locale-sensitive formatting in some places, make it consistent.
+
+==================================================
+9. FULL APP MIGRATION
+==================================================
+
+Audit the entire app and migrate all existing hardcoded user-facing strings into the translation system.
+
+This includes both:
+- customer-facing app
+- restaurant/owner dashboard
+if both are part of the same product experience
+
+Search for and migrate:
+- literal UI strings
+- inline button text
+- hardcoded error messages
+- hardcoded empty states
+- toast text
+- notification text in UI
+- form labels
+- headings/subheadings
+- menu items
+- validation copy
+- purchase/checkout text
+- subscription plan labels/descriptions if they are shown in UI
+
+==================================================
+10. FALLBACK + SAFETY
+==================================================
+
+Implement robust fallback behavior:
+- if a translation key is missing, fail safely and visibly in development
+- avoid silent broken production output
+- provide a sane production fallback language
+- do not crash the app because of missing translations
+- ensure unsupported device locales fall back cleanly
+
+In development:
+- make missing keys easy to detect and fix
+
+==================================================
+11. PERFORMANCE + STABILITY
+==================================================
+
+The translation system must be lightweight and stable.
+
+Requirements:
+- no major performance regressions
+- no unnecessary rerender storms
+- no language-switch bugs
+- no broken navigation due to locale changes
+- no race conditions during app startup
+- no text flicker between default language and selected language
+
+==================================================
+12. TESTING / VALIDATION
+==================================================
+
+Perform a complete validation pass after implementation.
+
+Verify:
+- first launch follows device language correctly
+- manual language switching works
+- selected language persists after restart
+- every major screen is translated
+- tab bars / sidebars / menus are translated
+- modals and alerts are translated
+- validation and error states are translated
+- checkout/subscription screens are translated
+- dynamic text and statuses are translated
+- no mixed-language screens remain
+
+Test at least these language paths carefully:
+- German
+- English
+- French
+- Turkish
+
+==================================================
+13. IMPLEMENTATION RULES
+==================================================
+
+- Do NOT redesign the app
+- Do NOT rewrite working business logic unnecessarily
+- Do NOT break routing, auth, payments, or dashboard behavior
+- Keep the current app styling and structure intact
+- Focus on adding a clean, powerful language system and migrating strings correctly
+
+==================================================
+DELIVERABLES
+==================================================
+
+After implementation, report clearly:
+
+1. i18n architecture chosen
+2. Where locale is initialized
+3. How device language detection works
+4. Where manual language switching is located
+5. How language persistence works
+6. Which languages are implemented
+7. Which major app sections were migrated
+8. Any remaining untranslated areas that still need follow-up
+9. Any terminology/glossary decisions made
+10. Any locale formatting support added (dates/currency/etc.)
+
+==================================================
+EXPECTED RESULT
+==================================================
+
+- The app automatically opens in the device language on first launch when supported
+- Users can manually change language from inside the app
+- The selection persists
+- The full app translates consistently
+- No mixed-language UI remains
+- German, English, French, Italian, Spanish, Dutch, Portuguese, and Turkish work properly
+- The app feels native and professional for users across Europe
+- The system is scalable, stable, and production-ready

@@ -3,33 +3,21 @@
  *
  * Primary:  Google Sign-In / Apple Sign-In (when configured)
  * Fallback: Two-step OTP (always available)
- *
- * Social buttons navigate to /api/auth/google or /api/auth/apple.
- * The server handles the full OAuth round-trip and redirects back here
- * with the session already established.
- *
- * OAuth errors come back as ?login_error= query params.
  */
 
 import { useState, useEffect } from "react";
 import { useSession } from "@/contexts/session-context";
 import { RestoLogo } from "@/components/resto-logo";
+import { useTranslation } from "react-i18next";
+import { LanguagePicker } from "@/components/language-picker";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 type Step = "email" | "otp";
-
 type OAuthProviders = { google: boolean; apple: boolean };
 
-const OAUTH_ERROR_MESSAGES: Record<string, string> = {
-  no_account: "Dieses Konto hat keinen Zugriff auf das Business-Dashboard.",
-  auth_failed: "Anmeldung fehlgeschlagen. Bitte versuche es erneut.",
-  cancelled: "Anmeldung abgebrochen.",
-  no_email: "Keine E-Mail-Adresse erhalten. Bitte mit E-Mail anmelden.",
-  invalid: "Ungültige Sitzung. Bitte versuche es erneut.",
-};
-
 export default function Login() {
+  const { t } = useTranslation();
   const { requestOtp, verifyOtp } = useSession();
 
   const [step, setStep] = useState<Step>("email");
@@ -42,7 +30,6 @@ export default function Login() {
   const [providers, setProviders] = useState<OAuthProviders>({ google: false, apple: false });
   const [showOtp, setShowOtp] = useState(false);
 
-  // Fetch which social providers are configured
   useEffect(() => {
     fetch(`${API_BASE}/api/auth/providers`)
       .then((r) => r.json())
@@ -50,19 +37,18 @@ export default function Login() {
       .catch(() => {});
   }, []);
 
-  // Handle OAuth error redirects (?login_error=...)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const loginError = params.get("login_error");
     const provider = params.get("provider");
     if (loginError) {
-      const msg = OAUTH_ERROR_MESSAGES[loginError] ?? "Anmeldung fehlgeschlagen.";
+      const key = `auth.errors.${loginError}`;
+      const msg = t(key, { defaultValue: t("auth.errors.auth_failed") });
       const providerName = provider === "google" ? " (Google)" : provider === "apple" ? " (Apple)" : "";
       setError(msg + providerName);
-      // Clean up URL so refresh doesn't re-trigger the error
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []);
+  }, [t]);
 
   const hasSocial = providers.google || providers.apple;
 
@@ -82,15 +68,12 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     const result = await requestOtp(email.trim().toLowerCase());
     setLoading(false);
-
     if (!result.success) {
-      setError(result.error ?? "Anfrage fehlgeschlagen");
+      setError(result.error ?? t("auth.errors.request_failed"));
       return;
     }
-
     setDevCode(result.devCode ?? null);
     setStep("otp");
   }
@@ -99,12 +82,10 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     const result = await verifyOtp(email.trim().toLowerCase(), code.trim());
     setLoading(false);
-
     if (!result.success) {
-      setError(result.error ?? "Anmeldung fehlgeschlagen");
+      setError(result.error ?? t("auth.errors.verify_failed"));
     }
   }
 
@@ -127,17 +108,24 @@ export default function Login() {
     }}>
       <div style={{ width: "100%", maxWidth: 400 }}>
 
-        {/* ── Logo + Branding ── */}
+        {/* Language picker top-right */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+          <div style={{ color: "#9ca3af" }}>
+            <LanguagePicker compact />
+          </div>
+        </div>
+
+        {/* Logo + branding */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
             <RestoLogo size="lg" inverted />
           </div>
           <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>
-            {step === "otp" ? "Einmalcode eingeben" : "Zum Business-Dashboard anmelden"}
+            {step === "otp" ? t("auth.otp_title") : t("auth.subtitle")}
           </p>
         </div>
 
-        {/* ── OTP Step 2 ── */}
+        {/* OTP Step 2 */}
         {step === "otp" ? (
           <div>
             <div style={{
@@ -149,7 +137,7 @@ export default function Login() {
               fontSize: 13,
               color: "#a78bfa",
             }}>
-              Code an <strong>{email}</strong> gesendet — 10 Minuten gültig.
+              {t("auth.otp_hint", { email })}
             </div>
 
             {devCode && (
@@ -162,9 +150,9 @@ export default function Login() {
                 fontSize: 13,
                 color: "#fbbf24",
               }}>
-                <strong>Entwicklungsmodus</strong>
+                <strong>Dev Mode</strong>
                 <br />
-                Ihr Code:{" "}
+                Code:{" "}
                 <strong style={{ letterSpacing: 4, fontSize: 20, display: "inline-block", marginTop: 4, color: "#fcd34d" }}>
                   {devCode}
                 </strong>
@@ -176,7 +164,7 @@ export default function Login() {
             <form onSubmit={handleVerifyOtp}>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", color: "#9ca3af", fontSize: 13, fontWeight: 500, marginBottom: 6 }}>
-                  Einmalcode (6 Stellen)
+                  {t("auth.otp_title")}
                 </label>
                 <input
                   type="text"
@@ -190,19 +178,14 @@ export default function Login() {
                   autoFocus
                   inputMode="numeric"
                   maxLength={6}
-                  style={{
-                    ...inputStyle,
-                    letterSpacing: 8,
-                    fontSize: 22,
-                    textAlign: "center",
-                  }}
+                  style={{ ...inputStyle, letterSpacing: 8, fontSize: 22, textAlign: "center" }}
                   onFocus={(e) => { e.target.style.borderColor = "rgba(139,92,246,0.6)"; }}
                   onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
                 />
               </div>
 
               <button type="submit" disabled={loading || code.length !== 6} style={btnStyle("primary", loading || code.length !== 6)}>
-                {loading ? "Wird geprüft …" : "Anmelden"}
+                {loading ? t("common.loading") : t("auth.otp_submit")}
               </button>
             </form>
 
@@ -221,15 +204,14 @@ export default function Login() {
                 cursor: "pointer",
               }}
             >
-              {"← Zurück"}
+              {"← "}{t("auth.back")}
             </button>
           </div>
         ) : (
           <div>
-            {/* ── Error from OAuth redirect ── */}
             {error && <ErrorBox message={error} onClose={() => setError(null)} />}
 
-            {/* ── Social sign-in buttons ── */}
+            {/* Social sign-in */}
             {hasSocial && (
               <div style={{ marginBottom: 20 }}>
                 {providers.google && (
@@ -237,18 +219,14 @@ export default function Login() {
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={!!oauthLoading}
-                    style={{
-                      ...socialBtnStyle("#fff"),
-                      color: "#1f2937",
-                      marginBottom: 10,
-                    }}
+                    style={{ ...socialBtnStyle("#fff"), color: "#1f2937", marginBottom: 10 }}
                   >
                     {oauthLoading === "google" ? (
-                      <span style={{ color: "#6b7280" }}>Weiterleitung …</span>
+                      <span style={{ color: "#6b7280" }}>{t("common.loading")}</span>
                     ) : (
                       <>
                         <GoogleIcon />
-                        <span>Mit Google fortfahren</span>
+                        <span>{t("auth.google")}</span>
                       </>
                     )}
                   </button>
@@ -259,18 +237,14 @@ export default function Login() {
                     type="button"
                     onClick={handleAppleSignIn}
                     disabled={!!oauthLoading}
-                    style={{
-                      ...socialBtnStyle("#111"),
-                      color: "#fff",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                    }}
+                    style={{ ...socialBtnStyle("#111"), color: "#fff", border: "1px solid rgba(255,255,255,0.15)" }}
                   >
                     {oauthLoading === "apple" ? (
-                      <span style={{ color: "#9ca3af" }}>Weiterleitung …</span>
+                      <span style={{ color: "#9ca3af" }}>{t("common.loading")}</span>
                     ) : (
                       <>
                         <AppleIcon />
-                        <span>Mit Apple fortfahren</span>
+                        <span>{t("auth.apple")}</span>
                       </>
                     )}
                   </button>
@@ -278,20 +252,14 @@ export default function Login() {
               </div>
             )}
 
-            {/* ── Divider ── */}
+            {/* Divider + email toggle */}
             {hasSocial && !showOtp ? (
               <div>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 16,
-                }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                   <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-                  <span style={{ color: "#4b5563", fontSize: 12 }}>oder</span>
+                  <span style={{ color: "#4b5563", fontSize: 12 }}>{t("auth.or")}</span>
                   <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
                 </div>
-
                 <button
                   type="button"
                   onClick={() => setShowOtp(true)}
@@ -309,21 +277,15 @@ export default function Login() {
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)"; e.currentTarget.style.color = "#c4b5fd"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#9ca3af"; }}
                 >
-                  Mit E-Mail anmelden
+                  {t("auth.show_email_form")}
                 </button>
               </div>
             ) : (
-              /* ── OTP email form (always shown if no social providers, or after click) ── */
               <div>
                 {hasSocial && (
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    marginBottom: 16,
-                  }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                     <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-                    <span style={{ color: "#4b5563", fontSize: 12 }}>oder mit E-Mail</span>
+                    <span style={{ color: "#4b5563", fontSize: 12 }}>{t("auth.or")}</span>
                     <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
                   </div>
                 )}
@@ -331,13 +293,13 @@ export default function Login() {
                 <form onSubmit={handleRequestOtp}>
                   <div style={{ marginBottom: 16 }}>
                     <label style={{ display: "block", color: "#9ca3af", fontSize: 13, fontWeight: 500, marginBottom: 6 }}>
-                      E-Mail-Adresse
+                      {t("common.email")}
                     </label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="ihre@email.at"
+                      placeholder={t("auth.email_placeholder")}
                       required
                       autoFocus={!hasSocial || showOtp}
                       style={inputStyle}
@@ -345,13 +307,12 @@ export default function Login() {
                       onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
                     />
                   </div>
-
                   <button
                     type="submit"
                     disabled={loading || !email}
                     style={btnStyle("primary", loading || !email)}
                   >
-                    {loading ? "Wird geprüft …" : "Code anfordern"}
+                    {loading ? t("common.loading") : t("auth.email_submit")}
                   </button>
                 </form>
               </div>
@@ -359,23 +320,13 @@ export default function Login() {
           </div>
         )}
 
-        <p style={{
-          color: "#374151",
-          fontSize: 12,
-          textAlign: "center",
-          marginTop: 28,
-          lineHeight: 1.5,
-        }}>
-          Nur registrierte Inhaber und Teammitglieder
-          <br />
-          haben Zugang zum Business-Dashboard.
+        <p style={{ color: "#374151", fontSize: 12, textAlign: "center", marginTop: 28, lineHeight: 1.5 }}>
+          {t("auth.subtitle")}
         </p>
       </div>
     </div>
   );
 }
-
-// ── Sub-components ──────────────────────────────────────────────────────────────
 
 function ErrorBox({ message, onClose }: { message: string; onClose?: () => void }) {
   return (
@@ -422,8 +373,6 @@ function AppleIcon() {
     </svg>
   );
 }
-
-// ── Styles ──────────────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
   width: "100%",

@@ -4,20 +4,20 @@ import { UtensilsCrossed, Compass, UserCircle, CalendarDays, Rss, Building2, Set
 import { RestoLogo } from "@/components/resto-logo";
 import { Link } from "wouter";
 import { CustomerNotificationBell } from "@/components/notification-bell";
+import { useTranslation } from "react-i18next";
 
 // ─── Route → tab ownership ────────────────────────────────────────────────────
-// Order matters: more-specific prefixes must come first.
 const ROUTE_TAB_MAP: Array<{ prefix: string; tab: string }> = [
-  { prefix: "/restaurant", tab: "/explore" },   // /restaurant/:id → Entdecken
+  { prefix: "/restaurant", tab: "/explore" },
   { prefix: "/explore",    tab: "/explore" },
-  { prefix: "/plan",       tab: "/meal-plan" },  // /plan/:id shareable link → Essensplan
+  { prefix: "/plan",       tab: "/meal-plan" },
   { prefix: "/meal-plan",  tab: "/meal-plan" },
-  { prefix: "/my-bookings",tab: "/profile" },    // Buchungen → shown in Profil Aktivität tab
-  { prefix: "/friends",    tab: "/profile" },   // /friends → lives inside Profil now
+  { prefix: "/my-bookings",tab: "/profile" },
+  { prefix: "/friends",    tab: "/profile" },
   { prefix: "/settings",   tab: "/settings" },
   { prefix: "/feed",       tab: "/feed" },
   { prefix: "/profile",    tab: "/profile" },
-  { prefix: "/",           tab: "/" },           // catch-all: home
+  { prefix: "/",           tab: "/" },
 ];
 
 function getActiveTab(location: string): string {
@@ -33,31 +33,25 @@ function getActiveTab(location: string): string {
   return "/";
 }
 
-// ─── Smart tab hook ───────────────────────────────────────────────────────────
-
 function useSmartTabNav() {
   const [location, navigate] = useLocation();
   const [pressedTab, setPressedTab] = useState<string | null>(null);
   const activeTab = getActiveTab(location);
 
   const handleTap = (tabHref: string) => {
-    // Flash tap feedback for 180 ms regardless of outcome
     setPressedTab(tabHref);
     setTimeout(() => setPressedTab(null), 180);
 
     if (activeTab === tabHref) {
       if (location === tabHref) {
-        // Already on root → smooth scroll to top
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        // In a nested view → return to section root, then scroll top
         navigate(tabHref);
         requestAnimationFrame(() => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
       }
     } else {
-      // Different section → normal navigate
       navigate(tabHref);
     }
   };
@@ -65,25 +59,12 @@ function useSmartTabNav() {
   return { activeTab, pressedTab, handleTap };
 }
 
-// ─── Nav items ────────────────────────────────────────────────────────────────
-
-const NAV_ITEMS = [
-  { href: "/",          label: "Startseite",   icon: UtensilsCrossed },
-  { href: "/explore",   label: "Entdecken",    icon: Compass },
-  { href: "/meal-plan", label: "Essensplan",   icon: CalendarDays },
-  { href: "/feed",      label: "Feed",         icon: Rss },
-  { href: "/profile",   label: "Profil",       icon: UserCircle },
-  { href: "/settings",  label: "Einstellungen",icon: Settings },
-];
-
-// ─── Spring easing for icon feedback ─────────────────────────────────────────
 const SPRING = "0.18s cubic-bezier(0.34, 1.56, 0.64, 1)";
 const EASE   = "0.15s ease";
 
-// ─── Layout ───────────────────────────────────────────────────────────────────
-
 export function Layout({ children }: { children: React.ReactNode }) {
   const { activeTab, pressedTab, handleTap } = useSmartTabNav();
+  const { t } = useTranslation();
   const [customerEmail, setCustomerEmail] = useState(
     () => localStorage.getItem("restosmart_email") ?? ""
   );
@@ -93,10 +74,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("storage", sync);
   }, []);
 
+  const NAV_ITEMS = [
+    { href: "/",          label: t("nav.home", "Startseite"),   icon: UtensilsCrossed },
+    { href: "/explore",   label: t("nav.explore"),    icon: Compass },
+    { href: "/meal-plan", label: t("nav.meal_plan", "Essensplan"),   icon: CalendarDays },
+    { href: "/feed",      label: t("nav.feed"),         icon: Rss },
+    { href: "/profile",   label: t("nav.profile"),       icon: UserCircle },
+    { href: "/settings",  label: t("nav.settings"),icon: Settings },
+  ];
+
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
 
-      {/* ── Desktop header ─────────────────────────────────────────────────── */}
+      {/* Desktop header */}
       <header className="hidden md:flex sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/">
@@ -124,19 +114,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* ── Main content ───────────────────────────────────────────────────── */}
+      {/* Main content */}
       <main className="flex-1 w-full pb-20 md:pb-0">
         {children}
       </main>
 
-      {/* ── Mobile notification bell (top-right, visible only on mobile) ─── */}
+      {/* Mobile notification bell */}
       {customerEmail && (
         <div className="md:hidden fixed top-3 right-3 z-[60]">
           <CustomerNotificationBell email={customerEmail} />
         </div>
       )}
 
-      {/* ── Mobile bottom nav ──────────────────────────────────────────────── */}
+      {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div className="mx-3 mb-3 rounded-2xl bg-white/92 backdrop-blur-xl border border-border/60 shadow-xl shadow-black/10 px-2 py-2">
           <div className="flex items-center justify-around gap-0.5">
@@ -145,9 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               const isPressed = pressedTab === item.href;
               const Icon = item.icon;
 
-              // Icon-pill spring: compress on press, slight lift when active
               const pillScale = isPressed ? 0.80 : isActive ? 1.06 : 1;
-              // Button-level spring: gentle squeeze on any tap
               const btnScale  = isPressed ? 0.94 : 1;
 
               return (
@@ -160,7 +148,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className="flex flex-col items-center gap-0.5 flex-1 py-1 min-w-0 cursor-pointer bg-transparent border-0"
                 >
-                  {/* Icon pill */}
                   <div
                     style={{
                       transform: `scale(${pillScale})`,
@@ -181,8 +168,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       className={isActive ? "text-white" : "text-muted-foreground"}
                     />
                   </div>
-
-                  {/* Label */}
                   <span
                     style={{
                       fontSize:   isActive ? "10px" : "9px",
@@ -202,9 +187,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      {/* ── Desktop footer ─────────────────────────────────────────────────── */}
+      {/* Desktop footer */}
       <footer className="hidden md:block border-t mt-auto">
-        {/* For Business banner */}
         <div className="bg-gradient-to-r from-primary/8 via-background to-accent/8 border-b border-border/40 py-5 px-6">
           <div className="container mx-auto flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
@@ -212,15 +196,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Building2 className="w-4.5 h-4.5 text-white" />
               </div>
               <div>
-                <p className="font-bold text-sm text-foreground leading-tight">{"Restaurant, Café oder Bar?"}</p>
-                <p className="text-xs text-muted-foreground">{"Mehr Gäste mit RestoSmart — kostenlos starten"}</p>
+                <p className="font-bold text-sm text-foreground leading-tight">{t("settings.for_business_title")}</p>
+                <p className="text-xs text-muted-foreground">{t("settings.for_business_body")}</p>
               </div>
             </div>
             <Link
               href="/for-business"
               className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
             >
-              {"Für Betriebe"} <Building2 className="w-3.5 h-3.5" />
+              {t("nav.for_business")} <Building2 className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -231,15 +215,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center justify-center gap-4 mb-2 flex-wrap text-xs">
               <Link href="/for-business" className="text-primary font-semibold hover:underline flex items-center gap-1">
-                <Building2 className="w-3 h-3" /> {"Für Betriebe"}
+                <Building2 className="w-3 h-3" /> {t("nav.for_business")}
               </Link>
-              <span className="text-border">·</span>
-              <Link href="/explore" className="hover:underline">Entdecken</Link>
-              <span className="text-border">·</span>
-              <Link href="/profile" className="hover:underline">Profil</Link>
+              <span className="text-border">{"·"}</span>
+              <Link href="/explore" className="hover:underline">{t("nav.explore")}</Link>
+              <span className="text-border">{"·"}</span>
+              <Link href="/profile" className="hover:underline">{t("nav.profile")}</Link>
             </div>
-            <p className="italic text-muted-foreground/70 mb-1">Gutes Essen, gute Menschen.</p>
-            <p>&copy; {new Date().getFullYear()} RestoSmart. Alle Rechte vorbehalten.</p>
+            <p className="italic text-muted-foreground/70 mb-1">{"Gutes Essen, gute Menschen."}</p>
+            <p>&copy; {new Date().getFullYear()} RestoSmart.</p>
           </div>
         </div>
       </footer>

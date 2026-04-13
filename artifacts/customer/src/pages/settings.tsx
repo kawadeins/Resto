@@ -15,6 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useHabitLoop } from "@/hooks/use-habit-loop";
 import { ProfileFeedbackWidget } from "@/components/app-rating-prompt";
+import { useTranslation } from "react-i18next";
+import { LanguagePicker } from "@/components/language-picker";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -139,6 +141,7 @@ function Section({
 export default function SettingsPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const habit = useHabitLoop();
 
   // ── Email / auth ─────────────────────────────────────────────────────────
@@ -356,6 +359,11 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+        </Section>
+
+        {/* ── 3b. Sprache ─────────────────────────────────────────────── */}
+        <Section icon={Globe} title={t("settings.language")}>
+          <LanguagePicker variant="inline" />
         </Section>
 
         {/* ── 4. Datenschutz ─────────────────────────────────────────── */}
