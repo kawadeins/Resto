@@ -11,7 +11,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
 import { PermissionProvider } from "@/hooks/use-permissions";
 import { RoleGuard } from "@/components/access-denied";
-import NotFound from "@/pages/not-found";
 import Overview from "@/pages/overview";
 import Staff from "@/pages/staff";
 import Inventory from "@/pages/inventory";
@@ -447,8 +446,6 @@ function AuthenticatedApp() {
               <Layout>
                 <Switch>
                   <Route path="/login"><Redirect to="/" /></Route>
-                  {/* Handle trailing-slash strip edge case: empty string → home */}
-                  <Route path=""><Redirect to="/" /></Route>
                   <Route path="/" component={Overview} />
                   <Route path="/profile" component={Profile} />
                   <Route path="/bookings" component={Bookings} />
@@ -471,7 +468,7 @@ function AuthenticatedApp() {
                   <Route path="/billing">{() => <RoleGuard allowed="owner" section="Abonnement"><Billing /></RoleGuard>}</Route>
                   <Route path="/team">{() => <RoleGuard allowed="owner" section="Team"><Team /></RoleGuard>}</Route>
                   <Route path="/super-admin">{() => <RoleGuard allowed="owner" section="Admin"><SuperAdmin /></RoleGuard>}</Route>
-                  <Route component={NotFound} />
+                  <Route><Redirect to="/" /></Route>
                 </Switch>
               </Layout>
             </PermissionProvider>

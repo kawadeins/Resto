@@ -1,0 +1,89 @@
+Perform a full hard reset of the restaurant owner dashboard entry.
+
+Context:
+The current owner dashboard is broken and renders a 404 component inside the dashboard area.
+Previous attempts to patch it (welcome screen, UI fixes) failed.
+We no longer want to fix it — we want to REMOVE the broken structure entirely.
+
+Task:
+Completely remove the current dashboard landing implementation and rebuild a clean, working entry point.
+
+CRITICAL RULES:
+- Do NOT patch the existing code
+- Do NOT reuse the broken layout
+- Do NOT render any fallback, 404, or placeholder UI
+- Do NOT add welcome screens or temporary content
+
+STEP 1 — REMOVE BROKEN SOURCES
+Search and DELETE or disconnect:
+- Any component rendering:
+  "404 – Seite nicht gefunden"
+  "Diese Seite existiert nicht oder wurde verschoben."
+- Any NotFound component used inside dashboard layout
+- Any fallback route inside owner dashboard
+- Any conditional render that returns error UI
+
+STEP 2 — FIX ROUTING ROOT
+Ensure the owner dashboard has a clean root route:
+Example:
+- /owner
+- /dashboard
+- /(owner-tabs)
+
+This root must:
+- ALWAYS resolve to a valid screen
+- NEVER depend on nested routes to exist
+- NEVER fall back to not-found
+
+STEP 3 — CREATE CLEAN ENTRY SCREEN
+Create a minimal, stable dashboard root screen:
+
+- No API dependency
+- No async loading required
+- No conditional rendering
+
+Just render a clean container (empty or with basic layout structure)
+
+Example structure:
+- SafeAreaView
+- Main container
+- (optional) empty state layout
+
+NO TEXT REQUIRED if not needed.
+
+STEP 4 — FIX TAB NAVIGATION
+Check bottom navigation:
+
+Each tab must point to an EXISTING route:
+- Übersicht
+- Buchungen
+- Marketing
+- Bewertungen
+- Personal
+- Alerts
+- Profil
+
+If any tab points to a missing route:
+→ Fix the route OR temporarily disable the tab
+
+STEP 5 — REMOVE FALLBACK BEHAVIOR
+Globally ensure:
+- No "not-found.tsx" is used inside dashboard
+- No wildcard (*) routes inside dashboard stack
+- No redirect to missing routes
+
+STEP 6 — LOGIN FLOW
+After login (email + code):
+User MUST be redirected directly to the dashboard root screen.
+
+NO intermediate screen
+NO error flash
+NO 404 render
+
+EXPECTED RESULT:
+- User logs in
+→ lands directly inside a clean, working dashboard
+- No 404 anywhere
+- No fallback UI
+- Navigation stable
+- Dashboard root always renders successfully
