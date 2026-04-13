@@ -1,0 +1,86 @@
+Perform a full forensic audit and repair pass on the restaurant owner dashboard and restore it to a stable production-ready state.
+
+Context:
+The owner dashboard was previously working better, but recent changes broke multiple sections.
+We do NOT want cosmetic patching.
+We do NOT want placeholder workarounds.
+We want the dashboard repaired properly and returned to a clean, stable, working state.
+
+PRIMARY GOAL
+Restore the owner dashboard so it behaves like a real production dashboard again:
+- all main sections load correctly
+- no embedded error screens
+- no broken routes
+- no runtime crashes
+- no undefined/invalid data shape failures
+- no fallback 404 blocks inside valid dashboard pages
+
+IMPORTANT RULES
+1. Do NOT redesign the whole dashboard.
+2. Do NOT remove working features unnecessarily.
+3. Do NOT replace real sections with empty placeholders unless absolutely required as a temporary safety fallback.
+4. Fix root causes, not symptoms.
+5. Preserve the existing premium dark dashboard style.
+6. Keep all existing owner modules and navigation structure intact unless a route is truly invalid.
+7. Every fix must be production-safe, typed, and defensive.
+
+==================================================
+PHASE 1 — ROOT CAUSE INVESTIGATION
+==================================================
+
+Audit the full owner dashboard flow end-to-end:
+
+- login redirect for restaurant owner
+- dashboard root route
+- nested owner layout
+- sidebar navigation
+- page loaders
+- page-level data fetching
+- shared hooks/stores/providers
+- API response shapes
+- all error boundaries / fallback states
+
+Find what changed recently that caused:
+- embedded 404 / not-found behavior
+- sections failing to load
+- invalid data assumptions
+- crashes like:
+  "promos?.filter is not a function"
+
+Search for all recent breakpoints including:
+- route changes
+- renamed files
+- moved pages
+- changed layout wrappers
+- changed response contracts
+- changed mock/seed data
+- changed loader return types
+- changed dashboard config arrays
+- changed tab/section registry logic
+
+==================================================
+PHASE 2 — FIX DASHBOARD ROUTING AND LAYOUT
+==================================================
+
+Repair the owner dashboard architecture so it is internally consistent.
+
+Requirements:
+- Dashboard root must always resolve to a valid owner page
+- No valid owner page may render a not-found component inside the main content area
+- Sidebar links must only target existing pages
+- Nested routes must match the actual file/router structure
+- Invalid redirects must be removed
+- Wildcard/fallback routes must not hijack valid owner pages
+
+Check and fix:
+- owner root entry page
+- owner layout
+- sidebar route mapping
+- default selected page
+- route guards
+- redirect after email+code login
+- deep links to sections
+
+If a page should exist but route is broken:
+- repair the route
+If a sidebar item points

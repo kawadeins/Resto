@@ -47,7 +47,8 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["auto-campaign-log", RESTAURANT_ID],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/promotions/auto-campaign/log?restaurantId=${RESTAURANT_ID}`);
+      const r = await fetch(`${API_BASE}/api/promotions/auto-campaign/log?restaurantId=${RESTAURANT_ID}`, { credentials: "include" });
+      if (!r.ok) return null;
       return r.json();
     },
     refetchInterval: 5 * 60 * 1000,

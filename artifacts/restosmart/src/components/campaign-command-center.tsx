@@ -115,12 +115,10 @@ export function CampaignCommandCenter() {
   const { data: promos } = useQuery({
     queryKey: ["promotions-all", RESTAURANT_ID],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/promotions?restaurantId=${RESTAURANT_ID}`);
-      return r.json() as Promise<Array<{
-        id: number; type: string; status: string;
-        impressions: number; clicks: number; bookings_attributed: number;
-        created_at: string;
-      }>>;
+      const r = await fetch(`${API_BASE}/api/promotions?restaurantId=${RESTAURANT_ID}`, { credentials: "include" });
+      if (!r.ok) return [] as Array<{ id: number; type: string; status: string; impressions: number; clicks: number; bookings_attributed: number; created_at: string }>;
+      const data = await r.json();
+      return (Array.isArray(data) ? data : []) as Array<{ id: number; type: string; status: string; impressions: number; clicks: number; bookings_attributed: number; created_at: string }>;
     },
     refetchInterval: 30_000,
   });
@@ -128,7 +126,8 @@ export function CampaignCommandCenter() {
   const { data: roi } = useQuery({
     queryKey: ["roi-week", RESTAURANT_ID],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/promotions/roi?restaurantId=${RESTAURANT_ID}&period=week`);
+      const r = await fetch(`${API_BASE}/api/promotions/roi?restaurantId=${RESTAURANT_ID}&period=week`, { credentials: "include" });
+      if (!r.ok) return null;
       return r.json() as Promise<{
         summary: {
           totalSpent: number; totalEstReturn: number;
@@ -144,7 +143,8 @@ export function CampaignCommandCenter() {
   const { data: autoCampaign } = useQuery({
     queryKey: ["auto-campaign-log", RESTAURANT_ID],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/promotions/auto-campaign/log?restaurantId=${RESTAURANT_ID}`);
+      const r = await fetch(`${API_BASE}/api/promotions/auto-campaign/log?restaurantId=${RESTAURANT_ID}`, { credentials: "include" });
+      if (!r.ok) return null;
       return r.json() as Promise<{ settings: { enabled: boolean; daily_max_cents: number; weekly_max_cents: number } | null; log: any[] }>;
     },
     refetchInterval: 60_000,
@@ -153,7 +153,8 @@ export function CampaignCommandCenter() {
   const { data: recs } = useQuery({
     queryKey: ["recommendations-cmd", RESTAURANT_ID],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/promotions/recommendations?restaurantId=${RESTAURANT_ID}`);
+      const r = await fetch(`${API_BASE}/api/promotions/recommendations?restaurantId=${RESTAURANT_ID}`, { credentials: "include" });
+      if (!r.ok) return null;
       return r.json() as Promise<{
         demandScore: number; currentHour: number;
         recommendations: Array<{ label: string; confidence: number; window: string; emoji: string }>;

@@ -75,7 +75,11 @@ export default function Overview() {
 
   const { data: pilotStatus } = useQuery<PilotStatus>({
     queryKey: ["pilot-status"],
-    queryFn: () => fetch("/api/pilot/status").then(r => r.json()),
+    queryFn: async () => {
+      const r = await fetch("/api/pilot/status");
+      if (!r.ok) return null;
+      return r.json();
+    },
     refetchInterval: 60000,
   });
 
@@ -161,7 +165,11 @@ export default function Overview() {
     }>;
   }>({
     queryKey: ["local-reach"],
-    queryFn: () => fetch("/api/discounts/local-reach").then((r) => r.json()),
+    queryFn: async () => {
+      const r = await fetch("/api/discounts/local-reach");
+      if (!r.ok) return null;
+      return r.json();
+    },
     staleTime: 2 * 60 * 1000,
   });
 
@@ -183,7 +191,11 @@ export default function Overview() {
 
   const { data: attendanceToday, isLoading: loadingAttendance, refetch: refetchAttendance } = useQuery<AttendanceRecord[]>({
     queryKey: ["attendance-today"],
-    queryFn: () => fetch("/api/attendance/today").then((r) => r.json()),
+    queryFn: async () => {
+      const r = await fetch("/api/attendance/today");
+      if (!r.ok) return [];
+      return r.json();
+    },
     refetchInterval: 60000,
   });
 
