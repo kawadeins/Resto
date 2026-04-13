@@ -1,0 +1,419 @@
+Implement a full production-grade multilingual localization system (i18n) across the entire RestoSmart app.
+
+IMPORTANT:
+- This is NOT a simple text replacement task
+- This is NOT a partial translation patch
+- This is a full internationalization architecture task
+- The system must be robust, scalable, and complete
+- Do NOT leave mixed-language UI anywhere
+- Do NOT hardcode translated strings directly inside components unless part of a clean i18n system
+- The app must support both:
+  1. automatic device/browser language detection
+  2. manual language switching inside the app
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Build a complete multilingual translation system so the entire app can run in the user’s language automatically and consistently.
+
+When the app opens:
+- it should detect the phone/browser/app language automatically
+- and default to that language if supported
+
+Also:
+- user must be able to manually switch language from inside the app
+- once changed, the app must remember that choice
+- all UI text must update completely
+- no mixed German/English/French text should remain
+
+==================================================
+1. LANGUAGES TO SUPPORT
+==================================================
+
+Implement these languages first:
+
+- German (de) — default source language if current app text is German
+- English (en)
+- French (fr)
+- Italian (it)
+- Spanish (es)
+- Dutch (nl)
+- Turkish (tr)
+- Polish (pl)
+
+Optional if easy and clean:
+- Portuguese (pt)
+- Romanian (ro)
+- Czech (cs)
+
+Do NOT add Arabic in this pass.
+
+==================================================
+2. FULL I18N ARCHITECTURE (CRITICAL)
+==================================================
+
+Implement a real i18n system across the whole app.
+
+Requirements:
+- centralized translation files/resources
+- stable translation keys
+- no scattered ad hoc translation hacks
+- no duplicated translation logic in many components
+- no partial/manual page-by-page inconsistent setup
+
+Use a clean architecture such as:
+- namespace-based translation files
+- feature/module grouping where useful
+- shared helper for translation lookup
+- locale persistence
+
+This must be scalable and maintainable.
+
+==================================================
+3. AUTOMATIC LANGUAGE DETECTION
+==================================================
+
+On first app open / first visit:
+
+- detect device/browser language
+- if the language is supported, automatically use it
+- if unsupported, fall back cleanly to German or the chosen base language
+
+Examples:
+- iPhone in French → app opens in French
+- browser in English → app opens in English
+- unsupported locale → fallback safely
+
+This should work for:
+- mobile web
+- app shell / installed app behavior if relevant
+- browser usage
+
+==================================================
+4. MANUAL LANGUAGE SWITCHER
+==================================================
+
+Add a clear language switcher in the app.
+
+At minimum:
+- visible in settings
+- optionally also accessible from a top-level home/header/globe icon if it fits cleanly
+
+The user must be able to switch manually between supported languages.
+
+Requirements:
+- language changes immediately
+- no reload confusion if avoidable
+- selection persists for future sessions
+- override manual choice over automatic detection
+
+Examples:
+- German user switches to English → app stays English next time
+- French phone but user wants German → app respects manual choice
+
+==================================================
+5. TRANSLATE THE ENTIRE APP (NO MIXED UI)
+==================================================
+
+This is critical.
+
+Translate ALL visible UI strings across the app, including:
+
+CUSTOMER APP:
+- home
+- discover
+- restaurant pages
+- bookings
+- profile
+- settings
+- feed
+- posts
+- comments
+- chat
+- group plans
+- notifications
+- errors
+- empty states
+- buttons
+- badges
+- toasts
+- modals
+- onboarding/login
+- premium upgrade text on customer side
+
+OWNER DASHBOARD:
+- sidebar
+- owner dashboard home
+- bookings/reservations
+- reviews
+- analytics
+- billing
+- team/staff
+- wallet
+- campaigns/boost
+- growth
+- optimizer
+- empty states
+- errors
+- settings/business texts
+
+NO mixed-language leftovers.
+No German buttons inside English pages.
+No English toasts inside French flow.
+
+==================================================
+6. DYNAMIC / VARIABLE TEXT SUPPORT
+==================================================
+
+The translation system must correctly support dynamic strings such as:
+
+- counts
+- user names
+- restaurant names
+- date/time related UI
+- pluralization
+- badges
+- status labels
+
+Examples:
+- "1 Buchung" vs "2 Buchungen"
+- "3 new notifications"
+- "Plan in 2 Stunden"
+- "5 friends"
+
+Use proper interpolation/pluralization support where needed.
+Do not build a naive static-only text system.
+
+==================================================
+7. DATE / TIME / NUMBER LOCALIZATION
+==================================================
+
+Localize formatting too, not only static words.
+
+Requirements:
+- dates should format according to selected locale
+- times should feel native to the language/locale
+- numbers/currency formatting should be locale-aware where appropriate
+
+Examples:
+- German date formatting in German
+- French formatting in French
+- English formatting in English
+
+Do not keep one formatting style for all languages if the system can localize cleanly.
+
+==================================================
+8. TRANSLATION QUALITY (IMPORTANT)
+==================================================
+
+Do NOT do low-quality literal translation.
+
+The wording must feel natural, app-friendly, and premium in each language.
+
+Requirements:
+- natural microcopy
+- native-feeling CTA labels
+- consistent terminology
+- same meaning across languages
+- no awkward machine-like phrasing in visible UI
+
+Especially important for:
+- buttons
+- notifications
+- premium/paywall text
+- booking flow
+- social/feed actions
+- owner dashboard tools
+
+==================================================
+9. FALLBACK SAFETY
+==================================================
+
+Build strong fallback behavior.
+
+If a translation key is missing:
+- use fallback language
+- do not show broken raw keys in production UI
+- do not crash
+- ideally log missing keys for developers
+
+This system must be resilient.
+
+==================================================
+10. PERSISTENCE
+==================================================
+
+Store the selected language persistently.
+
+Requirements:
+- remember language across sessions
+- apply early during app load
+- avoid visible flash of wrong language if possible
+
+Manual user choice must have priority over auto-detected language.
+
+==================================================
+11. SETTINGS INTEGRATION
+==================================================
+
+Inside settings, add a proper language section.
+
+Example labels:
+- Sprache
+- Language
+- Langue
+- Lingua
+- Idioma
+
+Allow clean selection from supported languages.
+
+Optionally show native language names in the picker:
+- Deutsch
+- English
+- Français
+- Italiano
+- Español
+- Nederlands
+- Türkçe
+- Polski
+
+This should feel polished and easy to use.
+
+==================================================
+12. HOME / HEADER LANGUAGE ACCESS
+==================================================
+
+If it fits the product cleanly, add a small language/globe access point on the home screen or header.
+
+This is optional if settings-based switching is already clean and enough.
+
+Do NOT clutter the UI.
+If added, it must feel intentional and premium.
+
+==================================================
+13. OWNER DASHBOARD ALSO REQUIRED
+==================================================
+
+Do NOT limit this to the customer app only.
+
+The restaurant owner dashboard must also support the same multilingual system.
+
+Requirements:
+- dashboard text fully translated
+- sidebar translated
+- owner tools translated
+- welcome/default dashboard home translated
+- empty states / errors / buttons translated
+
+No owner-side mixed-language UI.
+
+==================================================
+14. DO NOT TRANSLATE USER CONTENT BLINDLY
+==================================================
+
+Important distinction:
+
+Translate the app/interface/system text.
+
+Do NOT automatically rewrite user-generated content such as:
+- post captions
+- chat messages
+- restaurant names
+- personal bios
+- custom notes
+unless there is a separate intentional translation feature.
+
+Keep user content original by default.
+Only localize system UI.
+
+==================================================
+15. QA / FULL TRANSLATION AUDIT
+==================================================
+
+After implementing i18n, perform a full audit.
+
+Check for:
+- hardcoded strings still left in components
+- mixed-language pages
+- unlocalized modals
+- untranslated toasts
+- untranslated empty states
+- untranslated owner dashboard sections
+- untranslated validation messages
+- untranslated notification labels
+
+Fix all visible leftovers.
+
+==================================================
+16. PERFORMANCE / STABILITY
+==================================================
+
+The translation system must be production-safe.
+
+Requirements:
+- no major render lag
+- no broken hydration/state issues
+- no flashing between languages
+- no memory of wrong language after switching
+- no broken navigation after locale change
+
+==================================================
+17. FINAL VALIDATION
+==================================================
+
+Verify all of the following:
+
+A. App detects device/browser language automatically
+B. Supported language is applied automatically on first load
+C. Manual language switch works
+D. Manual selection persists
+E. Entire customer app changes language fully
+F. Entire owner dashboard changes language fully
+G. Dates/times/numbers localize correctly
+H. No mixed-language pages remain
+I. No broken fallback keys appear
+J. User-generated content stays original unless intentionally handled otherwise
+
+==================================================
+18. FINAL REPORT
+==================================================
+
+Return a structured report with:
+
+A. i18n architecture used
+B. supported languages implemented
+C. automatic language detection status
+D. manual language switcher status
+E. customer app translation coverage
+F. owner dashboard translation coverage
+G. fallback/missing key behavior
+H. remaining untranslated strings if any
+I. known follow-up items if any
+
+Classify each area as:
+- Implemented
+- Partially implemented
+- Needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+RestoSmart must become a truly multilingual product.
+
+The app should automatically feel native to users across Europe.
+
+Every important system text must fully switch language:
+- customer app
+- owner dashboard
+- buttons
+- settings
+- modals
+- errors
+- notifications
+- empty states
+
+No mixed-language UI.
+No partial translation.
+A real production-ready multilingual system.
