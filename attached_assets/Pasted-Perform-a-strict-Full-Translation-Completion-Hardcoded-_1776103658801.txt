@@ -1,0 +1,332 @@
+Perform a strict "Full Translation Completion + Hardcoded String Elimination" pass across the entire app.
+
+IMPORTANT:
+- The translation system is NOT complete yet
+- This is NOT a basic i18n setup task anymore
+- This is a forced completion + audit + repair pass
+- You must find and eliminate all remaining hardcoded visible strings
+- Do NOT stop at partial translation
+- The app must fully switch language when the user changes language
+- No mixed-language UI is acceptable
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Make translation truly complete and production-ready.
+
+When the user changes language:
+- every visible UI string must change
+- every button label must change
+- every tab label must change
+- every hero text must change
+- every placeholder must change
+- every badge must change
+- every modal text must change
+- every settings label must change
+- every owner dashboard string must change
+
+No German-English mixed UI.
+No English labels left in German mode.
+No German labels left in English/French/etc. mode.
+
+==================================================
+1. FIND AND REMOVE ALL HARDCODED STRINGS (CRITICAL)
+==================================================
+
+You must perform a real codebase audit and search for remaining hardcoded UI strings.
+
+Specifically inspect and replace hardcoded visible text in:
+
+CUSTOMER APP:
+- bottom navigation labels
+- home page hero text
+- CTA buttons
+- search placeholders
+- category chips
+- feed labels
+- profile labels
+- settings labels
+- plan labels
+- booking labels
+- restaurant page labels
+- chat labels
+- friend request labels
+- comments/post labels
+- notifications
+- success/error toasts
+- empty states
+- modals/dialogs
+
+OWNER DASHBOARD:
+- sidebar labels
+- welcome page
+- cards
+- settings
+- tables
+- reviews
+- analytics
+- billing
+- marketing
+- boost
+- staff/team
+- inventory
+- forms
+- buttons
+- empty states
+- modals
+- status labels
+
+Search for ALL remaining visible strings and move them into the i18n system.
+
+==================================================
+2. FIX THE BOTTOM NAVIGATION (CRITICAL)
+==================================================
+
+The screenshot proves the bottom nav is still not fully localized.
+
+You must ensure these labels are translated by the active language system:
+- Home
+- Explore
+- Meal Plan
+- Feed
+- Profile
+- Settings
+
+These must NEVER remain hardcoded.
+
+They must fully change according to active locale.
+
+==================================================
+3. FIX HERO / LANDING TEXT
+==================================================
+
+Audit and fully localize:
+- welcome headings
+- changing hero slogans
+- subheadings
+- CTA text
+- search placeholder
+- homepage chips/tags
+
+The entire first screen must translate fully when locale changes.
+
+No mixed homepage text allowed.
+
+==================================================
+4. FIX PLACEHOLDERS / INPUT TEXT
+==================================================
+
+Audit and localize all:
+- placeholders
+- helper text
+- form labels
+- validation text
+- inline hints
+
+These are often missed and must be included.
+
+==================================================
+5. FIX SETTINGS / PROFILE / SOCIAL TEXT
+==================================================
+
+Audit and localize all strings in:
+- profile
+- public profile
+- settings
+- friend system
+- chat
+- feed
+- comments
+- posts
+- social actions
+
+Examples:
+- add friend
+- send message
+- chat open
+- save
+- cancel
+- edit profile
+- notifications
+- privacy labels
+
+==================================================
+6. FIX OWNER DASHBOARD TRANSLATION TOO
+==================================================
+
+Do NOT limit the completion to customer app only.
+
+Audit and complete translation for the owner dashboard as well:
+- sidebar
+- route/page titles
+- welcome/home screen
+- buttons
+- forms
+- empty states
+- status chips
+- modals
+
+==================================================
+7. FORCE REACTIVE LANGUAGE SWITCHING
+==================================================
+
+When the user changes language manually:
+- the visible UI must update immediately
+- no need to manually refresh the app to see changes unless absolutely unavoidable
+- if refresh is required for technical reasons, make it controlled and consistent
+
+Language switching must feel real and complete.
+
+==================================================
+8. NO MIXED-LANGUAGE LEFTOVERS
+==================================================
+
+This is the main quality rule:
+
+After switching language, there must NOT be:
+- English bottom tabs under German hero
+- German buttons inside English settings
+- untranslated chips
+- untranslated toast
+- untranslated modal
+- untranslated empty states
+
+If even one major visible section stays in the wrong language, the task is not complete.
+
+==================================================
+9. TRANSLATION FILE COVERAGE AUDIT
+==================================================
+
+Audit translation resources and confirm that every major namespace/module has coverage.
+
+Suggested coverage areas:
+- navigation
+- home
+- discover
+- restaurants
+- bookings
+- plans
+- feed
+- posts
+- comments
+- profile
+- settings
+- notifications
+- auth/login
+- premium
+- dashboard
+- reviews
+- analytics
+- billing
+- team/staff
+
+If keys are missing:
+- add them
+- do not fall back silently to hardcoded text
+
+==================================================
+10. FALLBACK BEHAVIOR
+==================================================
+
+If a translation key is missing:
+- use fallback language safely
+- do not show raw translation keys in UI
+- do not leave blank labels
+- do not crash rendering
+
+But also:
+- log/report missing keys for cleanup
+
+==================================================
+11. USER-GENERATED CONTENT RULE
+==================================================
+
+Do NOT translate user-generated content automatically.
+
+Do translate only system/interface text.
+
+Keep original:
+- user names
+- bios
+- post captions
+- chat messages
+- restaurant names if custom/user-provided
+
+Only localize platform/system UI.
+
+==================================================
+12. FULL QA PASS (MANDATORY)
+==================================================
+
+After replacing hardcoded strings, perform a full click-through translation QA pass.
+
+You must manually test language switching and inspect:
+
+CUSTOMER APP:
+A. home
+B. discover
+C. restaurant page
+D. plans
+E. feed
+F. posts/comments
+G. profile
+H. settings
+I. notifications
+J. auth/login
+
+OWNER DASHBOARD:
+K. dashboard root
+L. sidebar
+M. reviews
+N. bookings
+O. billing
+P. analytics
+Q. team
+R. marketing/boost
+S. settings
+
+Confirm every visible label changes correctly.
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+Return a strict report with:
+
+A. Remaining hardcoded strings found
+B. Which modules were fixed
+C. Bottom navigation translation status
+D. Homepage translation status
+E. Settings/profile/feed translation status
+F. Owner dashboard translation status
+G. Remaining untranslated strings if any
+H. Whether full locale switching now works end-to-end
+
+Classify each area as:
+- Fully fixed
+- Partially fixed
+- Still needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+Changing the language must now fully translate the app.
+
+Not partially.
+Not visually mixed.
+Not just some pages.
+
+The whole visible system UI must switch language cleanly:
+- customer app
+- owner dashboard
+- buttons
+- tabs
+- placeholders
+- modals
+- empty states
+- toasts
+- labels
+
+This task is only complete when no major visible hardcoded text remains.

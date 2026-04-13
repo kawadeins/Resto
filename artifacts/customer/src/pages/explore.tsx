@@ -13,18 +13,19 @@ import { useGeolocation } from "@/hooks/use-geolocation";
 import { MapView } from "@/components/map-view";
 import { rankHyperLocal } from "@/lib/hyper-local";
 import { useListFlashDeals } from "@workspace/api-client-react";
+import { useTranslation } from "react-i18next";
 
 type ViewMode = "list" | "map";
 
 const CUISINES = [
-  { name: "Österreichisch", emoji: "🥩", from: "from-stone-400",   to: "to-amber-600" },
-  { name: "Italienisch",    emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
-  { name: "Japanisch",      emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
-  { name: "Mexikanisch",    emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
-  { name: "Indisch",        emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
-  { name: "Französisch",    emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
-  { name: "Vegetarisch",    emoji: "🌿", from: "from-emerald-400", to: "to-teal-600" },
-  { name: "Amerikanisch",   emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
+  { id: "Österreichisch", emoji: "🥩", from: "from-stone-400",   to: "to-amber-600",  key: "home.cuisine_austrian" },
+  { id: "Italienisch",    emoji: "🍝", from: "from-rose-400",    to: "to-red-500",    key: "home.cuisine_italian" },
+  { id: "Japanisch",      emoji: "🍣", from: "from-sky-400",     to: "to-blue-600",   key: "home.cuisine_japanese" },
+  { id: "Mexikanisch",    emoji: "🌮", from: "from-amber-400",   to: "to-orange-500", key: "home.cuisine_mexican" },
+  { id: "Indisch",        emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400", key: "home.cuisine_indian" },
+  { id: "Französisch",    emoji: "🥐", from: "from-violet-400",  to: "to-purple-600", key: "home.cuisine_french" },
+  { id: "Vegetarisch",    emoji: "🌿", from: "from-emerald-400", to: "to-teal-600",   key: "home.cuisine_vegetarian" },
+  { id: "Amerikanisch",   emoji: "🍔", from: "from-orange-400",  to: "to-red-400",    key: "home.cuisine_american" },
 ];
 
 const PRICE_BUBBLES = [
@@ -39,17 +40,25 @@ const RATING_BUBBLES = [
   { value: 4.5, emoji: "✨", label: "4.5+", from: "from-yellow-400", to: "to-amber-500" },
 ];
 
+const WIEN_DISTRICTS = [
+  { label: "1. Bezirk",  tag: "innerestadt", emoji: "🏛️" },
+  { label: "2. Bezirk",  tag: "leopoldstadt",emoji: "🎡" },
+  { label: "6./7.",      tag: "neubau",       emoji: "🎨" },
+  { label: "9. Bezirk", tag: "alsergrund",   emoji: "📚" },
+  { label: "15. Bez.",   tag: "rudolfsheim",  emoji: "🏘️" },
+];
+
 export default function Explore() {
+  const { t } = useTranslation();
   useSeo({
-    title: "Restaurants entdecken",
-    description: "Wiener Lokale entdecken — nach Küche, Preis, Bewertung und Verfügbarkeit filtern.",
+    title: t("explore.title"),
+    description: t("explore.subtitle"),
   });
 
   const [location, setLocation] = useLocation();
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
 
-  // Parse filters from URL
   const initialCuisine = searchParams.get("cuisine") || "";
   const initialPrice = searchParams.get("priceRange") ? parseInt(searchParams.get("priceRange")!) : undefined;
   const initialOpenNow = searchParams.get("openNow") === "true";
@@ -67,7 +76,6 @@ export default function Explore() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const geo = useGeolocation();
 
-  // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
@@ -99,7 +107,6 @@ export default function Explore() {
   });
   const { data: flashDeals } = useListFlashDeals();
 
-  // Compute distances + hyper-local scores when location is available
   const restaurantsWithDistances = useMemo(() => {
     if (!restaurants) return null;
     if (!sortByNearest || geo.status !== "granted" || geo.lat === null || geo.lng === null) {
@@ -130,10 +137,8 @@ export default function Explore() {
   };
 
   const activeFiltersCount = [cuisine, priceRange, openNow, rating, businessType].filter(Boolean).length;
-
   const displayList = restaurantsWithDistances ?? [];
 
-  // Fire impression events for boosted restaurants when they first appear in the list.
   const firedImpressions = useRef<Set<number>>(new Set());
   useEffect(() => {
     const boosted = displayList.filter(({ restaurant }) => restaurant.hasActiveBoost);
@@ -148,18 +153,25 @@ export default function Explore() {
     });
   }, [displayList]);
 
+  const BUSINESS_TYPE_OPTS = [
+    { value: "",           label: t("explore.filter_all"),        emoji: "🍽️" },
+    { value: "restaurant", label: t("explore.filter_restaurant"), emoji: "🍴" },
+    { value: "cafe",       label: t("explore.filter_cafe"),       emoji: "☕" },
+    { value: "bar",        label: t("explore.filter_bar"),        emoji: "🍸" },
+  ];
+
   return (
     <div className="container mx-auto px-4 max-w-7xl py-8 flex flex-col md:flex-row gap-8">
 
       {/* Filters Sidebar */}
       <aside className="w-full md:w-64 shrink-0 space-y-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-1">Wien entdecken</h1>
-          <p className="text-xs text-muted-foreground mb-4">30 Lokale · Restaurants, Cafés & Bars</p>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-1">{t("explore.wien_title", "Wien entdecken")}</h1>
+          <p className="text-xs text-muted-foreground mb-4">30 {t("explore.venues", "Lokale")} · {t("explore.venue_types", "Restaurants, Cafés & Bars")}</p>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Restaurants suchen..."
+              placeholder={t("explore.search_placeholder")}
               className="pl-11 h-12 rounded-2xl bg-card border-border/60 shadow-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -167,19 +179,13 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* ── Wien Bezirk quick-chips ── */}
+        {/* Wien Bezirk quick-chips */}
         <div className="space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            📍 Wien Bezirke
+            📍 {t("explore.districts", "Wien Bezirke")}
           </p>
           <div className="flex gap-1.5 flex-wrap">
-            {[
-              { label: "1. Bezirk",  tag: "innerestadt", emoji: "🏛️" },
-              { label: "2. Bezirk",  tag: "leopoldstadt",emoji: "🎡" },
-              { label: "6./7.",      tag: "neubau",       emoji: "🎨" },
-              { label: "9. Bezirk", tag: "alsergrund",   emoji: "📚" },
-              { label: "15. Bez.",   tag: "rudolfsheim",  emoji: "🏘️" },
-            ].map((d) => {
+            {WIEN_DISTRICTS.map((d) => {
               const active = search === d.tag;
               return (
                 <button
@@ -202,7 +208,7 @@ export default function Explore() {
         <div className="bg-card rounded-3xl border border-border/50 shadow-sm p-5 space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm flex items-center gap-2 text-foreground">
-              <SlidersHorizontal className="w-4 h-4 text-primary" /> Filter
+              <SlidersHorizontal className="w-4 h-4 text-primary" /> {t("common.filter")}
               {activeFiltersCount > 0 && (
                 <span className="bg-primary text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center">
                   {activeFiltersCount}
@@ -211,14 +217,14 @@ export default function Explore() {
             </h3>
             {activeFiltersCount > 0 && (
               <button onClick={clearFilters} className="text-xs text-primary font-bold hover:text-accent transition-colors">
-                Alle löschen
+                {t("explore.clear_filters")}
               </button>
             )}
           </div>
 
           {/* Location sort */}
           <div className="space-y-2">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Sortieren nach</h4>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("explore.sort_by", "Sortieren nach")}</h4>
             <button
               onClick={handleNearestToggle}
               className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl border text-sm font-semibold transition-all press-scale ${
@@ -234,7 +240,7 @@ export default function Explore() {
               ) : (
                 <Navigation className={`w-4 h-4 shrink-0 ${sortByNearest && geo.status === "granted" ? "text-primary" : "text-muted-foreground"}`} />
               )}
-              <span>Nächstgelegene zuerst</span>
+              <span>{t("explore.sort_nearest", "Nächstgelegene zuerst")}</span>
               {sortByNearest && geo.status === "granted" && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setSortByNearest(false); geo.clear(); }}
@@ -246,31 +252,26 @@ export default function Explore() {
             </button>
             {geo.status === "denied" && (
               <p className="text-xs text-amber-600 leading-snug">
-                Standortzugriff verweigert. In den Browsereinstellungen aktivieren, um nach Entfernung zu sortieren.
+                {t("explore.location_denied", "Standortzugriff verweigert. In den Browsereinstellungen aktivieren, um nach Entfernung zu sortieren.")}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Status</h4>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("explore.status", "Status")}</h4>
             <label className="flex items-center gap-3 cursor-pointer group press-scale" onClick={() => setOpenNow(v => !v)}>
               <div className={`w-12 h-6 rounded-full transition-all flex items-center px-1 shadow-inner ${openNow ? 'bg-gradient-to-r from-primary to-accent' : 'bg-muted'}`}>
                 <div className={`w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-200 ${openNow ? 'translate-x-6' : 'translate-x-0'}`} />
               </div>
-              <span className="text-sm font-semibold group-hover:text-primary transition-colors">Jetzt geöffnet</span>
+              <span className="text-sm font-semibold group-hover:text-primary transition-colors">{t("explore.open_now")}</span>
             </label>
           </div>
 
-          {/* ── Business type chips ── */}
+          {/* Business type chips */}
           <div className="space-y-2.5">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Typ</h4>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("explore.type", "Typ")}</h4>
             <div className="flex gap-1.5 flex-wrap">
-              {[
-                { value: "",           label: "Alle",       emoji: "🍽️" },
-                { value: "restaurant", label: "Restaurant", emoji: "🍴" },
-                { value: "cafe",       label: "Café",       emoji: "☕" },
-                { value: "bar",        label: "Bar",        emoji: "🍸" },
-              ].map((opt) => {
+              {BUSINESS_TYPE_OPTS.map((opt) => {
                 const active = businessType === opt.value;
                 return (
                   <button
@@ -290,9 +291,9 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* ── Price bubbles ── */}
+          {/* Price bubbles */}
           <div className="space-y-2.5">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Preis</h4>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("explore.price_filter")}</h4>
             <div className="flex gap-2">
               {PRICE_BUBBLES.map(pb => {
                 const sel = priceRange === pb.price;
@@ -311,11 +312,10 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* ── Cuisine bubble grid ── */}
+          {/* Cuisine bubble grid */}
           <div className="space-y-2.5">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Küche</h4>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("explore.cuisine_filter")}</h4>
             <div className="grid grid-cols-3 gap-2">
-              {/* "Alle" bubble */}
               <button
                 onClick={() => setCuisine("")}
                 className="flex flex-col items-center gap-1.5 press-scale group"
@@ -323,30 +323,30 @@ export default function Explore() {
                 <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${cuisine === "" ? "bg-gradient-to-br from-primary to-accent shadow-md shadow-primary/25 scale-105" : "bg-muted/50 border border-border/50 hover:border-primary/30 group-hover:scale-105"}`}>
                   🍽️
                 </div>
-                <span className={`text-[10px] font-bold text-center leading-tight ${cuisine === "" ? "text-primary" : "text-muted-foreground"}`}>Alle</span>
+                <span className={`text-[10px] font-bold text-center leading-tight ${cuisine === "" ? "text-primary" : "text-muted-foreground"}`}>{t("explore.filter_all")}</span>
               </button>
 
               {CUISINES.map(c => {
-                const sel = cuisine === c.name;
+                const sel = cuisine === c.id;
                 return (
                   <button
-                    key={c.name}
-                    onClick={() => setCuisine(c.name === cuisine ? "" : c.name)}
+                    key={c.id}
+                    onClick={() => setCuisine(c.id === cuisine ? "" : c.id)}
                     className="flex flex-col items-center gap-1.5 press-scale group"
                   >
                     <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all shadow-sm ${sel ? `bg-gradient-to-br ${c.from} ${c.to} shadow-md scale-105` : "bg-muted/50 border border-border/50 hover:border-primary/30 group-hover:scale-105"}`}>
                       {c.emoji}
                     </div>
-                    <span className={`text-[10px] font-bold text-center leading-tight ${sel ? "text-primary" : "text-muted-foreground"}`}>{c.name}</span>
+                    <span className={`text-[10px] font-bold text-center leading-tight ${sel ? "text-primary" : "text-muted-foreground"}`}>{t(c.key, c.id)}</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* ── Rating bubbles ── */}
+          {/* Rating bubbles */}
           <div className="space-y-2.5">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Mindestbewertung</h4>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{t("explore.rating_filter")}</h4>
             <div className="flex gap-2">
               {RATING_BUBBLES.map(rb => {
                 const sel = rating === rb.value;
@@ -374,8 +374,8 @@ export default function Explore() {
         <div className="mb-5 flex items-center justify-between gap-4 flex-wrap">
           <p className="text-muted-foreground text-sm">
             {isLoading
-              ? "Wird gesucht..."
-              : `${displayList.length} Lokal${displayList.length !== 1 ? "e" : ""} in Wien gefunden${sortByNearest && geo.status === "granted" ? " · nach Entfernung sortiert" : ""}`}
+              ? t("explore.loading")
+              : `${displayList.length} ${t("explore.venues", "Lokal")}${displayList.length !== 1 ? "e" : ""} ${t("explore.in_vienna", "in Wien gefunden")}${sortByNearest && geo.status === "granted" ? ` · ${t("explore.sorted_by_distance", "nach Entfernung sortiert")}` : ""}`}
           </p>
 
           {/* List / Map toggle */}
@@ -389,7 +389,7 @@ export default function Explore() {
               }`}
             >
               <List className="w-4 h-4" />
-              Liste
+              {t("explore.list_view")}
             </button>
             <button
               onClick={() => {
@@ -403,7 +403,7 @@ export default function Explore() {
               }`}
             >
               <Map className="w-4 h-4" />
-              Karte
+              {t("explore.map_view")}
             </button>
           </div>
         </div>
@@ -415,7 +415,7 @@ export default function Explore() {
               <div className="w-full h-full flex items-center justify-center bg-muted/30">
                 <div className="text-center text-muted-foreground">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                  <p className="text-sm">Karte wird geladen...</p>
+                  <p className="text-sm">{t("explore.loading")}</p>
                 </div>
               </div>
             ) : (
@@ -458,12 +458,12 @@ export default function Explore() {
                 <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center mb-4 text-3xl">
                   🔍
                 </div>
-                <h3 className="text-xl font-extrabold mb-2">Keine Ergebnisse gefunden</h3>
+                <h3 className="text-xl font-extrabold mb-2">{t("explore.no_results")}</h3>
                 <p className="text-muted-foreground max-w-md mb-6 text-sm">
-                  Keine Restaurants entsprechen Ihren aktuellen Filtern. Versuchen Sie, sie anzupassen.
+                  {t("explore.no_results_hint")}
                 </p>
                 <button onClick={clearFilters} className="press-scale text-sm font-bold text-primary bg-primary/10 hover:bg-primary/15 px-5 py-2.5 rounded-2xl transition-colors">
-                  Alle Filter löschen
+                  {t("explore.clear_filters")}
                 </button>
               </div>
             )}

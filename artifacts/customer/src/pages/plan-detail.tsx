@@ -9,25 +9,26 @@ import {
   ArrowLeft, UtensilsCrossed, Bell,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const API = ((import.meta.env.VITE_API_URL as string | undefined) ?? "") + "/api";
 
-const FOOD_THEME_LABELS: Record<string, { emoji: string; label: string }> = {
-  burger:   { emoji: "🍔", label: "Burger" },
-  pizza:    { emoji: "🍕", label: "Pizza" },
-  sushi:    { emoji: "🍣", label: "Sushi" },
-  meat:     { emoji: "🥩", label: "Grill & Fleisch" },
-  fish:     { emoji: "🐟", label: "Fisch" },
-  pasta:    { emoji: "🍝", label: "Pasta" },
-  vegan:    { emoji: "🌱", label: "Vegan" },
-  asian:    { emoji: "🍜", label: "Asiatisch" },
-  oriental: { emoji: "🥙", label: "Orientalisch" },
-  mexican:  { emoji: "🌮", label: "Mexikanisch" },
+const FOOD_THEME_LABELS: Record<string, { emoji: string; key: string }> = {
+  burger:   { emoji: "🍔", key: "Burger" },
+  pizza:    { emoji: "🍕", key: "Pizza" },
+  sushi:    { emoji: "🍣", key: "Sushi" },
+  meat:     { emoji: "🥩", key: "meal_plan.food_meat" },
+  fish:     { emoji: "🐟", key: "meal_plan.food_fish" },
+  pasta:    { emoji: "🍝", key: "meal_plan.food_pasta" },
+  vegan:    { emoji: "🌱", key: "meal_plan.food_vegan" },
+  asian:    { emoji: "🍜", key: "meal_plan.food_asian" },
+  oriental: { emoji: "🥙", key: "meal_plan.food_oriental" },
+  mexican:  { emoji: "🌮", key: "meal_plan.food_mexican" },
 };
 
 function formatDate(dateStr: string) {
   try {
-    return new Date(dateStr).toLocaleDateString("de-AT", {
+    return new Date(dateStr).toLocaleDateString(undefined, {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
     });
   } catch {
@@ -36,6 +37,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function PlanDetail() {
+  const { t } = useTranslation();
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
@@ -50,18 +52,18 @@ export default function PlanDetail() {
     fetch(`${API}/meal-plan/group/plan/${id}`)
       .then(r => { if (!r.ok) throw new Error("not found"); return r.json(); })
       .then(data => { setPlan(data); setLoading(false); })
-      .catch(() => { setError("Plan nicht gefunden oder nicht mehr verfügbar."); setLoading(false); });
-  }, [id]);
+      .catch(() => { setError(t("plan_detail.not_found", "Plan nicht gefunden oder nicht mehr verfügbar.")); setLoading(false); });
+  }, [id, t]);
 
   const shareUrl = window.location.href;
 
   const handleShare = async () => {
     const text = plan
-      ? `Hey! Unser Gruppenplan 🍽️\n\n${plan.restaurant ? `📍 ${plan.restaurant.name}\n🗺️ ${plan.restaurant.address}\n` : ""}📅 ${formatDate(plan.date)} um ${plan.time} Uhr\n👥 ${plan.groupSize} Personen\n\n${shareUrl}`
+      ? `Hey! ${t("plan_detail.group_plan", "Unser Gruppenplan")} 🍽️\n\n${plan.restaurant ? `📍 ${plan.restaurant.name}\n🗺️ ${plan.restaurant.address}\n` : ""}📅 ${formatDate(plan.date)} ${t("common.at", "um")} ${plan.time} Uhr\n👥 ${plan.groupSize} ${t("common.persons", "Personen")}\n\n${shareUrl}`
       : shareUrl;
     try {
       if (navigator.share && navigator.canShare?.({ url: shareUrl })) {
-        await navigator.share({ title: plan?.title ?? "Gruppenplan", text, url: shareUrl });
+        await navigator.share({ title: plan?.title ?? t("plan_detail.title"), text, url: shareUrl });
       } else {
         await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
@@ -74,7 +76,8 @@ export default function PlanDetail() {
     }
   };
 
-  const theme = plan ? (FOOD_THEME_LABELS[plan.foodTheme] ?? { emoji: "🍽️", label: plan.foodTheme }) : null;
+  const themeEntry = plan ? (FOOD_THEME_LABELS[plan.foodTheme] ?? { emoji: "🍽️", key: plan.foodTheme }) : null;
+  const themeLabel = themeEntry ? t(themeEntry.key, themeEntry.key) : "";
   const participants: any[] = Array.isArray(plan?.participants) ? plan.participants : [];
 
   return (
@@ -82,7 +85,7 @@ export default function PlanDetail() {
       {/* Header */}
       <div className="px-4 pt-6 pb-2">
         <Link href="/meal-plan" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-          <ArrowLeft className="w-4 h-4" /> Zum Essensplan
+          <ArrowLeft className="w-4 h-4" /> {t("plan_detail.back_to_plan", "Zum Essensplan")}
         </Link>
       </div>
 
@@ -92,7 +95,7 @@ export default function PlanDetail() {
           {loading && (
             <div className="text-center py-20">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent animate-pulse mx-auto mb-4" />
-              <p className="text-muted-foreground text-sm">Plan wird geladen…</p>
+              <p className="text-muted-foreground text-sm">{t("plan_detail.loading")}</p>
             </div>
           )}
 
@@ -101,10 +104,10 @@ export default function PlanDetail() {
               <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
                 <UtensilsCrossed className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h2 className="font-bold text-lg mb-2">Plan nicht gefunden</h2>
+              <h2 className="font-bold text-lg mb-2">{t("plan_detail.not_found")}</h2>
               <p className="text-sm text-muted-foreground mb-6">{error}</p>
               <Link href="/" className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-2xl hover:opacity-90 transition-opacity text-sm">
-                Zur Startseite
+                {t("common.back_home", "Zur Startseite")}
               </Link>
             </div>
           )}
@@ -126,12 +129,14 @@ export default function PlanDetail() {
                     {/* Category badge + title */}
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center text-3xl shadow-sm">
-                        {theme?.emoji}
+                        {themeEntry?.emoji}
                       </div>
                       <div>
-                        <p className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">{theme?.label}</p>
+                        <p className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">{themeLabel}</p>
                         <h1 className="font-extrabold text-xl leading-tight">{plan.title}</h1>
-                        <p className="text-xs text-muted-foreground">Organisiert von {plan.organizerName || "jemandem"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("plan_detail.organized_by", "Organisiert von")} {plan.organizerName || t("plan_detail.someone", "jemandem")}
+                        </p>
                       </div>
                     </div>
 
@@ -140,32 +145,32 @@ export default function PlanDetail() {
                       <div className="flex items-start gap-2.5 bg-muted/40 rounded-2xl p-3">
                         <CalendarDays className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Datum</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("plan_detail.date")}</p>
                           <p className="text-xs font-semibold leading-tight mt-0.5">{formatDate(plan.date)}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2.5 bg-muted/40 rounded-2xl p-3">
                         <Clock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Uhrzeit</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("plan_detail.time")}</p>
                           <p className="text-xs font-semibold mt-0.5">{plan.time} Uhr</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2.5 bg-muted/40 rounded-2xl p-3">
                         <Users className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Gruppe</p>
-                          <p className="text-xs font-semibold mt-0.5">{plan.groupSize} Personen</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("plan_detail.group", "Gruppe")}</p>
+                          <p className="text-xs font-semibold mt-0.5">{plan.groupSize} {t("common.persons", "Personen")}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2.5 bg-muted/40 rounded-2xl p-3">
                         <Bell className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Erinnerung</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("plan_detail.reminder", "Erinnerung")}</p>
                           <p className="text-xs font-semibold mt-0.5">
-                            {plan.reminderTiming === "1_hour_before" ? "1h vorher"
-                              : plan.reminderTiming === "1_day_before" ? "1 Tag vorher"
-                              : "Beides"}
+                            {plan.reminderTiming === "1_hour_before" ? t("meal_plan.reminder_1h", "1h vorher")
+                              : plan.reminderTiming === "1_day_before" ? t("meal_plan.reminder_1d", "1 Tag vorher")
+                              : t("meal_plan.reminder_both", "Beides")}
                           </p>
                         </div>
                       </div>
@@ -176,7 +181,7 @@ export default function PlanDetail() {
                       <div className="flex items-start gap-3 bg-primary/5 border border-primary/15 rounded-2xl p-3.5 mb-4">
                         <MapPin className="w-4.5 h-4.5 text-primary mt-0.5 shrink-0" style={{ width: 18, height: 18 }} />
                         <div>
-                          <p className="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-0.5">Treffpunkt</p>
+                          <p className="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-0.5">{t("plan_detail.meeting_point", "Treffpunkt")}</p>
                           <p className="text-sm font-bold text-foreground">{plan.restaurant.name}</p>
                           <p className="text-xs text-muted-foreground">{plan.restaurant.address}</p>
                         </div>
@@ -186,7 +191,7 @@ export default function PlanDetail() {
                     {/* Participants */}
                     {participants.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">Teilnehmer</p>
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t("plan_detail.participants")}</p>
                         <div className="flex flex-wrap gap-1.5">
                           {participants.map((p: any, i: number) => (
                             <div key={i} className="flex items-center gap-1.5 bg-muted/50 border border-border/60 rounded-full px-3 py-1">
@@ -210,18 +215,18 @@ export default function PlanDetail() {
                     style={{ height: 52 }}
                   >
                     {copied
-                      ? <><CheckCircle className="w-4 h-4" /> Link kopiert!</>
-                      : <><Share2 className="w-4 h-4" /> Plan teilen</>
+                      ? <><CheckCircle className="w-4 h-4" /> {t("plan_detail.link_copied", "Link kopiert!")}</>
+                      : <><Share2 className="w-4 h-4" /> {t("plan_detail.share_plan")}</>
                     }
                   </button>
                   <Link href="/meal-plan" className="w-full h-13 rounded-2xl border border-border font-bold text-sm hover:bg-muted/50 transition-colors flex items-center justify-center gap-2 text-foreground" style={{ height: 52 }}>
-                    <UtensilsCrossed className="w-4 h-4" /> Meinen Plan öffnen
+                    <UtensilsCrossed className="w-4 h-4" /> {t("plan_detail.open_my_plan", "Meinen Plan öffnen")}
                   </Link>
                 </div>
 
                 {/* Branding */}
                 <p className="text-center text-xs text-muted-foreground pt-2">
-                  Geteilt via <span className="font-bold text-primary">RestoSmart</span> Wien
+                  {t("common.shared_via", "Geteilt via")} <span className="font-bold text-primary">RestoSmart</span> Wien
                 </p>
               </motion.div>
             </AnimatePresence>

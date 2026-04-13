@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const GRAD = "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))";
@@ -87,6 +88,7 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
   status: FriendshipStatus; onStatusChange: (s: FriendshipStatus) => void;
 }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const sendRequest = useMutation({
     mutationFn: async () => {
@@ -106,7 +108,7 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
     return (
       <div className="flex items-center gap-2">
         <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-2xl">
-          <UserCheck className="w-4 h-4" /> {"Befreundet"}
+          <UserCheck className="w-4 h-4" /> {t("public_profile.friends")}
         </span>
       </div>
     );
@@ -115,7 +117,7 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
   if (status === "pending_sent") {
     return (
       <span className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground bg-muted/50 px-4 py-2 rounded-2xl">
-        <Clock className="w-4 h-4" /> {"Anfrage gesendet"}
+        <Clock className="w-4 h-4" /> {t("public_profile.friend_request_sent")}
       </span>
     );
   }
@@ -123,7 +125,7 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
   if (status === "pending_received") {
     return (
       <span className="flex items-center gap-1.5 text-sm font-semibold text-primary bg-primary/10 px-4 py-2 rounded-2xl">
-        <Clock className="w-4 h-4" /> {"Anfrage erhalten"}
+        <Clock className="w-4 h-4" /> {t("friends.request_received", "Anfrage erhalten")}
       </span>
     );
   }
@@ -135,7 +137,7 @@ function FriendButton({ viewerEmail, targetEmail, status, onStatusChange }: {
       className="flex items-center gap-1.5 text-sm font-bold text-white px-5 py-2.5 rounded-2xl active:scale-95 transition-all disabled:opacity-60"
       style={{ background: GRAD }}
     >
-      <UserPlus className="w-4 h-4" /> {"Freund hinzufügen"}
+      <UserPlus className="w-4 h-4" /> {t("public_profile.add_friend")}
     </button>
   );
 }
@@ -147,10 +149,10 @@ function MessageButton({ viewerEmail, targetEmail, status }: {
   viewerEmail: string; targetEmail: string; status: FriendshipStatus;
 }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const isFriends = status === "accepted";
   const isPending = status === "pending_sent" || status === "pending_received";
 
-  // Fetch conversations only when friends to find unread count
   const { data: conversations = [] } = useQuery<ConvSummary[]>({
     queryKey: ["conversations", viewerEmail],
     queryFn: () =>
@@ -206,7 +208,7 @@ function MessageButton({ viewerEmail, targetEmail, status }: {
           (e.currentTarget as HTMLButtonElement).style.transform = "";
         }}
       >
-        <Send className="w-4 h-4" /> {"Chat öffnen"}
+        <Send className="w-4 h-4" /> {t("messages.open_chat", "Chat öffnen")}
         {unreadCount > 0 && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center shadow-sm">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -216,12 +218,11 @@ function MessageButton({ viewerEmail, targetEmail, status }: {
     );
   }
 
-  // Disabled state — not yet friends or pending
-  const label = isPending ? "Anfrage ausstehend" : "Nachricht senden";
+  const label = isPending ? t("friends.request_pending", "Anfrage ausstehend") : t("public_profile.message");
   return (
     <button
       disabled
-      title={"Nachricht erst nach Annahme möglich"}
+      title={t("messages.friend_first", "Nachricht erst nach Annahme möglich")}
       className="flex items-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-2xl border cursor-not-allowed select-none"
       style={{
         opacity: 0.55,
@@ -253,13 +254,13 @@ interface PublicProfileData {
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function PublicProfilePage() {
+  const { t } = useTranslation();
   const [, params] = useRoute("/u/:userEmail");
   const userEmail = params?.userEmail ? decodeURIComponent(params.userEmail) : "";
   const currentEmail = localStorage.getItem("restosmart_email") ?? "";
 
   const [friendStatus, setFriendStatus] = useState<FriendshipStatus>("none");
 
-  // Redirect to own profile if viewing self
   useEffect(() => {
     if (userEmail && currentEmail && userEmail.toLowerCase() === currentEmail.toLowerCase()) {
       window.location.replace(import.meta.env.BASE_URL.replace(/\/$/, "") + "/profile");
@@ -281,9 +282,9 @@ export default function PublicProfilePage() {
     if (data?.friendshipStatus) setFriendStatus(data.friendshipStatus);
   }, [data?.friendshipStatus]);
 
-  useSeo({ title: data?.name ? `${data.name} – RestoSmart` : "Profil – RestoSmart", description: data?.bio ?? "RestoSmart Nutzerprofil" });
+  useSeo({ title: data?.name ? `${data.name} – RestoSmart` : t("public_profile.not_found") + " – RestoSmart", description: data?.bio ?? "RestoSmart Nutzerprofil" });
 
-  const displayName = data?.name || userEmail.split("@")[0] || "Nutzer";
+  const displayName = data?.name || userEmail.split("@")[0] || t("profile.user", "Nutzer");
 
   return (
     <div className="min-h-screen pb-28" style={{ background: "hsl(var(--background))" }}>
@@ -320,9 +321,9 @@ export default function PublicProfilePage() {
       {isError && (
         <div className="flex flex-col items-center justify-center pt-24 px-8 text-center">
           <p className="text-4xl mb-4">{"👤"}</p>
-          <p className="font-bold text-lg mb-1">{"Profil nicht gefunden"}</p>
-          <p className="text-sm text-muted-foreground mb-6">{"Dieses Profil existiert nicht oder ist nicht öffentlich."}</p>
-          <button onClick={() => window.history.back()} className="text-sm text-primary hover:underline">{"← Zurück"}</button>
+          <p className="font-bold text-lg mb-1">{t("public_profile.not_found")}</p>
+          <p className="text-sm text-muted-foreground mb-6">{t("public_profile.not_found_hint", "Dieses Profil existiert nicht oder ist nicht öffentlich.")}</p>
+          <button onClick={() => window.history.back()} className="text-sm text-primary hover:underline">{"← "}{t("common.back")}</button>
         </div>
       )}
 
@@ -374,7 +375,7 @@ export default function PublicProfilePage() {
               <div className="mt-4 flex items-center gap-1.5 text-sm">
                 <Grid3X3 className="w-4 h-4 text-muted-foreground" />
                 <span className="font-bold">{data.postCount}</span>
-                <span className="text-muted-foreground">{"Beiträge"}</span>
+                <span className="text-muted-foreground">{t("feed.posts", "Beiträge")}</span>
               </div>
             )}
           </div>
@@ -385,11 +386,9 @@ export default function PublicProfilePage() {
               <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
                 <Lock className="w-8 h-8 text-muted-foreground" />
               </div>
-              <p className="font-bold text-base mb-1">{"Privates Profil"}</p>
+              <p className="font-bold text-base mb-1">{t("profile.privacy_private", "Privates Profil")}</p>
               <p className="text-sm text-muted-foreground max-w-xs">
-                {"Dieses Profil ist privat. Füge "}
-                {displayName}
-                {" als Freund hinzu, um Beiträge zu sehen."}
+                {t("public_profile.private_hint", "Dieses Profil ist privat. Füge")} {displayName} {t("public_profile.private_hint2", "als Freund hinzu, um Beiträge zu sehen.")}
               </p>
             </div>
           ) : (
@@ -398,8 +397,8 @@ export default function PublicProfilePage() {
               {data.posts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
                   <p className="text-4xl mb-3">{"📸"}</p>
-                  <p className="font-bold text-base mb-1">{"Noch keine Beiträge"}</p>
-                  <p className="text-sm text-muted-foreground">{"Dieser Nutzer hat noch nichts gepostet."}</p>
+                  <p className="font-bold text-base mb-1">{t("feed.no_posts", "Noch keine Beiträge")}</p>
+                  <p className="text-sm text-muted-foreground">{t("public_profile.no_posts_hint", "Dieser Nutzer hat noch nichts gepostet.")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-1 px-1 pb-4">

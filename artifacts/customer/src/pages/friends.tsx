@@ -7,9 +7,11 @@ import { ArrowLeft, Users } from "lucide-react";
 import { useSeo } from "@/hooks/use-seo";
 import { FriendsPanel } from "@/components/friends-panel";
 import { ActivityFeedSection } from "@/components/activity-feed-section";
+import { useTranslation } from "react-i18next";
 
 export default function FriendsPage() {
-  useSeo({ title: "Freunde – RestoSmart" });
+  const { t } = useTranslation();
+  useSeo({ title: t("friends.title") + " – RestoSmart" });
 
   const [email, setEmail] = useState("");
   const [friendCount, setFriendCount] = useState(0);
@@ -27,12 +29,12 @@ export default function FriendsPage() {
         <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center text-4xl mb-6">
           👥
         </div>
-        <h1 className="text-2xl font-extrabold mb-3">Freunde</h1>
+        <h1 className="text-2xl font-extrabold mb-3">{t("friends.title")}</h1>
         <p className="text-muted-foreground max-w-xs mb-6">
-          Melde dich an, um Freunde hinzuzufügen und deren Aktivitäten zu sehen.
+          {t("friends.no_friends_hint", "Melde dich an, um Freunde hinzuzufügen und deren Aktivitäten zu sehen.")}
         </p>
         <Link href="/profile" className="bg-primary text-white font-bold px-6 py-3 rounded-2xl shadow-lg">
-          Anmelden
+          {t("common.login", "Anmelden")}
         </Link>
       </div>
     );
@@ -47,18 +49,18 @@ export default function FriendsPage() {
         <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10 relative z-10">
           <Link href="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-6">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-semibold">Zurück</span>
+            <span className="text-sm font-semibold">{t("common.back")}</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-3xl shadow-xl">
               👥
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">Meine Freunde</h1>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">{t("friends.my_friends", "Meine Freunde")}</h1>
               <p className="text-white/70 text-sm mt-0.5">
                 {friendCount > 0
-                  ? `${friendCount} ${friendCount === 1 ? "Freund" : "Freunde"} verbunden`
-                  : "Lade Freunde ein und entdeckt gemeinsam"}
+                  ? t("friends.friend_count", { count: friendCount, defaultValue: `${friendCount} ${friendCount === 1 ? "Freund" : "Freunde"} verbunden` })
+                  : t("friends.invite_hint", "Lade Freunde ein und entdeckt gemeinsam")}
               </p>
             </div>
           </div>
