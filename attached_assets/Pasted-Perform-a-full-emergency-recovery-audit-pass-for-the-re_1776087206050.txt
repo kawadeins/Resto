@@ -1,0 +1,260 @@
+Perform a full emergency recovery + audit pass for the restaurant owner dashboard.
+
+IMPORTANT:
+- This is NOT a redesign task
+- This is NOT a copywriting task
+- This is a dashboard recovery, routing repair, and full functionality audit
+- You must inspect the real source of the breakage and repair it safely
+- Do NOT apply superficial fixes only
+- Do NOT leave the dashboard in a broken or partial state
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Recover the restaurant owner dashboard so it opens correctly, routes correctly, and shows a proper owner home screen instead of any broken, blank, or 404-like state.
+
+Also perform a full validation of the dashboard system and repair any owner-side issues caused by the previous prompt or recent changes.
+
+==================================================
+1. ROOT PROBLEM INVESTIGATION (CRITICAL)
+==================================================
+
+First, identify the exact source of the current dashboard failure.
+
+You must inspect and verify:
+
+- owner dashboard main route
+- nested dashboard routes
+- dashboard layout component
+- index/default dashboard screen
+- left sidebar navigation targets
+- route registration
+- fallback/not-found route behavior
+- any conditional rendering that now resolves to blank/error state
+
+Search for:
+- "404"
+- "Seite nicht gefunden"
+- "Diese Seite existiert nicht oder wurde verschoben."
+- any not-found component being rendered inside owner dashboard flow
+- any wrong redirect, missing index route, or broken nested route target
+
+Do NOT just hide the symptom.
+Fix the real cause.
+
+==================================================
+2. RESTORE A REAL OWNER DASHBOARD HOME
+==================================================
+
+The restaurant owner dashboard must have a valid, intentional default home screen.
+
+If a proper owner home/index page already exists:
+- restore routing to it
+
+If not:
+- create a safe default owner dashboard home screen
+
+The default screen must include:
+
+TITLE:
+"Willkommen"
+
+SUPPORTING TEXT:
+"Verwalten Sie Ihre Buchungen, Ihr Marketing, Ihre Bewertungen und Ihr Restaurant an einem Ort."
+
+This screen must feel like:
+- a real dashboard home
+- not an error fallback
+- not a placeholder card
+- not a broken state
+
+==================================================
+3. REMOVE ALL NOT-FOUND UI FROM NORMAL OWNER FLOW
+==================================================
+
+Inside the normal owner dashboard experience, the user must NEVER land on:
+- 404
+- not found
+- empty fallback
+- error-looking card
+
+Remove/fix any path that causes the owner dashboard landing page to resolve to a not-found view.
+
+A not-found screen may still exist globally for truly invalid URLs,
+but it must not be part of the normal owner dashboard home flow.
+
+==================================================
+4. FULL DASHBOARD ROUTING AUDIT
+==================================================
+
+Audit all owner dashboard navigation and routes.
+
+Verify and repair:
+- dashboard root
+- reviews
+- bookings
+- subscription/billing
+- staff/team
+- wallet
+- campaign/marketing
+- analytics
+- any owner tools in sidebar
+- any nested subroutes
+
+Make sure:
+- every sidebar item opens a real page
+- no wrong target
+- no broken nested index
+- no fallback loops
+- no blank content area
+- no route mismatch after recent edits
+
+==================================================
+5. LAYOUT + SIDEBAR VALIDATION
+==================================================
+
+Check the owner dashboard layout itself:
+
+- left sidebar renders correctly
+- content panel renders correctly
+- clicking menu items updates content area
+- selected/active state works
+- no white/blank page after click
+- no hidden overlay blocking content
+- no broken suspense/loading state
+
+If the dashboard is using nested routing:
+- confirm Outlet/render target is wired correctly
+
+==================================================
+6. DEFAULT / EMPTY STATE QUALITY
+==================================================
+
+If a section has no real data yet:
+- show a proper empty state
+- never show 404
+- never show broken fallback
+
+Examples:
+- reviews empty state
+- bookings empty state
+- analytics no-data state
+
+These empty states must feel intentional and premium.
+
+==================================================
+7. OWNER DASHBOARD SYSTEM AUDIT (FUNCTIONAL)
+==================================================
+
+After fixing the landing/routing issue, perform a full owner dashboard audit.
+
+Check and repair the main owner-side systems:
+
+- bookings/reservations pages
+- reviews page
+- billing/subscription page
+- wallet/top-up page
+- campaigns/boost pages
+- team/staff page
+- analytics pages
+- notification indicators
+- sidebar navigation
+- home/dashboard landing page
+
+For each:
+- page opens
+- page renders
+- no 404
+- no blank state unless intended
+- buttons work
+- actions are connected
+- loading state works
+- errors are handled gracefully
+
+==================================================
+8. DO NOT BREAK EXISTING BUSINESS LOGIC
+==================================================
+
+Do NOT:
+- remove working business features
+- replace working pages with fake placeholders
+- hardcode fake data just to hide problems
+- bypass owner auth
+- disable routes to avoid fixing them
+
+The fix must be real and stable.
+
+==================================================
+9. VISUAL CONSISTENCY
+==================================================
+
+Keep the dashboard consistent with the current business theme.
+
+The welcome/default owner home must:
+- match dashboard style
+- match spacing/typography/colors
+- feel premium and intentional
+- not look like a generic card thrown into place
+
+==================================================
+10. ERROR HANDLING
+==================================================
+
+If a dashboard page truly fails:
+- show a clean recoverable state
+- not a raw 404 block inside the normal dashboard shell
+
+Use clean German fallback copy only where truly needed.
+
+But the dashboard home itself must never be an error state.
+
+==================================================
+11. FINAL CLICK-THROUGH VALIDATION
+==================================================
+
+After repairs, perform a real navigation validation:
+
+A. Open owner dashboard root
+B. Confirm it shows "Willkommen"
+C. Click each sidebar section
+D. Confirm each opens correctly
+E. Confirm no section lands on 404/not-found
+F. Confirm returning to dashboard root works
+G. Confirm layout/sidebar still works
+H. Confirm no blank content area remains
+
+==================================================
+12. FINAL REPORT
+==================================================
+
+Return a strict structured report with:
+
+A. Root cause of the dashboard breakage
+B. What route/layout issue was fixed
+C. Whether a real owner dashboard home now exists
+D. Which dashboard sections were checked
+E. Which broken pages were repaired
+F. Any remaining blockers (if any)
+
+For each issue classify:
+- Found
+- Fixed
+- Still needs follow-up
+
+==================================================
+FINAL RESULT
+==================================================
+
+Opening the restaurant owner dashboard must now show a proper owner home screen with:
+
+"Willkommen"
+
+and a short German supporting text.
+
+No 404.
+No not-found card.
+No broken routing.
+No blank dashboard state.
+
+The full owner dashboard must be navigable and stable again.

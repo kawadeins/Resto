@@ -215,6 +215,16 @@ export default function Overview() {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* ── Willkommen-Header ──────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Willkommen</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {"Verwalten Sie Ihre Buchungen, Ihr Marketing, Ihre Bewertungen und Ihr Restaurant an einem Ort."}
+          </p>
+        </div>
+      </div>
+
       {/* Growth Activation Hub — shown to new trial users with step-by-step activation */}
       <GrowthActivationHub onUpgrade={() => { window.location.href = "/billing"; }} />
 
@@ -223,13 +233,13 @@ export default function Overview() {
 
       {/* Competition Engine — visibility tier, demand signals, competition level */}
       <CompetitionEngine
-        onBoost={() => { window.location.href = "/promotions"; }}
+        onBoost={() => { window.location.href = "/boost"; }}
         onUpgrade={() => { window.location.href = "/billing"; }}
       />
 
       {/* City Expansion Engine — local market opportunity and city health */}
       <CityExpansionEngine
-        onBoost={() => { window.location.href = "/promotions"; }}
+        onBoost={() => { window.location.href = "/boost"; }}
         onUpgrade={() => { window.location.href = "/billing"; }}
       />
 
@@ -277,7 +287,7 @@ export default function Overview() {
                 {bizPossessive} ist live, aber noch kein Gast hat gebucht. So reagieren Sie jetzt:
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
-                <Link href="/discounts">
+                <Link href="/campaigns">
                   <Button size="sm" variant="outline" className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
                     Rabatt erhöhen
                   </Button>

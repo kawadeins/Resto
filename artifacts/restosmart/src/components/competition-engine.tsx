@@ -320,7 +320,7 @@ export function CompetitionEngine({ onBoost, onUpgrade }: {
               </div>
               <div className="shrink-0">
                 {d.recommendation.action === "boost" ? (
-                  <Link href="/promotions">
+                  <Link href="/boost">
                     <Button
                       size="sm"
                       className={`h-8 px-3 rounded-xl text-[11px] font-bold text-white border-0 ${urgencyCfg.btn}`}
