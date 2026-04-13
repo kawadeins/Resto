@@ -76,7 +76,8 @@ function getUrlParams() {
 }
 
 export default function Billing() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "de" ? "de-AT" : i18n.language === "fr" ? "fr-FR" : i18n.language === "it" ? "it-IT" : i18n.language === "es" ? "es-ES" : i18n.language === "nl" ? "nl-NL" : i18n.language === "pt" ? "pt-PT" : i18n.language === "tr" ? "tr-TR" : i18n.language === "pl" ? "pl-PL" : "en-US";
   useEffect(() => { track("premium_page_opened"); }, []);
   const { toast } = useToast();
   const { logout, csrfToken } = useSession();
@@ -129,8 +130,8 @@ export default function Billing() {
       const data = await res.json();
       if (!res.ok) {
         toast({
-          title: "Fehler",
-          description: data.message ?? "Checkout konnte nicht gestartet werden.",
+          title: t("common.error"),
+          description: data.message ?? t("billing.checkout_error_desc"),
           variant: "destructive",
         });
         return;
@@ -141,7 +142,7 @@ export default function Billing() {
         // Keep spinner active — page will navigate away. Do not reset loading state.
       }
     } catch {
-      toast({ title: "Netzwerkfehler", description: "Bitte versuchen Sie es erneut.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("common.retry"), variant: "destructive" });
     } finally {
       if (!redirecting) setCheckoutLoading(false);
     }
@@ -155,12 +156,12 @@ export default function Billing() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast({ title: "Fehler", description: data.message ?? "Kundenportal nicht verfügbar.", variant: "destructive" });
+        toast({ title: t("common.error"), description: data.message ?? t("billing.portal_error_desc"), variant: "destructive" });
         return;
       }
       if (data.url) window.open(data.url, "_blank");
     } catch {
-      toast({ title: "Netzwerkfehler", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
     } finally {
       setPortalLoading(false);
     }
@@ -195,9 +196,9 @@ export default function Billing() {
           <AlertTriangle className="w-8 h-8 text-amber-500" />
         </div>
         <div>
-          <h2 className="text-xl font-bold mb-2">Zugang beendet</h2>
+          <h2 className="text-xl font-bold mb-2">{t("billing.access_ended")}</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            {bizLabel} Premium-Zugang wurde beendet. Sie können jederzeit über Ihr Kundenprofil wieder einsteigen.
+            {t("billing.access_ended_body", { biz: bizLabel })}
           </p>
         </div>
         <button
@@ -206,7 +207,7 @@ export default function Billing() {
           disabled={checkoutLoading}
         >
           {checkoutLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          Jetzt Premium aktivieren
+          {t("billing.activate_premium")}
         </button>
       </div>
     );
@@ -325,20 +326,20 @@ export default function Billing() {
                   : "bg-amber-500/10 text-amber-400 border-amber-500/20"
               }`}>
                 <Clock className="w-3 h-3 mr-1" />
-                {trial.daysLeft === 1 ? "Letzter Tag" : `${trial.daysLeft} Tage`}
+                {trial.daysLeft === 1 ? t("billing.trial_last_day_countdown") : t("billing.trial_days_only", { count: trial.daysLeft })}
               </Badge>
             </div>
 
             {/* Countdown bar */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Verbleibend</span>
+                <span>{t("common.status")}</span>
                 <span className="font-semibold text-foreground">
                   {trial.daysLeft === 1
-                    ? "Letzter Tag — upgrade jetzt"
+                    ? t("billing.trial_last_day_countdown")
                     : trial.daysLeft <= 3
-                    ? `Nur noch ${trial.daysLeft} Tage — jetzt upgraden`
-                    : `${trial.daysLeft} von 14 Tagen verbleibend`}
+                    ? t("billing.trial_days_only", { count: trial.daysLeft })
+                    : t("billing.trial_days_remaining_of", { count: trial.daysLeft })}
                 </span>
               </div>
               <div className="h-2 rounded-full bg-white/5 overflow-hidden">
@@ -350,8 +351,8 @@ export default function Billing() {
                 />
               </div>
               <div className="flex justify-between text-[10px] text-muted-foreground/60">
-                <span>Tag 1</span>
-                <span>Tag 14</span>
+                <span>1</span>
+                <span>14</span>
               </div>
             </div>
 
@@ -364,13 +365,11 @@ export default function Billing() {
               }`}>
                 <p className="text-sm font-semibold mb-1">
                   {trial.daysLeft <= 1
-                    ? "Letzter Tag deiner Testphase — Sichtbarkeit jetzt sichern"
-                    : trial.daysLeft <= 3
-                    ? "Testphase endet bald — aktiviere Premium, um sichtbar zu bleiben"
-                    : "Deine Testphase endet bald — Sichtbarkeit sichern"}
+                    ? t("billing.trial_last_day_countdown")
+                    : t("billing.trial_days_only", { count: trial.daysLeft })}
                 </p>
                 <p className="text-xs opacity-80 leading-relaxed">
-                  {`Dein ${bizLabel} ist ohne Premium weniger sichtbar in deiner Umgebung. Du verpasst potenzielle Kunden — Premium-Betriebe werden h\u00e4ufiger angezeigt.`}
+                  {t("billing.trial_premium_body")}
                 </p>
               </div>
             )}
@@ -378,11 +377,8 @@ export default function Billing() {
             {/* Trial end date */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="w-4 h-4 shrink-0" />
-              <span>
-                {"Testphase endet am "}
-                <span className="font-semibold text-foreground">
-                  {trial.trialEnd.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
+              <span className="font-semibold text-foreground">
+                {trial.trialEnd.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
               </span>
             </div>
 
@@ -393,12 +389,12 @@ export default function Billing() {
               disabled={checkoutLoading}
             >
               {checkoutLoading
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Weiterleitung zu Stripe…</>
-                : <>{`Jetzt f\u00fcr 39,90\u20AC / Monat fortsetzen`} <ArrowRight className="w-4 h-4" /></>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("billing.checkout_loading")}</>
+                : <>{t("billing.continue_cta")} <ArrowRight className="w-4 h-4" /></>
               }
             </button>
             <p className="text-[11px] text-center text-muted-foreground/60">
-              Sichere Zahlung via Stripe. Jederzeit kündbar.
+              {t("billing.secure_stripe")}
             </p>
           </div>
 
@@ -411,20 +407,20 @@ export default function Billing() {
             const totalBoosts = promos.length;
             const hasData = totalImpressions > 0 || totalBoosts > 0;
             const realStats = [
-              { icon: Eye, label: "Boost-Einblendungen", value: totalImpressions.toLocaleString("de") },
-              { icon: MousePointer, label: "Klicks auf dein Profil", value: totalClicks.toLocaleString("de") },
-              { icon: CheckCircle2, label: "Buchungen über Boosts", value: totalBookings.toLocaleString("de") },
-              { icon: Zap, label: "Boosts gestartet", value: String(totalBoosts) },
+              { icon: Eye, label: t("billing.trial_stat_impressions"), value: totalImpressions.toLocaleString(locale) },
+              { icon: MousePointer, label: t("billing.trial_stat_clicks"), value: totalClicks.toLocaleString(locale) },
+              { icon: CheckCircle2, label: t("billing.trial_stat_bookings"), value: totalBookings.toLocaleString(locale) },
+              { icon: Zap, label: t("billing.trial_stat_boosts"), value: String(totalBoosts) },
             ];
             return (
               <div className="rounded-2xl border border-border bg-muted/10 p-6 space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-primary" />
-                    <h3 className="font-semibold text-sm">Was deine Testphase gebracht hat</h3>
+                    <h3 className="font-semibold text-sm">{t("billing.trial_stats_title")}</h3>
                   </div>
                   <span className="text-[10px] text-primary/70 font-bold uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full">
-                    Echtdaten
+                    {t("billing.trial_stats_label")}
                   </span>
                 </div>
                 {hasData ? (
@@ -438,13 +434,13 @@ export default function Billing() {
                   </div>
                 ) : (
                   <div className="rounded-xl bg-muted/30 border border-white/5 p-4 text-center space-y-2">
-                    <p className="text-sm text-muted-foreground">Noch keine Boost-Aktivität in deiner Testphase.</p>
-                    <p className="text-xs text-muted-foreground/60">Starte einen Boost unter Marketing, um deine Sichtbarkeit zu messen.</p>
+                    <p className="text-sm text-muted-foreground">{t("billing.trial_no_activity")}</p>
+                    <p className="text-xs text-muted-foreground/60">{t("billing.trial_no_activity_hint")}</p>
                   </div>
                 )}
                 <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
                   <p className="text-xs text-primary/80 font-medium leading-relaxed">
-                    Mit aktivem Premium behältst du diesen Sichtbarkeits-Vorteil dauerhaft — und erreichst noch mehr Kunden in deiner Nähe.
+                    {t("billing.trial_premium_body")}
                   </p>
                 </div>
               </div>
@@ -463,49 +459,49 @@ export default function Billing() {
               </div>
               <div>
                 <div className="font-bold text-base">{PREMIUM_PLAN_NAME}</div>
-                <div className="text-sm text-muted-foreground">{`RestoSmart \u00b7 ${bizLabel} \u00b7 Vollzugriff`}</div>
+                <div className="text-sm text-muted-foreground">{t("billing.biz_full_access", { biz: bizLabel })}</div>
               </div>
             </div>
             <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-bold">
               <CheckCircle2 className="w-3 h-3 mr-1" />
-              Aktiv
+              {t("billing.status_active")}
             </Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-background/40 border border-white/5 p-4">
-              <div className="text-xs text-muted-foreground mb-1">Monatlicher Betrag</div>
+              <div className="text-xs text-muted-foreground mb-1">{t("billing.monthly_amount")}</div>
               <div className="text-2xl font-bold">{PREMIUM_PRICE_DISPLAY}</div>
-              <div className="text-xs text-muted-foreground">/Monat · inkl. MwSt.</div>
+              <div className="text-xs text-muted-foreground">{t("billing.per_month_incl_vat")}</div>
             </div>
             <div className="rounded-xl bg-background/40 border border-white/5 p-4">
               <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> {`N\u00e4chste Abrechnung`}
+                <Calendar className="w-3 h-3" /> {t("billing.next_billing")}
               </div>
               <div className="text-lg font-bold">
                 {subscription?.currentPeriodEnd
-                  ? new Date(subscription.currentPeriodEnd).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
-                  : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                  ? new Date(subscription.currentPeriodEnd).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })
+                  : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
               </div>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Enthaltene Features</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("billing.included_features")}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
                 BIZ_RESERVATION_LABEL[biz],
                 BIZ_TABLE_MODULE_LABEL[biz],
-                "Personal & Schichten",
+                t("billing.feature_staff"),
                 BIZ_MENU_EDITOR_LABEL[biz],
-                "Analytics & Berichte",
-                "Marketing & Kampagnen",
-                "Boost-Sichtbarkeit",
-                "Smart Offers & Deals",
-                "Kassenterminal (POS)",
-                "Revenue Optimizer",
-                "Treue-Programme",
-                "Premium-Badge",
+                t("billing.feature_analytics"),
+                t("billing.feature_marketing"),
+                t("billing.feature_boost"),
+                t("billing.feature_smart_offers"),
+                t("billing.feature_pos"),
+                t("billing.feature_optimizer"),
+                t("billing.feature_loyalty"),
+                t("billing.feature_badge"),
               ].map((m) => (
                 <div key={m} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CheckCircle2 className="w-3 h-3 text-primary shrink-0" />
@@ -523,7 +519,7 @@ export default function Billing() {
               className="flex items-center gap-2 text-xs text-primary/70 hover:text-primary transition-colors cursor-pointer"
             >
               {portalLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ExternalLink className="w-3 h-3" />}
-              Zahlungsdetails & Rechnungen verwalten
+              {t("billing.manage_portal")}
             </button>
           )}
         </div>
@@ -535,8 +531,8 @@ export default function Billing() {
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-red-400" />
             <div>
-              <div className="font-bold text-base text-red-300">Zahlung fehlgeschlagen</div>
-              <div className="text-sm text-muted-foreground">Bitte aktualisieren Sie Ihre Zahlungsmethode.</div>
+              <div className="font-bold text-base text-red-300">{t("billing.payment_failed_title")}</div>
+              <div className="text-sm text-muted-foreground">{t("billing.payment_failed_body")}</div>
             </div>
           </div>
           {subscription?.stripeCustomerId && (
@@ -546,7 +542,7 @@ export default function Billing() {
               className="flex items-center justify-center gap-2 w-full h-10 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold cursor-pointer"
             >
               {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-              Zahlungsmethode aktualisieren
+              {t("billing.update_payment")}
             </button>
           )}
         </div>
@@ -561,15 +557,15 @@ export default function Billing() {
             </div>
             <div>
               <div className="font-bold text-base">{PREMIUM_PLAN_NAME}</div>
-              <div className="text-sm text-muted-foreground">{`39,90\u20AC / Monat`}</div>
+              <div className="text-sm text-muted-foreground">{t("billing.upgrade_body_trial")}</div>
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {subscription?.status === "expired"
-              ? "Ihre Testphase ist abgelaufen. Abonnieren Sie, um wieder vollen Zugang zu erhalten."
+              ? t("billing.inactive_expired")
               : subscription?.status === "cancelled"
-              ? "Ihr Abonnement wurde gekündigt. Jetzt erneut aktivieren."
-              : "Aktivieren Sie Premium, um Zugang zu allen Dashboard-Funktionen zu erhalten."}
+              ? t("billing.inactive_cancelled")
+              : t("billing.inactive_default")}
           </p>
           <button
             className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm shadow-lg hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60"
@@ -577,12 +573,12 @@ export default function Billing() {
             disabled={checkoutLoading}
           >
             {checkoutLoading
-              ? <><Loader2 className="w-4 h-4 animate-spin" /> Weiterleitung zu Stripe…</>
-              : <>{`Premium aktivieren \u2014 39,90\u20AC/Monat`} <ArrowRight className="w-4 h-4" /></>
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("billing.checkout_loading")}</>
+              : <>{t("billing.activate_cta")} <ArrowRight className="w-4 h-4" /></>
             }
           </button>
           <p className="text-[11px] text-center text-muted-foreground/60">
-            Sichere Zahlung via Stripe. Jederzeit kündbar.
+            {t("billing.secure_stripe")}
           </p>
         </div>
       )}
@@ -592,14 +588,14 @@ export default function Billing() {
         <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div className="flex-1">
           <div className="font-semibold text-sm mb-1">
-            {isTrial ? "Auf Premium upgraden" : "Abonnement verwalten"}
+            {isTrial ? t("billing.upgrade_section_trial") : t("billing.upgrade_section_manage")}
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed mb-3">
             {isTrial
-              ? `Schalten Sie f\u00fcr \u20AC39,90/Monat frei und behalten Sie dauerhaften Zugang zu allen Premium-Funktionen. Zahlung \u00fcber Stripe \u2014 sicher und jederzeit k\u00fcndbar.`
+              ? t("billing.upgrade_body_trial")
               : subscription?.status === "active"
-              ? "Ihr Premium-Abonnement ist aktiv. Alle Funktionen stehen Ihnen uneingeschränkt zur Verfügung."
-              : "Aktivieren Sie Premium für vollen Zugang."}
+              ? t("billing.upgrade_body_active")
+              : t("billing.upgrade_body_inactive")}
           </p>
           {isTrial && (
             <button
@@ -608,7 +604,7 @@ export default function Billing() {
               disabled={checkoutLoading}
             >
               {checkoutLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRight className="w-3 h-3" />}
-              Jetzt upgraden
+              {t("billing.activate_premium")}
             </button>
           )}
         </div>
@@ -619,15 +615,15 @@ export default function Billing() {
         <div className="rounded-2xl border border-red-900/30 bg-red-950/10 p-5">
           <h3 className="font-bold text-sm text-red-400 mb-3 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
-            {isTrial ? "Testphase beenden" : "Abonnement kündigen"}
+            {isTrial ? t("billing.end_trial_title") : t("billing.cancel_title")}
           </h3>
 
           {showCancelConfirm ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {isTrial
-                  ? "Sind Sie sicher? Die Testphase wird sofort beendet und Sie verlieren den Zugang zum Dashboard."
-                  : "Sind Sie sicher? Nach der Kündigung verlieren Sie den Zugang zum Dashboard am Ende des aktuellen Abrechnungszeitraums."}
+                  ? t("billing.cancel_confirm_trial")
+                  : t("billing.cancel_confirm_paid")}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -636,7 +632,7 @@ export default function Billing() {
                   className="rounded-xl flex-1"
                   onClick={() => setShowCancelConfirm(false)}
                 >
-                  Abbrechen
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   size="sm"
@@ -644,7 +640,7 @@ export default function Billing() {
                   onClick={handleCancel}
                   disabled={cancelSubscription.isPending}
                 >
-                  {cancelSubscription.isPending ? "Wird verarbeitet…" : isTrial ? "Testphase beenden" : "Endgültig kündigen"}
+                  {cancelSubscription.isPending ? t("billing.cancel_processing") : isTrial ? t("billing.end_trial_cta") : t("billing.cancel_final")}
                 </Button>
               </div>
             </div>
@@ -652,8 +648,8 @@ export default function Billing() {
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {isTrial
-                  ? "Das Beenden der Testphase deaktiviert sofort den Zugang zum Dashboard."
-                  : "Das Kündigen beendet Ihren Premium-Zugang zum Dashboard und alle damit verbundenen Funktionen."}
+                  ? t("billing.cancel_hint_trial")
+                  : t("billing.cancel_hint_paid")}
               </p>
               <Button
                 variant="outline"
@@ -661,7 +657,7 @@ export default function Billing() {
                 className="rounded-xl border-red-800/40 text-red-400 hover:bg-red-950/30 hover:border-red-700/50"
                 onClick={() => setShowCancelConfirm(true)}
               >
-                {isTrial ? "Testphase beenden" : "Abonnement kündigen"}
+                {isTrial ? t("billing.end_trial_cta") : t("billing.cancel_title")}
               </Button>
             </div>
           )}

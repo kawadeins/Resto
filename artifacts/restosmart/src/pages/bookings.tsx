@@ -350,6 +350,7 @@ function PlanEditorModal({
   onSave: (data: Partial<BookingPlan>) => void;
   isSaving: boolean;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<Partial<BookingPlan>>(plan);
   const [tagInput, setTagInput] = useState("");
 
@@ -357,22 +358,22 @@ function PlanEditorModal({
     setForm((f) => ({ ...f, [field]: value }));
 
   const addTag = (tag: string) => {
-    const t = tag.trim();
-    if (t && !(form.tags ?? []).includes(t)) {
-      update("tags", [...(form.tags ?? []), t]);
+    const trimmed = tag.trim();
+    if (trimmed && !(form.tags ?? []).includes(trimmed)) {
+      update("tags", [...(form.tags ?? []), trimmed]);
     }
     setTagInput("");
   };
 
   const removeTag = (tag: string) =>
-    update("tags", (form.tags ?? []).filter((t) => t !== tag));
+    update("tags", (form.tags ?? []).filter((v) => v !== tag));
 
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <ClipboardList className="h-5 w-5 text-primary" />
-          {plan.id ? "Plan bearbeiten" : "Neuen Plan erstellen"}
+          {plan.id ? t("common.edit") : t("bookings.new_plan")}
         </DialogTitle>
       </DialogHeader>
 
@@ -573,9 +574,9 @@ function PlanEditorModal({
             onClick={() => onSave(form)}
             disabled={isSaving || !form.title?.trim() || !form.date}
           >
-            {isSaving ? "Wird gespeichert..." : plan.id ? "Änderungen speichern" : "Plan erstellen"}
+            {isSaving ? t("common.loading") : plan.id ? t("common.save") : t("bookings.new_plan")}
           </Button>
-          <Button variant="outline" onClick={onClose}>Abbrechen</Button>
+          <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
         </div>
       </div>
     </DialogContent>
@@ -601,12 +602,14 @@ function PlanCard({
   onFinalize: () => void;
   onStatusChange: (s: BookingPlan["status"]) => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "de" ? "de-AT" : i18n.language === "fr" ? "fr-FR" : i18n.language === "it" ? "it-IT" : i18n.language === "es" ? "es-ES" : i18n.language === "nl" ? "nl-NL" : i18n.language === "pt" ? "pt-PT" : i18n.language === "tr" ? "tr-TR" : i18n.language === "pl" ? "pl-PL" : "en-US";
   const statusCfg = PLAN_STATUS_CONFIG[plan.status] ?? PLAN_STATUS_CONFIG.draft;
   const visibilityCfg = VISIBILITY_CONFIG[plan.visibility] ?? VISIBILITY_CONFIG.team;
   const VisIcon = visibilityCfg.icon;
   const StatusIcon = statusCfg.icon;
 
-  const dateFormatted = new Date(plan.date + "T00:00:00").toLocaleDateString("de-DE", {
+  const dateFormatted = new Date(plan.date + "T00:00:00").toLocaleDateString(locale, {
     weekday: "short", day: "numeric", month: "short", year: "numeric",
   });
 
@@ -623,11 +626,11 @@ function PlanCard({
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <Badge variant="outline" className={`text-xs gap-1 ${statusCfg.color}`}>
               <StatusIcon className="h-3 w-3" />
-              {statusCfg.label}
+              {t("bookings.plan_status_" + plan.status)}
             </Badge>
             <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
               <VisIcon className="h-3 w-3" />
-              {visibilityCfg.label}
+              {t("bookings.visibility_" + plan.visibility)}
             </span>
             {plan.tags?.slice(0, 2).map((tag) => (
               <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground border border-border/40">
@@ -712,6 +715,7 @@ function PlanCard({
 // ─── Booking Plans Tab ──────────────────────────────────────────────────────────
 
 function BookingPlansTab() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { csrfToken } = useSession();
   const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
@@ -794,7 +798,7 @@ function BookingPlansTab() {
       headers: { "Content-Type": "application/json", ...csrfHdr },
       body: JSON.stringify({ status }),
     });
-    if (r.ok) { invalidate(); toast({ title: `Status geändert: ${PLAN_STATUS_CONFIG[status]?.label}` }); }
+    if (r.ok) { invalidate(); toast({ title: `${t("common.status")}: ${t("bookings.plan_status_" + status)}` }); }
   };
 
   const openCreate = () => { setEditingPlan(emptyPlan()); setEditorOpen(true); };

@@ -51,15 +51,15 @@ type PilotStatus = {
   restaurantName: string;
 };
 
-const FEEDBACK_CATEGORIES = [
-  { value: "bookings", label: "Buchungen" },
-  { value: "revenue", label: "Umsatz" },
-  { value: "marketing", label: "Marketing" },
-  { value: "general", label: "Allgemein" },
-] as const;
+const FEEDBACK_CATEGORY_VALUES = ["bookings", "revenue", "marketing", "general"] as const;
 
 export default function Overview() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "de" ? "de-AT" : i18n.language === "fr" ? "fr-FR" : i18n.language === "it" ? "it-IT" : i18n.language === "es" ? "es-ES" : i18n.language === "nl" ? "nl-NL" : i18n.language === "pt" ? "pt-PT" : i18n.language === "tr" ? "tr-TR" : i18n.language === "pl" ? "pl-PL" : "en-US";
+  const FEEDBACK_CATEGORIES = FEEDBACK_CATEGORY_VALUES.map(value => ({
+    value,
+    label: t(`overview.feedback_category_${value}`),
+  }));
   useEffect(() => {
     if (localStorage.getItem("restosmart_owner_premium") === "trial") {
       track("dashboard_accessed");
@@ -93,17 +93,17 @@ export default function Overview() {
         headers: { "Content-Type": "application/json", ...csrfHdr },
         body: JSON.stringify({ message: feedbackText, rating: feedbackRating || undefined, category: feedbackCategory }),
       });
-      if (!res.ok) throw new Error("Fehler");
+      if (!res.ok) throw new Error("error");
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Feedback eingereicht – vielen Dank!" });
+      toast({ title: t("overview.feedback_sent") });
       setFeedbackText("");
       setFeedbackRating(0);
       setFeedbackSent(true);
       queryClient.invalidateQueries({ queryKey: ["pilot-status"] });
     },
-    onError: () => toast({ title: "Feedback konnte nicht gesendet werden", variant: "destructive" }),
+    onError: () => toast({ title: t("overview.feedback_error"), variant: "destructive" }),
   });
 
   const { data: summary, isLoading: loadingSummary } = useGetOverviewSummary({
@@ -529,10 +529,10 @@ export default function Overview() {
                 <Skeleton className="h-8 w-[100px]" />
               ) : (
                 <div className="text-2xl font-bold text-emerald-500">
-                  {summary?.todayProfit?.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                  {summary?.todayProfit?.toLocaleString(locale, { style: "currency", currency: "EUR" })}
                 </div>
               )}
-              <p className="text-xs text-muted-foreground mt-1">Umsatz: {summary?.todayRevenue?.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("overview.card_revenue", { amount: summary?.todayRevenue?.toLocaleString(locale, { style: "currency", currency: "EUR" }) ?? "—" })}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -635,7 +635,7 @@ export default function Overview() {
                 <Skeleton className="h-8 w-[100px]" />
               ) : (
                 <div className="text-2xl font-bold text-indigo-500">
-                  {(summary?.expectedRevenue ?? 0).toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                  {(summary?.expectedRevenue ?? 0).toLocaleString(locale, { style: "currency", currency: "EUR" })}
                 </div>
               )}
               <p className="text-xs text-muted-foreground mt-1">Hochrechnung aus Buchungen</p>
@@ -671,7 +671,7 @@ export default function Overview() {
                     <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `€${v}`} />
                     <Tooltip
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }}
-                      formatter={(value: number, name: string) => [`€${value.toLocaleString("de-DE")}`, name === "revenue" ? "Umsatz" : "Gewinn"]}
+                      formatter={(value: number, name: string) => [`€${value.toLocaleString(locale)}`, name === "revenue" ? t("analytics.chart_revenue_label") : t("analytics.chart_profit_label")]}
                     />
                     <Area type="monotone" dataKey="revenue" stroke="#6366f1" fill="url(#colorRevenue)" strokeWidth={2} name="Umsatz" />
                     <Area type="monotone" dataKey="profit" stroke="#10b981" fill="url(#colorProfit)" strokeWidth={2} name="Gewinn" />
@@ -837,7 +837,7 @@ export default function Overview() {
                 ))}
               </div>
               <Textarea
-                placeholder="Was läuft gut? Was sollten wir verbessern?"
+                placeholder={t("overview.feedback_placeholder")}
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 className="resize-none bg-background/50 text-sm"
@@ -850,7 +850,7 @@ export default function Overview() {
                 className="gap-2 bg-violet-600 hover:bg-violet-500 text-white"
               >
                 <Send className="h-3.5 w-3.5" />
-                {submitFeedback.isPending ? "Wird gesendet..." : "Feedback senden"}
+                {submitFeedback.isPending ? t("overview.feedback_sending") : t("overview.feedback_send")}
               </Button>
             </CardContent>
           </Card>

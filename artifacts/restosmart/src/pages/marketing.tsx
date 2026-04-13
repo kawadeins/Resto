@@ -69,8 +69,21 @@ function ActiveDiscountBanner() {
   );
 }
 
+const DE_DAY_TO_DATE: Record<string, Date> = {
+  "Montag": new Date(2024, 0, 1), "Dienstag": new Date(2024, 0, 2),
+  "Mittwoch": new Date(2024, 0, 3), "Donnerstag": new Date(2024, 0, 4),
+  "Freitag": new Date(2024, 0, 5), "Samstag": new Date(2024, 0, 6),
+  "Sonntag": new Date(2024, 0, 7),
+};
+
 export default function Marketing() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "de" ? "de-AT" : i18n.language === "fr" ? "fr-FR" : i18n.language === "it" ? "it-IT" : i18n.language === "es" ? "es-ES" : i18n.language === "nl" ? "nl-NL" : i18n.language === "pt" ? "pt-PT" : i18n.language === "tr" ? "tr-TR" : i18n.language === "pl" ? "pl-PL" : "en-US";
+  const getDayLabel = (germanDay: string) => {
+    const date = DE_DAY_TO_DATE[germanDay];
+    if (!date) return germanDay.slice(0, 3);
+    return date.toLocaleDateString(locale, { weekday: "short" });
+  };
   useEffect(() => {
     if (localStorage.getItem("restosmart_owner_premium") === "trial") {
       track("marketing_tools_viewed");
@@ -256,11 +269,11 @@ export default function Marketing() {
                 disabled={activateFlash.isPending || !isPro}
               >
                 <Zap className="mr-2 h-5 w-5" />
-                {activateFlash.isPending ? "Aktiviere..." : "Blitzangebot jetzt aktivieren"}
+                {activateFlash.isPending ? t("marketing.activating") : t("marketing.activate_flash")}
               </Button>
               {flashDeals.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground font-medium">Letzte Blitzangebote</p>
+                  <p className="text-xs text-muted-foreground font-medium">{t("marketing.last_deals")}</p>
                   {flashDeals.slice(0, 3).map((d) => (
                     <div key={d.id} className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{d.label}</span>
@@ -474,7 +487,7 @@ export default function Marketing() {
                         : "border-border text-muted-foreground hover:border-primary/50"
                     }`}
                   >
-                    {day.slice(0, 3)}
+                    {getDayLabel(day)}
                   </button>
                 ))}
               </div>
@@ -490,9 +503,9 @@ export default function Marketing() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowScheduledForm(false)}>Abbrechen</Button>
+            <Button variant="outline" onClick={() => setShowScheduledForm(false)}>{t("common.cancel")}</Button>
             <Button onClick={handleCreateScheduled} disabled={createScheduled.isPending}>
-              {createScheduled.isPending ? "Erstelle..." : "Angebot erstellen"}
+              {createScheduled.isPending ? t("common.loading") : t("marketing.create_discount")}
             </Button>
           </DialogFooter>
         </DialogContent>

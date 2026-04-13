@@ -1,0 +1,369 @@
+Perform a full root-cause repair of the app’s localization system.
+
+IMPORTANT:
+- This is NOT a simple translation pass
+- This is NOT a page-by-page wording task
+- This is a full i18n architecture debugging + repair task
+- The current problem is that language switching only translates part of the app and leaves many strings stuck in the old language
+- You must find the actual structural cause and fix it from the foundation
+- Do NOT stop at partial improvement
+- The app is only considered fixed when changing language fully changes the visible UI across BOTH:
+  1. customer app
+  2. restaurant owner dashboard
+
+==================================================
+PRIMARY PROBLEM
+==================================================
+
+The localization system is broken at the structural level.
+
+Current symptoms:
+- only part of the app translates
+- some strings stay permanently German/English/French
+- dashboard sidebar may change but dashboard content stays in another language
+- customer app hero/buttons/tabs/settings may remain mixed
+- changing the language results in mixed-language UI
+- some pages or components ignore the selected locale
+
+This must be repaired from the root.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Build one unified, production-safe localization system that fully controls all visible system UI text across the entire app.
+
+After the fix:
+- switching language must change all system UI text
+- no mixed-language screens may remain
+- no hardcoded visible strings may remain in app components
+- both customer app and owner dashboard must use the same locale state consistently
+- the selected language must be applied reliably across all routes, layouts, modals, forms, tabs, toasts, and empty states
+
+==================================================
+1. FIND THE REAL ROOT CAUSE (CRITICAL)
+==================================================
+
+Before making superficial fixes, inspect the localization architecture and identify exactly why translation is only partial.
+
+Investigate all of the following:
+
+- translation provider placement
+- locale state source of truth
+- whether customer app and owner dashboard use different providers or locale stores
+- whether some layouts are outside the provider
+- whether sidebar and content use different translation contexts
+- whether route changes preserve stale language state
+- whether translations are loaded lazily and some namespaces never load
+- whether hardcoded strings are bypassing i18n entirely
+- whether some components import static text/constants
+- whether some pages use a different translation helper than others
+- whether manual language switching updates state globally or only locally
+- whether locale persistence is read too late
+- whether hydration/init order causes stale language render
+- whether memoization/useMemo/useCallback prevents re-render on language change
+- whether translation keys are missing and falling back inconsistently
+- whether dashboard and customer app have separate fallback behavior
+
+Do NOT guess.
+State the exact root causes you found.
+
+==================================================
+2. CREATE ONE UNIFIED LOCALE SOURCE OF TRUTH
+==================================================
+
+The entire app must use one clear locale source of truth.
+
+Requirements:
+- one active locale state
+- one translation provider architecture
+- one persistence mechanism
+- one fallback policy
+- one consistent translation lookup method
+
+Customer app and owner dashboard must both read from the same active locale model, even if they use separate namespaces.
+
+No duplicated ad hoc language logic.
+No separate mini-translation systems.
+
+==================================================
+3. ELIMINATE ALL HARDCODED VISIBLE STRINGS
+==================================================
+
+This is mandatory.
+
+Search the full codebase for visible hardcoded strings and move them into the localization system.
+
+This includes all visible UI text in:
+
+CUSTOMER APP:
+- navigation labels
+- hero headings
+- hero subtext
+- CTA buttons
+- search placeholders
+- category chips
+- discover filters
+- restaurant page labels
+- booking flow
+- plan/group plan flows
+- feed/post actions
+- comments
+- profile
+- public profile
+- settings
+- notifications
+- chat
+- friend actions
+- modals
+- toasts
+- empty states
+- error messages
+- premium CTA/customer-facing upsell text
+
+OWNER DASHBOARD:
+- sidebar labels
+- home/welcome screen
+- cards
+- KPI labels
+- chart titles
+- chart legends
+- table headers
+- settings labels
+- billing/premium text
+- reviews labels
+- reservations/bookings text
+- marketing/boost text
+- team/staff text
+- forms
+- placeholders
+- modals
+- empty states
+- success/error messages
+
+No visible literal UI strings should remain outside the i18n system.
+
+==================================================
+4. FORCE FULL REACTIVE LANGUAGE SWITCHING
+==================================================
+
+When the user changes language manually:
+- all visible system UI must update
+- navigation must update
+- current page content must update
+- layout/shell text must update
+- modals must update
+- settings must update
+- dashboard content must update
+- no stale labels may remain
+
+If some components currently do not re-render on locale change, fix those components properly.
+
+Investigate and repair:
+- stale memoization
+- derived labels outside render
+- constants built at module load time
+- precomputed menu arrays not dependent on locale
+- cached route labels
+- stale state copied from translations once and never updated
+
+==================================================
+5. FIX NAMESPACE / MODULE COVERAGE
+==================================================
+
+Ensure all parts of the app have proper translation coverage.
+
+At minimum define and load namespaces or equivalent coverage for:
+
+- common
+- navigation
+- home
+- discover
+- restaurants
+- bookings
+- plans
+- feed
+- posts
+- comments
+- profile
+- publicProfile
+- settings
+- notifications
+- chat
+- auth
+- premium
+- dashboard
+- reservations
+- reviews
+- analytics
+- billing
+- team
+- marketing
+- growth
+- optimizer
+
+If keys are missing:
+- add them
+- do not leave components with fallback hardcoded strings
+
+==================================================
+6. UNIFY FALLBACK BEHAVIOR
+==================================================
+
+Define a single fallback rule for missing translations.
+
+Requirements:
+- if a key is missing in selected language, use fallback language consistently
+- do not show raw translation keys in production UI
+- do not mix fallback fragments unpredictably
+- log/report missing keys so they can be cleaned up
+
+The fallback must be stable and consistent across both customer app and owner dashboard.
+
+==================================================
+7. LOCALIZE FORMATTING TOO
+==================================================
+
+Also localize:
+- date formatting
+- time formatting
+- count/plural labels
+- currency/number display where appropriate
+- “last 30 days” style labels
+- countdown or reminder text
+
+Do not keep one language’s formatting while switching the rest of the UI.
+
+==================================================
+8. DO NOT TRANSLATE USER CONTENT
+==================================================
+
+Translate only system/interface text.
+
+Do NOT automatically translate:
+- user names
+- bios
+- post captions
+- chat messages
+- restaurant names if user/custom content
+- personal notes
+
+Keep user-generated content original unless there is a separate feature for translation.
+
+==================================================
+9. STRICT FULL-APP REPAIR PASS
+==================================================
+
+After fixing the architecture, perform a full app-wide repair pass.
+
+You must open and inspect all major flows in multiple languages and repair every visible leftover.
+
+CUSTOMER APP:
+- home
+- discover
+- restaurant page
+- booking flow
+- plans/group plans
+- feed
+- post creation
+- comments
+- profile
+- public profile
+- settings
+- notifications
+- chat
+- auth/login
+
+OWNER DASHBOARD:
+- sidebar
+- dashboard home
+- reservations/bookings
+- reviews
+- analytics
+- billing/premium
+- marketing/boost
+- team/staff
+- settings
+- modals/forms
+- empty states
+
+Fix every visible leftover string.
+
+==================================================
+10. NO PARTIAL COMPLETION ALLOWED
+==================================================
+
+This task is NOT complete if:
+- bottom nav still has hardcoded English
+- hero still has German while app is French
+- sidebar changes but content stays old language
+- modals are untranslated
+- settings mix languages
+- dashboard cards stay German in French mode
+- toasts remain in old language
+- placeholders remain untranslated
+
+Partial translation is failure.
+
+==================================================
+11. FINAL MULTI-LANGUAGE VALIDATION
+==================================================
+
+Validate in at least:
+- German
+- English
+- French
+- Italian
+
+For each language confirm:
+- customer app is fully translated
+- owner dashboard is fully translated
+- switching language updates current page properly
+- no mixed-language pages remain
+- no major hardcoded strings remain
+
+==================================================
+12. FINAL REPORT (STRICT)
+==================================================
+
+Return a structured report with:
+
+A. Exact root causes found
+B. What localization architecture was repaired
+C. Whether one unified locale source of truth now exists
+D. Which hardcoded string areas were removed
+E. Customer app translation status
+F. Owner dashboard translation status
+G. Whether reactive language switching now works correctly
+H. Remaining untranslated strings if any
+I. Remaining blockers if any
+
+For each area classify:
+- Fully fixed
+- Partially fixed
+- Still broken
+
+==================================================
+FINAL RESULT
+==================================================
+
+The app must become truly multilingual.
+
+Changing language must fully change the visible system UI across the whole product:
+- customer app
+- owner dashboard
+- navigation
+- hero
+- buttons
+- placeholders
+- modals
+- toasts
+- forms
+- empty states
+- dashboard cards
+- sidebar
+
+No mixed-language UI.
+No partial translation.
+No hardcoded leftovers.
+A real root-level localization repair.

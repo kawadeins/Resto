@@ -237,7 +237,7 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
       <DialogContent className="max-w-2xl bg-card border-border">
         <DialogHeader>
           <DialogTitle>Versandprotokoll</DialogTitle>
-          <DialogDescription>Alle Empfänger für diese Kampagne</DialogDescription>
+          <DialogDescription>{t("campaigns.target_audience")}</DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="space-y-2 py-4">
@@ -262,15 +262,15 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
                       <p className="text-xs text-muted-foreground">{s.customerEmail}</p>
                     </td>
                     <td className="py-2 pr-4">
-                      <Badge className={`text-xs ${SEGMENT_LABELS[s.segment]?.color}`}>{s.segment}</Badge>
+                      <Badge className={`text-xs ${SEGMENT_LABELS[s.segment]?.color}`}>{segmentLabel(s.segment)}</Badge>
                     </td>
                     <td className="py-2 pr-4">
                       {s.status === "converted" ? (
-                        <span className="flex items-center gap-1 text-green-400 text-xs"><CheckCircle2 className="h-3 w-3" />Konvertiert</span>
+                        <span className="flex items-center gap-1 text-green-400 text-xs"><CheckCircle2 className="h-3 w-3" />{t("campaigns.status_converted")}</span>
                       ) : s.status === "bounced" ? (
-                        <span className="flex items-center gap-1 text-red-400 text-xs"><XCircle className="h-3 w-3" />Nicht zugestellt</span>
+                        <span className="flex items-center gap-1 text-red-400 text-xs"><XCircle className="h-3 w-3" />{t("campaigns.status_bounced")}</span>
                       ) : (
-                        <span className="flex items-center gap-1 text-blue-400 text-xs"><Send className="h-3 w-3" />Gesendet</span>
+                        <span className="flex items-center gap-1 text-blue-400 text-xs"><Send className="h-3 w-3" />{t("campaigns.status_sent")}</span>
                       )}
                     </td>
                     <td className="py-2 text-muted-foreground text-xs">
@@ -358,13 +358,13 @@ function CreateCampaignModal({
           <div className="rounded-lg bg-muted/30 border border-border px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Zielgruppe</span>
+              <span className="text-sm text-muted-foreground">{t("campaigns.target_audience")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Badge className={SEGMENT_LABELS[template.targetSegment]?.color}>
-                {template.targetSegment === "all" ? "Alle Kunden" : SEGMENT_LABELS[template.targetSegment]?.label}
+                {segmentLabel(template.targetSegment)}
               </Badge>
-              <span className="text-sm font-bold text-foreground">{targetCount} Empfänger</span>
+              <span className="text-sm font-bold text-foreground">{targetCount} {t("campaigns.recipients")}</span>
             </div>
           </div>
 
@@ -386,7 +386,7 @@ function CreateCampaignModal({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">Diese Nachricht wird an alle Empfänger im ausgewählten Segment gesendet.</p>
+            <p className="text-xs text-muted-foreground">{t("campaigns.target_audience")}</p>
           </div>
 
           <div className="flex gap-2 pt-1">
@@ -413,6 +413,13 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 export default function Campaigns() {
   const { t } = useTranslation();
+  const segmentLabel = (key: string) => ({
+    inactive: t("campaigns.segment_inactive"),
+    new: t("campaigns.segment_new"),
+    returning: t("campaigns.segment_returning"),
+    high_value: t("campaigns.segment_high_value"),
+    all: t("campaigns.segment_all"),
+  } as Record<string, string>)[key] ?? key;
   const [selectedTemplate, setSelectedTemplate] = useState<CampaignTemplate | null>(null);
   const [viewingSendsId, setViewingSendsId] = useState<number | null>(null);
   const { toast } = useToast();
@@ -608,9 +615,9 @@ export default function Campaigns() {
                 </div>
                 <div className="flex items-center justify-between pt-1">
                   <Badge className={`text-[10px] ${SEGMENT_LABELS[tpl.targetSegment]?.color}`}>
-                    {tpl.targetSegment === "all" ? "Alle Segmente" : SEGMENT_LABELS[tpl.targetSegment]?.label}
+                    {segmentLabel(tpl.targetSegment)}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">{count} Empfänger</span>
+                  <span className="text-xs text-muted-foreground">{count} {t("campaigns.recipients")}</span>
                 </div>
               </button>
             );
@@ -658,7 +665,7 @@ export default function Campaigns() {
                         </td>
                         <td className="py-3 pr-6">
                           <Badge className={`text-xs ${SEGMENT_LABELS[c.targetSegment]?.color}`}>
-                            {SEGMENT_LABELS[c.targetSegment]?.label ?? c.targetSegment}
+                            {segmentLabel(c.targetSegment)}
                           </Badge>
                         </td>
                         <td className="py-3 pr-6">

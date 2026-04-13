@@ -381,7 +381,22 @@ function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: s
 }
 
 export default function Staff() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "de" ? "de-AT" : i18n.language === "fr" ? "fr-FR" : i18n.language === "it" ? "it-IT" : i18n.language === "es" ? "es-ES" : i18n.language === "nl" ? "nl-NL" : i18n.language === "pt" ? "pt-PT" : i18n.language === "tr" ? "tr-TR" : i18n.language === "pl" ? "pl-PL" : "en-US";
+  const dayLabels = useMemo((): Record<string, string> => {
+    const baseDate = new Date(2024, 0, 1); // Jan 1 2024 = Monday
+    return Object.fromEntries(DAYS.map((d, i) => {
+      const date = new Date(baseDate); date.setDate(baseDate.getDate() + i);
+      return [d, date.toLocaleDateString(locale, { weekday: "short" })];
+    }));
+  }, [locale]);
+  const dayFull = useMemo((): Record<string, string> => {
+    const baseDate = new Date(2024, 0, 1);
+    return Object.fromEntries(DAYS.map((d, i) => {
+      const date = new Date(baseDate); date.setDate(baseDate.getDate() + i);
+      return [d, date.toLocaleDateString(locale, { weekday: "long" })];
+    }));
+  }, [locale]);
   const { csrfToken } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -471,9 +486,9 @@ export default function Staff() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-vacations"] });
       setVacationStart(""); setVacationEnd(""); setVacationNotes("");
-      toast({ title: "Urlaub eingetragen" });
+      toast({ title: t("staff.status_vacation") });
     },
-    onError: () => toast({ title: "Fehler beim Eintragen des Urlaubs", variant: "destructive" }),
+    onError: () => toast({ title: t("common.error"), variant: "destructive" }),
   });
 
   const deleteVacation = useMutation({
@@ -503,9 +518,9 @@ export default function Staff() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
       setEditShiftDialog({ open: false, shift: null });
-      toast({ title: "Schicht aktualisiert" });
+      toast({ title: t("staff.save_success") });
     },
-    onError: () => toast({ title: "Fehler beim Aktualisieren", variant: "destructive" }),
+    onError: () => toast({ title: t("common.error"), variant: "destructive" }),
   });
 
   const getAuthHeaders = useCallback(() => ({
@@ -603,13 +618,13 @@ export default function Staff() {
   };
 
   const handleDeleteEmployee = (id: number) => {
-    if (confirm("Möchten Sie diesen Mitarbeiter wirklich löschen?")) {
+    if (confirm(t("staff.delete_confirm"))) {
       deleteEmployee.mutate(id, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
-          toast({ title: "Mitarbeiter gelöscht" });
+          toast({ title: t("staff.delete_success") });
         },
-        onError: () => toast({ title: "Löschen fehlgeschlagen", variant: "destructive" }),
+        onError: () => toast({ title: t("common.error"), variant: "destructive" }),
       });
     }
   };
@@ -630,9 +645,9 @@ export default function Staff() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
           setShiftDialogOpen(false);
-          toast({ title: "Schicht hinzugefügt" });
+          toast({ title: t("staff.save_success") });
         },
-        onError: () => toast({ title: "Fehler beim Speichern", variant: "destructive" }),
+        onError: () => toast({ title: t("common.error"), variant: "destructive" }),
       }
     );
   };
@@ -663,9 +678,9 @@ export default function Staff() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
           setCopyShiftDialog({ open: false, shift: null });
-          toast({ title: `Schicht nach ${DAY_FULL[copyTargetDay]} kopiert` });
+          toast({ title: `${t("staff.add_shift")} → ${dayFull[copyTargetDay]}` });
         },
-        onError: () => toast({ title: "Fehler beim Kopieren", variant: "destructive" }),
+        onError: () => toast({ title: t("common.error"), variant: "destructive" }),
       }
     );
   };
@@ -674,9 +689,9 @@ export default function Staff() {
     deleteShift.mutate(id, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
-        toast({ title: "Schicht entfernt" });
+        toast({ title: t("staff.delete_success") });
       },
-      onError: () => toast({ title: "Fehler beim Löschen", variant: "destructive" }),
+      onError: () => toast({ title: t("common.error"), variant: "destructive" }),
     });
   };
 
@@ -750,7 +765,7 @@ export default function Staff() {
     await queryClient.invalidateQueries({ queryKey: getListShiftsQueryKey() });
     setAiGenerating(false);
     setAiDialog((d) => ({ ...d, open: false }));
-    toast({ title: `Dienstplan erstellt — ${created} Schichten hinzugefügt` });
+    toast({ title: `${t("staff.schedule_created")} — ${created} ${t("staff.add_shift")}` });
   };
 
   const handleExportPDF = async () => {
@@ -817,7 +832,7 @@ export default function Staff() {
             employeeForm.reset({ name: "", role: "", email: "", phone: "", status: "active" });
             setEmployeeDialogOpen(true);
           }}>
-            <Plus className="h-4 w-4 mr-2" /> Mitarbeiter hinzufügen
+            <Plus className="h-4 w-4 mr-2" /> {t("staff.add_employee")}
           </Button>
         </div>
       </div>
@@ -829,9 +844,9 @@ export default function Staff() {
             {shiftReminders.map((r) => (
               <Alert key={`${r.employeeId}-${r.startTime}`} className="bg-amber-500/10 border-amber-500/20">
                 <Bell className="h-4 w-4 text-amber-500" />
-                <AlertTitle className="text-amber-600">Schicht beginnt bald</AlertTitle>
+                <AlertTitle className="text-amber-600">{t("staff.shift_soon")}</AlertTitle>
                 <AlertDescription className="text-amber-700 dark:text-amber-400">
-                  {r.employeeName} ({r.role}) beginnt in {r.minutesUntilStart} Min. um {r.startTime} Uhr.
+                  {r.employeeName} ({r.role}) — {r.startTime} ({r.minutesUntilStart} min)
                 </AlertDescription>
               </Alert>
             ))}
@@ -892,10 +907,10 @@ export default function Staff() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between text-base">
               <span className="flex items-center gap-2">
-                <UserCircle2 className="h-5 w-5 text-primary" /> Mitarbeiter
+                <UserCircle2 className="h-5 w-5 text-primary" /> {t("staff.tab_employees")}
               </span>
               <span className="text-sm font-normal text-muted-foreground">
-                {activeEmployees.length} aktiv{inactiveEmployees.length > 0 && ` · ${inactiveEmployees.length} inaktiv`}
+                {activeEmployees.length} {t("common.active").toLowerCase()}{inactiveEmployees.length > 0 && ` · ${inactiveEmployees.length} ${t("common.inactive").toLowerCase()}`}
               </span>
             </CardTitle>
           </CardHeader>
@@ -993,8 +1008,8 @@ export default function Staff() {
             ) : (
               <div className="text-center py-10 text-muted-foreground">
                 <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                <p className="font-medium">Noch keine Mitarbeiter angelegt</p>
-                <p className="text-sm mt-1">Klicken Sie oben auf "Mitarbeiter hinzufügen" um zu starten.</p>
+                <p className="font-medium">{t("staff.no_employees")}</p>
+                <p className="text-sm mt-1">{t("staff.add_employee")}</p>
               </div>
             )}
           </CardContent>
@@ -1015,15 +1030,15 @@ export default function Staff() {
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <span className="inline-block w-3 h-3 rounded-sm bg-primary/20 border border-primary/30" />
-                  Schicht
+                  {t("staff.tab_shifts")}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="inline-block w-3 h-3 rounded-sm bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600" />
-                  Frei
+                  {t("staff.status_off")}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="inline-block w-3 h-3 rounded-sm bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700" />
-                  Urlaub
+                  {t("staff.status_vacation")}
                 </span>
               </div>
             </div>
@@ -1034,18 +1049,18 @@ export default function Staff() {
             ) : activeEmployees.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground">
                 <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                <p className="text-sm">Noch keine aktiven Mitarbeiter für den Dienstplan.</p>
+                <p className="text-sm">{t("staff.no_employees")}</p>
               </div>
             ) : (
               <div className="min-w-[860px]">
                 {/* Day header */}
                 <div className="grid grid-cols-8 border-b border-border/50 bg-muted/30">
                   <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Mitarbeiter
+                    {t("staff.tab_employees")}
                   </div>
                   {DAYS.map((d) => (
                     <div key={d} className="px-2 py-2 text-center border-l border-border/30">
-                      <div className="text-xs font-semibold">{DAY_LABELS[d]}</div>
+                      <div className="text-xs font-semibold">{dayLabels[d]}</div>
                       <div className="text-xs text-muted-foreground">{weekDates[d]?.slice(5).replace("-", ".")}</div>
                     </div>
                   ))}
@@ -1119,21 +1134,21 @@ export default function Staff() {
                                     <button
                                       onClick={() => openEditShiftDialog(shift)}
                                       className="hover:bg-primary/20 rounded p-0.5 transition-colors"
-                                      title="Schicht bearbeiten"
+                                      title={t("common.edit")}
                                     >
                                       <Pencil className="h-2.5 w-2.5" />
                                     </button>
                                     <button
                                       onClick={() => openCopyShiftDialog(shift)}
                                       className="hover:bg-primary/20 rounded p-0.5 transition-colors"
-                                      title="Schicht kopieren"
+                                      title={t("common.copy")}
                                     >
                                       <Copy className="h-2.5 w-2.5" />
                                     </button>
                                     <button
                                       onClick={() => handleDeleteShift(shift.id)}
                                       className="hover:bg-destructive/20 text-destructive rounded p-0.5 transition-colors"
-                                      title="Schicht löschen"
+                                      title={t("common.delete")}
                                     >
                                       <Trash2 className="h-2.5 w-2.5" />
                                     </button>
@@ -1151,7 +1166,7 @@ export default function Staff() {
                                   onClick={() => openShiftDialog(emp.id, day)}
                                   className="w-full text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-1 rounded hover:bg-primary/5 transition-colors"
                                 >
-                                  <Plus className="h-2.5 w-2.5" /> Schicht
+                                  <Plus className="h-2.5 w-2.5" /> {t("staff.add_shift")}
                                 </button>
                               )}
                               <button
@@ -1290,7 +1305,7 @@ export default function Staff() {
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>
-              Schicht hinzufügen — {DAY_FULL[shiftDay]}
+              {t("staff.add_shift")} — {dayFull[shiftDay]}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 pt-2">
@@ -1325,7 +1340,7 @@ export default function Staff() {
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>
-              Schicht bearbeiten — {editShiftDialog.shift ? DAY_FULL[editShiftDialog.shift.dayOfWeek as Day] : ""}
+              {t("staff.shift_date")} — {editShiftDialog.shift ? dayFull[editShiftDialog.shift.dayOfWeek as Day] : ""}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 pt-2">
@@ -1380,11 +1395,11 @@ export default function Staff() {
               <div className="bg-muted/30 rounded-lg p-3 text-sm text-center">
                 <span className="font-semibold">{copyShiftDialog.shift.startTime} – {copyShiftDialog.shift.endTime}</span>
                 <span className="text-muted-foreground ml-2">
-                  ({DAY_FULL[copyShiftDialog.shift.dayOfWeek as Day]})
+                  ({dayFull[copyShiftDialog.shift.dayOfWeek as Day]})
                 </span>
               </div>
               <div>
-                <label className="text-sm font-medium block mb-2">Ziel-Tag</label>
+                <label className="text-sm font-medium block mb-2">{t("staff.shift_date")}</label>
                 <div className="flex flex-wrap gap-2">
                   {DAYS.map((d) => (
                     <button
@@ -1400,13 +1415,13 @@ export default function Staff() {
                           : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {DAY_LABELS[d]}
+                      {dayLabels[d]}
                     </button>
                   ))}
                 </div>
               </div>
               <Button className="w-full" onClick={handleCopyShift} disabled={createShift.isPending}>
-                <Copy className="h-4 w-4 mr-2" /> Nach {DAY_FULL[copyTargetDay]} kopieren
+                <Copy className="h-4 w-4 mr-2" /> {t("common.copy")} → {dayFull[copyTargetDay]}
               </Button>
             </div>
           )}

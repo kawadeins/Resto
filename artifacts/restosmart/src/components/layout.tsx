@@ -175,7 +175,7 @@ export function TrialConversionBanner({ context }: { context: "overview" | "anal
   if (end <= now) return null;
   const daysLeft = Math.ceil((end.getTime() - now.getTime()) / 86400000);
   const biz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
-  const bizLabel = biz === "cafe" ? "Café" : biz === "bar" ? "Bar" : "Restaurant";
+  const bizLabel = t(`biz.possessive_${biz}`);
   const dayLabel = daysLeft === 1 ? t("trial.day_singular") : t("trial.day_plural");
 
   const contextual: Record<string, { headline: string; body: string; cta: string }> = {
@@ -288,7 +288,7 @@ function getMobileNavigation(t: (k: string) => string): NavItem[] {
 function getOwnerInfo() {
   const email = localStorage.getItem("restosmart_owner_email") ?? "";
   const biz = localStorage.getItem("restosmart_owner_business_type") ?? "restaurant";
-  const bizLabel = biz === "cafe" ? "Café-Betreiber" : biz === "bar" ? "Bar-Betreiber" : "Restaurantbesitzer";
+  const bizLabel = "RestoSmart";
   const name = email ? email.split("@")[0].replace(/[._]/g, " ") : bizLabel;
   const initials = name
     .split(" ")
@@ -421,7 +421,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Mobile notifications */}
         <div className="flex flex-col items-center justify-center w-full h-full space-y-1">
           <OwnerNotificationBell />
-          <span className="text-[10px] font-medium text-muted-foreground">Alerts</span>
+          <span className="text-[10px] font-medium text-muted-foreground">{t("nav.alerts")}</span>
         </div>
         {/* Mobile profile */}
         <Link

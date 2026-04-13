@@ -56,17 +56,16 @@ export function RestaurantBrowseTrigger({ viewCount }: RestaurantBrowseTriggerPr
   const AUTO_DISMISS_S = 10;
 
   useEffect(() => {
-    if (viewCount >= 3 && !shownRef.current) {
-      try {
-        if (sessionStorage.getItem(BROWSE_TRIGGER_KEY)) return;
-      } catch {}
-      shownRef.current = true;
-      const t = setTimeout(() => {
-        setVisible(true);
-        try { sessionStorage.setItem(BROWSE_TRIGGER_KEY, "1"); } catch {}
-      }, 900);
-      return () => clearTimeout(t);
-    }
+    if (!(viewCount >= 3 && !shownRef.current)) return;
+    try {
+      if (sessionStorage.getItem(BROWSE_TRIGGER_KEY)) return;
+    } catch {}
+    shownRef.current = true;
+    const t = setTimeout(() => {
+      setVisible(true);
+      try { sessionStorage.setItem(BROWSE_TRIGGER_KEY, "1"); } catch {}
+    }, 900);
+    return () => clearTimeout(t);
   }, [viewCount]);
 
   // Auto-dismiss

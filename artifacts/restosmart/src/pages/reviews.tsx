@@ -244,10 +244,10 @@ export default function Reviews() {
     insights?.trend === "down" ? "text-red-500" : "text-muted-foreground";
 
   const tabs: { key: FilterTab; label: string; count?: number }[] = [
-    { key: "all", label: "Alle", count: reviews?.length },
-    { key: "needs_attention", label: "Handlungsbedarf", count: insights?.needsAttention?.length },
-    { key: "unreplied", label: "Ohne Antwort", count: insights?.unrepliedCount },
-    { key: "positive", label: "Positiv (4–5)", count: reviews?.filter(r => r.rating >= 4).length },
+    { key: "all", label: t("reviews.tab_all"), count: reviews?.length },
+    { key: "needs_attention", label: t("reviews.tab_needs_attention"), count: insights?.needsAttention?.length },
+    { key: "unreplied", label: t("reviews.tab_unreplied"), count: insights?.unrepliedCount },
+    { key: "positive", label: t("reviews.tab_positive"), count: reviews?.filter(r => r.rating >= 4).length },
   ];
 
   return (
@@ -419,7 +419,7 @@ export default function Reviews() {
                               <Textarea
                                 value={responseText[review.id] ?? ""}
                                 onChange={e => setResponseText(prev => ({ ...prev, [review.id]: e.target.value }))}
-                                placeholder="Ihre Antwort an den Gast…"
+                                placeholder={t("reviews.reply_placeholder")}
                                 className="min-h-[100px] text-sm"
                                 autoFocus
                               />
@@ -442,7 +442,7 @@ export default function Reviews() {
                                   disabled={sendBusinessResponseMutation.isPending || !responseText[review.id]?.trim()}
                                 >
                                   <Send className="w-3.5 h-3.5" />
-                                  {sendBusinessResponseMutation.isPending ? "Wird gesendet…" : "Antwort senden"}
+                                  {sendBusinessResponseMutation.isPending ? t("common.loading") : t("reviews.send_reply")}
                                 </Button>
                               </div>
                             </div>
@@ -719,9 +719,9 @@ export default function Reviews() {
               {insights?.recentAvg !== null && insights?.previousAvg !== null && (
                 <div className={`mt-4 text-sm flex items-center gap-2 font-medium ${trendColor}`}>
                   <TrendIcon className="w-4 h-4" />
-                  {insights?.trend === "up" && "Bewertung steigt im Vergleich zum Vormonat"}
-                  {insights?.trend === "down" && "Bewertung sinkt im Vergleich zum Vormonat"}
-                  {insights?.trend === "stable" && "Bewertung stabil im Vergleich zum Vormonat"}
+                  {insights?.trend === "up" && t("reviews.trend_up")}
+                  {insights?.trend === "down" && t("reviews.trend_down")}
+                  {insights?.trend === "stable" && t("reviews.trend_stable")}
                 </div>
               )}
             </CardContent>
@@ -764,7 +764,7 @@ export default function Reviews() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <MessageSquare className="w-12 h-12 mb-4 opacity-20" />
-                <p>{activeTab === "all" ? "Noch keine Bewertungen." : "Keine Bewertungen in dieser Kategorie."}</p>
+                <p>{activeTab === "all" ? t("reviews.no_reviews") : t("common.none")}</p>
               </CardContent>
             </Card>
           ) : (
