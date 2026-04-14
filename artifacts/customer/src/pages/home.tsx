@@ -276,48 +276,37 @@ function DynamicSection({
 
 type HeadlineSegment = { text: string; gradient?: boolean };
 
-function getTimeSlotHeadlines(): HeadlineSegment[][] {
+function getTimeSlotKeys(): string[] {
   const h = new Date().getHours();
-  if (h >= 6 && h < 11) return [
-    [{ text: "Guten Morgen." }, { text: " Die besten Frühstücks-Spots.", gradient: true }],
-    [{ text: "Früh aufgestanden?" }, { text: " Wien erwartet dich.", gradient: true }],
-    [{ text: "Jetzt buchen." }, { text: " Tische sind noch frei.", gradient: true }],
-  ];
-  if (h >= 11 && h < 15) return [
-    [{ text: "Mittagszeit." }, { text: " Sichere dir jetzt einen Tisch.", gradient: true }],
-    [{ text: "Hunger?" }, { text: " Wiens beste Restaurants warten.", gradient: true }],
-    [{ text: "Lunch-Deals." }, { text: " Nur heute verfügbar.", gradient: true }],
-  ];
-  if (h >= 15 && h < 18) return [
-    [{ text: "Nachmittag." }, { text: " Entdecke neue Cafés in Wien.", gradient: true }],
-    [{ text: "Happy Hour." }, { text: " Die besten Angebote warten.", gradient: true }],
-    [{ text: "Entspannen." }, { text: " Dein Lieblingsplatz ist nah.", gradient: true }],
-  ];
-  if (h >= 18 && h < 22) return [
-    [{ text: "Guten Abend." }, { text: " Wiens beste Restaurants warten.", gradient: true }],
-    [{ text: "Heute Abend." }, { text: " Das perfekte Dinner sichern.", gradient: true }],
-    [{ text: "Jetzt reservieren." }, { text: " Exklusive Abendangebote.", gradient: true }],
-  ];
-  return [
-    [{ text: "Die Nacht gehört dir." }, { text: " Wiens bestes Nachtleben.", gradient: true }],
-    [{ text: "Wien bei Nacht." }, { text: " Entdecke die besten Bars.", gradient: true }],
-    [{ text: "Jetzt buchen." }, { text: " Smart entdecken, mehr erleben.", gradient: true }],
-  ];
+  if (h >= 6 && h < 11) return ["home.hero_morning_0", "home.hero_morning_1", "home.hero_morning_2"];
+  if (h >= 11 && h < 15) return ["home.hero_lunch_0", "home.hero_lunch_1", "home.hero_lunch_2"];
+  if (h >= 15 && h < 18) return ["home.hero_afternoon_0", "home.hero_afternoon_1", "home.hero_afternoon_2"];
+  if (h >= 18 && h < 22) return ["home.hero_evening_0", "home.hero_evening_1", "home.hero_evening_2"];
+  return ["home.hero_night_0", "home.hero_night_1", "home.hero_night_2"];
 }
 
-const ROTATING_HEADLINES = getTimeSlotHeadlines();
-
 function RotatingHeroHeadline() {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+
+  const headlineKeys = useMemo(() => getTimeSlotKeys(), []);
+  const headlines = useMemo<HeadlineSegment[][]>(() =>
+    headlineKeys.map(key => {
+      const str = t(key);
+      const [plain, grad] = str.split("|");
+      return [{ text: plain }, { text: grad ?? "", gradient: true }];
+    }),
+    [headlineKeys, t]
+  );
 
   useEffect(() => {
     if (paused) return;
     const id = setInterval(() => {
-      setIndex((prev) => (prev + 1) % ROTATING_HEADLINES.length);
+      setIndex((prev) => (prev + 1) % headlines.length);
     }, 4500);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, headlines.length]);
 
   return (
     <div
@@ -334,7 +323,7 @@ function RotatingHeroHeadline() {
           transition={{ duration: 0.58, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-[40px] md:text-[56px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground"
         >
-          {ROTATING_HEADLINES[index].map((seg, i) =>
+          {headlines[index].map((seg, i) =>
             seg.gradient
               ? <span key={i} className="gradient-text">{seg.text}</span>
               : <span key={i}>{seg.text}</span>

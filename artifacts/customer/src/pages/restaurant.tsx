@@ -37,6 +37,7 @@ import { useSeo } from "@/hooks/use-seo";
 import { useTranslation } from "react-i18next";
 import { recordHabitEvent } from "@/lib/habit-engine";
 import { PostBookingTrigger } from "@/components/return-trigger";
+import { RestaurantBrowseTrigger, PostBookingPremiumNudge } from "@/components/contextual-premium-trigger";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -555,6 +556,8 @@ export default function Restaurant() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Contextual browse trigger — fires on 3rd restaurant page view */}
+      <RestaurantBrowseTrigger />
       {/* Hero Image */}
       <div className="relative w-full h-[40vh] md:h-[50vh] bg-muted">
         {restaurant.heroImage ? (
@@ -1161,6 +1164,7 @@ export default function Restaurant() {
                 {bookingSuccess ? (
                   <div className="text-center py-6 space-y-4">
                     <PostBookingTrigger restaurantName={restaurant?.name} />
+                    <PostBookingPremiumNudge />
                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>

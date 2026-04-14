@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 // ── Config ──────────────────────────────────────────────────────────────────
 const TRIGGER_MS = 7 * 60 * 1000;      // 7 minutes of active time
@@ -65,9 +66,6 @@ function StarPicker({
   );
 }
 
-// ── Step labels ──────────────────────────────────────────────────────────────
-const STAR_LABELS = ["", "Nicht so gut 😕", "War okay 😐", "Ganz gut 🙂", "Gefällt mir 😊", "Fantastisch! 🤩"];
-
 // ── Main Modal ───────────────────────────────────────────────────────────────
 function RatingModal({
   email,
@@ -77,6 +75,7 @@ function RatingModal({
   onClose: () => void;
 }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [step, setStep] = useState<"rate" | "high" | "low">("rate");
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
@@ -107,7 +106,7 @@ function RatingModal({
         });
         setSubmitted(true);
       } catch {
-        toast({ title: "Fehler", description: "Konnte nicht senden. Bitte erneut versuchen.", variant: "destructive" });
+        toast({ title: t("restaurant.rating_error"), description: t("restaurant.rating_error_desc"), variant: "destructive" });
       } finally {
         setLoading(false);
       }
@@ -119,7 +118,7 @@ function RatingModal({
     await submitFeedback("prompt");
     // simulate opening app store
     setTimeout(() => {
-      toast({ title: "Danke für dein Vertrauen! 💜", description: "Deine Unterstützung bedeutet uns sehr viel." });
+      toast({ title: t("restaurant.rating_trust_title"), description: t("restaurant.rating_trust_desc") });
       onClose();
     }, 400);
   };
@@ -137,11 +136,11 @@ function RatingModal({
             <Heart className="w-7 h-7 text-white fill-white" />
           </div>
           <div className="text-center space-y-1">
-            <h3 className="text-xl font-bold font-serif">Vielen Dank!</h3>
-            <p className="text-sm text-muted-foreground">Dein Feedback hilft uns, RestoSmart besser zu machen.</p>
+            <h3 className="text-xl font-bold font-serif">{t("restaurant.rating_thanks_title")}</h3>
+            <p className="text-sm text-muted-foreground">{t("restaurant.rating_thanks_desc")}</p>
           </div>
           <Button onClick={onClose} className="rounded-2xl px-8 bg-gradient-to-r from-primary to-accent text-white border-0 shadow-md shadow-primary/20">
-            Fertig
+            {t("restaurant.rating_done")}
           </Button>
         </div>
       </ModalShell>
@@ -162,18 +161,18 @@ function RatingModal({
             </div>
           </div>
           <div className="text-center space-y-1">
-            <h3 className="text-xl font-bold font-serif">Wie gefällt dir RestoSmart?</h3>
-            <p className="text-sm text-muted-foreground">Dein Feedback hilft uns, die App kontinuierlich zu verbessern.</p>
+            <h3 className="text-xl font-bold font-serif">{t("restaurant.rating_how")}</h3>
+            <p className="text-sm text-muted-foreground">{t("restaurant.rating_subtitle")}</p>
           </div>
           <StarPicker value={rating} onChange={handleRatingSelect} />
           {rating > 0 && (
-            <p className="text-sm font-semibold text-primary animate-fade-in">{STAR_LABELS[rating]}</p>
+            <p className="text-sm font-semibold text-primary animate-fade-in">{t(`restaurant.star_label_${rating}`)}</p>
           )}
           <button
             onClick={onClose}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            Jetzt nicht
+            {t("restaurant.rating_skip")}
           </button>
         </div>
       )}
@@ -187,9 +186,9 @@ function RatingModal({
             ))}
           </div>
           <div className="text-center space-y-1">
-            <h3 className="text-xl font-bold font-serif">Das freut uns sehr! 🎉</h3>
+            <h3 className="text-xl font-bold font-serif">{t("restaurant.rating_high_title")}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Wenn dir RestoSmart gefällt, hinterlasse uns eine Bewertung im App Store — das hilft uns enorm!
+              {t("restaurant.rating_high_desc")}
             </p>
           </div>
           <div className="w-full space-y-3">
@@ -199,14 +198,14 @@ function RatingModal({
               className="w-full rounded-2xl h-12 bg-gradient-to-r from-primary to-accent text-white border-0 font-semibold shadow-md shadow-primary/20 flex items-center gap-2"
             >
               <ExternalLink className="w-4 h-4" />
-              Jetzt im App Store bewerten
+              {t("restaurant.rating_rate_appstore")}
             </Button>
             <Button
               variant="ghost"
               onClick={onClose}
               className="w-full rounded-2xl h-10 text-muted-foreground"
             >
-              Vielleicht später
+              {t("restaurant.rating_maybe_later")}
             </Button>
           </div>
         </div>
@@ -216,25 +215,25 @@ function RatingModal({
       {step === "low" && (
         <div className="flex flex-col gap-4 py-1">
           <div className="text-center space-y-1">
-            <h3 className="text-lg font-bold font-serif">Was können wir besser machen?</h3>
-            <p className="text-sm text-muted-foreground">Dein Feedback ist anonym und hilft uns sehr.</p>
+            <h3 className="text-lg font-bold font-serif">{t("restaurant.rating_low_title")}</h3>
+            <p className="text-sm text-muted-foreground">{t("restaurant.rating_low_sub")}</p>
           </div>
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Was hat dir nicht gefallen oder was sollten wir verbessern? (optional)"
+            placeholder={t("restaurant.rating_low_ph")}
             className="rounded-xl resize-none min-h-[100px] text-sm"
             maxLength={2000}
           />
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              E-Mail (optional, für Rückfragen)
+              {t("restaurant.rating_email_label")}
             </label>
             <Input
               type="email"
               value={feedEmail}
               onChange={(e) => setFeedEmail(e.target.value)}
-              placeholder="deine@email.de"
+              placeholder={t("restaurant.rating_email_ph")}
               className="rounded-xl text-sm"
             />
           </div>
@@ -244,7 +243,7 @@ function RatingModal({
               onClick={onClose}
               className="flex-1 rounded-2xl"
             >
-              Abbrechen
+              {t("restaurant.rating_cancel")}
             </Button>
             <Button
               onClick={() => handleLowSubmit()}
@@ -252,7 +251,7 @@ function RatingModal({
               className="flex-1 rounded-2xl bg-gradient-to-r from-primary to-accent text-white border-0 flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
-              {loading ? "Sende…" : "Senden"}
+              {loading ? t("restaurant.rating_sending") : t("restaurant.rating_send")}
             </Button>
           </div>
         </div>
@@ -296,6 +295,7 @@ function ModalShell({ children, onClose }: { children: React.ReactNode; onClose:
 // ── Profile inline widget (for manual rating in profile page) ─────────────────
 export function ProfileFeedbackWidget({ email }: { email: string }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -316,9 +316,9 @@ export function ProfileFeedbackWidget({ email }: { email: string }) {
         }),
       });
       setDone(true);
-      toast({ title: "Danke für dein Feedback! 💜", description: "Wir lesen alles und verbessern uns." });
+      toast({ title: t("restaurant.rating_feedback_thanks_title"), description: t("restaurant.rating_feedback_thanks_desc") });
     } catch {
-      toast({ title: "Fehler", description: "Bitte erneut versuchen.", variant: "destructive" });
+      toast({ title: t("restaurant.rating_error"), description: t("restaurant.rating_feedback_error_desc"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -331,8 +331,8 @@ export function ProfileFeedbackWidget({ email }: { email: string }) {
           <Heart className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Bewertung gespeichert</p>
-          <p className="text-xs text-muted-foreground">Vielen Dank für deine Hilfe!</p>
+          <p className="text-sm font-semibold">{t("restaurant.review_success")}</p>
+          <p className="text-xs text-muted-foreground">{t("restaurant.rating_thanks_title")}</p>
         </div>
       </div>
     );
@@ -341,17 +341,17 @@ export function ProfileFeedbackWidget({ email }: { email: string }) {
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <p className="text-sm font-medium">Wie bewertest du RestoSmart?</p>
-        <p className="text-xs text-muted-foreground">Deine Meinung hilft uns, die App besser zu machen.</p>
+        <p className="text-sm font-medium">{t("restaurant.rating_how")}</p>
+        <p className="text-xs text-muted-foreground">{t("restaurant.rating_subtitle")}</p>
       </div>
       <StarPicker value={rating} onChange={setRating} />
       {rating > 0 && (
         <>
-          <p className="text-xs text-center font-medium text-primary">{STAR_LABELS[rating]}</p>
+          <p className="text-xs text-center font-medium text-primary">{t(`restaurant.star_label_${rating}`)}</p>
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Möchtest du mehr erzählen? (optional)"
+            placeholder={t("restaurant.rating_feedback_ph")}
             className="rounded-xl resize-none text-sm min-h-[80px]"
             maxLength={2000}
           />
@@ -361,7 +361,7 @@ export function ProfileFeedbackWidget({ email }: { email: string }) {
             className="w-full rounded-2xl bg-gradient-to-r from-primary to-accent text-white border-0 flex items-center gap-2"
           >
             <Send className="w-4 h-4" />
-            {loading ? "Sende…" : "Feedback senden"}
+            {loading ? t("restaurant.rating_sending") : t("restaurant.rating_feedback_send")}
           </Button>
         </>
       )}

@@ -1,0 +1,121 @@
+Implement a focused post-cleanup translation repair pass for the remaining critical customer app UI leftovers.
+
+IMPORTANT:
+- Do NOT rebuild i18n
+- Do NOT touch owner dashboard in this pass
+- Do NOT reintroduce any removed demo/promo components
+- This is a small targeted repair pass only
+- Focus strictly on the remaining translation issues identified in the cleanup report
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Finish the remaining high-visibility customer app translation issues so the app no longer shows obvious German leftovers after the demo cleanup.
+
+==================================================
+1. FIX home.tsx (CRITICAL)
+==================================================
+
+Repair the remaining hardcoded German text in home.tsx.
+
+Specifically:
+- hero headings
+- hero subtext
+- rotating phrases if still hardcoded
+- homepage CTA/support text
+- any remaining visible German labels
+
+Move all visible strings into the existing i18n system.
+Do not leave any hero/home text hardcoded.
+
+==================================================
+2. FIX restaurant-card.tsx + HOME CARD LABELS (CRITICAL)
+==================================================
+
+Repair cuisine/category/status labels that are still hardcoded in German.
+
+Targets:
+- restaurant-card.tsx
+- any shared restaurant card labels used by home.tsx
+- cuisine badges
+- category chips
+- restaurant summary labels
+
+These must react correctly to language changes.
+
+==================================================
+3. FIX SMALL MISSING KEY ISSUES
+==================================================
+
+Repair the small issues identified in the report:
+
+- add missing EN key for:
+  restaurant.reserve_table
+
+- complete any small missing EN messages.* extended keys if still missing
+
+- fix app-rating-prompt.tsx remaining hardcoded strings such as:
+  - "Sende…"
+  - "Feedback senden"
+
+Keep this minimal and precise.
+
+==================================================
+4. DO NOT TOUCH WORKING AREAS
+==================================================
+
+Do NOT modify:
+- removed demo components
+- feed
+- profile
+- messages wiring
+- meal-plan wiring
+- owner dashboard
+- global i18n architecture
+
+Only fix the remaining customer app leftovers above.
+
+==================================================
+5. VALIDATION
+==================================================
+
+After repairs, test in:
+- German
+- English
+- French
+
+Check specifically:
+- home page
+- restaurant cards
+- restaurant page CTA label
+- app rating prompt if visible
+
+Confirm:
+- no hardcoded German remains in these areas
+- no raw key remains
+- UI updates correctly when language changes
+
+==================================================
+6. FINAL REPORT
+==================================================
+
+Return a concise report with:
+
+A. home.tsx status
+B. restaurant-card.tsx / card label status
+C. reserve_table EN key status
+D. app-rating-prompt status
+E. any remaining small customer app translation leftovers
+
+==================================================
+FINAL RESULT
+==================================================
+
+The remaining visible customer app translation leftovers from the cleanup report must be fixed.
+
+After this pass:
+- home should be clean
+- restaurant cards should be reactive to language
+- no raw reserve_table key should appear
+- no obvious German leftovers should remain in these repaired areas

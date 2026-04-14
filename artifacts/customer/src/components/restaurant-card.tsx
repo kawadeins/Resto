@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Star, Clock, MapPin, Navigation, Zap, Coffee, Wine, UtensilsCrossed, ArrowRight } from "lucide-react";
 import { MarketplaceRestaurant } from "@workspace/api-client-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { scoreLiveActivity } from "@/lib/live-activity";
 import { LiveBadge } from "@/components/live-badge";
 import { SocialCueChip } from "@/components/social-cue-chip";
@@ -75,38 +76,37 @@ function getTypeConfig(businessType?: BizType) {
   return TYPE_CONFIG[businessType ?? "restaurant"] ?? TYPE_CONFIG.restaurant;
 }
 
-const CUISINE_DE: Record<string, string> = {
-  Austrian:      "Österreichisch",
-  Burgers:       "Burger",
-  French:        "Französisch",
-  Indian:        "Indisch",
-  International: "International",
-  Italian:       "Italienisch",
-  Japanese:      "Japanisch",
-  Vegetarian:    "Vegetarisch",
-  Cocktails:     "Cocktails",
-  "Café":        "Café",
-};
-
-const BOOST_LABELS: Record<string, string> = {
-  breakfast_boost:  "Frühstücks-Boost",
-  lunch_boost:      "Mittags-Boost",
-  happy_hour_boost: "Happy-Hour-Boost",
-  nightlife_boost:  "Nightlife-Boost",
-  local_spotlight:  "Local Spotlight",
-  local_heat_boost: "Heat Boost",
+const CUISINE_I18N_KEY: Record<string, string> = {
+  Austrian:      "cuisine_austrian",
+  Burgers:       "cuisine_burgers",
+  French:        "cuisine_french",
+  Indian:        "cuisine_indian",
+  International: "cuisine_international",
+  Italian:       "cuisine_italian",
+  Japanese:      "cuisine_japanese",
+  Vegetarian:    "cuisine_vegetarian",
+  Cocktails:     "cuisine_cocktails",
+  "Café":        "cuisine_cafe",
+  Mexican:       "cuisine_mexican",
+  American:      "cuisine_american",
+  Chinese:       "cuisine_chinese",
+  Mediterranean: "cuisine_mediterranean",
+  Seafood:       "cuisine_seafood",
+  Steakhouse:    "cuisine_steakhouse",
+  Thai:          "cuisine_thai",
 };
 
 function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant }) {
+  const { t } = useTranslation();
   const status = (restaurant as any).availabilityStatus;
   if (!restaurant.isOpenNow || !status || status === "closed") return null;
 
-  const config: Record<string, { label: string; dot: string; cls: string }> = {
-    available:   { label: "Tische frei",         dot: "bg-emerald-500", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    limited:     { label: "Wenige Plätze",        dot: "bg-amber-400",   cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    nearly_full: { label: "Fast ausgebucht",      dot: "bg-orange-500",  cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    full:        { label: "Ausgebucht",           dot: "bg-red-400",     cls: "bg-red-50 text-red-600 border-red-200" },
-    paused:      { label: "Keine Buchungen",      dot: "bg-gray-400",    cls: "bg-gray-50 text-gray-500 border-gray-200" },
+  const config: Record<string, { labelKey: string; dot: string; cls: string }> = {
+    available:   { labelKey: "home.avail_available",   dot: "bg-emerald-500", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    limited:     { labelKey: "home.avail_limited",     dot: "bg-amber-400",   cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    nearly_full: { labelKey: "home.avail_nearly_full", dot: "bg-orange-500",  cls: "bg-orange-50 text-orange-700 border-orange-200" },
+    full:        { labelKey: "home.avail_full",        dot: "bg-red-400",     cls: "bg-red-50 text-red-600 border-red-200" },
+    paused:      { labelKey: "home.avail_paused",      dot: "bg-gray-400",    cls: "bg-gray-50 text-gray-500 border-gray-200" },
   };
 
   const c = config[status];
@@ -115,18 +115,24 @@ function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant })
   return (
     <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border ${c.cls}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      {c.label}
+      {t(c.labelKey)}
     </span>
   );
 }
 
 export function RestaurantCard({ restaurant, showFlashDeal = false, distance, isSponsored = false }: RestaurantCardProps) {
+  const { t } = useTranslation();
   const priceString = "€".repeat(restaurant.priceRange || 2);
   const isAvailable = restaurant.isOpenNow && (restaurant as any).availabilityStatus === "available";
   const hasFlash = showFlashDeal && restaurant.hasActiveFlash;
   const biz: BizType = (restaurant as any).businessType ?? "restaurant";
   const typeCfg = getTypeConfig(biz);
   const TypeIcon = typeCfg.icon;
+
+  const cuisineKey = CUISINE_I18N_KEY[restaurant.cuisine];
+  const cuisineLabel = cuisineKey
+    ? t(`home.${cuisineKey}`)
+    : restaurant.cuisine;
 
   // Live activity score
   const { mode } = useLifestyleMode();
@@ -178,17 +184,17 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
             {restaurant.isOpenNow ? (
               <span className="inline-flex items-center gap-1.5 bg-emerald-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                Geöffnet
+                {t("home.open_badge")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white/80 text-[11px] font-semibold px-3 py-1.5 rounded-full">
-                Geschlossen
+                {t("home.closed_badge")}
               </span>
             )}
             {hasFlash && (
               <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-accent to-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md shadow-rose-200 animate-pulse">
                 <Zap className="w-3 h-3" />
-                {restaurant.flashPercentage}% RABATT
+                {restaurant.flashPercentage}% {t("home.discount_badge")}
               </span>
             )}
           </div>
@@ -230,12 +236,12 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
             </span>
             <span className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full">
               <span className="text-sm leading-none">{restaurant.cuisineEmoji}</span>
-              {CUISINE_DE[restaurant.cuisine] ?? restaurant.cuisine}
+              {cuisineLabel}
             </span>
             <AvailabilityChip restaurant={restaurant} />
             {isSponsored && (
               <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                Gesponsert
+                {t("home.sponsored_badge")}
               </span>
             )}
           </div>
@@ -249,17 +255,17 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
             {fomoViewers && !showLiveBadge && (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                {fomoViewers} schauen gerade
+                {t("home.viewing_now", { count: fomoViewers })}
               </span>
             )}
             {fomoSlots !== null && (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-200">
-                {"⚡ Nur noch "}{fomoSlots}{fomoSlots === 1 ? " Platz!" : " Plätze!"}
+                ⚡ {t("home.spots_left", { count: fomoSlots })}
               </span>
             )}
             {friendEndorsement && !fomoSlots && (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-200">
-                {"👥 Freunde empfehlen"}
+                👥 {t("home.friends_recommend")}
               </span>
             )}
           </div>
@@ -290,7 +296,7 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
                 )}
               </div>
               <span className="text-[10px] font-bold text-primary/70 flex items-center gap-0.5 shrink-0">
-                Ansehen <ArrowRight className="w-2.5 h-2.5" />
+                {t("home.view_details")} <ArrowRight className="w-2.5 h-2.5" />
               </span>
             </div>
           )}
