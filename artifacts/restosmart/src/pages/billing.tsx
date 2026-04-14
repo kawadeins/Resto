@@ -109,6 +109,7 @@ export default function Billing() {
       }, 2000);
       return () => clearInterval(poll);
     }
+    return;
   }, [stripeReturn, topupReturn]);
 
   const trial = getTrialInfo();
@@ -174,7 +175,7 @@ export default function Billing() {
         localStorage.removeItem("restosmart_trial_end");
         localStorage.removeItem("restosmart_trial_started");
         setCancelled(true);
-        toast({ title: "Abonnement beendet", description: "Ihr Zugang wurde deaktiviert." });
+        toast({ title: t("billing.cancel_title"), description: t("billing.cancel_hint_paid") });
         await logout();
       },
       onError: async () => {
@@ -182,7 +183,7 @@ export default function Billing() {
         localStorage.removeItem("restosmart_trial_end");
         localStorage.removeItem("restosmart_trial_started");
         setCancelled(true);
-        toast({ title: "Zugang beendet" });
+        toast({ title: t("billing.access_ended") });
         await logout();
       },
     });
@@ -217,7 +218,7 @@ export default function Billing() {
     <div className="max-w-2xl mx-auto space-y-8 pb-10">
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Abonnement</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("billing.title", { defaultValue: "Subscription" })}</h2>
         <p className="text-muted-foreground mt-1 text-sm">
           {bizPossessive} aktiver Plan und Abrechnungsdetails.
         </p>
@@ -228,7 +229,7 @@ export default function Billing() {
         <div className="rounded-2xl border border-amber-700/30 bg-amber-950/20 p-5 flex items-start gap-3">
           <XCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm text-amber-300 mb-1">Zahlung abgebrochen</p>
+            <p className="font-semibold text-sm text-amber-300 mb-1">{t("billing.stripe_cancelled_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {"Der Checkout wurde abgebrochen. Ihr Abonnement wurde noch nicht aktiviert. Sie k\u00f6nnen es jederzeit erneut versuchen."}
             </p>
@@ -241,7 +242,7 @@ export default function Billing() {
         <div className="rounded-2xl border border-violet-700/30 bg-violet-950/20 p-5 flex items-start gap-3">
           <RefreshCw className="w-5 h-5 text-violet-400 mt-0.5 shrink-0 animate-spin" />
           <div>
-            <p className="font-semibold text-sm text-violet-300 mb-1">Zahlung wird verarbeitet</p>
+            <p className="font-semibold text-sm text-violet-300 mb-1">{t("billing.stripe_success_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {"Ihre Zahlung wurde erfolgreich \u00fcbermittelt. Das Premium-Abonnement wird in wenigen Sekunden aktiviert. Bitte warten Sie oder laden Sie die Seite neu."}
             </p>
@@ -250,7 +251,7 @@ export default function Billing() {
               onClick={() => refetchSubscription()}
             >
               <RefreshCw className="w-3 h-3" />
-              {"Status aktualisieren"}
+              {t("billing.stripe_refresh")}
             </button>
           </div>
         </div>
@@ -261,7 +262,7 @@ export default function Billing() {
         <div className="rounded-2xl border border-emerald-700/30 bg-emerald-950/20 p-5 flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm text-emerald-300 mb-1">Premium aktiviert!</p>
+            <p className="font-semibold text-sm text-emerald-300 mb-1">{t("billing.stripe_activated_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {"Zahlung best\u00e4tigt. Ihr RestoSmart Business Premium-Abonnement ist jetzt aktiv."}
             </p>
@@ -274,7 +275,7 @@ export default function Billing() {
         <div className="rounded-2xl border border-emerald-700/30 bg-emerald-950/20 p-5 flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm text-emerald-300 mb-1">Wallet-Aufladung erfolgreich!</p>
+            <p className="font-semibold text-sm text-emerald-300 mb-1">{t("billing.topup_success_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {"Zahlung best\u00e4tigt. Das Guthaben wird Ihrem Boost-Wallet gutgeschrieben."}
             </p>
@@ -287,7 +288,7 @@ export default function Billing() {
         <div className="rounded-2xl border border-amber-700/30 bg-amber-950/20 p-5 flex items-start gap-3">
           <XCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm text-amber-300 mb-1">Aufladung abgebrochen</p>
+            <p className="font-semibold text-sm text-amber-300 mb-1">{t("billing.topup_cancel_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {"Die Wallet-Aufladung wurde abgebrochen. Ihr Guthaben wurde nicht ver\u00e4ndert."}
             </p>

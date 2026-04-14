@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * SmartOffersSection — "For You" homepage section
  *
@@ -15,6 +16,7 @@ import type { LifestyleMode } from "@/hooks/use-lifestyle-mode";
 // ─── Smart offer card ─────────────────────────────────────────────────────────
 
 function SmartOfferCard({ offer, rank }: { offer: SmartOffer; rank: number }) {
+  const { t } = useTranslation();
   const { restaurant: r, reasons, primaryReason, distance, flashDeal } = offer;
   const distText = distance !== undefined
     ? (distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`)
@@ -144,7 +146,7 @@ function SmartOfferCard({ offer, rank }: { offer: SmartOffer; rank: number }) {
           {/* CTA */}
           <div className="flex items-center justify-between pt-1">
             <span className="text-xs font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
-              {r.isOpenNow ? "Jetzt buchen" : "Details ansehen"} <ChevronRight className="w-3.5 h-3.5" />
+              {r.isOpenNow ? t("restaurant.book_now", { defaultValue: "Book now" }) : t("restaurant.view_details", { defaultValue: "View details" })} <ChevronRight className="w-3.5 h-3.5" />
             </span>
             {r.availabilityStatus === "limited" && (
               <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
@@ -178,11 +180,12 @@ function PersonalizationBadge({ level }: { level: "high" | "medium" | "low" }) {
 // ─── Why personalized tooltip ─────────────────────────────────────────────────
 
 function WhyHint({ user }: { user: UserContext }) {
+  const { t } = useTranslation();
   const hints: string[] = [];
-  if (user.favoriteCuisines.length > 0) hints.push("Lieblingsküchen");
-  if (user.dietaryStyle && user.dietaryStyle !== "no_preference") hints.push("Ernährungsweise");
-  if (user.lat && user.lng) hints.push("Standort");
-  if (user.totalBookings > 0) hints.push("Buchungshistorie");
+  if (user.favoriteCuisines.length > 0) hints.push(t("offers.hint_cuisines", { defaultValue: "Favorite cuisines" }));
+  if (user.dietaryStyle && user.dietaryStyle !== "no_preference") hints.push(t("offers.hint_diet", { defaultValue: "Dietary style" }));
+  if (user.lat && user.lng) hints.push(t("offers.hint_location", { defaultValue: "Location" }));
+  if (user.totalBookings > 0) hints.push(t("offers.hint_history", { defaultValue: "Booking history" }));
   if (hints.length === 0) return null;
 
   return (

@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Lock, Zap, TrendingUp, Users, BarChart3, Check, Clock,
@@ -162,6 +163,7 @@ function GhostMiniTable() {
 // ── Gradient fade teaser ──────────────────────────────────────────────────────
 
 function GhostPreviewPane() {
+  const { t } = useTranslation();
   return (
     <div className="relative rounded-xl overflow-hidden border border-border/60 bg-card/60">
       {/* Ghost content */}
@@ -212,7 +214,7 @@ function GhostPreviewPane() {
           transition={{ delay: 0.2 }}
           className="text-xs font-bold text-muted-foreground bg-card border border-border px-3 py-1 rounded-full shadow-sm"
         >
-          Mit Premium freischalten
+          {t("paywall.unlock_with_premium", { defaultValue: "Unlock with Premium" })}
         </motion.span>
       </div>
     </div>
@@ -254,18 +256,18 @@ function CountdownDigit({ val, label }: { val: string; label: string }) {
 // ── Success stats ──────────────────────────────────────────────────────────────
 
 const SUCCESS_STATS = [
-  { icon: TrendingUp, value: "+40%", label: "Buchungen", color: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20" },
-  { icon: Users, value: "+25%", label: "Umsatz", color: "text-violet-400", bg: "bg-violet-500/8 border-violet-500/20" },
-  { icon: BarChart3, value: "3×", label: "Sichtbarkeit", color: "text-amber-400", bg: "bg-amber-500/8 border-amber-500/20" },
+  { icon: TrendingUp, value: "+40%", labelKey: "paywall.stats_bookings", color: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20" },
+  { icon: Users, value: "+25%", labelKey: "paywall.stats_revenue", color: "text-violet-400", bg: "bg-violet-500/8 border-violet-500/20" },
+  { icon: BarChart3, value: "3×", labelKey: "paywall.stats_visibility", color: "text-amber-400", bg: "bg-amber-500/8 border-amber-500/20" },
 ];
 
 const FEATURES = [
-  "30-Tage-Umsatz & Gewinntrends",
-  "Stoßzeiten-Heatmap (Ø Gedecke/h)",
-  "Gerichts-Rentabilität im Detail",
-  "Reservierungsquellen-Analyse",
-  "Promotion Engine & Boost-Tools",
-  "KI-Bewertungsantworten",
+  "paywall.feature_revenue_trends",
+  "paywall.feature_heatmap",
+  "paywall.feature_profitability",
+  "paywall.feature_sources",
+  "paywall.feature_promotion",
+  "paywall.feature_ai_reviews",
 ];
 
 // ── Live social proof counter (Vienna) ────────────────────────────────────────
@@ -308,6 +310,7 @@ export function SoftPaywall({
   features,
   onUpgrade,
 }: SoftPaywallProps) {
+  const { t } = useTranslation();
   const { h, m, s, fmt, total } = useCountdown();
   const [upgrading, setUpgrading] = useState(false);
 
@@ -356,11 +359,11 @@ export function SoftPaywall({
               </p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              <CountdownDigit val={fmt(h)} label="Std" />
+              <CountdownDigit val={fmt(h)} label={t("paywall.time_h")} />
               <span className="text-amber-400/40 font-black text-lg mb-5">:</span>
-              <CountdownDigit val={fmt(m)} label="Min" />
+              <CountdownDigit val={fmt(m)} label={t("paywall.time_m")} />
               <span className="text-amber-400/40 font-black text-lg mb-5">:</span>
-              <CountdownDigit val={fmt(s)} label="Sek" />
+              <CountdownDigit val={fmt(s)} label={t("paywall.time_s")} />
             </div>
           </motion.div>
         )}
@@ -373,11 +376,11 @@ export function SoftPaywall({
         transition={{ delay: 0.18 }}
         className="grid grid-cols-3 gap-3"
       >
-        {SUCCESS_STATS.map(({ icon: Icon, value, label, color, bg }) => (
-          <div key={label} className={`flex flex-col items-center gap-1.5 p-3.5 rounded-2xl border ${bg}`}>
+        {SUCCESS_STATS.map(({ icon: Icon, value, labelKey, color, bg }) => (
+          <div key={labelKey} className={`flex flex-col items-center gap-1.5 p-3.5 rounded-2xl border ${bg}`}>
             <Icon className={`w-4 h-4 ${color}`} />
             <p className={`text-2xl font-black ${color}`}>{value}</p>
-            <p className="text-[10px] text-center text-muted-foreground/70 font-bold leading-tight">{label}</p>
+            <p className="text-[10px] text-center text-muted-foreground/70 font-bold leading-tight">{t(labelKey as string)}</p>
           </div>
         ))}
       </motion.div>
@@ -408,7 +411,7 @@ export function SoftPaywall({
               <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <Check className="w-3 h-3 text-primary" strokeWidth={3} />
               </div>
-              <span className="text-muted-foreground">{f}</span>
+              <span className="text-muted-foreground">{t(f as string)}</span>
             </div>
           ))}
         </div>
@@ -437,7 +440,7 @@ export function SoftPaywall({
             )}
             <Zap className="w-4 h-4 relative z-10" />
             <span className="relative z-10">
-              {upgrading ? "Wird weitergeleitet…" : "Jetzt kostenlos starten — kein Risiko"}
+              {upgrading ? t("paywall.cta_redirecting") : t("paywall.cta_start")}
             </span>
             {!upgrading && <ArrowRight className="w-4 h-4 relative z-10 opacity-70" />}
           </motion.button>
@@ -446,17 +449,17 @@ export function SoftPaywall({
           <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground/55 font-semibold flex-wrap">
             <span className="flex items-center gap-1">
               <Shield className="w-3 h-3 text-emerald-500" />
-              Jederzeit kündbar
+              {t("paywall.trust_cancel")}
             </span>
             <span className="w-1 h-1 rounded-full bg-muted-foreground/25" />
             <span className="flex items-center gap-1">
               <Check className="w-3 h-3 text-emerald-500" />
-              Keine Kreditkarte nötig
+              {t("paywall.trust_no_card")}
             </span>
             <span className="w-1 h-1 rounded-full bg-muted-foreground/25" />
             <span className="flex items-center gap-1">
               <Star className="w-3 h-3 text-amber-400 fill-current" />
-              14 Tage gratis
+              {t("paywall.cta")}
             </span>
           </div>
         </div>

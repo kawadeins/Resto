@@ -77,16 +77,16 @@ interface BookingPlan {
 }
 
 const PLAN_STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof Star }> = {
-  draft: { label: "Entwurf", color: "text-slate-400 border-slate-500/30 bg-slate-500/5", icon: ClipboardList },
-  active: { label: "Aktiv", color: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5", icon: Zap },
-  finalized: { label: "Abgeschlossen", color: "text-primary border-primary/30 bg-primary/5", icon: FileCheck2 },
-  archived: { label: "Archiviert", color: "text-muted-foreground border-border bg-muted/10", icon: Archive },
+  draft: { label: "bookings.plan_status_draft", color: "text-slate-400 border-slate-500/30 bg-slate-500/5", icon: ClipboardList },
+  active: { label: "bookings.plan_status_active", color: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5", icon: Zap },
+  finalized: { label: "bookings.plan_status_finalized", color: "text-primary border-primary/30 bg-primary/5", icon: FileCheck2 },
+  archived: { label: "bookings.plan_status_archived", color: "text-muted-foreground border-border bg-muted/10", icon: Archive },
 };
 
 const VISIBILITY_CONFIG: Record<string, { label: string; icon: typeof Globe }> = {
-  private: { label: "Privat", icon: Lock },
-  team: { label: "Team", icon: Shield },
-  public: { label: "Öffentlich", icon: Globe },
+  private: { label: "bookings.visibility_private", icon: Lock },
+  team: { label: "bookings.visibility_team", icon: Shield },
+  public: { label: "bookings.visibility_public", icon: Globe },
 };
 
 const AUDIENCE_OPTIONS = [
@@ -118,6 +118,7 @@ const emptyPlan = (): Partial<BookingPlan> => ({
 // ─── Share Card ─────────────────────────────────────────────────────────────────
 
 function ShareCard({ plan }: { plan: BookingPlan }) {
+  const { t } = useTranslation();
   const statusCfg = PLAN_STATUS_CONFIG[plan.status];
   const dateFormatted = new Date(plan.date + "T00:00:00").toLocaleDateString("de-DE", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -173,10 +174,10 @@ function ShareCard({ plan }: { plan: BookingPlan }) {
           display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20,
         }}>
           {[
-            { label: "Datum", value: dateFormatted },
-            { label: "Zeitraum", value: `${plan.startTime} – ${plan.endTime} Uhr` },
-            { label: "Zielgruppe", value: plan.targetAudience },
-            { label: "Kapazität", value: plan.maxCovers ? `max. ${plan.maxCovers} Gäste` : "Nicht festgelegt" },
+            { label: t("bookings.plan_date"), value: dateFormatted },
+            { label: t("bookings.plan_time_range"), value: `${plan.startTime} – ${plan.endTime}` },
+            { label: t("bookings.plan_audience"), value: plan.targetAudience },
+            { label: t("bookings.plan_capacity"), value: plan.maxCovers ? t("bookings.plan_capacity_max", { count: plan.maxCovers }) : t("bookings.plan_capacity_na") },
           ].map(({ label, value }) => (
             <div key={label} style={{
               background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "12px 14px",
@@ -328,7 +329,7 @@ ${plan.tags?.length ? `\n🏷️ ${plan.tags.join(" · ")}` : ""}
             <button
               onClick={copyToClipboard}
               className="absolute top-2 right-2 p-1.5 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-              title="Kopieren"
+              title={t("common.copy")}
             >
               <Copy className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
@@ -690,13 +691,13 @@ function PlanCard({
               <span className="hidden sm:inline">{t("bookings.plan_finalize_btn")}</span>
             </Button>
           )}
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onShare} title="Teilen">
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onShare} title={t("common.share")}>
             <Share2 className="h-3.5 w-3.5" />
           </Button>
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onEdit} title="Bearbeiten">
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onEdit} title={t("common.edit")}>
             <Pencil className="h-3.5 w-3.5" />
           </Button>
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onDuplicate} title="Duplizieren">
+          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={onDuplicate} title={t("common.duplicate", { defaultValue: "Duplicate" })}>
             <Files className="h-3.5 w-3.5" />
           </Button>
           <Button
@@ -704,7 +705,7 @@ function PlanCard({
             variant="outline"
             className="h-8 w-8 p-0 border-rose-500/20 text-rose-400 hover:bg-rose-500/10"
             onClick={onDelete}
-            title="Löschen"
+            title={t("common.delete")}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -720,7 +721,7 @@ function BookingPlansTab() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { csrfToken } = useSession();
-  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+  const csrfHdr: Record<string, string> = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
   const qc = useQC();
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -945,7 +946,7 @@ export default function Bookings() {
     );
   };
 
-  const filtered = reservations?.filter((r) => {
+  const filtered = reservations?.filter((r: any) => {
     const matchesSearch =
       !search ||
       r.customerName.toLowerCase().includes(search.toLowerCase()) ||
@@ -955,14 +956,14 @@ export default function Bookings() {
     return matchesSearch && matchesStatus;
   }) ?? [];
 
-  const confirmed = filtered.filter((r) => r.status === "confirmed" || r.status === "arrived");
-  const totalCoversConfirmed = confirmed.reduce((sum, r) => sum + r.partySize, 0);
+  const confirmed = filtered.filter((r: any) => r.status === "confirmed" || r.status === "arrived");
+  const totalCoversConfirmed = confirmed.reduce((sum: any, r: any) => sum + r.partySize, 0);
   const expectedRevenue = totalCoversConfirmed * 35;
 
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const twoHoursLater = nowMin + 120;
-  const liveTraffic = filtered.filter((r) => {
+  const liveTraffic = filtered.filter((r: any) => {
     if (r.status === "rejected" || r.status === "cancelled") return false;
     const [h, m] = r.time.split(":").map(Number);
     const min = h * 60 + (m || 0);
@@ -1092,7 +1093,7 @@ export default function Bookings() {
               ) : (
                 <div className="space-y-2">
                   <AnimatePresence>
-                    {filtered.map((r) => (
+                    {filtered.map((r: any) => (
                       <motion.div
                         key={r.id}
                         initial={{ opacity: 0, y: 5 }}

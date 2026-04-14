@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * SmartBoostRecommendations — recommendation engine UI.
  *
@@ -103,7 +104,8 @@ function ConfidenceMeter({ value }: { value: number }) {
 }
 
 function DemandBadge({ score }: { score: number }) {
-  const label  = score >= 70 ? "Hoch" : score >= 45 ? "Mittel" : "Niedrig";
+  const { t } = useTranslation();
+  const label  = score >= 70 ? t("boost.score_high", { defaultValue: "High" }) : score >= 45 ? t("boost.score_medium", { defaultValue: "Medium" }) : t("boost.score_low", { defaultValue: "Low" });
   const color  = score >= 70 ? C.green : score >= 45 ? C.amber : C.red;
   const bg     = score >= 70 ? "rgba(34,197,94,0.1)" : score >= 45 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
   const border = score >= 70 ? "rgba(34,197,94,0.2)" : score >= 45 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.2)";
@@ -143,6 +145,7 @@ function PremiumGate({ label, onUpgrade }: { label: string; onUpgrade: () => voi
 // ── Recommendation Card ───────────────────────────────────────────────────────
 
 function RecoCard({ rec, rank, isPremium }: { rec: Recommendation; rank: number; isPremium: boolean }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(rank === 0);
   const isTop     = rank === 0;
   const hasWarning = !!rec.warning;
@@ -250,7 +253,7 @@ function RecoCard({ rec, rank, isPremium }: { rec: Recommendation; rank: number;
                   </div>
                 </div>
               ) : (
-                <PremiumGate label="Upgrade auf Premium für Begründungen und detaillierte Timing-Empfehlungen." onUpgrade={() => { window.location.href = "/billing"; }} />
+                <PremiumGate label={t("boost.premium_recommendations", { defaultValue: "Upgrade to Premium for reasoning and detailed timing recommendations." })} onUpgrade={() => { window.location.href = "/billing"; }} />
               )}
 
               {/* Warning */}
@@ -297,15 +300,16 @@ function RecoCard({ rec, rank, isPremium }: { rec: Recommendation; rank: number;
 // ── Auto Budget Settings Panel ────────────────────────────────────────────────
 
 const ALL_BOOST_TYPES = [
-  { type: "breakfast_boost",  label: "Frühstücks-Boost", emoji: "☕" },
-  { type: "lunch_boost",      label: "Mittags-Boost",     emoji: "🍽️" },
-  { type: "happy_hour_boost", label: "Happy Hour Boost",  emoji: "🍹" },
-  { type: "nightlife_boost",  label: "Nachtleben-Boost",  emoji: "🌙" },
-  { type: "local_spotlight",  label: "Local Spotlight",   emoji: "⭐" },
-  { type: "local_heat_boost", label: "Heat-Map Boost",    emoji: "🔥" },
+  { type: "breakfast_boost",  labelKey: "boost.type_breakfast", emoji: "☕" },
+  { type: "lunch_boost",      labelKey: "boost.type_lunch", emoji: "🍽️" },
+  { type: "happy_hour_boost", labelKey: "boost.type_happy_hour", emoji: "🍹" },
+  { type: "nightlife_boost",  labelKey: "boost.type_nightlife", emoji: "🌙" },
+  { type: "local_spotlight",  labelKey: "boost.type_spotlight", emoji: "⭐" },
+  { type: "local_heat_boost", labelKey: "boost.type_heatmap", emoji: "🔥" },
 ];
 
 function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; isPremium: boolean }) {
+  const { t } = useTranslation();
   const [open, setOpen]         = useState(false);
   const { toast }               = useToast();
   const qc                      = useQueryClient();
@@ -330,14 +334,14 @@ function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; is
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Fehler beim Speichern");
+      if (!res.ok) throw new Error(t("common.error"));
     },
     onSuccess: () => {
-      toast({ title: "Gespeichert", description: "Auto-Budget-Einstellungen wurden aktualisiert." });
+      toast({ title: t("common.success"), description: t("boost.auto_budget_saved", { defaultValue: "Auto-budget settings updated." }) });
       qc.invalidateQueries({ queryKey: ["auto-budget-settings", restaurantId] });
       setForm(null);
     },
-    onError: (err: Error) => toast({ title: "Fehler", description: err.message, variant: "destructive" }),
+    onError: (err: Error) => toast({ title: t("common.error"), description: err.message, variant: "destructive" }),
   });
 
   if (!current) return null;
@@ -413,13 +417,13 @@ function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; is
                 {/* Limits */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { label: "Max. pro Tag", key: "dailyMaxEur",         min: 1,  max: 100 },
-                    { label: "Max. pro Woche", key: "weeklyMaxEur",      min: 1,  max: 500 },
-                    { label: "Min. Wallet-Guthaben", key: "minWalletBalanceEur", min: 0, max: 50 },
-                  ].map(({ label, key, min, max }) => (
+                    { labelKey: "boost.budget_max_day", key: "dailyMaxEur",         min: 1,  max: 100 },
+                    { labelKey: "boost.budget_max_week", key: "weeklyMaxEur",      min: 1,  max: 500 },
+                    { labelKey: "boost.budget_min_wallet", key: "minWalletBalanceEur", min: 0, max: 50 },
+                  ].map(({ labelKey, key, min, max }) => (
                     <div key={key}>
                       <div style={{ color: C.muted, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
-                        {label}
+                        {t(labelKey as string)}
                       </div>
                       <div className="flex items-center gap-2">
                         <span style={{ color: C.muted, fontSize: 12 }}>€</span>
@@ -444,7 +448,7 @@ function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; is
                     Erlaubte Boost-Typen
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {ALL_BOOST_TYPES.map(({ type, label, emoji }) => {
+                    {ALL_BOOST_TYPES.map(({ type, labelKey, emoji }) => {
                       const active = current.allowedBoostTypes.includes(type);
                       return (
                         <button
@@ -458,7 +462,7 @@ function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; is
                             color: active ? "#fff" : C.muted,
                           }}
                         >
-                          <span style={{ fontSize: 13 }}>{emoji}</span> {label}
+                          <span style={{ fontSize: 13 }}>{emoji}</span> {t(labelKey as string)}
                         </button>
                       );
                     })}
@@ -515,14 +519,14 @@ function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; is
                     }}
                   >
                     <CheckCircle2 style={{ width: 15, height: 15 }} />
-                    {saveMutation.isPending ? "Speichern…" : "Einstellungen speichern"}
+                    {saveMutation.isPending ? t("common.loading") : t("boost.save_settings", { defaultValue: "Save settings" })}
                   </motion.button>
                 )}
               </div>
             ) : (
               <div style={{ padding: "0 20px 20px", borderTop: `1px solid ${C.border}` }} className="pt-4">
                 <PremiumGate
-                  label="Upgrade auf Premium für Budget-Automatisierung, Timing-Optimierung und automatisches Pausieren."
+                  label={t("boost.premium_budget_auto", { defaultValue: "Upgrade to Premium for budget automation, timing optimization and auto-pause." })}
                   onUpgrade={() => { window.location.href = "/billing"; }}
                 />
               </div>
@@ -537,6 +541,7 @@ function AutoBudgetPanel({ restaurantId, isPremium }: { restaurantId: number; is
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function SmartBoostRecommendations() {
+  const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const isPremium = isPremiumUser();
 

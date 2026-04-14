@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, Clock, CheckCircle2, TrendingUp, DollarSign } from "lucide-react";
 import type { MenuItem, PosSale } from "@workspace/api-client-react";
 
-const CATEGORIES = ["Alle", "Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Grill", "Desserts", "Getränke", "Beilagen"];
+const CATEGORY_KEYS = ["Alle", "Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Grill", "Desserts", "Getränke", "Beilagen"];
 
 export default function Pos() {
   const { t } = useTranslation();
@@ -46,9 +46,9 @@ export default function Pos() {
 
   const filteredMenu = useMemo(() => {
     if (!menuItems) return [];
-    let items = menuItems.filter(i => i.isActive);
+    let items = menuItems.filter((i: any) => i.isActive);
     if (selectedCategory !== "Alle") {
-      items = items.filter(i => i.category === selectedCategory);
+      items = items.filter((i: any) => i.category === selectedCategory);
     }
     return items;
   }, [menuItems, selectedCategory]);
@@ -58,13 +58,13 @@ export default function Pos() {
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     return salesLog
-      .filter((sale) => {
+      .filter((sale: any) => {
         if (!sale.soldAt) return false;
         const d = new Date(sale.soldAt);
         const saleStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         return saleStr === todayStr;
       })
-      .reduce((acc, sale) => ({
+      .reduce((acc: any, sale: any) => ({
         revenue: acc.revenue + (sale.totalRevenue || 0),
         profit: acc.profit + (sale.totalProfit || 0),
       }), { revenue: 0, profit: 0 });
@@ -116,9 +116,9 @@ export default function Pos() {
 
         <Tabs defaultValue="Alle" onValueChange={setSelectedCategory} className="mb-6">
           <TabsList className="bg-card border border-border flex flex-wrap h-auto gap-1 p-1">
-            {CATEGORIES.map(cat => (
+            {CATEGORY_KEYS.map(cat => (
               <TabsTrigger key={cat} value={cat} className="px-4 py-2 text-xs">
-                {cat}
+                {t("menu.cat_" + cat.toLowerCase().replace("ä","a").replace("ö","o").replace("ü","u"), { defaultValue: cat })}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -131,7 +131,7 @@ export default function Pos() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {filteredMenu.map((item) => (
+              {filteredMenu.map((item: any) => (
                 <Card 
                   key={item.id} 
                   className="hover:border-primary/40 hover:bg-card/80 transition-all cursor-pointer group"
@@ -196,7 +196,7 @@ export default function Pos() {
             </div>
           ) : salesLog && salesLog.length > 0 ? (
             <AnimatePresence initial={false}>
-              {salesLog.slice(0, 20).map((sale) => (
+              {salesLog.slice(0, 20).map((sale: any) => (
                 <motion.div
                   key={sale.id}
                   initial={{ opacity: 0, x: 20 }}

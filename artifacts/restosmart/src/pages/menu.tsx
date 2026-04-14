@@ -34,9 +34,9 @@ import type { MenuItem, MenuIngredient } from "@workspace/api-client-react";
 const CATEGORIES = ["Vorspeisen", "Hauptgericht", "Pasta", "Pizza", "Grill", "Desserts", "Getränke", "Beilagen"];
 
 const dishSchema = z.object({
-  name: z.string().min(2, "Name ist erforderlich"),
-  category: z.string().min(1, "Kategorie ist erforderlich"),
-  sellingPrice: z.coerce.number().positive("Preis muss positiv sein"),
+  name: z.string().min(2, "Name required"),
+  category: z.string().min(1, "Category required"),
+  sellingPrice: z.coerce.number().positive("Price must be positive"),
   description: z.string().optional().nullable(),
   isActive: z.boolean().default(true),
 });
@@ -77,8 +77,8 @@ export default function Menu() {
 
   const stats = useMemo(() => {
     if (!menuItems) return { activeCount: 0, avgMargin: 0, highestMarginDish: "N/A" };
-    const active = menuItems.filter(i => i.isActive);
-    const avgMargin = active.length > 0 ? active.reduce((acc, i) => acc + (i.profitMargin || 0), 0) / active.length : 0;
+    const active = menuItems.filter((i: any) => i.isActive);
+    const avgMargin = active.length > 0 ? active.reduce((acc: any, i: any) => acc + (i.profitMargin || 0), 0) / active.length : 0;
     const sorted = [...menuItems].sort((a, b) => (b.profitMargin || 0) - (a.profitMargin || 0));
     return {
       activeCount: active.length,
@@ -90,7 +90,7 @@ export default function Menu() {
   const estimatedRecipeCost = useMemo(() => {
     if (!inventory) return 0;
     return ingredients.reduce((acc, ing) => {
-      const invItem = inventory.find(i => i.id === ing.inventoryItemId);
+      const invItem = inventory.find((i: any) => i.id === ing.inventoryItemId);
       return acc + (ing.quantityUsed * (invItem?.costPerUnit || 0));
     }, 0);
   }, [ingredients, inventory]);
@@ -110,7 +110,7 @@ export default function Menu() {
       description: dish.description,
       isActive: dish.isActive,
     });
-    setIngredients(dish.ingredients.map(i => ({ inventoryItemId: i.inventoryItemId, quantityUsed: i.quantityUsed })));
+    setIngredients(dish.ingredients.map((i: any) => ({ inventoryItemId: i.inventoryItemId, quantityUsed: i.quantityUsed })));
     setSheetOpen(true);
   };
 
@@ -241,7 +241,7 @@ export default function Menu() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {menuItems?.sort((a, b) => a.category.localeCompare(b.category)).map((dish) => (
+                  {menuItems?.sort((a: any, b: any) => a.category.localeCompare(b.category)).map((dish: any) => (
                     <TableRow key={dish.id}>
                       <TableCell className="font-bold">{dish.name}</TableCell>
                       <TableCell><Badge variant="outline">{dish.category}</Badge></TableCell>
@@ -375,7 +375,7 @@ export default function Menu() {
 
                 <div className="space-y-3">
                   {ingredients.map((ing, idx) => {
-                    const invItem = inventory?.find(i => i.id === ing.inventoryItemId);
+                    const invItem = inventory?.find((i: any) => i.id === ing.inventoryItemId);
                     const lineCost = (invItem?.costPerUnit || 0) * ing.quantityUsed;
                     return (
                       <div key={idx} className="flex gap-2 items-end">
@@ -389,7 +389,7 @@ export default function Menu() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {inventory?.map(i => (
+                              {inventory?.map((i: any) => (
                                 <SelectItem key={i.id} value={i.id.toString()}>{i.name} ({i.unit})</SelectItem>
                               ))}
                             </SelectContent>

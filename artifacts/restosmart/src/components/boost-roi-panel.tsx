@@ -7,6 +7,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -97,8 +98,8 @@ function fmtDate(iso: string) {
   } catch { return iso; }
 }
 
-function statusLabel(s: string) {
-  return s === "active" ? "Aktiv" : s === "paused" ? "Pausiert" : s === "stopped" ? "Gestoppt" : s;
+function getStatusLabel(s: string, t: (k: string) => string): string {
+  return s === "active" ? t("boost.status_active_label") : s === "paused" ? t("boost.status_paused_label") : s === "stopped" ? t("boost.status_stopped_label") : s;
 }
 function statusColor(s: string) {
   return s === "active" ? C.green : s === "paused" ? C.amber : C.muted;
@@ -149,6 +150,7 @@ function SummaryTile({
 }
 
 function BestWorstCallout({ boosts }: { boosts: ROIBoost[] }) {
+  const { t } = useTranslation();
   const withROI = boosts.filter(b => b.roi !== null && b.cost > 0);
   if (withROI.length < 2) return null;
 
@@ -166,7 +168,7 @@ function BestWorstCallout({ boosts }: { boosts: ROIBoost[] }) {
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: 10, fontWeight: 700, color: C.green, textTransform: "uppercase", letterSpacing: "0.05em" }}>Bester Boost</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.green, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("boost.best_boost", { defaultValue: "Best Boost" })}</span>
           </div>
           <div className="font-semibold truncate" style={{ color: C.text, fontSize: 13 }}>
             {best.emoji} {best.label}
@@ -185,7 +187,7 @@ function BestWorstCallout({ boosts }: { boosts: ROIBoost[] }) {
           <AlertTriangle style={{ width: 16, height: 16, color: C.red }} />
         </div>
         <div className="min-w-0">
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.red, textTransform: "uppercase", letterSpacing: "0.05em" }}>Schwächster Boost</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.red, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("boost.worst_boost", { defaultValue: "Weakest Boost" })}</div>
           <div className="font-semibold truncate" style={{ color: C.text, fontSize: 13 }}>
             {worst.emoji} {worst.label}
           </div>
@@ -199,6 +201,7 @@ function BestWorstCallout({ boosts }: { boosts: ROIBoost[] }) {
 }
 
 function PremiumGate({ onUpgrade }: { onUpgrade: () => void }) {
+  const { t } = useTranslation();
   return (
     <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", minHeight: 140 }}>
       <div style={{ filter: "blur(3px)", opacity: 0.3, pointerEvents: "none", userSelect: "none", padding: "12px 0" }}>
@@ -215,9 +218,9 @@ function PremiumGate({ onUpgrade }: { onUpgrade: () => void }) {
           <Lock style={{ width: 18, height: 18, color: "#fff" }} />
         </div>
         <div className="text-center px-6">
-          <div className="font-bold mb-1" style={{ color: C.text, fontSize: 14 }}>Premium-Funktion</div>
+          <div className="font-bold mb-1" style={{ color: C.text, fontSize: 14 }}>{t("paywall.premium_feature", { defaultValue: "Premium Feature" })}</div>
           <div style={{ color: C.muted, fontSize: 12 }}>
-            Smart Insights und detaillierte Reports sind nur für Premium-Nutzer verfügbar.
+            {t("paywall.premium_feature_desc", { defaultValue: "Smart Insights and detailed reports are available for Premium users only." })}
           </div>
         </div>
         <motion.button
@@ -243,6 +246,7 @@ function PremiumGate({ onUpgrade }: { onUpgrade: () => void }) {
 type StatusFilter = "all" | "active" | "closed";
 
 export function BoostROIPanel() {
+  const { t } = useTranslation();
   const [period, setPeriod]           = useState<"week" | "month">("month");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showHistory, setShowHistory] = useState(false);
@@ -352,7 +356,7 @@ export function BoostROIPanel() {
                 display: "flex", alignItems: "center", gap: 5,
               }}>
                 <CalendarDays style={{ width: 11, height: 11 }} />
-                {p === "week" ? "7 Tage" : "30 Tage"}
+                {p === "week" ? t("boost.period_7d", { defaultValue: "7 days" }) : t("boost.period_30d", { defaultValue: "30 days" })}
               </button>
             ))}
           </div>
@@ -366,7 +370,7 @@ export function BoostROIPanel() {
               display: "flex", alignItems: "center", gap: 5,
             }}>
             <History style={{ width: 11, height: 11 }} />
-            Verlauf
+            {t("boost.history", { defaultValue: "History" })}
           </button>
         </div>
       </div>
@@ -376,29 +380,29 @@ export function BoostROIPanel() {
         {/* ── Summary Tiles ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <SummaryTile
-            label="Ausgegeben"
+            label={t("boost.roi_total_spent")}
             value={`€${summary.totalSpent.toFixed(2)}`}
-            sub={`${summary.boostCount} Boost${summary.boostCount !== 1 ? "s" : ""} · ${summary.activeCount} aktiv`}
+            sub={`${summary.boostCount} Boost${summary.boostCount !== 1 ? "s" : ""} · ${summary.activeCount} ${t("common.active", { defaultValue: "active" })}`}
             icon={Zap}
           />
           <SummaryTile
-            label="Gesch. Umsatz"
+            label={t("boost.roi_est_return")}
             value={`€${summary.totalEstReturn.toFixed(2)}`}
-            sub="Klicks + Buchungen"
+            sub={t("boost.stat_clicks") + " + " + t("boost.stat_bookings")}
             color={C.blue}
             icon={Target}
           />
           <SummaryTile
-            label="Nettogewinn"
+            label={t("boost.roi_net_profit")}
             value={`${summary.netProfit >= 0 ? "+" : ""}€${Math.abs(summary.netProfit).toFixed(2)}`}
-            sub={summary.netProfit >= 0 ? "Positiv" : "Verlust"}
+            sub={summary.netProfit >= 0 ? t("common.positive", { defaultValue: "Positive" }) : t("common.loss", { defaultValue: "Loss" })}
             color={profitColor}
             icon={summary.netProfit >= 0 ? TrendingUp : TrendingDown}
           />
           <SummaryTile
-            label="Gesamt-ROI"
+            label={t("boost.roi_overall")}
             value={summary.overallROI !== null ? `${summary.overallROI > 0 ? "+" : ""}${summary.overallROI}%` : "—"}
-            sub={summary.overallROI !== null && summary.overallROI > 0 ? "Rentabel" : summary.overallROI !== null ? "Im Minus" : "Keine Daten"}
+            sub={summary.overallROI !== null && summary.overallROI > 0 ? t("common.profitable", { defaultValue: "Profitable" }) : summary.overallROI !== null ? t("common.negative", { defaultValue: "In deficit" }) : t("boost.roi_no_data")}
             color={summary.overallROI !== null ? (summary.overallROI > 0 ? C.green : C.red) : C.muted}
             icon={Activity}
             highlight={summary.overallROI !== null && summary.overallROI > 100}
@@ -425,7 +429,7 @@ export function BoostROIPanel() {
                     color: statusFilter === f ? "#fff" : C.muted,
                     fontWeight: 600, fontSize: 11, cursor: "pointer",
                   }}>
-                  {f === "all" ? "Alle" : f === "active" ? "Aktiv" : "Abgeschlossen"}
+                  {f === "all" ? t("common.all") : f === "active" ? t("boost.status_active_label") : t("campaigns.status_completed")}
                 </button>
               ))}
             </div>
@@ -435,7 +439,7 @@ export function BoostROIPanel() {
             <table className="w-full" style={{ fontSize: 12 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                  {["Boost", "Kosten", "Einbl.", "Klicks / CTR", "Buchungen", "Gesch. Umsatz", "ROI"].map(h => (
+                  {[t("boost.title"), t("boost.roi_total_spent"), t("boost.impressions_short"), t("boost.clicks_short") + " / CTR", t("boost.stat_bookings"), t("boost.roi_est_return"), "ROI"].map(h => (
                     <th key={h} className="px-4 py-2.5 text-left font-semibold whitespace-nowrap" style={{ color: C.muted }}>{h}</th>
                   ))}
                 </tr>
@@ -476,7 +480,7 @@ export function BoostROIPanel() {
                           </div>
                           <div className="mt-0.5">
                             <span style={{ fontSize: 10, color: statusColor(b.status), fontWeight: 600 }}>
-                              {statusLabel(b.status)}
+                              {getStatusLabel(b.status, t)}
                             </span>
                           </div>
                         </td>
@@ -529,7 +533,7 @@ export function BoostROIPanel() {
                         <td className="px-4 py-3 tabular-nums font-semibold" style={{ color: C.blue }}>
                           {b.estimatedRevenue > 0 ? `€${b.estimatedRevenue.toFixed(2)}` : "—"}
                           {b.estimatedRevenue > 0 && (
-                            <div style={{ color: C.muted, fontSize: 10, fontWeight: 400, marginTop: 1 }}>Schätzung</div>
+                            <div style={{ color: C.muted, fontSize: 10, fontWeight: 400, marginTop: 1 }}>{t("boost.estimate", { defaultValue: "Estimate" })}</div>
                           )}
                         </td>
 
@@ -538,7 +542,7 @@ export function BoostROIPanel() {
                           <ROIBadge roi={b.roi} tier={b.roiTier} />
                           {b.roi !== null && (
                             <div style={{ color: C.muted, fontSize: 10, marginTop: 2 }}>
-                              {b.roi > 150 ? "Stark" : b.roi > 0 ? "Mittel" : "Schwach"}
+                              {b.roi > 150 ? t("boost.roi_strong", { defaultValue: "Strong" }) : b.roi > 0 ? t("boost.roi_medium", { defaultValue: "Medium" }) : t("boost.roi_weak", { defaultValue: "Weak" })}
                             </div>
                           )}
                         </td>
@@ -570,7 +574,7 @@ export function BoostROIPanel() {
         <div style={{ borderRadius: 16, border: `1px solid ${C.borderGold}`, backgroundColor: "rgba(245,158,11,0.03)", padding: 20 }}>
           <div className="flex items-center gap-2 mb-4">
             <Lightbulb style={{ width: 16, height: 16, color: C.amber }} />
-            <span className="font-semibold" style={{ color: C.text, fontSize: 14 }}>Smart Insights</span>
+            <span className="font-semibold" style={{ color: C.text, fontSize: 14 }}>{t("boost.smart_insights", { defaultValue: "Smart Insights" })}</span>
             <span className="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full ml-auto"
               style={{ color: "#F59E0B", backgroundColor: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", fontSize: 10 }}>
               <Crown style={{ width: 9, height: 9 }} /> Nur Premium
@@ -622,7 +626,7 @@ export function BoostROIPanel() {
           style={{ backgroundColor: "rgba(79,140,255,0.05)", border: "1px solid rgba(79,140,255,0.13)", color: C.muted }}>
           <BarChart3 style={{ width: 13, height: 13, color: C.blue, flexShrink: 0, marginTop: 1 }} />
           <span style={{ fontSize: 11, lineHeight: 1.5 }}>
-            Zeitraum: <strong style={{ color: C.text }}>{period === "week" ? "Letzte 7 Tage" : "Letzte 30 Tage"}</strong> —{" "}
+            {t("boost.roi_title") + ": "}<strong style={{ color: C.text }}>{period === "week" ? t("boost.roi_period_week") : t("boost.roi_period_month")}</strong> —{" "}
             {summary.boostCount} Kampagne{summary.boostCount !== 1 ? "n" : ""} analysiert.
             Schätzwerte basieren auf Branchendurchschnittswerten für Wien und sind keine Umsatzgarantie.
           </span>

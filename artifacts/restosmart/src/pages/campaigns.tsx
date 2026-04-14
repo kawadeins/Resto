@@ -227,6 +227,7 @@ function SegmentCard({
 
 // ─── Campaign Sends Drawer ────────────────────────────────────────────────────
 function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data: sends, isLoading } = useGetCampaignSends(
     { id: campaignId },
     { query: { queryKey: getGetCampaignSendsQueryKey({ id: campaignId }) } }
@@ -255,14 +256,14 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {(sends ?? []).map((s) => (
+                {(sends ?? []).map((s: any) => (
                   <tr key={s.id} className="py-2">
                     <td className="py-2 pr-4">
                       <p className="font-medium text-foreground">{s.customerName}</p>
                       <p className="text-xs text-muted-foreground">{s.customerEmail}</p>
                     </td>
                     <td className="py-2 pr-4">
-                      <Badge className={`text-xs ${SEGMENT_LABELS[s.segment]?.color}`}>{segmentLabel(s.segment)}</Badge>
+                      <Badge className={`text-xs ${SEGMENT_LABELS[s.segment]?.color}`}>{SEGMENT_LABELS[s.segment]?.label ?? s.segment}</Badge>
                     </td>
                     <td className="py-2 pr-4">
                       {s.status === "converted" ? (
@@ -302,6 +303,7 @@ function CreateCampaignModal({
   onClose: () => void;
   onCreated: (id: number) => void;
 }) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState(template.defaultMessage);
   const [name, setName] = useState(`${template.label} — ${new Date().toLocaleDateString("de-DE", { day: "numeric", month: "short" })}`);
   const { toast } = useToast();
@@ -362,7 +364,7 @@ function CreateCampaignModal({
             </div>
             <div className="flex items-center gap-2">
               <Badge className={SEGMENT_LABELS[template.targetSegment]?.color}>
-                {segmentLabel(template.targetSegment)}
+                {SEGMENT_LABELS[template.targetSegment]?.label ?? template.targetSegment}
               </Badge>
               <span className="text-sm font-bold text-foreground">{targetCount} {t("campaigns.recipients")}</span>
             </div>
@@ -563,7 +565,7 @@ export default function Campaigns() {
                   {(retention?.topCustomers ?? []).length === 0 && (
                     <p className="text-sm text-muted-foreground py-4 text-center">Noch keine Stammkunden</p>
                   )}
-                  {(retention?.topCustomers ?? []).map((c, i) => (
+                  {(retention?.topCustomers ?? []).map((c: any, i: any) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
                         {i + 1}
@@ -657,7 +659,7 @@ export default function Campaigns() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    {campaigns.map((c) => (
+                    {campaigns.map((c: any) => (
                       <tr key={c.id} className="hover:bg-muted/20 transition-colors">
                         <td className="py-3 pr-6">
                           <p className="font-medium text-foreground">{c.name}</p>

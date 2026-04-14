@@ -1215,12 +1215,12 @@ function EditProfileSheet({
           >
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
-          <h2 className="text-base font-bold">{"Profil bearbeiten"}</h2>
+          <h2 className="text-base font-bold">{t("profile.edit_profile")}</h2>
           <button
             onClick={handleSave}
             className="text-sm font-bold text-primary hover:opacity-80 transition-opacity"
           >
-            {"Speichern"}
+            {t("common.save")}
           </button>
         </div>
 
@@ -1235,23 +1235,23 @@ function EditProfileSheet({
               onUpload={(url) => setDraft((d) => ({ ...d, photoUrl: url }))}
               isPremium={false}
             />
-            <p className="text-xs text-muted-foreground">{"Profilbild ändern"}</p>
+            <p className="text-xs text-muted-foreground">{t("profile.edit_profile_change_photo")}</p>
           </div>
 
           {/* Name */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Anzeigename"}</Label>
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_display_name")}</Label>
             <input
               value={draft.name}
               onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-              placeholder="Dein Name"
+              placeholder={t("profile.edit_profile_name_ph")}
               className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
             />
           </div>
 
           {/* Bio */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Über mich"}</Label>
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_about")}</Label>
             <textarea
               value={draft.bio}
               onChange={(e) => setDraft((d) => ({ ...d, bio: e.target.value }))}
@@ -1266,20 +1266,20 @@ function EditProfileSheet({
           {/* Location */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Stadt"}</Label>
+              <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_city")}</Label>
               <input
                 value={draft.city}
                 onChange={(e) => setDraft((d) => ({ ...d, city: e.target.value }))}
-                placeholder="Wien"
+                placeholder={t("profile.edit_profile_city_ph")}
                 className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Land"}</Label>
+              <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_country")}</Label>
               <input
                 value={draft.country}
                 onChange={(e) => setDraft((d) => ({ ...d, country: e.target.value }))}
-                placeholder={"Österreich"}
+                placeholder={t("profile.edit_profile_country_ph")}
                 className="w-full h-11 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
               />
             </div>
@@ -1287,7 +1287,7 @@ function EditProfileSheet({
 
           {/* Age */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Alter"}</Label>
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_age")}</Label>
             <input
               type="number"
               value={draft.age}
@@ -1301,7 +1301,7 @@ function EditProfileSheet({
 
           {/* Taste tags */}
           <div className="space-y-2.5">
-            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Geschmack (bis zu 6)"}</Label>
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_taste")}</Label>
             <div className="flex flex-wrap gap-2">
               {FOOD_TYPES.map((ft) => {
                 const selected = draft.favoriteCuisines.includes(ft.id);
@@ -1360,7 +1360,7 @@ function EditProfileSheet({
 
           {/* ── Privacy toggle ─────────── */}
           <div className="space-y-2">
-            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{"Datenschutz"}</Label>
+            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{t("profile.edit_profile_privacy_label")}</Label>
             <button
               type="button"
               onClick={() => setDraft(d => ({ ...d, isPrivate: !d.isPrivate }))}
@@ -1372,11 +1372,11 @@ function EditProfileSheet({
             >
               <span className="text-xl">{draft.isPrivate ? "🔒" : "🌍"}</span>
               <div className="flex-1">
-                <p className="text-sm font-bold">{draft.isPrivate ? "Profil privat" : "Profil öffentlich"}</p>
+                <p className="text-sm font-bold">{draft.isPrivate ? t("profile.profile_private") : t("profile.profile_public")}</p>
                 <p className="text-xs text-muted-foreground">
                   {draft.isPrivate
-                    ? "Nur Freunde können deine Beiträge sehen"
-                    : "Alle können dein Profil und deine Beiträge sehen"}
+                    ? t("profile.profile_private_desc")
+                    : t("profile.profile_public_desc")}
                 </p>
               </div>
               <div className={`w-11 h-6 rounded-full transition-all relative ${draft.isPrivate ? "bg-muted-foreground/30" : "bg-emerald-500"}`}>
@@ -1395,13 +1395,13 @@ function EditProfileSheet({
             style={{ background: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))" }}
             onClick={handleSave}
           >
-            {"Profil aktualisieren"}
+            {t("profile.edit_profile_update")}
           </Button>
           <button
             onClick={onClose}
             className="w-full text-sm text-muted-foreground py-1.5 hover:text-foreground transition-colors"
           >
-            {"Abbrechen"}
+            {t("common.cancel")}
           </button>
         </div>
       </DialogContent>

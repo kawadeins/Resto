@@ -6,6 +6,7 @@
  */
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Star } from "lucide-react";
 
@@ -21,32 +22,32 @@ const TIER_CONFIG: Record<Tier, {
 }> = {
   Bronze: {
     emoji: "🥉",
-    title: "Willkommen, Bronze-Mitglied!",
-    subline: "Du hast deinen ersten Meilenstein erreicht. Buche weiter und sammle Punkte.",
+    title: "level_up.bronze_title",
+    subline: "level_up.bronze_subline",
     gradient: "from-amber-700 to-amber-500",
     shadow: "shadow-amber-300/50",
     badgeCls: "bg-amber-100 text-amber-800 border-amber-300",
   },
   Silver: {
     emoji: "🥈",
-    title: "Du bist jetzt Silver-Mitglied!",
-    subline: "Exklusive Angebote und früher Zugang zu Deals warten auf dich.",
+    title: "level_up.silver_title",
+    subline: "level_up.silver_subline",
     gradient: "from-slate-600 to-slate-400",
     shadow: "shadow-slate-300/50",
     badgeCls: "bg-slate-100 text-slate-700 border-slate-300",
   },
   Gold: {
     emoji: "🥇",
-    title: "Gold-Status erreicht!",
-    subline: "Du gehörst zur Elite der RestoSmart-Community. Genieße Premium-Vorteile.",
+    title: "level_up.gold_title",
+    subline: "level_up.gold_subline",
     gradient: "from-yellow-500 to-amber-400",
     shadow: "shadow-yellow-300/50",
     badgeCls: "bg-yellow-100 text-yellow-800 border-yellow-400",
   },
   Elite: {
     emoji: "👑",
-    title: "Elite-Status freigeschaltet!",
-    subline: "Du bist auf dem höchsten Level. Featured-Profil, Bonus-Sichtbarkeit und mehr.",
+    title: "level_up.elite_title",
+    subline: "level_up.elite_subline",
     gradient: "from-primary to-accent",
     shadow: "shadow-primary/40",
     badgeCls: "bg-primary/10 text-primary border-primary/30",
@@ -71,6 +72,7 @@ interface LevelUpModalProps {
 }
 
 export function LevelUpModal({ tier, onClose }: LevelUpModalProps) {
+  const { t } = useTranslation();
   const cfg = TIER_CONFIG[tier] ?? TIER_CONFIG.Bronze;
 
   useEffect(() => {
@@ -160,7 +162,7 @@ export function LevelUpModal({ tier, onClose }: LevelUpModalProps) {
             transition={{ delay: 0.25 }}
             className="text-xl font-extrabold text-foreground mb-2"
           >
-            {cfg.title}
+            {t(cfg.title as string)}
           </motion.h2>
 
           <motion.p
@@ -169,7 +171,7 @@ export function LevelUpModal({ tier, onClose }: LevelUpModalProps) {
             transition={{ delay: 0.35 }}
             className="text-sm text-muted-foreground leading-relaxed mb-6"
           >
-            {cfg.subline}
+            {t(cfg.subline as string)}
           </motion.p>
 
           {/* Tier badge */}

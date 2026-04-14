@@ -6,6 +6,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { MapPin, TrendingUp, Zap, Users, Star, ChevronRight, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,34 +37,35 @@ interface CitySignals {
   };
 }
 
-const STAGE_LABELS: Record<string, string> = {
-  Früh:     "Frühe Phase",
-  Wachstum: "Wachstum",
-  Stark:    "Starke Stadt",
-  Dominant: "Dominante Stadt",
-};
-
-const LEVEL_LABEL: Record<string, { label: string; color: string }> = {
-  high:   { label: "Hoch",    color: "text-rose-400" },
-  medium: { label: "Mittel",  color: "text-amber-400" },
-  low:    { label: "Niedrig", color: "text-emerald-400" },
-};
-
-const OPP_LABEL: Record<string, { label: string; color: string }> = {
-  high:   { label: "Hohes Potenzial",  color: "text-emerald-400" },
-  medium: { label: "Gutes Potenzial",  color: "text-amber-400" },
-  low:    { label: "Gesättigt",        color: "text-[#555]" },
-};
-
 interface Props {
   onBoost?:    () => void;
   onUpgrade?:  () => void;
 }
 
 export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
+  const { t } = useTranslation();
   const city = localStorage.getItem("restosmart_owner_city") ?? "Wien";
   const premium = localStorage.getItem("restosmart_owner_premium");
   const hasPremium = premium === "active" || premium === "trial";
+
+  const STAGE_LABELS: Record<string, string> = {
+    Fr\u00FCh:     t("city_expansion.stage_early"),
+    Wachstum: t("city_expansion.stage_growth"),
+    Stark:    t("city_expansion.stage_strong"),
+    Dominant: t("city_expansion.stage_dominant"),
+  };
+
+  const LEVEL_LABEL: Record<string, { label: string; color: string }> = {
+    high:   { label: t("city_expansion.demand_high"),   color: "text-rose-400" },
+    medium: { label: t("city_expansion.demand_medium"), color: "text-amber-400" },
+    low:    { label: t("city_expansion.demand_low"),    color: "text-emerald-400" },
+  };
+
+  const OPP_LABEL: Record<string, { label: string; color: string }> = {
+    high:   { label: t("city_expansion.potential_high"),   color: "text-emerald-400" },
+    medium: { label: t("city_expansion.potential_medium"), color: "text-amber-400" },
+    low:    { label: t("city_expansion.potential_low"),    color: "text-[#555]" },
+  };
 
   const query = useQuery<CitySignals>({
     queryKey: ["city-signals", city],
@@ -120,7 +122,7 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
             </span>
             {sig.isDemandActive && (
               <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold animate-pulse">
-                NACHFRAGE AKTIV
+                {t("city_expansion.demand_active", { defaultValue: "DEMAND ACTIVE" })}
               </span>
             )}
           </div>
@@ -150,21 +152,21 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
           <p className={cn("text-xs font-bold", LEVEL_LABEL[sig.demandLevel].color)}>
             {LEVEL_LABEL[sig.demandLevel].label}
           </p>
-          <p className="text-[9px] text-[#444] mt-0.5 uppercase tracking-widest">Nachfrage</p>
+          <p className="text-[9px] text-[#444] mt-0.5 uppercase tracking-widest">{t("city_expansion.label_demand", { defaultValue: "Demand" })}</p>
         </div>
         {/* Competition */}
         <div className="px-4 py-3 text-center">
           <p className={cn("text-xs font-bold", LEVEL_LABEL[sig.competitionLevel].color)}>
             {LEVEL_LABEL[sig.competitionLevel].label}
           </p>
-          <p className="text-[9px] text-[#444] mt-0.5 uppercase tracking-widest">Konkurrenz</p>
+          <p className="text-[9px] text-[#444] mt-0.5 uppercase tracking-widest">{t("city_expansion.label_competition", { defaultValue: "Competition" })}</p>
         </div>
         {/* Opportunity */}
         <div className="px-4 py-3 text-center">
           <p className={cn("text-xs font-bold", OPP_LABEL[sig.opportunityLevel].color)}>
             {OPP_LABEL[sig.opportunityLevel].label}
           </p>
-          <p className="text-[9px] text-[#444] mt-0.5 uppercase tracking-widest">Potenzial</p>
+          <p className="text-[9px] text-[#444] mt-0.5 uppercase tracking-widest">{t("city_expansion.label_potential", { defaultValue: "Potential" })}</p>
         </div>
       </div>
 
@@ -172,7 +174,7 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
       <div className="flex items-center gap-4 px-5 py-2 border-t border-white/4 text-[11px] text-[#444]">
         <span className="flex items-center gap-1">
           <Globe className="w-3 h-3" />
-          {d.bizCount} Betriebe in {d.city}
+          {t("city_expansion.biz_count", { count: d.bizCount, city: d.city, defaultValue: "{{count}} venues in {{city}}" })}
         </span>
         <span className="flex items-center gap-1">
           <Star className="w-3 h-3" />
@@ -181,10 +183,10 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
         {d.activeBoosts > 0 && (
           <span className="flex items-center gap-1 text-amber-400">
             <Zap className="w-3 h-3" />
-            {d.activeBoosts} aktive Boosts
+            {t("city_expansion.active_boosts", { count: d.activeBoosts, defaultValue: "{{count}} active boosts" })}
           </span>
         )}
-        <span className="ml-auto text-[#333]">{d.totalCities} Städte verfügbar</span>
+        <span className="ml-auto text-[#333]">{t("city_expansion.cities_available", { count: d.totalCities, defaultValue: "{{count}} cities available" })}</span>
       </div>
 
       {/* Early advantage banner — only for early-stage cities */}
@@ -192,7 +194,7 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
         <div className="mx-4 mb-4 mt-1 rounded-xl bg-gradient-to-r from-amber-500/8 to-orange-500/5 border border-amber-500/15 px-4 py-2.5 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold text-amber-300">
-              Früh dabei — mehr Sichtbarkeit
+              {t("city_expansion.early_advantage_label", { defaultValue: "Early mover — more visibility" })}
             </p>
             <p className="text-[10px] text-[#555] mt-0.5">{sig.earlyAdvantage}</p>
           </div>
@@ -200,7 +202,7 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
             onClick={hasPremium ? onBoost : onUpgrade}
             className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
           >
-            {hasPremium ? "Boost aktivieren" : "Premium sichern"}
+            {hasPremium ? t("city_expansion.cta_boost") : t("city_expansion.cta_premium")}
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
@@ -214,7 +216,7 @@ export function CityExpansionEngine({ onBoost, onUpgrade }: Props) {
             onClick={onBoost}
             className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-violet-400 hover:text-violet-300 transition-colors"
           >
-            Sichtbarkeit erhöhen
+            {t("city_expansion.cta_boost")}
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>

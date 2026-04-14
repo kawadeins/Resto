@@ -8,6 +8,7 @@
  * Designed to feel fast, premium, and social.
  */
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { X, ChevronRight, Check, Loader2, Users, Clock, MapPin, Zap, RefreshCw, Star } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
@@ -86,6 +87,7 @@ export function InstantPlanModal({
   email, restaurants, flashDeals, friends, radarZones, cues, mode,
   initialPlanMode, initialSuggestion, onClose, onPlanCreated,
 }: InstantPlanModalProps) {
+  const { t } = useTranslation();
   const hour = new Date().getHours();
   const [step, setStep] = useState<Step>(initialSuggestion ? "review" : "mode");
   const [planMode, setPlanMode] = useState<PlanMode>(initialPlanMode ?? getAutoMode(hour));
@@ -145,8 +147,8 @@ export function InstantPlanModal({
   const renderModeStep = () => (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-extrabold mb-1">Was hast du geplant?</h2>
-        <p className="text-sm text-muted-foreground">Wähle einen Stil — wir suchen den perfekten Ort.</p>
+        <h2 className="text-xl font-extrabold mb-1">{t("meal_plan.modal_what")}</h2>
+        <p className="text-sm text-muted-foreground">{t("meal_plan.modal_pick_style")}</p>
       </div>
       <div className="flex gap-3 flex-wrap">
         {PLAN_MODES.map(cfg => (
@@ -167,10 +169,10 @@ export function InstantPlanModal({
       return (
         <div className="text-center py-8 space-y-3">
           <div className="text-4xl">😔</div>
-          <p className="font-bold">Keine passenden Orte gefunden</p>
-          <p className="text-sm text-muted-foreground">Alle geöffneten Orte sind ausgebucht oder nichts entspricht deinen Präferenzen.</p>
+          <p className="font-bold">{t("meal_plan.modal_no_places")}</p>
+          <p className="text-sm text-muted-foreground">{t("meal_plan.modal_no_places_hint")}</p>
           <button onClick={() => setStep("mode")} className="text-primary font-bold text-sm underline">
-            Anderen Stil wählen
+            {t("meal_plan.modal_other_style")}
           </button>
         </div>
       );
@@ -186,13 +188,13 @@ export function InstantPlanModal({
       <div className="space-y-5">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-extrabold mb-0.5">Dein Plan</h2>
+            <h2 className="text-xl font-extrabold mb-0.5">{t("meal_plan.modal_your_plan")}</h2>
             <p className="text-sm text-muted-foreground">{suggestion.modeConfig.emoji} {suggestion.modeConfig.label}</p>
           </div>
           <button
             onClick={handleRegenerate}
             className="p-2 rounded-full hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors"
-            title="Anderen Ort vorschlagen"
+            title={t("meal_plan.modal_suggest_other")}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -240,7 +242,7 @@ export function InstantPlanModal({
         {friends.length > 0 && (
           <div>
             <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground/60 mb-3">
-              Freunde einladen ({selectedFriends.length}/{friends.length})
+              {t("meal_plan.modal_invite", { selected: selectedFriends.length, total: friends.length })}
             </p>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
               {friends.map(f => {
@@ -271,9 +273,9 @@ export function InstantPlanModal({
           className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-extrabold text-base shadow-xl shadow-primary/30 press-scale hover:shadow-2xl transition-all"
         >
           {confirm.isPending ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Erstelle Plan…</>
+            <><Loader2 className="w-5 h-5 animate-spin" /> {t("meal_plan.modal_creating")}</>
           ) : (
-            <><Zap className="w-5 h-5" /> Plan bestätigen — {suggestion.suggestedTime}</>
+            <><Zap className="w-5 h-5" /> {t("meal_plan.modal_confirm", { time: suggestion.suggestedTime })}</>
           )}
         </button>
 
@@ -281,7 +283,7 @@ export function InstantPlanModal({
           onClick={() => setStep("mode")}
           className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
         >
-          Anderen Stil wählen
+          {t("meal_plan.modal_other_style")}
         </button>
       </div>
     );
@@ -293,16 +295,16 @@ export function InstantPlanModal({
         🚀
       </div>
       <div>
-        <h2 className="text-2xl font-extrabold mb-1">Plan erstellt!</h2>
+        <h2 className="text-2xl font-extrabold mb-1">{t("meal_plan.modal_created")}</h2>
         <p className="text-sm text-muted-foreground">
           {selectedFriends.length > 0
-            ? `${selectedFriends.length} ${selectedFriends.length === 1 ? "Freund wurde" : "Freunde wurden"} eingeladen.`
-            : "Dein Plan ist bereit."}
+            ? t("meal_plan.modal_invited_other", { count: selectedFriends.length })
+            : t("meal_plan.modal_ready")}
         </p>
       </div>
       <div className="flex items-center justify-center gap-2 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-2xl py-3 px-4">
         <Check className="w-5 h-5" />
-        <span className="font-bold text-sm">Einladungen verschickt!</span>
+        <span className="font-bold text-sm">{t("meal_plan.modal_invites_sent")}</span>
       </div>
     </div>
   );
@@ -320,7 +322,7 @@ export function InstantPlanModal({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg">⚡</span>
-              <span className="font-extrabold text-base">Instant Plan</span>
+              <span className="font-extrabold text-base">{t("meal_plan.modal_header")}</span>
             </div>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-muted/60 transition-colors">
               <X className="w-4 h-4" />

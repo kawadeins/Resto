@@ -49,8 +49,8 @@ export default function Analytics() {
     return (
       <div className="min-h-[80vh] flex flex-col justify-start">
         <SoftPaywall
-          title="Analysen & Intelligenz"
-          subtitle="Datenbasierte Entscheidungen, die deinen Betrieb täglich voranbringen."
+          title={t("paywall.title")}
+          subtitle={t("paywall.subtitle")}
           onUpgrade={() => { window.location.href = "/billing"; }}
         />
       </div>
@@ -219,9 +219,9 @@ export default function Analytics() {
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
                       <Legend verticalAlign="top" height={36} />
-                      <Line yAxisId="left" type="monotone" dataKey="revenue" name="Umsatz" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} />
-                      <Line yAxisId="left" type="monotone" dataKey="profit" name="Gewinn" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} />
-                      <Line yAxisId="right" type="stepAfter" dataKey="reservations" name="Reservierungen" stroke="hsl(35, 91%, 54%)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                      <Line yAxisId="left" type="monotone" dataKey="revenue" name={t("analytics.revenue", { defaultValue: "Revenue" })} stroke="hsl(var(--primary))" strokeWidth={3} dot={false} />
+                      <Line yAxisId="left" type="monotone" dataKey="profit" name={t("analytics.profit", { defaultValue: "Profit" })} stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} />
+                      <Line yAxisId="right" type="stepAfter" dataKey="reservations" name={t("analytics.reservations", { defaultValue: "Reservations" })} stroke="hsl(35, 91%, 54%)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -255,7 +255,7 @@ export default function Analytics() {
                         dataKey="count"
                         nameKey="source"
                       >
-                        {performance?.reservationsBySource?.map((entry, index) => (
+                        {performance?.reservationsBySource?.map((entry: any, index: any) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -300,9 +300,9 @@ export default function Analytics() {
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                       itemStyle={{ color: 'hsl(var(--foreground))' }}
                     />
-                    <Bar dataKey="covers" name="Ø Gedecke" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
-                      {performance?.peakHours?.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fillOpacity={0.4 + (entry.covers / Math.max(...(performance?.peakHours.map(h => h.covers) || [1]))) * 0.6} />
+                    <Bar dataKey="covers" name={t("analytics.avg_covers", { defaultValue: "Ø Covers" })} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
+                      {performance?.peakHours?.map((entry: any, index: any) => (
+                        <Cell key={`cell-${index}`} fillOpacity={0.4 + (entry.covers / Math.max(...(performance?.peakHours.map((h: any) => h.covers) || [1]))) * 0.6} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -329,7 +329,7 @@ export default function Analytics() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       layout="vertical"
-                      data={menuAnalytics?.sort((a, b) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 8)}
+                      data={menuAnalytics?.sort((a: any, b: any) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 8)}
                       margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--border))" />
@@ -353,10 +353,10 @@ export default function Analytics() {
                       <Tooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
-                        formatter={(value: number) => [`€${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, "Gesamtgewinn"]}
+                        formatter={(value: number) => [`€${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, t("analytics.total_profit", { defaultValue: "Total profit" })]}
                       />
                       <Bar dataKey="totalProfit" radius={[0, 4, 4, 0]}>
-                        {menuAnalytics?.sort((a, b) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 8).map((entry, index) => {
+                        {menuAnalytics?.sort((a: any, b: any) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 8).map((entry: any, index: any) => {
                           const margin = entry.profitMargin || 0;
                           let fill = "hsl(142, 71%, 45%)"; // emerald
                           if (margin < 40) fill = "hsl(346, 84%, 61%)"; // rose
@@ -398,7 +398,7 @@ export default function Analytics() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {menuAnalytics?.sort((a, b) => (b.profitMargin || 0) - (a.profitMargin || 0)).map((dish) => (
+                      {menuAnalytics?.sort((a: any, b: any) => (b.profitMargin || 0) - (a.profitMargin || 0)).map((dish: any) => (
                         <TableRow key={dish.id}>
                           <TableCell className="font-medium">{dish.name}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{dish.category}</TableCell>

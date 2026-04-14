@@ -6,6 +6,7 @@
  * No blockers: user can always skip. Sets `restosmart_vibe` key.
  */
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import { X, ArrowRight } from "lucide-react";
 
@@ -17,8 +18,8 @@ export type VibeType = "cafe" | "restaurant" | "bar";
 interface Vibe {
   id: VibeType;
   emoji: string;
-  label: string;
-  sublabel: string;
+  labelKey: string;
+  sublabelKey: string;
   exploreLink: string;
   bg: string;
   border: string;
@@ -29,8 +30,8 @@ const VIBES: Vibe[] = [
   {
     id: "cafe",
     emoji: "☕",
-    label: "Café & Kaffee",
-    sublabel: "Frühstück, Work-Spots, Gemütlichkeit",
+    labelKey: "vibe.mode_cafe",
+    sublabelKey: "vibe.mode_cafe_sub",
     exploreLink: "/explore?businessType=cafe",
     bg: "bg-amber-50 hover:bg-amber-100",
     border: "border-amber-200 hover:border-amber-400",
@@ -39,8 +40,8 @@ const VIBES: Vibe[] = [
   {
     id: "restaurant",
     emoji: "🍽️",
-    label: "Essen gehen",
-    sublabel: "Mittagessen, Abendessen, alle Küchen",
+    labelKey: "vibe.mode_dining",
+    sublabelKey: "vibe.mode_dining_sub",
     exploreLink: "/explore?businessType=restaurant",
     bg: "bg-violet-50 hover:bg-violet-100",
     border: "border-violet-200 hover:border-violet-400",
@@ -49,8 +50,8 @@ const VIBES: Vibe[] = [
   {
     id: "bar",
     emoji: "🍸",
-    label: "Bar & Nightlife",
-    sublabel: "Cocktails, Wein, Heurigen, Abende",
+    labelKey: "vibe.mode_bar",
+    sublabelKey: "vibe.mode_bar_sub",
     exploreLink: "/explore?businessType=bar",
     bg: "bg-rose-50 hover:bg-rose-100",
     border: "border-rose-200 hover:border-rose-400",
@@ -63,6 +64,7 @@ interface VibeOnboardingProps {
 }
 
 export function VibeOnboarding({ onSelect }: VibeOnboardingProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export function VibeOnboarding({ onSelect }: VibeOnboardingProps) {
           <button
             onClick={dismiss}
             className="mt-0.5 w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 transition-colors shrink-0 ml-3"
-            aria-label="Schließen"
+            aria-label={t("common.close")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -123,8 +125,8 @@ export function VibeOnboarding({ onSelect }: VibeOnboardingProps) {
                   {v.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-bold text-sm ${v.text}`}>{v.label}</p>
-                  <p className="text-xs text-muted-foreground truncate">{v.sublabel}</p>
+                  <p className={`font-bold text-sm ${v.text}`}>{t(v.labelKey)}</p>
+                  <p className="text-xs text-muted-foreground truncate">{t(v.sublabelKey)}</p>
                 </div>
                 <ArrowRight className={`w-4 h-4 shrink-0 ${v.text} opacity-60`} />
               </div>

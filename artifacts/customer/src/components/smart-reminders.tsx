@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 import { X, Calendar, ChefHat, Users, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,7 @@ function ReminderCard({
   reminder: Reminder;
   onDismiss: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const Icon = reminder.icon;
   return (
     <div className={`relative flex items-start gap-3 p-4 rounded-2xl border border-border/60 bg-card shadow-lg shadow-black/5 animate-in slide-in-from-top-3 fade-in duration-300`}>
@@ -91,7 +93,7 @@ function ReminderCard({
       <button
         onClick={() => onDismiss(reminder.id)}
         className="absolute top-3 right-3 w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Schließen"
+        aria-label={t("common.close")}
       >
         <X className="w-3 h-3" />
       </button>
@@ -101,6 +103,7 @@ function ReminderCard({
 
 // ── Smart Reminders Layer ────────────────────────────────────────────────────
 export function SmartReminders({ email }: { email: string }) {
+  const { t } = useTranslation();
   const [reminders, setReminders] = useState<Reminder[]>([]);
 
   const dismiss = useCallback((id: string) => {
@@ -140,8 +143,8 @@ export function SmartReminders({ email }: { email: string }) {
             title: today
               ? `Deine Reservierung ist heute! 🍽️`
               : `Deine Reservierung ist morgen`,
-            body: `${b.restaurantName} · ${b.date} um ${formatTime(b.time)} · ${b.partySize} ${b.partySize === 1 ? "Person" : "Personen"}`,
-            cta: "Buchung ansehen",
+            body: t("reminder.booking_body", { restaurant: b.restaurantName, date: b.date, time: formatTime(b.time), count: b.partySize, defaultValue: `${b.restaurantName} · ${b.date} at ${formatTime(b.time)} · ${b.partySize} person(s)` }),
+            cta: t("reminder.view_booking", { defaultValue: "View booking" }),
             href: "/my-bookings",
             icon: Calendar,
             gradient: "from-primary to-violet-600",
@@ -160,7 +163,7 @@ export function SmartReminders({ email }: { email: string }) {
               type: "loyalty",
               title: `Noch ${toNext} Punkte bis ${profile.loyalty.nextTier}! 🏆`,
               body: `Du hast ${pts} Punkte. Buche jetzt und erreiche den nächsten Status.`,
-              cta: "Restaurant entdecken",
+              cta: t("reminder.discover_restaurant", { defaultValue: "Discover restaurant" }),
               href: "/explore",
               icon: Bell,
               gradient: "from-amber-400 to-orange-500",
@@ -189,11 +192,11 @@ export function SmartReminders({ email }: { email: string }) {
             const r: Reminder = {
               id: mealRid,
               type: "meal-plan",
-              title: "Dein Essensplan für heute 🍱",
+              title: t("reminder.meal_plan_title", { defaultValue: "Your meal plan for today 🍱" }),
               body: todayPlan.restaurantName
                 ? `${todayPlan.restaurantName} steht heute auf deinem Plan.`
-                : "Schau dir deinen heutigen Essensplan an.",
-              cta: "Jetzt ansehen",
+                : t("reminder.meal_plan_body", { defaultValue: "Check out your meal plan for today." }),
+              cta: t("reminder.view_now", { defaultValue: "View now" }),
               href: "/meal-plan",
               icon: ChefHat,
               gradient: "from-emerald-400 to-teal-500",
@@ -236,7 +239,7 @@ export function SmartReminders({ email }: { email: string }) {
               type: "invitation",
               title: `${names}${extra} ${isSingular ? "ist" : "sind"} gerade aktiv 👥`,
               body: `${friendSugg.restaurantEmoji ?? "🍽️"} ${friendSugg.restaurantName} — perfekter Moment zum Treffen.`,
-              cta: "Ansehen",
+              cta: t("common.view", { defaultValue: "View" }),
               href: friendSugg.restaurantId
                 ? `/restaurant/${friendSugg.restaurantId}`
                 : "/explore",

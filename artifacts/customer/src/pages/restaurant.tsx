@@ -157,6 +157,7 @@ function LiveMap({
 }: {
   lat: number; lng: number; name: string; address: string; city: string; googleMapsUrl?: string;
 }) {
+  const { t } = useTranslation();
   const delta = 0.008;
   const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
   const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
@@ -168,7 +169,7 @@ function LiveMap({
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="font-serif text-2xl font-bold leading-tight">Standort</h2>
+            <h2 className="font-serif text-2xl font-bold leading-tight">{t("restaurant.location")}</h2>
             <p className="text-sm text-muted-foreground">{address}, {city}</p>
           </div>
         </div>
@@ -179,7 +180,7 @@ function LiveMap({
           className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
           <ExternalLink className="w-4 h-4" />
-          In Maps öffnen
+          {t("restaurant.open_in_maps")}
         </a>
       </div>
       <div className="h-64 sm:h-80 w-full relative">
@@ -197,7 +198,7 @@ function LiveMap({
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-background/90 backdrop-blur-sm border rounded-lg text-xs font-semibold shadow-md hover:bg-background transition-colors"
           >
             <MapPin className="w-3.5 h-3.5 text-red-500" />
-            Route planen
+            {t("restaurant.plan_route")}
           </a>
         </div>
       </div>
@@ -413,7 +414,7 @@ export default function Restaurant() {
   const onReviewSubmit = (data: ReviewFormValues) => {
     const ratingToUse = reviewRating;
     if (!reviewEligibility.bookingId) {
-      toast({ title: "Reservierung erforderlich", description: "Für eine Bewertung ist eine abgeschlossene Reservierung notwendig.", variant: "destructive" });
+      toast({ title: t("restaurant.require_booking"), description: t("restaurant.require_booking_desc"), variant: "destructive" });
       return;
     }
     if (ratingToUse <= 3) {
@@ -443,12 +444,12 @@ export default function Restaurant() {
       queryClient.invalidateQueries({ queryKey: getGetMarketplaceRestaurantQueryKey(restaurantId) });
       if (startRecovery) {
         setRecoveryReview({ id: data.id, status: "pending", businessResponse: null, rating: data.rating });
-        toast({ title: "Problem gemeldet", description: "Der Betrieb wurde benachrichtigt und wird sich melden." });
+        toast({ title: t("restaurant.problem_reported"), description: t("restaurant.problem_reported_desc") });
       } else {
-        toast({ title: "Bewertung eingereicht!", description: "Danke f\u00FCr Ihr Feedback." });
+        toast({ title: t("restaurant.review_submitted"), description: t("restaurant.review_submit_desc") });
       }
     } catch {
-      toast({ title: "Fehler", description: "Bewertung konnte nicht eingereicht werden.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("restaurant.review_error_submit"), variant: "destructive" });
     } finally {
       setRecoverySubmitting(false);
     }
@@ -479,7 +480,7 @@ export default function Restaurant() {
       });
       setRecoveryReview(null);
       setPublishEditRating(null);
-      toast({ title: "Bewertung ver\u00F6ffentlicht" });
+      toast({ title: t("restaurant.review_published") });
       queryClient.invalidateQueries({ queryKey: getListReviewsQueryKey({ restaurantId }) });
       queryClient.invalidateQueries({ queryKey: getGetReviewStatsQueryKey({ restaurantId }) });
     } catch {}
@@ -491,7 +492,7 @@ export default function Restaurant() {
       await fetch(`${API_BASE}/api/reviews/${recoveryReview.id}/close`, { method: "POST" });
     } catch {}
     setRecoveryReview(null);
-    toast({ title: "Angelegenheit abgeschlossen" });
+    toast({ title: t("restaurant.case_closed") });
   }, [recoveryReview]);
 
   useEffect(() => {
@@ -621,7 +622,7 @@ export default function Restaurant() {
                 <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
                 <div>
                   <div className="font-bold text-xl leading-none text-amber-950">{restaurant.rating.toFixed(1)}</div>
-                  <div className="text-xs font-medium text-amber-800">{restaurant.reviewCount} Bewertungen</div>
+                  <div className="text-xs font-medium text-amber-800">{restaurant.reviewCount} {t("restaurant.reviews")}</div>
                 </div>
               </div>
             </div>

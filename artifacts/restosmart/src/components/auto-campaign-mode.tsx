@@ -1,33 +1,15 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const RESTAURANT_ID = 1;
 
-const BOOST_META: Record<string, { label: string; emoji: string; window: string }> = {
-  breakfast_boost:  { label: "Frühstücks-Boost",  emoji: "☕", window: "05:00–11:00 Uhr" },
-  lunch_boost:      { label: "Mittags-Boost",       emoji: "🍽️", window: "10:00–15:00 Uhr" },
-  happy_hour_boost: { label: "Happy Hour Boost",    emoji: "🍹", window: "14:00–20:00 Uhr" },
-  nightlife_boost:  { label: "Nachtleben-Boost",    emoji: "🌙", window: "18:00–02:00 Uhr" },
-  local_spotlight:  { label: "Local Spotlight",     emoji: "⭐", window: "Ganztags" },
-  local_heat_boost: { label: "Heat-Map Boost",      emoji: "🔥", window: "Ganztags" },
-};
-
-const ACTION_META: Record<string, { label: string; color: string; icon: string }> = {
-  activated:           { label: "Automatisch aktiviert",         color: "#22c55e", icon: "▶" },
-  paused:              { label: "Automatisch pausiert",          color: "#f97316", icon: "⏸" },
-  waiting:             { label: "Wartet auf besseres Zeitfenster", color: "#60a5fa", icon: "⏳" },
-  skipped_low_wallet:  { label: "Nicht gestartet — Guthaben",   color: "#ef4444", icon: "💳" },
-  skipped_budget_limit:{ label: "Budgetlimit erreicht",          color: "#ef4444", icon: "🚫" },
-  already_active:      { label: "Bereits aktiv",                 color: "#a3a3a3", icon: "✓" },
-  error:               { label: "Fehler",                        color: "#ef4444", icon: "⚠" },
-};
-
-const STATUS_DISPLAY: Record<string, { label: string; color: string; bg: string }> = {
-  active:  { label: "Automatisch aktiv",   color: "#22c55e", bg: "rgba(34,197,94,0.12)" },
-  paused:  { label: "Automatisch pausiert", color: "#f97316", bg: "rgba(249,115,22,0.12)" },
-  waiting: { label: "Wartet auf Zeitfenster", color: "#60a5fa", bg: "rgba(96,165,250,0.12)" },
+const BOOST_KEYS = ["breakfast_boost", "lunch_boost", "happy_hour_boost", "nightlife_boost", "local_spotlight", "local_heat_boost"] as const;
+const BOOST_EMOJI: Record<string, string> = {
+  breakfast_boost: "☕", lunch_boost: "🍽️", happy_hour_boost: "🍹",
+  nightlife_boost: "🌙", local_spotlight: "⭐", local_heat_boost: "🔥",
 };
 
 interface AutoCampaignModeProps {
@@ -36,12 +18,38 @@ interface AutoCampaignModeProps {
 }
 
 export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignModeProps) {
+  const { t } = useTranslation();
   const { csrfToken } = useSession();
   const qc = useQueryClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editSettings, setEditSettings] = useState<any>(null);
   const [runResult, setRunResult] = useState<any>(null);
   const [showLog, setShowLog] = useState(false);
+
+  const BOOST_META: Record<string, { label: string; emoji: string; window: string }> = {
+    breakfast_boost:  { label: t("boost.type_breakfast"),      emoji: "☕",  window: "05:00–11:00" },
+    lunch_boost:      { label: t("boost.type_lunch"),          emoji: "🍽️", window: "10:00–15:00" },
+    happy_hour_boost: { label: t("boost.type_happy_hour"),     emoji: "🍹", window: "14:00–20:00" },
+    nightlife_boost:  { label: t("boost.type_nightlife"),      emoji: "🌙", window: "18:00–02:00" },
+    local_spotlight:  { label: t("boost.type_local_spotlight"),emoji: "⭐", window: t("boost.all_day") },
+    local_heat_boost: { label: t("boost.type_heat_map"),       emoji: "🔥", window: t("boost.all_day") },
+  };
+
+  const ACTION_META: Record<string, { label: string; color: string; icon: string }> = {
+    activated:           { label: t("boost.auto_activated"),      color: "#22c55e", icon: "▶" },
+    paused:              { label: t("boost.auto_paused_label"),   color: "#f97316", icon: "⏸" },
+    waiting:             { label: t("boost.auto_waiting"),        color: "#60a5fa", icon: "⏳" },
+    skipped_low_wallet:  { label: t("boost.insufficient_balance"),color: "#ef4444", icon: "💳" },
+    skipped_budget_limit:{ label: t("boost.auto_budget_limit"),  color: "#ef4444", icon: "🚫" },
+    already_active:      { label: t("boost.auto_already_active"),color: "#a3a3a3", icon: "✓" },
+    error:               { label: t("common.error"),             color: "#ef4444", icon: "⚠" },
+  };
+
+  const STATUS_DISPLAY: Record<string, { label: string; color: string; bg: string }> = {
+    active:  { label: t("boost.auto_mode_active"),  color: "#22c55e", bg: "rgba(34,197,94,0.12)" },
+    paused:  { label: t("boost.auto_mode_paused"),  color: "#f97316", bg: "rgba(249,115,22,0.12)" },
+    waiting: { label: t("boost.auto_mode_waiting"), color: "#60a5fa", bg: "rgba(96,165,250,0.12)" },
+  };
 
   // ── Load current state ────────────────────────────────────────────────────
   const { data, isLoading, refetch } = useQuery({
@@ -67,7 +75,7 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
         daily_max_cents:       settings.daily_max_cents   ?? 1000,
         weekly_max_cents:      settings.weekly_max_cents  ?? 5000,
         min_wallet_balance_cents: settings.min_wallet_balance_cents ?? 500,
-        allowed_boost_types:   settings.allowed_boost_types ?? Object.keys(BOOST_META),
+        allowed_boost_types:   settings.allowed_boost_types ?? [...BOOST_KEYS],
         auto_pause_low_roi:    settings.auto_pause_low_roi ?? true,
       });
     }
@@ -80,12 +88,12 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
     dailyMaxEur:         (editSettings?.daily_max_cents     ?? 1000) / 100,
     weeklyMaxEur:        (editSettings?.weekly_max_cents    ?? 5000) / 100,
     minWalletBalanceEur: (editSettings?.min_wallet_balance_cents ?? 500) / 100,
-    allowedBoostTypes:   editSettings?.allowed_boost_types  ?? Object.keys(BOOST_META),
+    allowedBoostTypes:   editSettings?.allowed_boost_types  ?? [...BOOST_KEYS],
     autoPauseLowROI:     editSettings?.auto_pause_low_roi   ?? true,
     ...overrides,
   });
 
-  const csrfHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+  const csrfHdr: Record<string, string> = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
 
   const toggleMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
@@ -414,7 +422,7 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
                   }}>
                     {sd
                       ? sd.label
-                      : (allowed ? "Wartet auf Zeitfenster" : "Nicht erlaubt")}
+                      : (allowed ? t("boost.auto_mode_waiting") : t("boost.auto_not_allowed", { defaultValue: "Not allowed" }))}
                   </div>
                   {bs && (
                     <div style={{ fontSize: 10, color: "#6b7280", marginTop: 4 }}>
@@ -536,7 +544,7 @@ export function AutoCampaignMode({ isPremium, onUpgradeClick }: AutoCampaignMode
                         <div style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.5 }}>{item.reason}</div>
                         {item.action === "activated" && item.wallet_before != null && (
                           <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
-                            {"€" + Number(item.wallet_before).toFixed(2) + " → €" + Number(item.wallet_after).toFixed(2) + " Guthaben"}
+                            {"€" + Number(item.wallet_before).toFixed(2) + " → €" + Number(item.wallet_after).toFixed(2) + " " + t("boost.wallet_balance", { defaultValue: "Balance" })}
                           </div>
                         )}
                       </div>

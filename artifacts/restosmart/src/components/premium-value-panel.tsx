@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Crown, X, Check, Zap } from "lucide-react";
 
@@ -16,10 +17,10 @@ interface PremiumValuePanelProps {
 }
 
 const FEATURES = [
-  "Mehr Sichtbarkeit",
-  "Sofortige Buchungen",
-  "Smart Marketing Tools",
-  "Analytics & Insights",
+  "premium.feature_visibility",
+  "premium.feature_instant_bookings",
+  "premium.feature_marketing",
+  "premium.feature_analytics",
 ];
 
 function triggerUpgrade() {
@@ -32,6 +33,7 @@ function triggerUpgrade() {
 
 /* ── Compact inline variant ─────────────────────────────────────────────────── */
 function CompactPanel({ onDismiss, onUpgrade }: { onDismiss?: () => void; onUpgrade?: () => void }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -49,16 +51,16 @@ function CompactPanel({ onDismiss, onUpgrade }: { onDismiss?: () => void; onUpgr
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-extrabold text-white leading-tight">
-            {"Wachse schneller mit Premium"}
+            {t("premium.grow_headline", { defaultValue: "Grow faster with Premium" })}
           </p>
-          <p className="text-[11px] text-white/70 truncate">{"14 Tage kostenlos testen"}</p>
+          <p className="text-[11px] text-white/70 truncate">{t("billing.activate_cta", { defaultValue: "14 days free trial" })}</p>
         </div>
         <button
           onClick={onUpgrade ?? triggerUpgrade}
           className="shrink-0 px-4 py-2 rounded-xl bg-white text-[13px] font-extrabold hover:scale-[1.02] active:scale-[0.97] transition-transform cursor-pointer"
           style={{ color: "hsl(263,70%,42%)" }}
         >
-          {"Jetzt starten"}
+          {t("premium.cta_start", { defaultValue: "Get started" })}
         </button>
         {onDismiss && (
           <button
@@ -79,6 +81,7 @@ export function PremiumValuePanel({
   onUpgrade,
   compact = false,
 }: PremiumValuePanelProps) {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
@@ -167,7 +170,7 @@ export function PremiumValuePanel({
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                 <Check className="w-3 h-3 text-white" strokeWidth={3} />
               </div>
-              <span className="text-sm font-semibold text-white/90">{f}</span>
+              <span className="text-sm font-semibold text-white/90">{t(f)}</span>
             </div>
           ))}
         </div>
@@ -180,7 +183,7 @@ export function PremiumValuePanel({
         >
           <span className="flex items-center justify-center gap-2">
             <Zap className="w-4 h-4" />
-            {"Jetzt kostenlos starten"}
+            {t("premium.cta_free", { defaultValue: "Start free now" })}
           </span>
         </button>
 

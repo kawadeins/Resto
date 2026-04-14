@@ -21,12 +21,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { InventoryItem } from "@workspace/api-client-react";
 
 const itemSchema = z.object({
-  name: z.string().min(2, "Name ist erforderlich"),
-  category: z.string().min(2, "Kategorie ist erforderlich"),
-  quantity: z.coerce.number().min(0, "Menge darf nicht negativ sein"),
-  unit: z.string().min(1, "Einheit ist erforderlich"),
-  alertThreshold: z.coerce.number().min(0, "Schwellenwert darf nicht negativ sein"),
-  costPerUnit: z.coerce.number().min(0, "Kosten dürfen nicht negativ sein"),
+  name: z.string().min(2, "Name required"),
+  category: z.string().min(2, "Category required"),
+  quantity: z.coerce.number().min(0, "Quantity cannot be negative"),
+  unit: z.string().min(1, "Unit required"),
+  alertThreshold: z.coerce.number().min(0, "Threshold cannot be negative"),
+  costPerUnit: z.coerce.number().min(0, "Cost cannot be negative"),
 });
 
 type ItemFormValues = z.infer<typeof itemSchema>;
@@ -242,7 +242,7 @@ export default function Inventory() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {inventory?.map((item) => {
+                  {inventory?.map((item: any) => {
                     const isLowStock = item.quantity <= item.alertThreshold;
                     return (
                       <TableRow key={item.id}>

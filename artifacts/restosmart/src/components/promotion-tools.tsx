@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -122,6 +123,7 @@ interface SmartSuggestion {
 // ── Reusable sub-components ───────────────────────────────────────────────────
 
 function BoostStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   if (status === "active") return (
     <span style={{ color: C.active, backgroundColor: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)" }}
       className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full">
@@ -205,11 +207,12 @@ function SecBtn({ onClick, children, danger = false }: {
 }
 
 function DemandChip({ level }: { level: PricingData["demandLevel"] }) {
+  const { t } = useTranslation();
   const map: Record<PricingData["demandLevel"], { label: string; bg: string; color: string; border: string }> = {
-    low:       { label: "Niedrig",   color: C.active, bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.22)"  },
-    normal:    { label: "Normal",    color: "#a78bfa", bg: "rgba(139,92,246,0.1)", border: "rgba(139,92,246,0.22)" },
-    high:      { label: "Hoch",      color: C.paused,  bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.22)" },
-    very_high: { label: "Sehr hoch", color: C.danger,  bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.22)"  },
+    low:       { label: t("boost.demand_low"),       color: C.active, bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.22)"  },
+    normal:    { label: t("boost.demand_normal"),    color: "#a78bfa", bg: "rgba(139,92,246,0.1)", border: "rgba(139,92,246,0.22)" },
+    high:      { label: t("boost.demand_high"),      color: C.paused,  bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.22)" },
+    very_high: { label: t("boost.demand_very_high"), color: C.danger,  bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.22)"  },
   };
   const m = map[level] ?? map.normal;
   return (
@@ -249,9 +252,9 @@ function calcROI(
     impressionsLow: number; impressionsHigh: number;
     guestLabel: string;
   }> = {
-    restaurant: { avgOrderLow: 22, avgOrderHigh: 35, baseConvRate: 0.14, baseCTR: 0.030, impressionsLow: 350, impressionsHigh: 520, guestLabel: "Gäste" },
-    café:       { avgOrderLow: 8,  avgOrderHigh: 14, baseConvRate: 0.18, baseCTR: 0.040, impressionsLow: 280, impressionsHigh: 430, guestLabel: "Besuche" },
-    bar:        { avgOrderLow: 15, avgOrderHigh: 25, baseConvRate: 0.12, baseCTR: 0.032, impressionsLow: 380, impressionsHigh: 560, guestLabel: "Gäste" },
+    restaurant: { avgOrderLow: 22, avgOrderHigh: 35, baseConvRate: 0.14, baseCTR: 0.030, impressionsLow: 350, impressionsHigh: 520, guestLabel: "guests_label_r" },
+    café:       { avgOrderLow: 8,  avgOrderHigh: 14, baseConvRate: 0.18, baseCTR: 0.040, impressionsLow: 280, impressionsHigh: 430, guestLabel: "guests_label_c" },
+    bar:        { avgOrderLow: 15, avgOrderHigh: 25, baseConvRate: 0.12, baseCTR: 0.032, impressionsLow: 380, impressionsHigh: 560, guestLabel: "guests_label_r" },
   };
 
   const cfg = bizCfg[businessType] ?? bizCfg.restaurant;
@@ -267,11 +270,11 @@ function calcROI(
 
   let ctr      = cfg.baseCTR;
   let convRate = cfg.baseConvRate;
-  let confidence = "Basierend auf ähnlichen Betrieben in Wien";
+  let confidence = "confidence_base";
 
   if (totalImpHist > 50 && totalClkHist > 0) {
     ctr = Math.min(0.12, totalClkHist / totalImpHist);
-    confidence = "Basierend auf Ihren vergangenen Kampagnen";
+    confidence = "confidence_your";
   }
   if (totalClkHist > 5 && totalBkgHist > 0) {
     convRate = Math.min(0.40, totalBkgHist / totalClkHist);
@@ -297,10 +300,11 @@ function calcROI(
 }
 
 function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportunity: boolean }) {
+  const { t } = useTranslation();
   const rows = [
-    { label: "Geschätzte Reichweite", value: `+${roi.impressionsLow.toLocaleString("de")}–${roi.impressionsHigh.toLocaleString("de")} Personen` },
-    { label: `Erwartete ${roi.guestLabel}`, value: `${roi.guestsLow}–${roi.guestsHigh}` },
-    { label: "Potentieller Umsatz", value: `\u20AC${roi.revenueLow}–\u20AC${roi.revenueHigh}`, highlight: true },
+    { label: t("boost.stat_impressions"), value: `+${roi.impressionsLow.toLocaleString("de")}–${roi.impressionsHigh.toLocaleString("de")} Personen` },
+    { label: `Erwartete ${roi.guestLabel === "guests_label_r" ? t("boost.guests_label_r") : t("boost.guests_label_c")}`, value: `${roi.guestsLow}–${roi.guestsHigh}` },
+    { label: t("boost.potential_revenue"), value: `\u20AC${roi.revenueLow}–\u20AC${roi.revenueHigh}`, highlight: true },
   ];
 
   const roiColor = roi.isStrongROI ? C.active : roi.roiMultiple >= 3 ? "#a78bfa" : C.muted;
@@ -334,7 +338,7 @@ function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportun
           ROI-Schätzung
         </span>
         <div className="flex items-center gap-1">
-          <span className="text-[10px]" style={{ color: C.muted }}>Kosten ca.</span>
+          <span className="text-[10px]" style={{ color: C.muted }}>{t("boost.cost_approx", { defaultValue: "Approx. Cost" })}</span>
           <span className="text-[10px] font-bold" style={{ color: C.text }}>{"\u20AC"}{roi.cost.toFixed(1)}</span>
         </div>
       </div>
@@ -353,7 +357,7 @@ function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportun
       {roi.roiMultiple >= 2 && (
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px]" style={{ color: C.muted }}>Kosten / Ertrag</span>
+            <span className="text-[10px]" style={{ color: C.muted }}>{t("boost.cost_vs_return", { defaultValue: "Cost / Return" })}</span>
             <span className="text-[10px] font-bold" style={{ color: roiColor }}>~{roi.roiMultiple.toFixed(0)}×</span>
           </div>
           <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.08)" }}>
@@ -370,7 +374,7 @@ function BoostROIEstimate({ roi, isOpportunity }: { roi: ROIEstimate; isOpportun
 
       {/* Confidence notice */}
       <p className="text-[10px]" style={{ color: "rgba(156,163,175,0.65)" }}>
-        {"\u2139\uFE0F"} {roi.confidence} {"\u00B7"} Konservative Schätzung
+        {"\u2139\uFE0F"} {roi.confidence === "confidence_base" ? t("boost.confidence_base") : t("boost.confidence_your")} {"\u00B7"} Konservative Schätzung
       </p>
     </motion.div>
   );
@@ -388,6 +392,7 @@ function SmartRevenueTrigger({
   onLaunchSuggested: () => void;
   canLaunch: boolean;
 }) {
+  const { t } = useTranslation();
   if (!pricing) return null;
 
   const isHighDemand   = pricing.demandLevel === "high" || pricing.demandLevel === "very_high";
@@ -401,11 +406,11 @@ function SmartRevenueTrigger({
   const topSuggestion = suggestions.find(s => s.priority === "high") ?? suggestions[0];
 
   const triggerTitle = urgent
-    ? "Hohe Nachfrage jetzt in Ihrer Umgebung"
+    ? t("boost.demand_very_high") + " — " + t("boost.action_recommended_now")
     : isHighDemand
     ? "Erh\u00F6hte Nachfrage erkannt"
     : isLowCompete
-    ? "Wenig Konkurrenz aktuell aktiv"
+    ? t("boost.low_competition", { defaultValue: "Low competition currently active" })
     : "Aktives Zeitfenster f\u00FCr Ihren Boost";
 
   const triggerDesc = urgent
@@ -416,7 +421,7 @@ function SmartRevenueTrigger({
     ? `Nur ${pricing.competingBoosts} konkurrierende Boosts aktiv \u2014 g\u00FCnstiger Einstiegszeitpunkt.`
     : `Optimales Zeitfenster: ${pricing.bestBoostWindow}`;
 
-  const ctaLabel = urgent ? "Empfohlen: Jetzt sichtbar werden" : "Jetzt Boost aktivieren";
+  const ctaLabel = urgent ? t("boost.action_recommended_now") : t("boost.launch");
 
   return (
     <AnimatePresence>
@@ -518,10 +523,11 @@ function SmartRevenueTrigger({
 // ── AI Timing Strip ───────────────────────────────────────────────────────────
 
 function AITimingStrip({ pricing }: { pricing: PricingData }) {
+  const { t } = useTranslation();
   const items = [
-    { icon: Clock,    label: "Beste Zeit heute",   value: pricing.bestBoostWindow },
-    { icon: Activity, label: "Nachfrage",           value: pricing.demandLevel === "very_high" ? "Sehr hoch" : pricing.demandLevel === "high" ? "Hoch" : pricing.demandLevel === "normal" ? "Normal" : "Niedrig" },
-    { icon: Users,    label: "Mitbewerber aktiv",   value: String(pricing.competingBoosts) },
+    { icon: Clock,    label: t("boost.stat_best_time"), value: pricing.bestBoostWindow },
+    { icon: Activity, label: t("boost.stat_demand"), value: pricing.demandLevel === "very_high" ? t("boost.demand_very_high") : pricing.demandLevel === "high" ? t("boost.demand_high") : pricing.demandLevel === "normal" ? t("boost.demand_normal") : t("boost.demand_low") },
+    { icon: Users, label: t("boost.competitors_active", { defaultValue: "Competitors active" }), value: String(pricing.competingBoosts) },
     { icon: BarChart3,label: "Preis / 1.000 Einbl.", value: `\u20AC${pricing.pricePer1000.toFixed(2)}` },
   ];
 
@@ -553,6 +559,7 @@ function AITimingStrip({ pricing }: { pricing: PricingData }) {
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function PromotionTools() {
+  const { t } = useTranslation();
   const { csrfToken } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -665,7 +672,7 @@ export function PromotionTools() {
         title: `${cfg?.emoji ?? "\uD83D\uDE80"} ${cfg?.label ?? type} gestartet!`,
         description: data.walletDeducted
           ? `\u20AC${data.walletDeducted.toFixed(2)} Guthaben verwendet \u00B7 Restguthaben: \u20AC${data.walletBalance?.toFixed(2)}`
-          : "Ihre Sichtbarkeit steigt ab sofort.",
+          : t("boost.visibility_rising"),
       });
       setLaunching(null);
       invalidate();
@@ -682,26 +689,26 @@ export function PromotionTools() {
         setShowWallet(true);
       } else if (err.message === "duplicate_activation") {
         toast({
-          title: "Boost bereits gestartet",
-          description: "Dieser Boost wurde gerade erst aktiviert.",
+          title: t("boost.boost_already_started"),
+          description: t("boost.boost_already_started_desc"),
           variant: "destructive",
         });
       } else {
-        toast({ title: "Boost konnte nicht gestartet werden", variant: "destructive" });
+        toast({ title: t("boost.boost_start_error"), variant: "destructive" });
       }
       setLaunching(null);
     },
   });
 
-  const promoAuthHdr = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
+  const promoAuthHdr: Record<string, string> = csrfToken ? { "X-CSRF-Token": csrfToken } : {};
   const pauseMutation = useMutation({
     mutationFn: async (id: number) => {
       const r = await fetch(`${API_BASE}/api/promotions/${id}/pause`, { method: "PUT", credentials: "include", headers: promoAuthHdr });
       if (!r.ok) throw new Error("Fehler");
       return r.json();
     },
-    onSuccess: () => { toast({ title: "Boost pausiert" }); invalidate(); },
-    onError: () => toast({ title: "Aktion fehlgeschlagen", variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("boost.boost_paused") }); invalidate(); },
+    onError: () => toast({ title: t("boost.boost_action_error"), variant: "destructive" }),
   });
   const resumeMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -709,8 +716,8 @@ export function PromotionTools() {
       if (!r.ok) throw new Error("Fehler");
       return r.json();
     },
-    onSuccess: () => { toast({ title: "Boost fortgesetzt" }); invalidate(); },
-    onError: () => toast({ title: "Aktion fehlgeschlagen", variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("boost.boost_resumed") }); invalidate(); },
+    onError: () => toast({ title: t("boost.boost_action_error"), variant: "destructive" }),
   });
   const stopMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -718,8 +725,8 @@ export function PromotionTools() {
       if (!r.ok) throw new Error("Fehler");
       return r.json();
     },
-    onSuccess: () => { toast({ title: "Boost beendet" }); invalidate(); },
-    onError: () => toast({ title: "Aktion fehlgeschlagen", variant: "destructive" }),
+    onSuccess: () => { toast({ title: t("boost.boost_stopped") }); invalidate(); },
+    onError: () => toast({ title: t("boost.boost_action_error"), variant: "destructive" }),
   });
 
   // ── Wallet ──────────────────────────────────────────────────────────────────
@@ -764,7 +771,7 @@ export function PromotionTools() {
             <Zap className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="text-base font-bold" style={{ color: C.text }}>Promotion Tools</div>
+            <div className="text-base font-bold" style={{ color: C.text }}>{t("boost.title")}</div>
             <div className="text-xs" style={{ color: C.muted }}>{"L\u00E4dt..."}</div>
           </div>
         </div>
@@ -791,7 +798,7 @@ export function PromotionTools() {
             <Zap style={{ width: 18, height: 18, color: "#fff" }} />
           </motion.div>
           <div>
-            <div className="text-lg font-bold" style={{ color: C.text }}>Promotion Tools</div>
+            <div className="text-lg font-bold" style={{ color: C.text }}>{t("boost.title")}</div>
             <div className="text-xs mt-0.5" style={{ color: C.muted }}>
               {"Erh\u00F6hen Sie Ihre Sichtbarkeit \u2014 pr\u00E4zise und messbar."}
             </div>
@@ -824,7 +831,7 @@ export function PromotionTools() {
             >
               <motion.span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: C.active }}
                 animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }} />
-              {activeCount} {activeCount === 1 ? "Boost" : "Boosts"} aktiv
+              {activeCount === 1 ? t("boost.boosts_active_one", { count: 1 }) : t("boost.boosts_active_other", { count: activeCount })}
             </motion.div>
           )}
         </div>
@@ -977,10 +984,10 @@ export function PromotionTools() {
                     className="grid grid-cols-4 gap-2 pt-3"
                     style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
                   >
-                    <MiniStat icon={Eye}           value={promo.impressions}         label="Einbl." />
-                    <MiniStat icon={MousePointer}  value={promo.clicks}              label="Klicks" />
-                    <MiniStat icon={CalendarCheck} value={promo.bookings_attributed} label="Buch." />
-                    <MiniStat icon={Flame}         value={promo.heat_exposure}       label="Heat" />
+                    <MiniStat icon={Eye}           value={promo.impressions}         label={t("boost.impressions_short")} />
+                    <MiniStat icon={MousePointer}  value={promo.clicks}              label={t("boost.clicks_short")} />
+                    <MiniStat icon={CalendarCheck} value={promo.bookings_attributed} label={t("boost.bookings_short")} />
+                    <MiniStat icon={Flame}         value={promo.heat_exposure}       label={t("boost.heat_short")} />
                   </motion.div>
                 )}
 
@@ -1076,7 +1083,7 @@ export function PromotionTools() {
           <div style={{ backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 16, border: `1px solid ${C.border}`, padding: 20 }} className="space-y-4">
             <div className="flex items-center gap-2.5">
               <Wallet style={{ width: 16, height: 16, color: "#a78bfa" }} />
-              <span className="font-semibold text-sm" style={{ color: C.text }}>Tagesbudget</span>
+              <span className="font-semibold text-sm" style={{ color: C.text }}>{t("boost.daily_budget", { defaultValue: "Daily Budget" })}</span>
               <span className="text-xs ml-auto flex items-center gap-1" style={{ color: C.muted }}>
                 <Info style={{ width: 12, height: 12 }} />
                 Boost stoppt automatisch bei Limit
@@ -1109,7 +1116,7 @@ export function PromotionTools() {
                           setBudgetInput(prev => ({ ...prev, [b.id]: String(b.dailyBudget) }));
                         }}
                       >
-                        {isEditing ? "Abbrechen" : "Bearbeiten"}
+                        {isEditing ? t("common.cancel") : t("common.edit")}
                       </button>
                     </div>
 
@@ -1133,7 +1140,7 @@ export function PromotionTools() {
 
                     {isEditing && (
                       <div className="pt-3 space-y-3" style={{ borderTop: `1px solid ${C.border}` }}>
-                        <p className="text-[11px]" style={{ color: C.muted }}>Tagesbudget festlegen (0 = unbegrenzt)</p>
+                        <p className="text-[11px]" style={{ color: C.muted }}>{t("boost.budget_set_hint", { defaultValue: "Set daily budget (0 = unlimited)" })}</p>
                         <div className="flex gap-2 flex-wrap">
                           {[0, 5, 10, 20, 50].map(amount => (
                             <motion.button
@@ -1234,10 +1241,11 @@ function SuggestionIcon({ type }: { type: string }) {
 }
 
 function SmartPricingDashboard({ businessType, restaurantId }: { businessType: string; restaurantId: number | null }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { csrfToken: pricingCsrfToken } = useSession();
-  const pricingCsrfHdr = pricingCsrfToken ? { "X-CSRF-Token": pricingCsrfToken } : {};
+  const pricingCsrfHdr: Record<string, string> = pricingCsrfToken ? { "X-CSRF-Token": pricingCsrfToken } : {};
 
   const { data: pricing, isLoading: pricingLoading } = useQuery<PricingData>({
     queryKey: ["pricing-current", businessType],
@@ -1447,7 +1455,7 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
               opacity: autoOptMutation.isPending ? 0.6 : 1, flexShrink: 0,
             }}
           >
-            {autoOptEnabled ? "Deaktivieren" : "Aktivieren"}
+            {autoOptEnabled ? t("common.disable") : t("common.enable")}
           </motion.button>
         </div>
       </div>

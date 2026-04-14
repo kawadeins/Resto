@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * LiveSections — homepage "Hot jetzt", "Lunch-Rush", "Nightlife-Heatmap" etc.
  * Dynamically configured based on current lifestyle mode and time of day.
@@ -136,6 +137,7 @@ interface LiveSectionProps {
 }
 
 function LiveSection({ config, restaurants, flashDeals, mode, cues, userLat, userLng }: LiveSectionProps) {
+  const { t } = useTranslation();
   const scored = useMemo(() => {
     const filtered = restaurants.filter(config.filter);
     return rankByLiveActivity(filtered, mode, cues, flashDeals).slice(0, 10);
@@ -191,10 +193,10 @@ function LiveSection({ config, restaurants, flashDeals, mode, cues, userLat, use
         {/* Mini intensity legend */}
         <div className="flex items-center gap-4 mt-4 flex-wrap">
           {[
-            { min: 80, color: "bg-purple-500", label: "Trending" },
-            { min: 62, color: "bg-rose-500",   label: "Hot" },
-            { min: 44, color: "bg-amber-500",   label: "Beliebt" },
-            { min: 0,  color: "bg-emerald-500", label: "Aktiv" },
+            { min: 80, color: "bg-purple-500", label: t("live.trending", { defaultValue: "Trending" }) },
+            { min: 62, color: "bg-rose-500",   label: t("live.hot", { defaultValue: "Hot" }) },
+            { min: 44, color: "bg-amber-500",   label: t("live.popular", { defaultValue: "Popular" }) },
+            { min: 0,  color: "bg-emerald-500", label: t("live.active", { defaultValue: "Active" }) },
           ].map(t => (
             <div key={t.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-semibold">
               <div className={`w-2 h-2 rounded-full ${t.color}`} />

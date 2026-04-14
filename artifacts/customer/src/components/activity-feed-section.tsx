@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * ActivityFeedSection — social feed for the homepage.
  * Shows recent activity from friends in a clean, non-spammy strip.
@@ -98,6 +99,7 @@ interface ActivityFeedSectionProps {
 }
 
 export function ActivityFeedSection({ email, friendCount }: ActivityFeedSectionProps) {
+  const { t } = useTranslation();
   const { data: activities, isLoading } = useQuery({
     queryKey: ["social-feed", email],
     queryFn: () => getActivityFeed(email, 12),
@@ -123,7 +125,7 @@ export function ActivityFeedSection({ email, friendCount }: ActivityFeedSectionP
               <h2 className="text-xl font-extrabold tracking-tight">Was Freunde machen</h2>
               {friendCount > 0 && (
                 <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20">
-                  {friendCount} {friendCount === 1 ? "Freund" : "Freunde"}
+                  {friendCount} {t("social.friend_count", { count: friendCount, defaultValue: friendCount === 1 ? "Friend" : "Friends" })}
                 </span>
               )}
             </div>

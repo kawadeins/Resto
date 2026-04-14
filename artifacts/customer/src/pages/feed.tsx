@@ -126,7 +126,7 @@ const apiAddComment = async (postId: number, email: string, text: string) => {
   });
   const data = await r.json();
   if (!r.ok) {
-    const err: any = new Error(data.error || "Fehler beim Kommentieren.");
+    const err: any = new Error(data.error || "Error commenting.");
     err.moderated = data.moderated;
     err.strikeMessage = data.strikeMessage;
     throw err;
@@ -137,7 +137,7 @@ const apiAddComment = async (postId: number, email: string, text: string) => {
 // ── Time ago ──────────────────────────────────────────────────────────────────
 function timeAgo(ts: string) {
   const m = Math.floor((Date.now() - new Date(ts).getTime()) / 60000);
-  if (m < 1) return "Gerade eben";
+  if (m < 1) return "Just now";
   if (m < 60) return `vor ${m} Min.`;
   const h = Math.floor(m / 60);
   if (h < 24) return `vor ${h} Std.`;
@@ -313,6 +313,7 @@ function CommentSheet({ postId, email, userName, userPhoto, onClose }: {
 
 // ── Restaurant Picker ─────────────────────────────────────────────────────────
 function RestaurantPicker({ value, onChange }: { value: { id?: number; name: string } | null; onChange: (r: { id?: number; name: string } | null) => void }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(value?.name || "");
   const [open, setOpen] = useState(false);
   const { data: results = [] } = useQuery({
@@ -328,7 +329,7 @@ function RestaurantPicker({ value, onChange }: { value: { id?: number; name: str
         <input
           type="text"
           value={query}
-          placeholder={"Restaurant taggen (optional)"}
+          placeholder={t("feed.tag_restaurant", { defaultValue: "Tag restaurant (optional)" })}
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           onFocus={() => setOpen(true)}
           onChange={e => {
@@ -812,7 +813,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors disabled:cursor-default"
           onClick={handleSave}
           disabled={!email}
-          aria-label={saved ? "Gespeichert" : "Speichern"}
+          aria-label={saved ? t("common.saved", { defaultValue: "Saved" }) : t("common.save")}
         >
           <Bookmark
             ref={bmRef}
@@ -868,7 +869,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
             className="absolute top-3 left-3 text-[10px] font-bold text-white px-2 py-0.5 rounded-full backdrop-blur-sm"
             style={{ background: GRAD }}
           >
-            {"Freund"}
+            {t("social.friend", { defaultValue: "Friend" })}
           </span>
         )}
       </div>
@@ -881,7 +882,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
             className={`flex items-center gap-2 transition-all active:scale-90 ${!email && "opacity-50 cursor-default"}`}
             onClick={() => handleLike()}
             disabled={!email}
-            aria-label="Like"
+            aria-label={t("feed.like", { defaultValue: "Like" })}
           >
             <Heart
               className={`w-6 h-6 transition-all duration-200 ${heartPop ? "heart-pop" : ""} ${liked ? "fill-rose-500 text-rose-500" : "text-foreground hover:text-rose-400"}`}
@@ -896,7 +897,7 @@ function PostCard({ post, email, userName, userPhoto, onOpenComments, onLiked }:
           <button
             className="flex items-center gap-2 group"
             onClick={() => onOpenComments(post.id)}
-            aria-label="Kommentare"
+            aria-label={t("feed.comments", { defaultValue: "Comments" })}
           >
             <MessageCircle className="w-6 h-6 text-foreground group-hover:text-primary transition-colors" />
             <span className="text-sm font-bold text-muted-foreground tabular-nums group-hover:text-primary transition-colors">

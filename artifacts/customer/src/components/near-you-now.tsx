@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { Link } from "wouter";
 import { Navigation, Star, ArrowRight, Timer, Flame, MapPin, Armchair, Zap, Users } from "lucide-react";
@@ -41,6 +42,7 @@ function UrgencyBadge({ sr }: { sr: ScoredRestaurant }) {
 }
 
 function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
+  const { t } = useTranslation();
   const { restaurant: r, distance, isWeakHour, flashDeal, friendCueCount } = sr;
   const urgency = urgencyLabel(sr.flashMinutesLeft, sr.isWeakHour, sr.minutesUntilClose);
   const distanceText = distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)} km`;
@@ -158,14 +160,14 @@ function NearYouCard({ sr, rank }: { sr: ScoredRestaurant; rank: number }) {
               {r.availabilityStatus === "full" && (
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Armchair className="w-3 h-3" />
-                  {r.nextAvailableSlot ? `Nächster Slot: ${r.nextAvailableSlot}` : "Ausgebucht"}
+                  {r.nextAvailableSlot ? t("restaurant.next_slot", { slot: r.nextAvailableSlot, defaultValue: `Next slot: ${r.nextAvailableSlot}` }) : t("restaurant.fully_booked", { defaultValue: "Fully booked" })}
                 </span>
               )}
             </div>
           )}
 
           <button className={`w-full py-2.5 rounded-2xl text-xs font-bold text-white transition-opacity hover:opacity-90 ${r.availabilityStatus === "available" ? "bg-gradient-to-r from-emerald-500 to-teal-500" : "bg-gradient-to-r from-primary to-accent"}`}>
-            {r.availabilityStatus === "available" ? "Jetzt buchen — Tische frei" : "Ansehen & Buchen"}
+            {r.availabilityStatus === "available" ? t("restaurant.book_now_free", { defaultValue: "Book now — tables free" }) : t("restaurant.view_and_book", { defaultValue: "View & Book" })}
           </button>
         </div>
       </div>

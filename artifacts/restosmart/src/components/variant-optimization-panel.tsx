@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
@@ -69,6 +70,7 @@ function ctrBar(ctr: number, maxCtr: number) {
 }
 
 export default function VariantOptimizationPanel() {
+  const { t } = useTranslation();
   const [lastActions, setLastActions] = useState<string[]>([]);
   const [autoTriggered, setAutoTriggered] = useState(false);
 
@@ -123,7 +125,7 @@ export default function VariantOptimizationPanel() {
           <svg className={`w-3.5 h-3.5 ${optimizing ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
-          {optimizing ? "Optimiere…" : "Auto-Optimize jetzt"}
+          {optimizing ? t("variants.optimizing", { defaultValue: "Optimizing…" }) : t("variants.optimize_now", { defaultValue: "Auto-Optimize now" })}
         </button>
       </div>
 
@@ -136,7 +138,7 @@ export default function VariantOptimizationPanel() {
         >
           <p className="text-xs font-bold text-emerald-400 mb-2">
             {lastActions.length === 0
-              ? "Auto-Optimize: Keine neuen Gewinner – noch nicht genug Daten."
+              ? t("variants.no_winners", { defaultValue: "Auto-Optimize: No new winners yet – not enough data." })
               : `Auto-Optimize: ${lastActions.length} Aktion${lastActions.length !== 1 ? "en" : ""} durchgeführt`}
           </p>
           {lastActions.map((a, i) => (
@@ -148,10 +150,10 @@ export default function VariantOptimizationPanel() {
       {/* Summary bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Varianten aktiv", value: summary.totalVariants - summary.retired, sub: `${summary.retired} ausgemustert` },
-          { label: "Gewinner deklariert", value: summary.winners, sub: "automatisch erkannt" },
-          { label: "Gesamte Impressionen", value: summary.totalImpressions.toLocaleString("de-AT"), sub: "über alle Elemente" },
-          { label: "Durchschn. CTR", value: `${summary.avgCtr}%`, sub: "Klickrate (alle Varianten)" },
+          { label: t("variants.active_variants", { defaultValue: "Active variants" }), value: summary.totalVariants - summary.retired, sub: t("variants.retired_count", { count: summary.retired, defaultValue: `${summary.retired} retired` }) },
+          { label: t("variants.winners", { defaultValue: "Winners declared" }), value: summary.winners, sub: t("variants.auto_detected", { defaultValue: "automatically detected" }) },
+          { label: t("variants.total_impressions", { defaultValue: "Total impressions" }), value: summary.totalImpressions.toLocaleString(), sub: t("variants.across_all", { defaultValue: "across all elements" }) },
+          { label: t("variants.avg_ctr", { defaultValue: "Avg. CTR" }), value: `${summary.avgCtr}%`, sub: t("variants.ctr_desc", { defaultValue: "Click rate (all variants)" }) },
         ].map(s => (
           <div key={s.label} className="rounded-xl border border-white/6 bg-white/3 p-4">
             <div className="text-2xl font-bold text-white">{s.value}</div>

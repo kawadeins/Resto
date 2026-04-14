@@ -1,0 +1,286 @@
+Implement a strict "Translation Closure Repair Pass" based ONLY on the attached QA report.
+
+IMPORTANT:
+- Do NOT redesign anything
+- Do NOT rebuild the i18n architecture
+- Do NOT add new features
+- Do NOT continue any old premium/paywall/demo tasks
+- Do NOT touch already-clean files unless directly required
+- This is a focused translation repair pass only
+- Fix the exact files and issues listed in the QA report
+- The goal is to eliminate the remaining visible German/mixed-language UI
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Close the remaining translation gaps in both:
+1. customer app
+2. restaurant owner dashboard
+
+The architecture already works.
+The remaining problem is hardcoded German strings, static labels, untranslated arrays, untranslated toasts, and untranslated feature/empty-state texts.
+
+This pass must fix the listed problem files only.
+
+==================================================
+SCOPE RULE
+==================================================
+
+Work ONLY on the files explicitly listed below.
+Do NOT drift into unrelated systems.
+Do NOT resume old tasks.
+Do NOT create new promo/premium/demo components.
+Do NOT touch translation architecture/provider setup.
+
+==================================================
+PHASE 1 — CUSTOMER APP CRITICAL FILES (FIX FIRST)
+==================================================
+
+Fix these files completely:
+
+1. src/hooks/use-lifestyle-mode.ts
+Problem:
+- all dynamic home content is hardcoded German
+Required:
+- move all hero badge labels, hero titles, hero subtitles, search placeholders, section titles/subtitles, CTA titles/subtitles into i18n
+- ensure all mode-driven text reacts to language changes
+- do not leave any static German strings
+
+2. src/pages/restaurant.tsx
+Problem:
+- hardcoded German toasts and a few UI labels
+Required:
+- translate all toast titles/messages
+- translate "In Maps öffnen"
+- translate meta description fallback "Tisch buchen"
+- ensure all visible user-facing strings use i18n
+
+3. src/pages/profile.tsx
+Problem:
+- many core profile UI strings still German
+Required:
+- translate all buttons, placeholders, privacy copy, content labels, booking history labels, empty states, counts, stats labels, and profile action text
+- ensure all visible strings react to language switching
+
+4. src/components/instant-plan-modal.tsx
+Problem:
+- full modal mostly German
+Required:
+- translate subtitle, empty state, buttons, CTA labels, confirm text
+- ensure full modal is wired to i18n
+
+5. src/components/privacy-toggle.tsx
+Problem:
+- all labels and descriptions German
+Required:
+- translate all toggle labels, descriptions, and visibility status text
+
+==================================================
+PHASE 2 — OWNER DASHBOARD CRITICAL FILES
+==================================================
+
+Fix these files completely:
+
+6. src/components/boost-roi-panel.tsx
+Problem:
+- fully German
+Required:
+- translate all table headers, filters, labels, feature/paywall text, empty states, tooltips, and stat labels
+
+7. src/components/campaign-command-center.tsx
+Problem:
+- fully German alerts and table labels
+Required:
+- translate all alert text, headers, labels, statuses, table headers
+
+8. src/components/auto-campaign-mode.tsx
+Problem:
+- buttons, labels, empty states German
+Required:
+- translate all save/cancel/pending labels, decision log labels, empty state, boost type labels
+
+9. src/components/promotion-tools.tsx
+Problem:
+- mixed remaining German labels
+Required:
+- translate buttons, ROI labels, confidence text, estimate labels, and remaining visible hardcoded strings
+
+10. src/components/soft-paywall.tsx
+Problem:
+- German feature list and trust signals
+Required:
+- translate all feature items, stat labels, subtitles, trust signals
+
+11. src/pages/pos.tsx
+Problem:
+- category array German
+Required:
+- move category labels into i18n/reactive translation logic
+
+12. src/pages/menu.tsx
+Problem:
+- category array German
+Required:
+- move category labels into i18n/reactive translation logic
+
+13. src/pages/bookings.tsx
+Problem:
+- booking type select options German
+Required:
+- translate all booking type options and any remaining visible hardcoded labels
+
+14. src/pages/billing.tsx
+Problem:
+- payment success banner German
+Required:
+- translate full success banner text and any related visible billing strings
+
+15. src/components/city-expansion-engine.tsx
+Problem:
+- stage/type labels German
+Required:
+- translate stage names and all rendered UI labels derived from them
+
+==================================================
+PHASE 3 — CUSTOMER APP MAJOR FILES
+==================================================
+
+Then fix these customer files:
+
+16. src/components/near-you-now.tsx
+- translate full section: heading, badges, availability labels, CTAs, slot labels, empty/availability states
+
+17. src/components/activity-feed-section.tsx
+- translate empty states, friend count plural labels, prompts
+
+18. src/components/live-sections.tsx
+- translate status labels and footer note
+
+19. src/components/map-view.tsx
+- translate open/closed and availability labels
+
+20. src/components/smart-offers-section.tsx
+- translate CTAs and personalization hints
+
+21. src/components/level-up-modal.tsx
+- translate tier sublines
+
+22. src/components/vibe-onboarding.tsx
+- translate sublabels and aria labels
+
+23. src/components/auto-plan-card.tsx
+- translate label "Vorschlag für heute"
+
+24. src/components/smart-reminders.tsx
+- translate aria label, CTA labels, reminder title
+
+==================================================
+PHASE 4 — OWNER DASHBOARD MAJOR FILES
+==================================================
+
+Then fix these dashboard files:
+
+25. src/components/variant-optimization-panel.tsx
+- translate all labels, statuses, stats, bullets, empty states
+
+26. src/components/smart-boost-recommendations.tsx
+- translate save buttons and error messages
+
+27. src/components/premium-value-panel.tsx
+- translate feature list and trust signals
+
+28. src/components/access-denied.tsx
+- translate error messages and CTA button
+
+29. src/pages/analytics.tsx
+- translate Recharts series/legend label such as "Reservierungen"
+
+30. src/lib/monetization-engine.ts
+- translate visible feature strings used by dashboard premium/upsell UI
+
+==================================================
+PHASE 5 — MINOR LEFTOVERS
+==================================================
+
+Finally fix these smaller leftovers:
+
+31. src/pages/feed.tsx
+- translate remaining placeholder, friend count label, section title
+
+32. src/pages/friends.tsx
+- remove German fallback inside t() call and replace with proper keys
+
+33. src/pages/plan-detail.tsx
+- remove German fallback strings inside t() calls
+
+34. src/pages/public-profile.tsx
+- remove German fallback strings inside t() calls
+
+35. src/pages/explore.tsx
+- remove German fallback string inside t() call
+
+36. src/lib/social-api.ts
+- translate activity verb used in feed ("hat reserviert bei")
+
+37. src/pages/inventory.tsx
+- translate validation error string "Kosten dürfen nicht negativ sein"
+
+==================================================
+IMPLEMENTATION RULES
+==================================================
+
+1. Use existing translation namespaces/keys where possible.
+2. Add missing keys only when necessary.
+3. Do NOT leave hardcoded visible German strings in any of the listed files.
+4. For arrays/constants rendered in UI (categories, stage labels, booking types, etc.):
+   - do NOT keep German labels at module scope
+   - make them translation-driven and reactive to language changes
+5. For toasts, modals, placeholders, validation, and empty states:
+   - fully translate them too
+6. Remove German fallback strings from t() calls and replace them with proper translation keys.
+7. Keep user-generated content untouched.
+8. Do NOT touch files not listed above unless directly required by shared key cleanup.
+
+==================================================
+LANGUAGES TO VALIDATE
+==================================================
+
+Validate in:
+- German
+- English
+- French
+
+Check both:
+- customer app
+- owner dashboard
+
+==================================================
+SUCCESS CRITERIA
+==================================================
+
+This pass is only successful if:
+
+- the listed files no longer show hardcoded German UI
+- language switching updates those areas correctly
+- no major mixed-language screens remain in the listed files
+- no raw keys appear
+- owner dashboard sidebar/content mismatch is reduced/eliminated in the affected pages
+
+==================================================
+FINAL REPORT
+==================================================
+
+Return a concise structured report with:
+
+A. Customer critical files fixed
+B. Dashboard critical files fixed
+C. Customer major files fixed
+D. Dashboard major files fixed
+E. Minor leftovers fixed
+F. Any remaining untranslated strings in the listed files only
+G. Whether the app is now translation-ready for final QA
+
+Do not include unrelated work.
+Do not mention old task IDs.
+Do not resume any previous session plan.

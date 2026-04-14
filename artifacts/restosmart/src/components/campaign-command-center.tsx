@@ -5,6 +5,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { useSession } from "@/contexts/session-context";
 import { AutoCampaignMode } from "./auto-campaign-mode";
@@ -16,15 +17,7 @@ import { getBizType } from "@/lib/biz-copy";
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 const RESTAURANT_ID = 1;
 
-// ── Boost label map ──────────────────────────────────────────────────────────
-const BOOST_LABELS: Record<string, string> = {
-  breakfast_boost:  "Frühstücks-Boost",
-  lunch_boost:      "Mittags-Boost",
-  happy_hour_boost: "Happy Hour Boost",
-  nightlife_boost:  "Nachtleben-Boost",
-  local_spotlight:  "Local Spotlight",
-  local_heat_boost: "Heat-Map Boost",
-};
+// ── Boost label map ─ defined inside component
 
 // ── Stat chip ────────────────────────────────────────────────────────────────
 function StatChip({
@@ -75,25 +68,27 @@ function AlertChip({ icon, text, level }: { icon: string; text: string; level: "
   );
 }
 
-// ── Business-type header copy ─────────────────────────────────────────────────
-const BIZ_COPY: Record<string, { title: string; sub: string }> = {
-  restaurant: {
-    title: "Kampagnenzentrale",
-    sub: "Alle Boost-Kampagnen — Mittags- und Abendzeit maximieren.",
-  },
-  cafe: {
-    title: "Kampagnenzentrale",
-    sub: "Alle Boost-Kampagnen — Frühstücks- und Kaffeepausen-Sichtbarkeit.",
-  },
-  bar: {
-    title: "Kampagnenzentrale",
-    sub: "Alle Boost-Kampagnen — Abend- und Happy-Hour-Sichtbarkeit.",
-  },
-};
+// ── Business-type header copy ─ defined inside component
 
 // ── Main component ───────────────────────────────────────────────────────────
 export function CampaignCommandCenter() {
+  const { t } = useTranslation();
   const biz = getBizType();
+
+  const BOOST_LABELS: Record<string, string> = {
+    breakfast_boost:  t("boost.type_breakfast"),
+    lunch_boost:      t("boost.type_lunch"),
+    happy_hour_boost: t("boost.type_happy_hour"),
+    nightlife_boost:  t("boost.type_nightlife"),
+    local_spotlight:  t("boost.type_local_spotlight"),
+    local_heat_boost: t("boost.type_heat_map"),
+  };
+
+  const BIZ_COPY: Record<string, { title: string; sub: string }> = {
+    restaurant: { title: t("campaigns.cmd_title_restaurant"), sub: t("campaigns.cmd_sub_restaurant") },
+    cafe:       { title: t("campaigns.cmd_title_cafe"),       sub: t("campaigns.cmd_sub_cafe") },
+    bar:        { title: t("campaigns.cmd_title_bar"),        sub: t("campaigns.cmd_sub_bar") },
+  };
   const [, setLocation] = useLocation();
   const { csrfToken: _csrfToken } = useSession(); // reserved for future mutations
   const premiumVal = typeof window !== "undefined" ? localStorage.getItem("restosmart_owner_premium") : null;
@@ -182,21 +177,21 @@ export function CampaignCommandCenter() {
   const alerts: Array<{ icon: string; text: string; level: "warn" | "info" | "good" }> = [];
 
   if (wallet?.isEmpty)
-    alerts.push({ icon: "🔴", text: "Guthaben leer — Boosts können nicht aktiviert werden.", level: "warn" });
+    alerts.push({ icon: "🔴", text: t("campaigns.alert_no_balance"), level: "warn" });
   else if (wallet?.isLow)
-    alerts.push({ icon: "⚠️", text: "Niedriges Guthaben — bitte Wallet aufladen.", level: "warn" });
+    alerts.push({ icon: "⚠️", text: t("campaigns.alert_wallet_low"), level: "warn" });
 
   if (demandPct !== null && demandPct >= 70 && active.length === 0)
-    alerts.push({ icon: "📈", text: "Hohe Nachfrage — jetzt guter Zeitpunkt für Sichtbarkeit.", level: "good" });
+    alerts.push({ icon: "📈", text: t("campaigns.alert_high_demand"), level: "good" });
 
   if (topRec && topRec.confidence >= 70)
     alerts.push({ icon: "💡", text: `Empfohlen: ${topRec.emoji} ${topRec.label} · ${topRec.window}`, level: "info" });
 
   if (!autoEnabled && isPremium && active.length === 0)
-    alerts.push({ icon: "🤖", text: "Auto-Kampagnenmodus inaktiv — aktivieren für automatische Steuerung.", level: "info" });
+    alerts.push({ icon: "🤖", text: t("campaigns.alert_auto_inactive"), level: "info" });
 
   if (weeklySpent !== null && overallROI !== null && overallROI < -50 && weeklySpent > 1)
-    alerts.push({ icon: "📉", text: "Schwache Boost-Performance diese Woche — ROI überprüfen.", level: "warn" });
+    alerts.push({ icon: "📉", text: t("campaigns.alert_weak_roi"), level: "warn" });
 
   const dailyMaxCents = autoCampaign?.settings?.daily_max_cents ?? 0;
   if (dailyMaxCents > 0) {
@@ -206,7 +201,7 @@ export function CampaignCommandCenter() {
         return new Date(p.created_at).toDateString() === today;
       }).length * 2.5;
     if (todaySpentEur / (dailyMaxCents / 100) > 0.8)
-      alerts.push({ icon: "🚫", text: "Tageslimit fast erreicht.", level: "warn" });
+      alerts.push({ icon: "🚫", text: t("campaigns.alert_daily_limit"), level: "warn" });
   }
 
   // ── History ─────────────────────────────────────────────────────────────────
@@ -240,47 +235,47 @@ export function CampaignCommandCenter() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 22 }}>
         <StatChip
           icon="💰"
-          label="Guthaben"
+          label={t("campaigns.stat_wallet")}
           value={walletBal !== null ? "€" + walletBal.toFixed(2) : "—"}
-          sub={wallet?.isLow ? "Niedrig" : wallet?.isEmpty ? "Leer" : undefined}
+          sub={wallet?.isLow ? t("campaigns.stat_low") : wallet?.isEmpty ? t("campaigns.stat_empty") : undefined}
           accent={wallet?.isEmpty ? "red" : wallet?.isLow ? "orange" : "green"}
         />
         <StatChip
           icon="▶"
-          label="Aktive Kampagnen"
+          label={t("campaigns.stat_active")}
           value={active.length > 0 ? String(active.length) : "0"}
-          sub={active.length > 0 ? active.map(a => BOOST_LABELS[a.type] ?? a.type).join(", ").slice(0, 30) : "Keine aktiv"}
+          sub={active.length > 0 ? active.map((a: any) => BOOST_LABELS[a.type] ?? a.type).join(", ").slice(0, 30) : t("campaigns.stat_none_active")}
           accent={active.length > 0 ? "green" : "default"}
         />
         <StatChip
           icon="💸"
-          label="Wochenausgaben"
+          label={t("campaigns.stat_weekly_spend")}
           value={weeklySpent !== null ? "€" + weeklySpent.toFixed(2) : "—"}
-          sub="Diese Woche"
+          sub={t("campaigns.stat_this_week")}
           accent="default"
         />
         <StatChip
           icon="📊"
-          label="Gesch. Wochenertrag"
+          label={t("campaigns.stat_weekly_return")}
           value={weeklyRet !== null ? "€" + weeklyRet.toFixed(2) : "—"}
           sub={overallROI !== null ? "ROI " + overallROI + "%" : undefined}
           accent={overallROI !== null && overallROI > 0 ? "green" : overallROI !== null && overallROI < -50 ? "orange" : "default"}
         />
         <StatChip
           icon="🤖"
-          label="Auto-Modus"
-          value={autoEnabled ? "Aktiv" : "Aus"}
+          label={t("campaigns.stat_auto_mode")}
+          value={autoEnabled ? t("campaigns.stat_active_val") : t("campaigns.stat_off")}
           sub={autoEnabled
             ? (autoCampaign?.settings?.daily_max_cents
-               ? "Max. €" + (autoCampaign.settings.daily_max_cents / 100).toFixed(0) + "/Tag"
-               : "Keine Limits")
-            : "Manuell gesteuert"}
+               ? t("campaigns.stat_max_daily", { amount: (autoCampaign.settings.daily_max_cents / 100).toFixed(0) })
+               : t("campaigns.stat_no_limits"))
+            : t("campaigns.stat_manual")}
           accent={autoEnabled ? "green" : "default"}
         />
         {topRec && (
           <StatChip
             icon={topRec.emoji}
-            label="Empfehlung"
+            label={t("campaigns.stat_recommendation")}
             value={topRec.confidence + "%"}
             sub={topRec.label + " · " + topRec.window}
             accent={topRec.confidence >= 70 ? "green" : topRec.confidence >= 50 ? "blue" : "default"}
@@ -298,7 +293,7 @@ export function CampaignCommandCenter() {
             fontSize: 10, fontWeight: 700, color: "#6b7280",
             textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12,
           }}>
-            {"Benötigt Aufmerksamkeit"}
+            {t("campaigns.section_needs_attention")}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {alerts.map((a, i) => (
@@ -318,7 +313,7 @@ export function CampaignCommandCenter() {
             fontSize: 10, fontWeight: 700, color: "#6b7280",
             textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12,
           }}>
-            {"Aktive Kampagnen"}
+            {t("campaigns.section_active")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {active.map((p) => {
@@ -348,11 +343,11 @@ export function CampaignCommandCenter() {
                   </div>
                   <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
                     {[
-                      { label: "Einblendungen", value: p.impressions.toLocaleString("de") },
-                      { label: "Klicks", value: p.clicks.toLocaleString("de") },
+                      { label: t("campaigns.col_impressions"), value: p.impressions.toLocaleString("de-AT") },
+                      { label: t("campaigns.col_clicks"), value: p.clicks.toLocaleString("de-AT") },
                       { label: "CTR", value: ctr + "%" },
-                      { label: "Buchungen", value: String(p.bookings_attributed) },
-                      { label: "Seit", value: hoursAgo < 1 ? "Gerade eben" : hoursAgo + "h" },
+                      { label: t("campaigns.col_bookings"), value: String(p.bookings_attributed) },
+                      { label: t("campaigns.col_since"), value: hoursAgo < 1 ? t("campaigns.since_now") : hoursAgo + "h" },
                     ].map(stat => (
                       <div key={stat.label} style={{ textAlign: "center" }}>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "#e5e7eb" }}>{stat.value}</div>
@@ -369,7 +364,7 @@ export function CampaignCommandCenter() {
 
       {/* ── Auto Campaign Mode ────────────────────────────────────────────── */}
       <div style={{ marginBottom: 8 }}>
-        <SectionLabel>{"Automatischer Kampagnenmodus"}</SectionLabel>
+        <SectionLabel>{t("campaigns.section_auto_mode")}</SectionLabel>
       </div>
       <AutoCampaignMode
         isPremium={isPremium}
@@ -378,13 +373,13 @@ export function CampaignCommandCenter() {
 
       {/* ── Smart Boost Recommendations ───────────────────────────────────── */}
       <div style={{ marginBottom: 8 }}>
-        <SectionLabel>{"Smart Boost-Empfehlungen"}</SectionLabel>
+        <SectionLabel>{t("campaigns.section_smart_recs")}</SectionLabel>
       </div>
       <SmartBoostRecommendations />
 
       {/* ── Promotion Tools ───────────────────────────────────────────────── */}
       <div style={{ marginBottom: 8 }}>
-        <SectionLabel>{"Schnellzugriff & Kampagnen starten"}</SectionLabel>
+        <SectionLabel>{t("campaigns.section_quick_launch")}</SectionLabel>
       </div>
       <PromotionTools />
 
@@ -397,7 +392,7 @@ export function CampaignCommandCenter() {
       {/* ── Campaign History ─────────────────────────────────────────────── */}
       {history.length > 0 && (
         <div style={{ marginTop: 28 }}>
-          <SectionLabel>{"Kampagnenverlauf"}</SectionLabel>
+          <SectionLabel>{t("campaigns.section_history")}</SectionLabel>
           <div style={{
             background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
             borderRadius: 14, overflow: "hidden", marginTop: 12,
@@ -405,7 +400,7 @@ export function CampaignCommandCenter() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                  {["Boost-Typ", "Status", "Einblendungen", "Klicks", "Buchungen", "Datum"].map(h => (
+                  {[t("campaigns.col_boost_type"), t("campaigns.col_status"), t("campaigns.col_impressions"), t("campaigns.col_clicks"), t("campaigns.col_bookings"), t("campaigns.col_date")].map(h => (
                     <th key={h} style={{
                       padding: "10px 16px", textAlign: "left",
                       fontSize: 10, fontWeight: 700, color: "#6b7280",
@@ -417,7 +412,7 @@ export function CampaignCommandCenter() {
               <tbody>
                 {history.map((p, i) => {
                   const statusColor = p.status === "paused" ? "#f97316" : p.status === "completed" ? "#22c55e" : "#9ca3af";
-                  const statusLabel = p.status === "paused" ? "Pausiert" : p.status === "stopped" ? "Gestoppt" : "Abgeschlossen";
+                  const statusLabel = p.status === "paused" ? t("campaigns.status_paused") : p.status === "stopped" ? t("campaigns.status_stopped") : t("campaigns.status_completed");
                   return (
                     <tr key={p.id} style={{
                       borderBottom: i < history.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
