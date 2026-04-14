@@ -1,0 +1,131 @@
+Complete the remaining non-DE/EN translation coverage for the customer app only.
+
+IMPORTANT:
+- Do NOT rebuild i18n
+- Do NOT refactor components
+- Do NOT touch owner dashboard in this pass
+- Do NOT change pages already wired and working
+- This is a translation resource completion task only
+- Keep the scope limited to missing translation keys for already-wired UI
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Finish the remaining missing translation keys for the customer app so that non-DE/EN languages stop falling back to German in the remaining repaired areas.
+
+The wiring work is already done.
+The architecture is already working.
+This pass is ONLY about filling the missing translation content for the supported non-DE/EN languages.
+
+==================================================
+1. SCOPE LIMIT
+==================================================
+
+Work ONLY on the customer app translation resources.
+
+Do NOT modify:
+- components
+- hooks
+- provider setup
+- locale switching logic
+- owner dashboard translations
+unless you discover a tiny required key reference issue directly related to these namespaces.
+
+==================================================
+2. LANGUAGES TO COMPLETE
+==================================================
+
+Add/complete missing keys for these languages:
+
+- French (fr)
+- Italian (it)
+- Spanish (es)
+- Dutch (nl)
+- Turkish (tr)
+- Portuguese (pt)
+- Polish (pl)
+
+Do NOT spend time on German or English unless a tiny consistency fix is required.
+
+==================================================
+3. NAMESPACES / MODULES TO COMPLETE
+==================================================
+
+Complete translation coverage for these customer namespaces only:
+
+- messages.*
+- meal_plan.*
+
+If these keys reference a few shared/common labels already used by those screens, add only the truly necessary missing ones.
+
+==================================================
+4. QUALITY REQUIREMENTS
+==================================================
+
+Requirements:
+- keep wording natural and UI-friendly
+- preserve meaning from DE/EN source
+- keep terminology consistent within each language
+- use premium product-style wording, not awkward literal translation
+- do not leave placeholders untranslated
+- do not leave button labels untranslated
+- do not leave modal text untranslated
+- do not leave chat/action labels untranslated
+
+==================================================
+5. DO NOT TOUCH COMPLETED AREAS
+==================================================
+
+Do NOT rework:
+- restaurant translations
+- profile translations
+- feed translations
+- owner dashboard translations
+- architecture/provider logic
+
+Only fill the remaining missing key coverage for the target languages above.
+
+==================================================
+6. VALIDATION
+==================================================
+
+After adding the keys, validate in:
+- French
+- Italian
+- Spanish
+
+Check specifically in the customer app:
+- messages page
+- chat-related UI
+- meal plan page
+- group plan flow
+- reservation request flow inside meal plan if relevant
+
+Confirm that:
+- these screens no longer fall back to German
+- labels/buttons/modals/empty states render in the selected language
+- no major missing keys remain in these flows
+
+==================================================
+7. FINAL REPORT
+==================================================
+
+Return a concise report with:
+
+A. Which languages were completed
+B. Which namespaces were completed
+C. Whether messages now renders fully in FR/IT/ES/NL/TR/PT/PL
+D. Whether meal_plan now renders fully in FR/IT/ES/NL/TR/PT/PL
+E. Any remaining missing keys if any
+
+==================================================
+FINAL RESULT
+==================================================
+
+The remaining repaired customer app screens must now be fully localized in the non-DE/EN supported languages.
+
+No fallback-to-German should remain in:
+- messages
+- meal plan
+for the completed languages above.
