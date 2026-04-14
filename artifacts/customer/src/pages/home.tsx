@@ -44,33 +44,36 @@ import { LevelUpModal, checkAndShowLevelUp } from "@/components/level-up-modal";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
-const CUISINE_DE: Record<string, string> = {
-  Austrian: "Österreichisch", Burgers: "Burger", French: "Französisch",
-  Indian: "Indisch", International: "International", Italian: "Italienisch",
-  Japanese: "Japanisch", Vegetarian: "Vegetarisch", Cocktails: "Cocktails",
+const CUISINE_I18N_KEY: Record<string, string> = {
+  Austrian: "cuisine_austrian", Burgers: "cuisine_burgers", French: "cuisine_french",
+  Indian: "cuisine_indian", International: "cuisine_international", Italian: "cuisine_italian",
+  Japanese: "cuisine_japanese", Vegetarian: "cuisine_vegetarian", Cocktails: "cuisine_cocktails",
+  Mexican: "cuisine_mexican", American: "cuisine_american", Chinese: "cuisine_chinese",
+  Mediterranean: "cuisine_mediterranean", Seafood: "cuisine_seafood", Thai: "cuisine_thai",
 };
 
 // ─── Cuisine bubbles ──────────────────────────────────────────────────────────
 
 const CUISINES = [
-  { name: "Österreichisch", emoji: "🥩", from: "from-stone-400",   to: "to-amber-600" },
-  { name: "Italienisch",    emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
-  { name: "Japanisch",      emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
-  { name: "Mexikanisch",    emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
-  { name: "Indisch",        emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
-  { name: "Französisch",    emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
-  { name: "Vegetarisch",    emoji: "🌿", from: "from-emerald-400", to: "to-teal-600" },
-  { name: "Amerikanisch",   emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
+  { key: "Austrian",   labelKey: "cuisine_austrian",   emoji: "🥩", from: "from-stone-400",   to: "to-amber-600" },
+  { key: "Italian",    labelKey: "cuisine_italian",    emoji: "🍝", from: "from-rose-400",    to: "to-red-500" },
+  { key: "Japanese",   labelKey: "cuisine_japanese",   emoji: "🍣", from: "from-sky-400",     to: "to-blue-600" },
+  { key: "Mexican",    labelKey: "cuisine_mexican",    emoji: "🌮", from: "from-amber-400",   to: "to-orange-500" },
+  { key: "Indian",     labelKey: "cuisine_indian",     emoji: "🍛", from: "from-yellow-400",  to: "to-orange-400" },
+  { key: "French",     labelKey: "cuisine_french",     emoji: "🥐", from: "from-violet-400",  to: "to-purple-600" },
+  { key: "Vegetarian", labelKey: "cuisine_vegetarian", emoji: "🌿", from: "from-emerald-400", to: "to-teal-600" },
+  { key: "American",   labelKey: "cuisine_american",   emoji: "🍔", from: "from-orange-400",  to: "to-red-400" },
 ];
 
 // ─── Countdown Timer ─────────────────────────────────────────────────────────
 
 function CountdownTimer({ expiresAt }: { expiresAt: string }) {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState<string>("");
   useEffect(() => {
     const calculate = () => {
       const diff = new Date(expiresAt).getTime() - Date.now();
-      if (diff <= 0) return "Abgelaufen";
+      if (diff <= 0) return t("home.expired");
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
@@ -79,7 +82,7 @@ function CountdownTimer({ expiresAt }: { expiresAt: string }) {
     setTimeLeft(calculate());
     const id = setInterval(() => setTimeLeft(calculate()), 1000);
     return () => clearInterval(id);
-  }, [expiresAt]);
+  }, [expiresAt, t]);
   return (
     <div className="flex items-center gap-1.5 font-mono font-bold text-sm bg-black/30 text-white px-3 py-1.5 rounded-full backdrop-blur-md">
       <Timer className="w-3.5 h-3.5" />
@@ -104,6 +107,7 @@ const MSG_ICON: Record<string, React.ElementType> = {
 };
 
 function PersonalizedSection({ email }: { email: string }) {
+  const { t } = useTranslation();
   const [levelUpTier, setLevelUpTier] = useState<string | null>(null);
   const { data, isLoading } = useGetPersonalizedOffers(
     { email },
@@ -146,8 +150,8 @@ function PersonalizedSection({ email }: { email: string }) {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.badge}`}>{data.tier} Mitglied</span>
-                <span className="text-xs text-muted-foreground font-medium">{data.points} Pkt.</span>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.badge}`}>{data.tier} {t("home.member")}</span>
+                <span className="text-xs text-muted-foreground font-medium">{data.points} {t("home.points_short")}</span>
               </div>
               {data.personalizedMessage && (
                 <p className="text-sm text-foreground leading-snug line-clamp-2">{data.personalizedMessage}</p>
@@ -163,11 +167,11 @@ function PersonalizedSection({ email }: { email: string }) {
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all" style={{ width: `${pct}%` }} />
                 </div>
-                <p className="text-[10px] text-center text-muted-foreground">{data.pointsToNextTier} Pkt. bis {data.nextTier}</p>
+                <p className="text-[10px] text-center text-muted-foreground">{t("home.points_to_next", { count: data.pointsToNextTier, tier: data.nextTier })}</p>
               </div>
             )}
             <Link href="/my-bookings" className="press-scale flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors px-3 py-2 rounded-full whitespace-nowrap">
-              Punkte ansehen <ChevronRight className="h-3.5 w-3.5" />
+              {t("home.view_points")} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
@@ -208,6 +212,7 @@ function DynamicSection({
   onCardClick: (type: string) => void;
   layout?: "grid3" | "grid4";
 }) {
+  const { t } = useTranslation();
   const ac = ACCENT_CLASSES[section.accent] ?? ACCENT_CLASSES.primary;
   const filtered = allData?.filter((r) => {
     if (section.businessType && (r as any).businessType !== section.businessType) return false;
@@ -241,7 +246,7 @@ function DynamicSection({
             <p className="text-sm text-muted-foreground">{section.subtitle}</p>
           </div>
           <Link href={section.exploreLink} className={`press-scale text-sm font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 ${ac.link}`}>
-            Alle <ArrowRight className="w-3.5 h-3.5" />
+            {t("home.filter_all")} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         <div className={gridCls}>
@@ -262,8 +267,8 @@ function DynamicSection({
           ) : (
             <div className="col-span-full text-center py-16 text-muted-foreground">
               <div className="text-3xl mb-3">🍽️</div>
-              <p className="font-semibold text-foreground">Keine Lokale verfügbar</p>
-              <p className="text-sm mt-1">Schau später wieder vorbei oder entdecke alle Lokale.</p>
+              <p className="font-semibold text-foreground">{t("home.no_venues_available")}</p>
+              <p className="text-sm mt-1">{t("home.no_venues_hint")}</p>
             </div>
           )}
         </div>
@@ -643,7 +648,7 @@ export default function Home() {
                       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         <div className="flex items-center gap-2 text-white/70 mb-1 text-sm">
                           <span className="text-lg">{activeDeal.restaurant.cuisineEmoji}</span>
-                          <span className="font-semibold uppercase tracking-wider text-xs">{CUISINE_DE[activeDeal.restaurant.cuisine] ?? activeDeal.restaurant.cuisine}</span>
+                          <span className="font-semibold uppercase tracking-wider text-xs">{(() => { const k = CUISINE_I18N_KEY[activeDeal.restaurant.cuisine]; return k ? t(`home.${k}`) : activeDeal.restaurant.cuisine; })()}</span>
                         </div>
                         <h3 className="text-2xl font-extrabold mb-3">{activeDeal.restaurant.name}</h3>
                         <div className="w-full py-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-center text-sm font-bold">
@@ -680,7 +685,7 @@ export default function Home() {
                         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                           <div className="flex items-center gap-2 text-white/70 mb-1 text-sm">
                             <span className="text-lg">{topR.cuisineEmoji}</span>
-                            <span className="font-semibold uppercase tracking-wider text-xs">{CUISINE_DE[(topR as any).cuisine] ?? (topR as any).cuisine}</span>
+                            <span className="font-semibold uppercase tracking-wider text-xs">{(() => { const k = CUISINE_I18N_KEY[(topR as any).cuisine]; return k ? t(`home.${k}`) : (topR as any).cuisine; })()}</span>
                           </div>
                           <h3 className="text-2xl font-extrabold mb-1">{topR.name}</h3>
                           <p className="text-white/70 text-xs mb-3 line-clamp-1">{topR.address}</p>
@@ -832,14 +837,14 @@ export default function Home() {
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x">
             {CUISINES.map((cuisine) => (
               <Link
-                key={cuisine.name}
-                href={`/explore?cuisine=${cuisine.name}`}
+                key={cuisine.key}
+                href={`/explore?cuisine=${cuisine.key}`}
                 className="flex flex-col items-center gap-2.5 min-w-[88px] snap-center press-scale group"
               >
                 <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${cuisine.from} ${cuisine.to} flex items-center justify-center text-3xl shadow-lg transition-transform duration-200 group-hover:scale-110 group-hover:shadow-xl`}>
                   {cuisine.emoji}
                 </div>
-                <span className="text-xs font-bold text-center text-foreground/80 leading-tight">{cuisine.name}</span>
+                <span className="text-xs font-bold text-center text-foreground/80 leading-tight">{t(`home.${cuisine.labelKey}`)}</span>
               </Link>
             ))}
           </div>

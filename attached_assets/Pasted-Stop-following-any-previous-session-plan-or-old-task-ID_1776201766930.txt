@@ -1,0 +1,116 @@
+Stop following any previous session plan or old task IDs.
+
+IMPORTANT:
+- Ignore all previous T001 / T002 / T003 tasks
+- Ignore premium trigger work
+- Ignore paywall work
+- Ignore demo/promo work
+- Do NOT continue any old monetization or contextual trigger tasks
+- This task is ONLY about the remaining customer translation leftovers from the cleanup report
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Finish ONLY the remaining customer-side translation issues identified after the demo cleanup.
+
+Do NOT work on anything else.
+
+==================================================
+STRICT SCOPE
+==================================================
+
+Work ONLY on these exact targets:
+
+1. home.tsx
+2. restaurant-card.tsx
+3. app-rating-prompt.tsx
+4. missing translation key:
+   restaurant.reserve_table
+
+Optionally:
+5. any tiny directly related translation key needed by those files only
+
+Do NOT touch:
+- restaurant.tsx beyond the missing reserve_table key if needed
+- profile
+- feed
+- messages
+- meal-plan
+- owner dashboard
+- paywall
+- premium triggers
+- analytics
+- contextual-premium-trigger.tsx
+- soft-paywall.tsx
+- any old task from previous sessions
+
+==================================================
+TASKS
+==================================================
+
+1. home.tsx
+- remove/replace all remaining hardcoded visible German strings
+- wire hero text, hero subtext, rotating/homepage phrases, CTA/support text into the existing i18n system
+- ensure they react to language changes
+
+2. restaurant-card.tsx
+- remove/replace all remaining hardcoded visible German strings
+- especially cuisine labels, badges, card labels, FOMO/social proof labels, availability chips, CTA labels
+- ensure they react to language changes
+
+3. app-rating-prompt.tsx
+- remove/replace all remaining hardcoded visible German strings
+- wire all user-visible labels/buttons/messages into i18n
+- ensure they react to language changes
+
+4. translation keys
+- add/fix the missing EN key for:
+  restaurant.reserve_table
+- add any tiny missing DE/EN/FR keys directly required by the 3 files above only
+
+==================================================
+DO NOT DRIFT
+==================================================
+
+Do NOT resume old monetization work.
+Do NOT continue unfinished premium trigger tasks.
+Do NOT mention T001/T002/T003.
+Do NOT build new components.
+Do NOT add demo or marketing surfaces.
+Do NOT expand scope.
+
+==================================================
+VALIDATION
+==================================================
+
+After making only the above fixes, validate in:
+- German
+- English
+- French
+
+Check specifically:
+- home screen
+- restaurant cards
+- reserve table CTA
+- app rating prompt
+
+Confirm:
+- no hardcoded German remains in those areas
+- no raw key remains
+- language switching updates these areas correctly
+
+==================================================
+FINAL REPORT
+==================================================
+
+Return a concise report with exactly:
+
+A. home.tsx fixed? yes/no
+B. restaurant-card.tsx fixed? yes/no
+C. app-rating-prompt.tsx fixed? yes/no
+D. reserve_table EN key fixed? yes/no
+E. any remaining visible translation leftovers in those exact areas
+
+Do not include unrelated work.
+Do not include old task summaries.

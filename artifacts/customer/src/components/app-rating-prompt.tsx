@@ -37,6 +37,7 @@ function StarPicker({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(0);
   return (
     <div className="flex items-center gap-2 justify-center">
@@ -50,7 +51,7 @@ function StarPicker({
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(0)}
             onClick={() => onChange(n)}
-            aria-label={`${n} Stern${n !== 1 ? "e" : ""}`}
+            aria-label={t("restaurant.star_aria", { count: n })}
           >
             <Star
               className={`w-10 h-10 transition-all duration-150 ${
