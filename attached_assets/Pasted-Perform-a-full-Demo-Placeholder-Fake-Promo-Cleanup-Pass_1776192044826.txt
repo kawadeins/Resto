@@ -1,0 +1,165 @@
+Perform a full "Demo / Placeholder / Fake Promo Cleanup Pass" across the entire app.
+
+IMPORTANT:
+- This is NOT a redesign
+- This is NOT a feature removal of core systems
+- This is a cleanup task to remove demo-only, fake, placeholder, and non-essential promotional UI
+- Goal: leave the app clean, real, stable, and easier to validate
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Remove all non-essential demo/promo content so the app is reduced to its real working foundation.
+
+We want a clean product state focused on:
+- core features
+- real flows
+- real systems
+- stable translation
+- clean UX
+
+==================================================
+1. REMOVE DEMO / FAKE / PLACEHOLDER CONTENT
+==================================================
+
+Find and remove all UI that is:
+- demo-only
+- placeholder-only
+- fake marketing content
+- fake social proof
+- fake urgency
+- fake ads
+- fake promo cards
+- fake “preview” sections not backed by real product logic
+- experimental upsell/demo surfaces that are not essential
+
+Examples may include:
+- demo advertisement cards
+- placeholder premium promo banners
+- fake countdowns
+- mock boost/promo widgets
+- static demo marketing blocks
+- static fake insights meant only for presentation
+
+==================================================
+2. KEEP ONLY REAL PRODUCT FOUNDATIONS
+==================================================
+
+Keep all real core systems, including where applicable:
+- customer app core flows
+- restaurant discovery
+- booking flow
+- profile
+- settings
+- plans / group plans
+- chat
+- social feed if real
+- notifications if real
+- owner dashboard real tools
+- premium/business logic if real and connected
+- wallet/billing if real
+- moderation if real
+
+Do NOT remove real working systems.
+
+==================================================
+3. CLEAN CUSTOMER APP HOME / FEED / PROFILE
+==================================================
+
+Remove any customer-side demo blocks that are not essential and may interfere with translation or clarity.
+
+Keep the UI focused on:
+- real restaurants
+- real actions
+- real navigation
+- real social/profile flows
+
+==================================================
+4. CLEAN OWNER DASHBOARD
+==================================================
+
+Remove any owner dashboard demo-only cards, fake promo blocks, fake onboarding banners, fake growth widgets, or placeholder marketing areas that are not truly needed right now.
+
+The owner dashboard should feel:
+- clean
+- real
+- functional
+- not overloaded
+- not cluttered with demo content
+
+==================================================
+5. REMOVE TRANSLATION-NOISE SOURCES
+==================================================
+
+If demo/placeholder/promo components are contributing to mixed-language UI or translation maintenance noise:
+- remove them now
+- do not keep them just for visual decoration
+
+This cleanup should make translation QA easier.
+
+==================================================
+6. KEEP THE APP “FIRST REAL VERSION” CLEAN
+==================================================
+
+The app should feel like:
+- a clean real product
+- not a demo showroom
+- not a prototype overloaded with fake marketing blocks
+
+We want a stable base now.
+More promotional layers can be added later after the core product is fully stable.
+
+==================================================
+7. DO NOT LEAVE BROKEN GAPS
+==================================================
+
+After removing demo content:
+- ensure layout still looks intentional
+- no empty awkward holes
+- no broken spacing
+- no dead navigation targets
+- no references to removed promo/demo blocks
+
+If needed, replace removed areas with:
+- clean empty space
+- simple real content
+- proper empty states
+But NOT new fake demo content
+
+==================================================
+8. FINAL VALIDATION
+==================================================
+
+Verify:
+- all demo/fake promo content is removed
+- app still works
+- navigation still works
+- no broken sections remain
+- customer app is cleaner
+- owner dashboard is cleaner
+- translation QA is now easier and more accurate
+
+==================================================
+9. FINAL REPORT
+==================================================
+
+Return a concise report with:
+
+A. Demo/fake sections removed
+B. Customer app cleanup summary
+C. Owner dashboard cleanup summary
+D. Any real systems intentionally kept
+E. Any follow-up areas that may still contain placeholder content
+
+==================================================
+FINAL RESULT
+==================================================
+
+The app should now feel like a clean real product foundation.
+
+No demo clutter.
+No fake promo noise.
+No unnecessary ad/demo blocks.
+
+Only the real core product should remain visible.

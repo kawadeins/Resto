@@ -40,9 +40,7 @@ import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api
 import { VibeOnboarding } from "@/components/vibe-onboarding";
 import { SmartRecommendationsSection } from "@/components/smart-recommendations";
 import { SmartPlanGenerator, SmartPlanTriggerButton } from "@/components/smart-plan-generator";
-import { DailyHookBanner } from "@/components/daily-hook-banner";
 import { LevelUpModal, checkAndShowLevelUp } from "@/components/level-up-modal";
-import { PostScrollTrigger } from "@/components/return-trigger";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
@@ -489,9 +487,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-
-      {/* ── DAILY HOOK BANNER ── */}
-      <DailyHookBanner />
 
       {/* ── VIBE ONBOARDING (first visit only) ── */}
       <VibeOnboarding />
@@ -1006,9 +1001,6 @@ export default function Home() {
           variant="fab"
         />
       )}
-
-      {/* ── POST SCROLL RETURN TRIGGER ── */}
-      <PostScrollTrigger />
 
       {/* ── SMART PLAN GENERATOR MODAL ── */}
       <SmartPlanGenerator
