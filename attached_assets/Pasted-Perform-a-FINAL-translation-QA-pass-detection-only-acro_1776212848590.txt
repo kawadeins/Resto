@@ -1,0 +1,107 @@
+Perform a FINAL translation QA pass (detection only) across both apps.
+
+IMPORTANT:
+- Do NOT change code
+- Do NOT add translation keys
+- Do NOT refactor anything
+- Do NOT continue any old session plan
+- This is validation only
+- The purpose is to confirm whether the recent 37-file translation repair pass fully solved the visible mixed-language UI problem
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Verify that the app is now translation-ready in real usage.
+
+Check for:
+- remaining German text in non-German modes
+- untranslated buttons
+- untranslated modals
+- untranslated empty states
+- raw translation keys
+- stale labels after language change
+- any remaining mixed-language screens
+
+==================================================
+TEST LANGUAGES
+==================================================
+
+Test in:
+- German (de)
+- English (en)
+- French (fr)
+
+==================================================
+CUSTOMER APP — CHECK ALL OF THESE
+==================================================
+
+- Home
+- Restaurant page
+- Restaurant cards
+- Profile
+- Public profile
+- Feed
+- Messages / chat
+- Meal plan
+- Settings
+- Smart reminders
+- Instant plan modal
+- Privacy toggle
+- App rating prompt
+- Explore
+- Friends
+- Plan detail
+
+==================================================
+OWNER DASHBOARD — CHECK ALL OF THESE
+==================================================
+
+- Sidebar
+- Overview
+- Reservations
+- Bookings
+- Menu
+- POS
+- Inventory
+- Payroll
+- Billing
+- Campaigns
+- Promotion tools
+- Smart boost recommendations
+- Soft paywall
+- Access denied
+- Analytics
+- Settings / relevant modals
+
+==================================================
+DETECT AND REPORT
+==================================================
+
+Report ONLY:
+
+1. Overall status:
+- Ready / Not Ready
+
+2. Critical issues:
+- any remaining visible mixed-language or untranslated UI that blocks launch
+
+3. Minor issues:
+- small leftover labels or isolated untranslated strings
+
+4. Exact locations:
+- file/page/component
+- example visible text
+
+5. Final conclusion:
+- Is translation ready for production? Yes / No
+
+==================================================
+SUCCESS CONDITION
+==================================================
+
+Mark as READY only if:
+- no major mixed-language UI remains
+- all core customer flows look native in EN/FR
+- all core owner dashboard pages look native in EN/FR
+- no obvious German leftovers remain in repaired areas
