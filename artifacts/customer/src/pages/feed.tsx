@@ -946,8 +946,9 @@ const XP_TIERS = [
 
 // ── XP Progress Bar ───────────────────────────────────────────────────────────
 function XpProgressBar({ points }: { points: number }) {
-  const tierIdx = XP_TIERS.findIndex((t, i) =>
-    points >= t.min && (XP_TIERS[i + 1] === undefined || points < XP_TIERS[i + 1].min)
+  const { t } = useTranslation();
+  const tierIdx = XP_TIERS.findIndex((tier, i) =>
+    points >= tier.min && (XP_TIERS[i + 1] === undefined || points < XP_TIERS[i + 1].min)
   );
   const tier = XP_TIERS[Math.max(0, tierIdx)];
   const next = tier.next ? XP_TIERS[tierIdx + 1] : null;
@@ -969,67 +970,8 @@ function XpProgressBar({ points }: { points: number }) {
         </div>
         <span className="text-[11px] font-black shrink-0" style={{ color: next ? XP_TIERS[tierIdx + 1].color : tier.color }}>{next.name}</span>
         <span className="text-[10px] text-muted-foreground font-semibold shrink-0 whitespace-nowrap">
-          {remaining} Pkt. fehlen
+          {t("feed.xp_points_missing", { count: remaining })}
         </span>
-      </div>
-    </div>
-  );
-}
-
-// ── Variable Reward Cards ──────────────────────────────────────────────────────
-const REWARD_DEFS = [
-  {
-    emoji: "🔥",
-    label: "Trending jetzt",
-    title: "Top Restaurant heute Abend",
-    subtitle: "Besonders beliebt — von der Community empfohlen",
-    cta: "Entdecken",
-    href: "/explore",
-    grad: "linear-gradient(135deg,hsl(263,70%,52%),hsl(330,85%,58%))",
-  },
-  {
-    emoji: "💥",
-    label: "Nur heute",
-    title: "Flash-Deals in deiner Nähe",
-    subtitle: "Bis zu 30 % Rabatt — Angebote laufen bald ab",
-    cta: "Deals ansehen",
-    href: "/explore",
-    grad: "linear-gradient(135deg,hsl(330,85%,58%),hsl(14,90%,60%))",
-  },
-  {
-    emoji: "👥",
-    label: "Social",
-    title: "Was deine Freunde empfehlen",
-    subtitle: "Beliebte Spots diese Woche im Freundeskreis",
-    cta: "Freunde entdecken",
-    href: "/explore",
-    grad: "linear-gradient(135deg,hsl(200,80%,50%),hsl(263,70%,52%))",
-  },
-];
-
-function RewardCard({ idx }: { idx: number }) {
-  const def = REWARD_DEFS[idx % REWARD_DEFS.length];
-  return (
-    <div className="reward-entrance rounded-[20px] overflow-hidden relative" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.06)" }}>
-      <div className="relative p-5" style={{ background: def.grad }}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">{def.label}</span>
-              <span className="w-1 h-1 rounded-full bg-white/40" />
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            </div>
-            <h3 className="text-white font-bold text-[17px] leading-tight mb-1">{def.title}</h3>
-            <p className="text-white/75 text-[12px] leading-snug">{def.subtitle}</p>
-          </div>
-          <div className="text-[3.5rem] leading-none select-none">{def.emoji}</div>
-        </div>
-        <Link
-          href={def.href}
-          className="mt-4 inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-[13px] font-bold px-4 py-2 rounded-xl transition-all active:scale-95"
-        >
-          {def.cta} <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
       </div>
     </div>
   );
@@ -1071,24 +1013,18 @@ function PremiumNudgeCard({ onDismiss }: { onDismiss: () => void }) {
   );
 }
 
-// ── Feed list builder (injects reward + nudge cards) ──────────────────────────
+// ── Feed list builder (injects nudge card) ────────────────────────────────────
 type FeedItem =
-  | { kind: "post";   post: any }
-  | { kind: "reward"; idx: number }
+  | { kind: "post";  post: any }
   | { kind: "nudge" };
 
 function buildFeedItems(posts: any[], showNudge: boolean): FeedItem[] {
   const items: FeedItem[] = [];
-  let rewardCycle = 0;
   for (let i = 0; i < posts.length; i++) {
     items.push({ kind: "post", post: posts[i] });
     // Inject premium nudge after 7th post when engagement is high
     if (i === 6 && showNudge) {
       items.push({ kind: "nudge" });
-    }
-    // Inject variable reward every 5 posts (not at the very end)
-    if ((i + 1) % 5 === 0 && i < posts.length - 1) {
-      items.push({ kind: "reward", idx: rewardCycle++ });
     }
   }
   return items;
@@ -1267,9 +1203,6 @@ export default function FeedPage() {
         ) : (
           <>
             {feedItems.map((item, i) => {
-              if (item.kind === "reward") {
-                return <RewardCard key={`reward-${item.idx}`} idx={item.idx} />;
-              }
               if (item.kind === "nudge") {
                 return (
                   <PremiumNudgeCard

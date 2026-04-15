@@ -1,0 +1,145 @@
+Perform a full product cleanup pass to remove ALL demo, fake, placeholder, ad-like, and non-essential showcase content from the entire app.
+
+IMPORTANT:
+- This is NOT a redesign
+- This is NOT a feature expansion task
+- This is a cleanup and simplification task
+- The goal is to leave only the real core product
+- Remove visual noise, demo clutter, fake marketing, and any non-essential promotional surfaces
+- Make the app feel clean, stable, and focused
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Strip the app down to its real working foundation.
+
+We want:
+- no demo ads
+- no fake urgency
+- no placeholder promo sections
+- no showcase-only blocks
+- no cluttered screens
+- no marketing noise that is not backed by real product logic
+
+==================================================
+REMOVE ALL OF THESE IF PRESENT
+==================================================
+
+Remove all UI/components/sections that are:
+- demo-only
+- fake ads
+- fake promo banners
+- fake urgency/countdowns
+- fake social proof
+- fake “limited offer” blocks
+- placeholder marketing widgets
+- mock premium push cards
+- showcase-only sections
+- experimental blocks added only to “look impressive”
+- static preview cards not backed by real logic
+- decorative fake analytics/promo blocks
+- fake recommendation nudges not backed by real data
+- fake campaign/boost demo surfaces
+- any static ad-like elements we added for testing only
+
+==================================================
+CUSTOMER APP CLEANUP
+==================================================
+
+Clean:
+- home
+- restaurant page
+- feed
+- profile
+- settings
+- for-business
+- premium/upsell surfaces
+- any landing/hero areas containing fake ad/demo content
+
+Keep ONLY:
+- real navigation
+- real discovery
+- real restaurant cards
+- real booking flow
+- real plans/group plans
+- real feed/social features
+- real profile/settings
+- real notifications/chat if actually connected
+
+==================================================
+OWNER DASHBOARD CLEANUP
+==================================================
+
+Clean:
+- fake promo cards
+- fake growth widgets
+- fake premium banners
+- placeholder onboarding noise
+- mock analytics blocks
+- showcase-only recommendation boxes
+- any clutter not backed by real owner functionality
+
+Keep ONLY:
+- real bookings/reservations
+- real analytics if connected
+- real menu/pos/inventory/team/billing systems
+- real campaign/boost tools if connected
+- real settings/profile flows
+
+==================================================
+ZERO AD POLICY
+==================================================
+
+The app should contain NO ad-like surfaces unless they are real product functionality.
+
+We do NOT want:
+- internal app “ads”
+- fake promotional cards
+- decorative sales pressure blocks
+- static promotional clutter
+
+This app should feel like a real product, not a demo showroom.
+
+==================================================
+LAYOUT / UX RULE
+==================================================
+
+After removal:
+- no broken spacing
+- no empty awkward holes
+- no dead buttons
+- no dead nav targets
+- no references to removed sections
+- no orphan CTAs pointing to deleted demo content
+
+If a removed area leaves a gap:
+- replace with clean spacing
+- or a proper empty state
+- but do NOT insert new fake content
+
+==================================================
+VALIDATION
+==================================================
+
+After cleanup, verify:
+- app still runs cleanly
+- navigation still works
+- no broken pages remain
+- no removed component is still referenced
+- customer app feels clean
+- owner dashboard feels clean
+- translation QA becomes easier
+- product looks like a focused real app, not a prototype
+
+==================================================
+FINAL REPORT
+==================================================
+
+Return only:
+
+1. Demo/fake/placeholder sections removed
+2. Customer app cleanup summary
+3. Owner dashboard cleanup summary
+4. Any real systems intentionally kept
+5. Any remaining suspicious placeholder/demo content still present

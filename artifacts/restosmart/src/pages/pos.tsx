@@ -118,7 +118,7 @@ export default function Pos() {
           <TabsList className="bg-card border border-border flex flex-wrap h-auto gap-1 p-1">
             {CATEGORY_KEYS.map(cat => (
               <TabsTrigger key={cat} value={cat} className="px-4 py-2 text-xs">
-                {t("menu.cat_" + cat.toLowerCase().replace("ä","a").replace("ö","o").replace("ü","u"), { defaultValue: cat })}
+                {({ "Alle": t("menu.cat_all"), "Vorspeisen": t("menu.cat_starters"), "Hauptgericht": t("menu.cat_main"), "Pasta": t("menu.cat_pasta"), "Pizza": t("menu.cat_pizza"), "Grill": t("menu.cat_grill"), "Desserts": t("menu.cat_desserts"), "Getränke": t("menu.cat_drinks"), "Beilagen": t("menu.cat_sides") } as Record<string, string>)[cat] ?? cat}
               </TabsTrigger>
             ))}
           </TabsList>

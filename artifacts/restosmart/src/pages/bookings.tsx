@@ -476,7 +476,7 @@ function PlanEditorModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {AUDIENCE_OPTIONS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                  {AUDIENCE_OPTIONS.map((a) => <SelectItem key={a} value={a}>{({ "Allgemein": t("bookings.audience_general"), "VIP-Gäste": t("bookings.audience_vip"), "Stammkunden": t("bookings.audience_regular"), "Firmenveranstaltung": t("bookings.audience_corporate"), "Privatfeier": t("bookings.audience_private"), "Gruppenreservierung": t("bookings.audience_group"), "Walk-in": t("bookings.audience_walkin"), "Sonderveranstaltung": t("bookings.audience_special") } as Record<string, string>)[a] ?? a}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -547,13 +547,13 @@ function PlanEditorModal({
             </Button>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
-            {TAGS_SUGGESTIONS.filter((t) => !(form.tags ?? []).includes(t)).map((t) => (
+            {TAGS_SUGGESTIONS.filter((tag) => !(form.tags ?? []).includes(tag)).map((tag) => (
               <button
-                key={t}
-                onClick={() => addTag(t)}
+                key={tag}
+                onClick={() => addTag(tag)}
                 className="text-[11px] px-2.5 py-0.5 rounded-full border border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
               >
-                + {t}
+                + {({ "Wochenende": t("bookings.tag_weekend"), "Sondermenü": t("bookings.tag_special_menu"), "Livemusik": t("bookings.tag_live_music"), "Vollbesetzt": t("bookings.tag_full"), "Priorität": t("bookings.tag_priority"), "Nachverfolgung nötig": t("bookings.tag_followup"), "Happy Hour": t("bookings.tag_happy_hour"), "Tasting-Menü": t("bookings.tag_tasting") } as Record<string, string>)[tag] ?? tag}
               </button>
             ))}
           </div>
@@ -661,7 +661,7 @@ function PlanCard({
             </span>
             <span className="flex items-center gap-1.5">
               <Target className="h-3.5 w-3.5" />
-              {plan.targetAudience}
+              {({ "Allgemein": t("bookings.audience_general"), "VIP-Gäste": t("bookings.audience_vip"), "Stammkunden": t("bookings.audience_regular"), "Firmenveranstaltung": t("bookings.audience_corporate"), "Privatfeier": t("bookings.audience_private"), "Gruppenreservierung": t("bookings.audience_group"), "Walk-in": t("bookings.audience_walkin"), "Sonderveranstaltung": t("bookings.audience_special") } as Record<string, string>)[plan.targetAudience] ?? plan.targetAudience}
             </span>
             {plan.maxCovers && (
               <span className="flex items-center gap-1.5">

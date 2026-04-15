@@ -289,7 +289,7 @@ export default function Reviews() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Durchschnittsbewertung</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("reviews.kpi_avg_rating")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold flex items-center gap-2">
@@ -297,7 +297,7 @@ export default function Reviews() {
                 {insights?.trend && <TrendIcon className={`w-5 h-5 ${trendColor}`} />}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                {insights?.recentAvg ? `Letzte 30 Tage: ${insights.recentAvg.toFixed(1)}` : "Keine aktuellen Daten"}
+                {insights?.recentAvg ? t("reviews.kpi_recent_avg", { val: insights.recentAvg.toFixed(1) }) : t("reviews.kpi_no_recent_data")}
               </div>
             </CardContent>
           </Card>
@@ -306,13 +306,13 @@ export default function Reviews() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Antwortrate</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("reviews.stat_reply_rate")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{insights?.replyRate ?? 0}%</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <MessageCircleReply className="w-3 h-3" />
-                {insights?.repliedCount ?? 0} von {insights?.totalCount ?? 0} beantwortet
+                {t("reviews.kpi_replied_count", { replied: insights?.repliedCount ?? 0, total: insights?.totalCount ?? 0 })}
               </div>
             </CardContent>
           </Card>
@@ -323,14 +323,14 @@ export default function Reviews() {
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                 {insights?.needsAttention?.length ? <AlertTriangle className="w-3 h-3 text-orange-500" /> : null}
-                Handlungsbedarf
+                {t("reviews.kpi_action_needed")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={`text-3xl font-bold ${insights?.needsAttention?.length ? "text-orange-500" : ""}`}>
                 {insights?.needsAttention?.length ?? 0}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">Niedrige Bewertung, keine Antwort</div>
+              <div className="text-xs text-muted-foreground mt-1">{t("reviews.kpi_action_sub")}</div>
             </CardContent>
           </Card>
         </motion.div>
@@ -534,14 +534,14 @@ export default function Reviews() {
                   </div>
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      Feedback-Analyse
+                      {t("reviews.feedback_analysis_title")}
                       <Badge className="text-xs h-5 px-1.5 bg-violet-600/80 text-white border-none gap-1">
                         <Crown className="w-3 h-3" />
                         Premium
                       </Badge>
                     </CardTitle>
                     <CardDescription className="mt-0.5">
-                      {insights.recovery.totalCases} kritische {insights.recovery.totalCases === 1 ? "Fall" : "Fälle"} analysiert
+                      {t("reviews.feedback_analysis_sub", { count: insights.recovery.totalCases })}
                     </CardDescription>
                   </div>
                 </div>
@@ -690,8 +690,8 @@ export default function Reviews() {
         <motion.div className="lg:col-span-1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
           <Card className="sticky top-6">
             <CardHeader>
-              <CardTitle>Bewertungsverteilung</CardTitle>
-              <CardDescription>Aufschlüsselung nach Sternebewertung</CardDescription>
+              <CardTitle>{t("reviews.distribution_title")}</CardTitle>
+              <CardDescription>{t("reviews.distribution_sub")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[220px] w-full">
@@ -809,16 +809,16 @@ export default function Reviews() {
                   ) : replyingTo === review.id ? (
                     <div className="mt-4 space-y-3">
                       <Textarea
-                        placeholder="Ihre Antwort eingeben…"
+                        placeholder={t("reviews.reply_placeholder")}
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         className="min-h-[100px]"
                         autoFocus
                       />
                       <div className="flex gap-2 justify-end">
-                        <Button variant="ghost" size="sm" onClick={() => { setReplyingTo(null); setReplyText(""); }}>Abbrechen</Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setReplyingTo(null); setReplyText(""); }}>{t("reviews.reply_cancel")}</Button>
                         <Button size="sm" onClick={() => handleReply(review.id)} disabled={replyMutation.isPending || !replyText.trim()}>
-                          {replyMutation.isPending ? "Wird gesendet…" : "Antwort senden"}
+                          {replyMutation.isPending ? t("reviews.reply_sending") : t("reviews.send_reply")}
                         </Button>
                       </div>
                     </div>
@@ -830,7 +830,7 @@ export default function Reviews() {
                       onClick={() => { setReplyingTo(review.id); setReplyText(""); }}
                     >
                       <MessageCircleReply className="w-4 h-4 mr-2" />
-                      {review.rating <= 3 ? "Jetzt antworten" : "Antworten"}
+                      {review.rating <= 3 ? t("reviews.reply_now") : t("reviews.reply_cta")}
                     </Button>
                   )}
                 </CardContent>

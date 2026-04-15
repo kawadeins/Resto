@@ -344,8 +344,8 @@ function RotatingHeroHeadline() {
 export default function Home() {
   const { t } = useTranslation();
   useSeo({
-    title: "RestoSmart Wien — Restaurants, Cafés & Bars entdecken",
-    description: "Die besten Restaurants, Cafés und Bars in Wien. Jetzt entdecken, buchen und exklusive Angebote sichern.",
+    title: t("home.seo_title"),
+    description: t("home.seo_desc"),
   });
 
   const { mode, config, track, interactions } = useLifestyleMode();

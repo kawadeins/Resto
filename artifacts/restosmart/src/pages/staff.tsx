@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 import { useSession } from "@/contexts/session-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -41,14 +42,14 @@ const ROLE_PRESETS = [
   "Lieferung", "Reinigung", "Sous-Chef", "Barista", "Sommelier", "Hostess",
 ];
 
-const employeeSchema = z.object({
-  name: z.string().min(2, "Name ist erforderlich"),
-  role: z.string().min(2, "Rolle ist erforderlich"),
-  email: z.string().email("Ungültige E-Mail-Adresse"),
-  phone: z.string().min(5, "Telefonnummer ist erforderlich"),
+const _employeeSchemaBase = z.object({
+  name: z.string().min(2),
+  role: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(5),
   status: z.enum(["active", "inactive"]),
 });
-type EmployeeFormValues = z.infer<typeof employeeSchema>;
+type EmployeeFormValues = z.infer<typeof _employeeSchemaBase>;
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
 type Day = typeof DAYS[number];
@@ -109,13 +110,15 @@ function buildScheduleText(
   vacations: Vacation[],
   weekDates: Record<string, string>
 ): string {
+  const tFn = i18n.t.bind(i18n);
+  const dayAbbrs: Record<string, string> = { Monday: tFn("staff.day_mo"), Tuesday: tFn("staff.day_tu"), Wednesday: tFn("staff.day_we"), Thursday: tFn("staff.day_th"), Friday: tFn("staff.day_fr"), Saturday: tFn("staff.day_sa"), Sunday: tFn("staff.day_su") };
   const lines: string[] = [
-    `Dein Dienstplan für diese Woche:`,
+    tFn("staff.schedule_greeting"),
     "",
   ];
   DAYS.forEach((day) => {
     const dateStr = weekDates[day];
-    const label = DAY_LABELS[day];
+    const label = dayAbbrs[day] ?? day;
     const isVacation = vacations.some(
       (v) => v.employeeId === employee.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
     );
@@ -123,16 +126,16 @@ function buildScheduleText(
     const empShifts = shifts.filter((s) => s.employeeId === employee.id && s.dayOfWeek === day);
 
     if (isVacation) {
-      lines.push(`${label}: Urlaub`);
+      lines.push(`${label}: ${tFn("staff.pdf_vacation")}`);
     } else if (isOff) {
-      lines.push(`${label}: Frei`);
+      lines.push(`${label}: ${tFn("staff.pdf_off")}`);
     } else if (empShifts.length > 0) {
       empShifts.forEach((s) => lines.push(`${label}: ${s.startTime}–${s.endTime}`));
     } else {
-      lines.push(`${label}: Frei`);
+      lines.push(`${label}: ${tFn("staff.pdf_off")}`);
     }
   });
-  lines.push("", "RestoMaster Dienstplan");
+  lines.push("", tFn("staff.pdf_footer"));
   return lines.join("\n");
 }
 
@@ -143,26 +146,28 @@ function buildTeamScheduleText(
   vacations: Vacation[],
   weekDates: Record<string, string>
 ): string {
+  const tFn = i18n.t.bind(i18n);
+  const dayAbbrs: Record<string, string> = { Monday: tFn("staff.day_mo"), Tuesday: tFn("staff.day_tu"), Wednesday: tFn("staff.day_we"), Thursday: tFn("staff.day_th"), Friday: tFn("staff.day_fr"), Saturday: tFn("staff.day_sa"), Sunday: tFn("staff.day_su") };
   const weekRange = getWeekRange(weekDates);
-  const lines: string[] = [`📋 Teamdienstplan – Woche ${weekRange}`, ""];
+  const lines: string[] = [`📋 ${tFn("staff.pdf_title")} – ${tFn("staff.pdf_week", { range: weekRange })}`, ""];
   employees.filter((e) => e.status === "active").forEach((emp) => {
     lines.push(`👤 ${emp.name} (${emp.role})`);
     DAYS.forEach((day) => {
       const dateStr = weekDates[day];
-      const dayLabel = `  ${DAY_LABELS[day]}`;
+      const dayLabel = `  ${dayAbbrs[day] ?? day}`;
       const isVacation = vacations.some(
         (v) => v.employeeId === emp.id && dateStr && v.startDate <= dateStr && v.endDate >= dateStr
       );
       const isOff = offDays.some((d) => d.employeeId === emp.id && d.dayOfWeek === day);
       const empShifts = shifts.filter((s) => s.employeeId === emp.id && s.dayOfWeek === day);
-      if (isVacation) lines.push(`${dayLabel}: Urlaub`);
-      else if (isOff) lines.push(`${dayLabel}: Frei`);
+      if (isVacation) lines.push(`${dayLabel}: ${tFn("staff.pdf_vacation")}`);
+      else if (isOff) lines.push(`${dayLabel}: ${tFn("staff.pdf_off")}`);
       else if (empShifts.length > 0) empShifts.forEach((s) => lines.push(`${dayLabel}: ${s.startTime} – ${s.endTime}`));
       else lines.push(`${dayLabel}: –`);
     });
     lines.push("");
   });
-  lines.push("RestoMaster Dienstplan");
+  lines.push(tFn("staff.pdf_footer"));
   return lines.join("\n");
 }
 
@@ -175,7 +180,7 @@ function shareViaWhatsApp(text: string, phone?: string) {
 }
 
 function shareViaEmail(text: string, email?: string) {
-  const subject = encodeURIComponent("Dienstplan für diese Woche");
+  const subject = encodeURIComponent(i18n.t("staff.pdf_week", { range: "" }).trim() || "Schedule");
   const body = encodeURIComponent(text);
   window.open(`mailto:${email ?? ""}?subject=${subject}&body=${body}`, "_blank");
 }
@@ -235,15 +240,16 @@ async function exportTeamPDF(
 
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("RestoMaster \u2013 Dienstplan", 14, 18);
+  doc.text(i18n.t("staff.pdf_title"), 14, 18);
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(120, 120, 120);
-  doc.text(`Woche: ${weekRange}`, 14, 26);
+  doc.text(i18n.t("staff.pdf_week", { range: weekRange }), 14, 26);
   doc.setTextColor(0, 0, 0);
 
   const active = employees.filter((e) => e.status === "active");
-  const head = [["Mitarbeiter", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]];
+  const tFn2 = i18n.t.bind(i18n);
+  const head = [[tFn2("staff.pdf_col_employee"), tFn2("staff.day_mo"), tFn2("staff.day_tu"), tFn2("staff.day_we"), tFn2("staff.day_th"), tFn2("staff.day_fr"), tFn2("staff.day_sa"), tFn2("staff.day_su")]];
   const body = active.map((emp) => {
     const cells: string[] = [emp.name];
     DAYS.forEach((day) => {
@@ -253,8 +259,8 @@ async function exportTeamPDF(
       );
       const isOff = offDays.some((d) => d.employeeId === emp.id && d.dayOfWeek === day);
       const empShifts = shifts.filter((s) => s.employeeId === emp.id && s.dayOfWeek === day);
-      if (isVac) cells.push("Urlaub");
-      else if (isOff) cells.push("Frei");
+      if (isVac) cells.push(tFn2("staff.pdf_vacation"));
+      else if (isOff) cells.push(tFn2("staff.pdf_off"));
       else if (empShifts.length > 0) cells.push(`${empShifts[0].startTime}\u2013${empShifts[0].endTime}`);
       else cells.push("\u2013");
     });
@@ -274,10 +280,10 @@ async function exportTeamPDF(
   const ph = doc.internal.pageSize.getHeight();
   doc.setFontSize(8);
   doc.setTextColor(160, 160, 160);
-  doc.text("Erstellt mit RestoMaster", 14, ph - 8);
-  doc.text(new Date().toLocaleDateString("de-AT"), 283, ph - 8, { align: "right" });
+  doc.text(tFn2("staff.pdf_footer"), 14, ph - 8);
+  doc.text(new Date().toLocaleDateString(), 283, ph - 8, { align: "right" });
 
-  doc.save(`Dienstplan-${weekRange.replace(" \u2013 ", "_")}.pdf`);
+  doc.save(`Schedule-${weekRange.replace(" \u2013 ", "_")}.pdf`);
 }
 
 // ── Print ──────────────────────────────────────────────────────────────────────
@@ -300,8 +306,8 @@ function printSchedule(
       );
       const isOff = offDays.some((d) => d.employeeId === emp.id && d.dayOfWeek === day);
       const empShifts = shifts.filter((s) => s.employeeId === emp.id && s.dayOfWeek === day);
-      if (isVac) return `<td class="free">Urlaub</td>`;
-      if (isOff) return `<td class="free">Frei</td>`;
+      if (isVac) return `<td class="free">${i18n.t("staff.pdf_vacation")}</td>`;
+      if (isOff) return `<td class="free">${i18n.t("staff.pdf_off")}</td>`;
       if (empShifts.length > 0) return `<td>${empShifts[0].startTime}&ndash;${empShifts[0].endTime}</td>`;
       return `<td class="free">&ndash;</td>`;
     }).join("");
@@ -325,16 +331,16 @@ function printSchedule(
   tr:nth-child(even){background:#f8f8fc}
   .footer{margin-top:14px;font-size:8px;color:#bbb;text-align:center}
 </style></head><body>
-<h1>RestoMaster &ndash; Dienstplan</h1>
-<p class="sub">Woche: ${weekRange}</p>
+<h1>${i18n.t("staff.pdf_title")}</h1>
+<p class="sub">${i18n.t("staff.pdf_week", { range: weekRange })}</p>
 <table>
   <thead><tr>
-    <th>Mitarbeiter</th>
-    <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
+    <th>${i18n.t("staff.pdf_col_employee")}</th>
+    <th>${i18n.t("staff.day_mo")}</th><th>${i18n.t("staff.day_tu")}</th><th>${i18n.t("staff.day_we")}</th><th>${i18n.t("staff.day_th")}</th><th>${i18n.t("staff.day_fr")}</th><th>${i18n.t("staff.day_sa")}</th><th>${i18n.t("staff.day_su")}</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>
-<div class="footer">Erstellt mit RestoMaster &middot; ${new Date().toLocaleDateString("de-AT")}</div>
+<div class="footer">${i18n.t("staff.pdf_footer")} &middot; ${new Date().toLocaleDateString()}</div>
 </body></html>`;
 
   const win = window.open("", "_blank");
@@ -434,6 +440,13 @@ export default function Staff() {
   const [pdfExporting, setPdfExporting] = useState(false);
 
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
+  const employeeSchema = useMemo(() => z.object({
+    name: z.string().min(2, t("staff.val_name_required")),
+    role: z.string().min(2, t("staff.val_role_required")),
+    email: z.string().email(t("staff.val_email_invalid")),
+    phone: z.string().min(5, t("staff.val_phone_required")),
+    status: z.enum(["active", "inactive"]),
+  }), [t]);
 
   const { data: employees, isLoading: loadingEmployees } = useListEmployees({
     query: { queryKey: getListEmployeesQueryKey() },

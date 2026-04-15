@@ -26,7 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Users, AlertTriangle, Utensils, Calendar, Clock, Bell, ShoppingBag, Zap, TrendingUp, CheckCircle2, Circle, Lightbulb, ArrowRight, Rocket, Star, MessageSquare, MapPin, Target, BarChart2, Flame, UserCheck, UserX, ClipboardList, Send, RefreshCw } from "lucide-react";
 import { getBizType, BIZ_POSSESSIVE } from "@/lib/biz-copy";
 import { TrialConversionBanner } from "@/components/layout";
-import { GrowthActivationHub } from "@/components/growth-activation-hub";
 import { CompetitionEngine } from "@/components/competition-engine";
 import { CityExpansionEngine } from "@/components/city-expansion-engine";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -220,7 +219,7 @@ export default function Overview() {
         headers: { ...csrfHdr },
       }).then((r) => r.json()),
     onSuccess: (data) => {
-      toast({ title: `Erinnerungen gesendet (${data.remindersSent ?? 0} von ${data.totalShifts ?? 0} Mitarbeitern)` });
+      toast({ title: t("overview.reminders_sent", { sent: data.remindersSent ?? 0, total: data.totalShifts ?? 0 }) });
       queryClient.invalidateQueries({ queryKey: ["attendance-today"] });
     },
   });
@@ -238,9 +237,6 @@ export default function Overview() {
           </p>
         </div>
       </div>
-
-      {/* Growth Activation Hub — shown to new trial users with step-by-step activation */}
-      <GrowthActivationHub onUpgrade={() => { window.location.href = "/billing"; }} />
 
       {/* Trial conversion prompt — only visible during active trial */}
       <TrialConversionBanner context="overview" />
@@ -260,21 +256,21 @@ export default function Overview() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold tracking-tight">Übersicht</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("overview.cockpit_title")}</h2>
             {pilotStatus?.pilotMode && (
               <Badge className="bg-violet-500/15 text-violet-400 border-violet-500/30 gap-1 text-xs font-semibold">
                 <Rocket className="h-3 w-3" />
-                Pilotprogramm
+                {t("overview.pilot_badge")}
               </Badge>
             )}
           </div>
           <p className="text-muted-foreground mt-2">
-            Ihr Cockpit für die heutige Leistung und wichtige Kennzahlen.
+            {t("overview.cockpit_subtitle")}
           </p>
         </div>
         {pilotStatus?.pilotMode && (
           <div className="shrink-0 text-right">
-            <div className="text-xs text-muted-foreground">Pilot-Bereitschaft</div>
+            <div className="text-xs text-muted-foreground">{t("overview.pilot_readiness")}</div>
             <div className="text-2xl font-bold text-violet-400">{pilotStatus.readinessScore}%</div>
             <div className="h-1.5 w-28 rounded-full bg-muted overflow-hidden mt-1">
               <div
@@ -336,10 +332,10 @@ export default function Overview() {
                   <span className="text-xs font-bold text-primary-foreground">R</span>
                 </div>
                 <span className="font-semibold text-sm">
-                  Einrichtung abschließen — {onboardingStatus.progressPercent}% erledigt
+                  {t("overview.onboarding_setup_pct", { percent: onboardingStatus.progressPercent })}
                 </span>
                 <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                  {onboardingStatus.completedCount}/{onboardingStatus.totalCount} Schritte
+                  {t("overview.onboarding_steps", { done: onboardingStatus.completedCount, total: onboardingStatus.totalCount })}
                 </Badge>
               </div>
               <div className="h-1.5 w-full max-w-xs rounded-full bg-muted overflow-hidden mb-3">
@@ -375,7 +371,7 @@ export default function Overview() {
                 ))}
               <Link href="/onboarding">
                 <Button size="sm" className="text-xs h-7 gap-1">
-                  Einrichtung fortsetzen
+                  {t("overview.onboarding_continue")}
                   <ArrowRight className="h-3 w-3" />
                 </Button>
               </Link>
@@ -462,60 +458,6 @@ export default function Overview() {
           </AlertDescription>
         </Alert>
       )}
-
-      {/* ── Wien Demand Signal Card ────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="rounded-xl border border-violet-500/25 bg-gradient-to-r from-violet-500/8 via-primary/5 to-transparent p-4"
-      >
-        <div className="flex items-start gap-4 flex-wrap">
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-primary flex items-center justify-center shadow-md shadow-violet-500/25">
-              <MapPin className="h-4 w-4 text-white" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-violet-400 uppercase tracking-wider">Wien-Nachfrage</p>
-              <p className="text-[11px] text-muted-foreground">Plattform-Aktivität heute</p>
-            </div>
-          </div>
-
-          <div className="flex gap-6 flex-wrap flex-1">
-            <div className="text-center min-w-[64px]">
-              <p className="text-xl font-extrabold text-violet-400">
-                {localReach?.bookingsThisWeek != null ? localReach.bookingsThisWeek : "–"}
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-tight">Buchungen<br/>diese Woche</p>
-            </div>
-            <div className="text-center min-w-[64px]">
-              <p className="text-xl font-extrabold text-emerald-400">
-                {localReach?.totalEstimatedImpressions != null ? localReach.totalEstimatedImpressions : "–"}
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-tight">Gesch. Reichweite</p>
-            </div>
-            <div className="text-center min-w-[64px]">
-              <p className="text-xl font-extrabold text-amber-400">{localReach?.activeDeals ?? 0}</p>
-              <p className="text-[11px] text-muted-foreground leading-tight">Aktive<br/>Deals</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2 items-center flex-wrap shrink-0">
-            <Link href="/campaigns">
-              <Button size="sm" className="h-8 text-xs gap-1.5 bg-gradient-to-br from-violet-500 to-primary border-0 shadow-md shadow-violet-500/25 hover:opacity-90">
-                <Zap className="h-3 w-3" />
-                Boost aktivieren
-              </Button>
-            </Link>
-            <Link href="/insights">
-              <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
-                Statistiken
-                <ArrowRight className="h-3 w-3" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </motion.div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -687,7 +629,7 @@ export default function Overview() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-primary" />
-                Anwesenheit heute
+                {t("overview.attendance_title")}
               </CardTitle>
             </CardHeader>
             <CardContent>

@@ -282,10 +282,6 @@ function TagsInput({ tags, onChange }: { tags: string[]; onChange: (tags: string
   );
 }
 
-const DAYS_DE: Record<string, string> = {
-  Monday: "Montag", Tuesday: "Dienstag", Wednesday: "Mittwoch",
-  Thursday: "Donnerstag", Friday: "Freitag", Saturday: "Samstag", Sunday: "Sonntag"
-};
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function ProfilePage() {
@@ -576,7 +572,7 @@ export default function ProfilePage() {
                             : "border-border text-muted-foreground hover:border-primary/30"
                         }`}
                       >
-                        {DAYS_DE[day]}
+                        {({ Monday: t("staff.day_monday"), Tuesday: t("staff.day_tuesday"), Wednesday: t("staff.day_wednesday"), Thursday: t("staff.day_thursday"), Friday: t("staff.day_friday"), Saturday: t("staff.day_saturday"), Sunday: t("staff.day_sunday") } as Record<string, string>)[day] ?? day}
                       </button>
                     );
                   })}

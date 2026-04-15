@@ -1476,13 +1476,13 @@ export default function Profile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customer-profile", email] });
-      toast({ title: "Gespeichert", description: "Dein Profil wurde aktualisiert." });
+      toast({ title: t("profile.toast_saved_title"), description: t("profile.toast_saved_desc") });
     },
     onError: (err: any) => {
       if (err.moderated) {
-        toast({ title: "Inhalt blockiert", description: err.message, variant: "destructive" });
+        toast({ title: t("profile.error_content_blocked"), description: err.message, variant: "destructive" });
       } else {
-        toast({ title: "Fehler", description: "Profil konnte nicht gespeichert werden." });
+        toast({ title: t("profile.error_generic"), description: t("profile.save_failed") });
       }
     },
   });
@@ -1508,7 +1508,7 @@ export default function Profile() {
     }
     setOwnerPremium(true);
     toast({
-      title: mode === "trial" ? "14-Tage Testphase gestartet!" : "Premium aktiviert!",
+      title: mode === "trial" ? t("profile.trial_toast_title") : t("profile.premium_toast_title"),
       description: mode === "trial"
         ? t("profile.trial_toast_desc", { label: getBusinessLabel(businessType, t) })
         : t("profile.premium_toast_desc", { label: getBusinessLabel(businessType, t) }),
@@ -1595,7 +1595,7 @@ export default function Profile() {
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
         )}
         {/* Settings gear icon */}
-        <Link href="/settings" className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-background/60 hover:bg-background/80 border border-border/50 flex items-center justify-center transition-colors z-10" title="Einstellungen">
+        <Link href="/settings" className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-background/60 hover:bg-background/80 border border-border/50 flex items-center justify-center transition-colors z-10" title={t("profile.settings_tooltip")}>
           <Settings className="w-4 h-4 text-muted-foreground" />
         </Link>
         <div className="container mx-auto px-4 max-w-4xl py-8 md:py-10">
@@ -1851,7 +1851,7 @@ export default function Profile() {
                   </div>
                   {friends.length > 4 && (
                     <Link href="/friends" className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary py-2 rounded-xl hover:bg-primary/5 transition-colors">
-                      {"Alle"} {friends.length} {"Freunde ansehen"} <ChevronRight className="w-3.5 h-3.5" />
+                      {t("profile.view_all_friends", { count: friends.length })} <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   )}
                 </div>
@@ -1868,7 +1868,7 @@ export default function Profile() {
                   )}
                 </h3>
                 <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  {"Alle"} <ChevronRight className="w-3.5 h-3.5" />
+                  {t("common.all")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
               {visitedRestaurants.length === 0 ? (
@@ -1877,11 +1877,11 @@ export default function Profile() {
                     <MapPin className="w-5 h-5 text-rose-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{"Noch kein Besuch"}</p>
-                    <p className="text-[11px] text-muted-foreground">{"Deine besuchten Restaurants erscheinen hier"}</p>
+                    <p className="text-sm font-medium">{t("profile.no_visits_yet")}</p>
+                    <p className="text-[11px] text-muted-foreground">{t("profile.visits_appear_here")}</p>
                   </div>
                   <Link href="/explore" className="text-xs font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-                    {"Restaurants entdecken"}
+                    {t("profile.discover_restaurants")}
                   </Link>
                 </div>
               ) : (
@@ -1908,13 +1908,13 @@ export default function Profile() {
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-base flex items-center gap-2">
-                  <Bookmark className="w-4 h-4 text-amber-500" /> {"Gespeichert"}
+                  <Bookmark className="w-4 h-4 text-amber-500" /> {t("profile.saved_section")}
                   {profile.favoriteRestaurantIds.length > 0 && (
                     <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">{profile.favoriteRestaurantIds.length}</span>
                   )}
                 </h3>
                 <Link href="/explore" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  {"Entdecken"} <ChevronRight className="w-3.5 h-3.5" />
+                  {t("profile.discover_link")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
               {profile.favoriteRestaurantIds.length === 0 ? (
@@ -1923,17 +1923,17 @@ export default function Profile() {
                     <Bookmark className="w-5 h-5 text-amber-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{"Noch nichts gespeichert"}</p>
-                    <p className="text-[11px] text-muted-foreground">{"Tippe auf ♡ auf einem Restaurant, um es zu merken"}</p>
+                    <p className="text-sm font-medium">{t("profile.nothing_saved_yet")}</p>
+                    <p className="text-[11px] text-muted-foreground">{t("profile.tap_heart_hint")}</p>
                   </div>
                   <Link href="/explore" className="text-xs font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-                    {"Restaurants entdecken"}
+                    {t("profile.discover_restaurants")}
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <p className="text-[11px] text-muted-foreground mb-3">
-                    {"Du hast"} <strong>{profile.favoriteRestaurantIds.length}</strong> {"Restaurant(s) gespeichert."}
+                    {t("profile.restaurants_saved", { count: profile.favoriteRestaurantIds.length })}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {profile.favoriteRestaurantIds.slice(0, 6).map((id) => (
@@ -1943,12 +1943,12 @@ export default function Profile() {
                     ))}
                     {profile.favoriteRestaurantIds.length > 6 && (
                       <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-muted text-xs text-muted-foreground">
-                        +{profile.favoriteRestaurantIds.length - 6} {"weitere"}
+                        {t("profile.view_more", { count: profile.favoriteRestaurantIds.length - 6 })}
                       </span>
                     )}
                   </div>
                   <Link href="/explore" className="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-primary hover:underline">
-                    {"Gespeicherte Orte ansehen"} <ArrowRight className="w-3 h-3" />
+                    {t("profile.view_saved_places")} <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               )}
@@ -1958,16 +1958,16 @@ export default function Profile() {
             <div className="bg-card border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-base flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-primary" /> {"Letzte Aktivitäten"}
+                  <Activity className="w-4 h-4 text-primary" /> {t("profile.recent_activity")}
                 </h3>
                 <Link href="/my-bookings" className="text-xs text-primary hover:underline flex items-center gap-1">
-                  {"Alle"} <ChevronRight className="w-3.5 h-3.5" />
+                  {t("common.all")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
               {activityFeed.length === 0 ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
                   <Activity className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-                  <p className="text-xs text-muted-foreground">{"Buche ein Restaurant oder schreibe eine Bewertung – Aktivitäten erscheinen dann hier"}</p>
+                  <p className="text-xs text-muted-foreground">{t("profile.activity_empty_hint")}</p>
                 </div>
               ) : (
                 <div className="space-y-2.5">
@@ -2001,19 +2001,19 @@ export default function Profile() {
                   className="text-xs text-primary hover:underline"
                   onClick={() => setShowEditProfile(true)}
                 >
-                  {"Bearbeiten"}
+                  {t("profile.edit")}
                 </button>
               </div>
               {profile.favoriteCuisines.length === 0 && profile.dietaryStyle === "no_preference" ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
                   <Utensils className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-                  <p className="text-xs text-muted-foreground">{"Noch kein Geschmack gesetzt – tippe auf Bearbeiten, um deine Lieblingsküchen zu wählen"}</p>
+                  <p className="text-xs text-muted-foreground">{t("profile.no_taste_set")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {profile.favoriteCuisines.length > 0 && (
                     <div>
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{"Lieblingsküchen"}</p>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("profile.fave_cuisines_label")}</p>
                       <div className="flex flex-wrap gap-2">
                         {profile.favoriteCuisines.map((c) => {
                           const ft = FOOD_TYPES.find((f) => f.id === c);
@@ -2039,7 +2039,7 @@ export default function Profile() {
                   })()}
                   {profile.allergies.filter(a => a !== "no_allergies").length > 0 && (
                     <div>
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{"Allergien"}</p>
+                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("profile.allergies_label")}</p>
                       <div className="flex flex-wrap gap-2">
                         {profile.allergies.filter(a => a !== "no_allergies").map((a) => {
                           const al = ALLERGIES.find((x) => x.id === a);
@@ -2061,14 +2061,14 @@ export default function Profile() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-base flex items-center gap-2">
-                  <Image className="w-4 h-4 text-primary" /> {"Meine Beiträge"}
+                  <Image className="w-4 h-4 text-primary" /> {t("profile.my_posts")}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {userPosts.length === 0 ? "Noch keine Beiträge veröffentlicht" : `${userPosts.length} ${userPosts.length === 1 ? "Beitrag" : "Beiträge"}`}
+                  {userPosts.length === 0 ? t("profile.no_posts_published") : t("profile.post_count_other", { count: userPosts.length })}
                 </p>
               </div>
               <Link href="/feed" className="flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent px-3 py-2 rounded-xl hover:opacity-90 transition-opacity">
-                <Plus className="w-3.5 h-3.5" /> {"Neuer Post"}
+                <Plus className="w-3.5 h-3.5" /> {t("profile.new_post")}
               </Link>
             </div>
 
@@ -2078,13 +2078,13 @@ export default function Profile() {
                   {"📸"}
                 </div>
                 <div>
-                  <p className="font-bold">{"Noch keine Beiträge"}</p>
+                  <p className="font-bold">{t("profile.no_posts_yet")}</p>
                   <p className="text-muted-foreground text-sm mt-1 max-w-xs">
-                    {"Teile dein Food-Erlebnis mit der Community – Fotos, Orte, Momente."}
+                    {t("profile.share_food_moment")}
                   </p>
                 </div>
                 <Link href="/feed" className="flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-primary to-accent px-5 py-2.5 rounded-xl hover:opacity-90">
-                  <Plus className="w-4 h-4" /> {"Ersten Beitrag erstellen"}
+                  <Plus className="w-4 h-4" /> {t("profile.create_first_post")}
                 </Link>
               </div>
             ) : (
@@ -2119,9 +2119,9 @@ export default function Profile() {
                 {/* Post stats summary */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: "Beiträge", value: userPosts.length, icon: Image },
-                    { label: "Gefällt mir", value: userPosts.reduce((sum: number, p: any) => sum + p.likeCount, 0), icon: Heart },
-                    { label: "Kommentare", value: userPosts.reduce((sum: number, p: any) => sum + p.commentCount, 0), icon: MessageCircle },
+                    { label: t("profile.posts_label"), value: userPosts.length, icon: Image },
+                    { label: t("profile.likes_label"), value: userPosts.reduce((sum: number, p: any) => sum + p.likeCount, 0), icon: Heart },
+                    { label: t("profile.comments_label"), value: userPosts.reduce((sum: number, p: any) => sum + p.commentCount, 0), icon: MessageCircle },
                   ].map((s) => (
                     <div key={s.label} className="bg-card border rounded-2xl p-4 text-center">
                       <s.icon className="w-4 h-4 mx-auto mb-1.5 text-primary" />
@@ -2132,21 +2132,21 @@ export default function Profile() {
                 </div>
 
                 <Link href="/feed" className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-primary hover:bg-primary/5 rounded-xl transition-colors">
-                  {"Feed öffnen"} <ChevronRight className="w-4 h-4" />
+                  {t("profile.open_feed")} <ChevronRight className="w-4 h-4" />
                 </Link>
               </>
             )}
             {/* Booking history */}
             <div className="bg-card border rounded-2xl p-5">
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" /> {"Buchungsverlauf"}
+                <Calendar className="w-4 h-4 text-primary" /> {t("profile.booking_history")}
               </h3>
               {profile.recentBookings.length === 0 ? (
                 <div className="text-center py-10 space-y-3">
                   <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto" />
-                  <p className="text-muted-foreground text-sm">{"Noch keine Buchungen"}</p>
+                  <p className="text-muted-foreground text-sm">{t("profile.no_bookings_history")}</p>
                   <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link href="/explore">{"Jetzt Tisch reservieren"}</Link>
+                    <Link href="/explore">{t("profile.book_table_now")}</Link>
                   </Button>
                 </div>
               ) : (
@@ -2156,14 +2156,14 @@ export default function Profile() {
                       <div>
                         <div className="font-medium text-sm">{b.restaurantName}</div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          {format(parseISO(b.date), "dd.MM.yyyy")} {" · "} {b.time} {" · "} {b.partySize} {b.partySize === 1 ? "Person" : "Personen"}
+                          {format(parseISO(b.date), "dd.MM.yyyy")} {" · "} {b.time} {" · "} {b.partySize} {t("profile.person")}
                         </div>
                       </div>
                       <StatusBadge status={b.status} />
                     </div>
                   ))}
                   <Link href="/my-bookings" className="flex items-center justify-center gap-1.5 mt-4 text-sm text-primary font-medium hover:underline">
-                    {"Alle Buchungen ansehen"} <ChevronRight className="w-4 h-4" />
+                    {t("profile.view_all_bookings")} <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
               )}
@@ -2172,16 +2172,16 @@ export default function Profile() {
             {/* Loyalty points overview */}
             <div className={`bg-card border rounded-2xl p-5 bg-gradient-to-br ${tierCfg.gradient}`}>
               <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-                <Award className="w-4 h-4 text-primary" /> {"Punkte-Übersicht"}
+                <Award className="w-4 h-4 text-primary" /> {t("profile.loyalty_overview")}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl bg-background/60 p-4 text-center">
                   <div className="text-3xl font-serif font-bold text-primary">{profile.loyalty.points}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{"Aktuelle Punkte"}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t("profile.current_points")}</div>
                 </div>
                 <div className="rounded-xl bg-background/60 p-4 text-center">
                   <div className="text-3xl font-serif font-bold">{profile.loyalty.totalEarned}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{"Gesamt verdient"}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t("profile.total_earned")}</div>
                 </div>
               </div>
               <div className="mt-4 space-y-2">
@@ -2192,10 +2192,10 @@ export default function Profile() {
                 <Progress value={profile.loyalty.tierPct} className="h-3" />
                 {profile.loyalty.nextTier ? (
                   <p className="text-xs text-center text-muted-foreground">
-                    {profile.loyalty.pointsToNext} {"Punkte bis"} {profile.loyalty.nextTier}
+                    {t("profile.points_to_tier", { count: profile.loyalty.pointsToNext, tier: profile.loyalty.nextTier })}
                   </p>
                 ) : (
-                  <p className="text-xs text-center text-yellow-600 font-medium">{"Gold-Status erreicht ⭐"}</p>
+                  <p className="text-xs text-center text-yellow-600 font-medium">{t("profile.gold_status")}</p>
                 )}
               </div>
             </div>

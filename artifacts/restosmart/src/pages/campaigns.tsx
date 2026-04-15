@@ -174,6 +174,14 @@ function SegmentCard({
   data?: { count: number; label: string; description: string; customers: Record<string, unknown>[] };
   loading?: boolean;
 }) {
+  const { t } = useTranslation();
+  const segLabel = (key: string) => ({
+    inactive: t("campaigns.segment_inactive"),
+    new: t("campaigns.segment_new"),
+    returning: t("campaigns.segment_returning"),
+    high_value: t("campaigns.segment_high_value"),
+    all: t("campaigns.segment_all"),
+  } as Record<string, string>)[key] ?? key;
   const icons: Record<string, React.ElementType> = {
     new: Users,
     returning: RefreshCw,
@@ -261,7 +269,7 @@ function CampaignSendsModal({ campaignId, onClose }: { campaignId: number; onClo
                       <p className="text-xs text-muted-foreground">{s.customerEmail}</p>
                     </td>
                     <td className="py-2 pr-4">
-                      <Badge className={`text-xs ${SEGMENT_LABELS[s.segment]?.color}`}>{SEGMENT_LABELS[s.segment]?.label ?? s.segment}</Badge>
+                      <Badge className={`text-xs ${SEGMENT_LABELS[s.segment]?.color}`}>{segLabel(s.segment)}</Badge>
                     </td>
                     <td className="py-2 pr-4">
                       {s.status === "converted" ? (
@@ -362,7 +370,13 @@ function CreateCampaignModal({
             </div>
             <div className="flex items-center gap-2">
               <Badge className={SEGMENT_LABELS[template.targetSegment]?.color}>
-                {SEGMENT_LABELS[template.targetSegment]?.label ?? template.targetSegment}
+                {({
+                  inactive: t("campaigns.segment_inactive"),
+                  new: t("campaigns.segment_new"),
+                  returning: t("campaigns.segment_returning"),
+                  high_value: t("campaigns.segment_high_value"),
+                  all: t("campaigns.segment_all"),
+                } as Record<string, string>)[template.targetSegment] ?? template.targetSegment}
               </Badge>
               <span className="text-sm font-bold text-foreground">{targetCount} {t("campaigns.recipients")}</span>
             </div>
@@ -370,7 +384,7 @@ function CreateCampaignModal({
 
           {/* Campaign name */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Kampagnenname</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("campaigns.form_campaign_name")}</Label>
             <input
               className="w-full bg-muted/30 border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               value={name}
@@ -380,7 +394,7 @@ function CreateCampaignModal({
 
           {/* Message preview */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Nachrichtenvorschau</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("campaigns.form_message_preview")}</Label>
             <Textarea
               className="bg-muted/30 border border-border text-sm text-foreground resize-none min-h-[100px]"
               value={message}

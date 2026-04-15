@@ -231,7 +231,7 @@ export default function Billing() {
           <div>
             <p className="font-semibold text-sm text-amber-300 mb-1">{t("billing.stripe_cancelled_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {"Der Checkout wurde abgebrochen. Ihr Abonnement wurde noch nicht aktiviert. Sie k\u00f6nnen es jederzeit erneut versuchen."}
+              {t("billing.stripe_cancelled_body")}
             </p>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function Billing() {
           <div>
             <p className="font-semibold text-sm text-violet-300 mb-1">{t("billing.stripe_success_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {"Ihre Zahlung wurde erfolgreich \u00fcbermittelt. Das Premium-Abonnement wird in wenigen Sekunden aktiviert. Bitte warten Sie oder laden Sie die Seite neu."}
+              {t("billing.stripe_success_body")}
             </p>
             <button
               className="mt-2 text-xs text-primary hover:underline flex items-center gap-1"
@@ -264,7 +264,7 @@ export default function Billing() {
           <div>
             <p className="font-semibold text-sm text-emerald-300 mb-1">{t("billing.stripe_activated_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {"Zahlung best\u00e4tigt. Ihr RestoSmart Business Premium-Abonnement ist jetzt aktiv."}
+              {t("billing.stripe_activated_body")}
             </p>
           </div>
         </div>
@@ -277,7 +277,7 @@ export default function Billing() {
           <div>
             <p className="font-semibold text-sm text-emerald-300 mb-1">{t("billing.topup_success_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {"Zahlung best\u00e4tigt. Das Guthaben wird Ihrem Boost-Wallet gutgeschrieben."}
+              {t("billing.topup_success_body")}
             </p>
           </div>
         </div>
@@ -290,7 +290,7 @@ export default function Billing() {
           <div>
             <p className="font-semibold text-sm text-amber-300 mb-1">{t("billing.topup_cancel_title")}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {"Die Wallet-Aufladung wurde abgebrochen. Ihr Guthaben wurde nicht ver\u00e4ndert."}
+              {t("billing.topup_cancel_body")}
             </p>
           </div>
         </div>
