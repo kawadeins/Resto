@@ -797,7 +797,6 @@ export default function Home() {
                   key={ranked.restaurant.id}
                   restaurant={ranked.restaurant}
                   showFlashDeal
-                  isSponsored={ranked.isSponsored}
                 />
               ))}
             </div>

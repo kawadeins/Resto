@@ -977,58 +977,6 @@ function XpProgressBar({ points }: { points: number }) {
   );
 }
 
-// ── Premium Nudge Card ─────────────────────────────────────────────────────────
-function PremiumNudgeCard({ onDismiss }: { onDismiss: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <div className="nudge-pop rounded-[20px] overflow-hidden border" style={{
-      background: "linear-gradient(135deg,hsl(263,70%,52%,0.07),hsl(330,85%,58%,0.07))",
-      borderColor: "hsl(263,70%,52%,0.2)",
-      boxShadow: "0 4px 20px hsl(263,70%,52%,0.08)"
-    }}>
-      <div className="p-5">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-xl" style={{ background: GRAD }}>
-            {"✨"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm leading-tight">{t("feed.nudge_title")}</p>
-            <p className="text-muted-foreground text-xs mt-0.5 leading-snug">
-              {t("feed.nudge_desc")}
-            </p>
-          </div>
-          <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <Link
-          href="/profile"
-          className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-white py-2.5 rounded-xl active:scale-95 transition-all hover:opacity-90"
-          style={{ background: GRAD }}
-        >
-          {t("feed.nudge_cta")} <ChevronRight className="w-4 h-4" />
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-// ── Feed list builder (injects nudge card) ────────────────────────────────────
-type FeedItem =
-  | { kind: "post";  post: any }
-  | { kind: "nudge" };
-
-function buildFeedItems(posts: any[], showNudge: boolean): FeedItem[] {
-  const items: FeedItem[] = [];
-  for (let i = 0; i < posts.length; i++) {
-    items.push({ kind: "post", post: posts[i] });
-    // Inject premium nudge after 7th post when engagement is high
-    if (i === 6 && showNudge) {
-      items.push({ kind: "nudge" });
-    }
-  }
-  return items;
-}
 
 // ── Guest Banner ──────────────────────────────────────────────────────────────
 function GuestBanner() {
@@ -1073,16 +1021,6 @@ export default function FeedPage() {
 
   // Engagement tracking
   const [loyaltyPts, setLoyaltyPts] = useState<number | null>(null);
-  const interactionRef = useRef(0);
-  const [showNudge, setShowNudge] = useState(false);
-  const [nudgeDismissed, setNudgeDismissed] = useState(false);
-
-  const bumpInteraction = useCallback(() => {
-    interactionRef.current += 1;
-    if (interactionRef.current >= 3 && !nudgeDismissed) {
-      setShowNudge(true);
-    }
-  }, [nudgeDismissed]);
 
   // Email sync
   useEffect(() => {
@@ -1148,8 +1086,6 @@ export default function FeedPage() {
     return () => obs.disconnect();
   }, [loadMore]);
 
-  const feedItems = buildFeedItems(allPosts, showNudge && !nudgeDismissed);
-
   return (
     <div className="min-h-screen pb-28" style={{ background: "hsl(var(--background))" }}>
       {/* ── Sticky Header ── */}
@@ -1202,27 +1138,17 @@ export default function FeedPage() {
           </div>
         ) : (
           <>
-            {feedItems.map((item, i) => {
-              if (item.kind === "nudge") {
-                return (
-                  <PremiumNudgeCard
-                    key="nudge"
-                    onDismiss={() => { setNudgeDismissed(true); setShowNudge(false); }}
-                  />
-                );
-              }
-              return (
-                <PostCard
-                  key={item.post.id}
-                  post={item.post}
-                  email={email}
-                  userName={userName}
-                  userPhoto={userPhoto}
-                  onOpenComments={id => { bumpInteraction(); setCommentPostId(id); }}
-                  onLiked={bumpInteraction}
-                />
-              );
-            })}
+            {allPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                email={email}
+                userName={userName}
+                userPhoto={userPhoto}
+                onOpenComments={id => setCommentPostId(id)}
+                onLiked={() => {}}
+              />
+            ))}
 
             {/* Infinite scroll sentinel */}
             <div ref={sentinelRef} className="h-4" />

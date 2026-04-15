@@ -32,7 +32,6 @@ interface RestaurantCardProps {
   restaurant: MarketplaceRestaurant;
   showFlashDeal?: boolean;
   distance?: number;
-  isSponsored?: boolean;
 }
 
 function formatDistance(km: number): string {
@@ -120,7 +119,7 @@ function AvailabilityChip({ restaurant }: { restaurant: MarketplaceRestaurant })
   );
 }
 
-export function RestaurantCard({ restaurant, showFlashDeal = false, distance, isSponsored = false }: RestaurantCardProps) {
+export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: RestaurantCardProps) {
   const { t } = useTranslation();
   const priceString = "€".repeat(restaurant.priceRange || 2);
   const isAvailable = restaurant.isOpenNow && (restaurant as any).availabilityStatus === "available";
@@ -239,11 +238,6 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance, is
               {cuisineLabel}
             </span>
             <AvailabilityChip restaurant={restaurant} />
-            {isSponsored && (
-              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                {t("home.sponsored_badge")}
-              </span>
-            )}
           </div>
 
           {/* Live badge + social cue + FOMO count — only render row when there's a meaningful signal */}
