@@ -323,7 +323,7 @@ function OutcomesSection() {
                 {isNeutral ? (
                   <p className="font-bold text-muted-foreground flex items-center gap-1">
                     <Minus className="h-3 w-3" />
-                    {isActive ? "Läuft" : "Keine Daten"}
+                    {isActive ? t("insights.status_running") : t("insights.status_no_data")}
                   </p>
                 ) : isPositive ? (
                   <p className="font-bold text-emerald-500 flex items-center gap-1">

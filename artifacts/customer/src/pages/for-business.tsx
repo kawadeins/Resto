@@ -58,106 +58,94 @@ interface GrowthSignals {
 
 // ─── Business-type config ─────────────────────────────────────────────────────
 
-const BIZ_CONFIG: Record<BizType, {
-  label: string;
-  emoji: string;
-  icon: typeof UtensilsCrossed;
-  color: string;
-  gradient: string;
-  heroTitle: string;
-  heroSub: string;
-  peakTime: string;
-  peakDesc: string;
-  values: { icon: typeof Eye; title: string; desc: string }[];
-  missedItems: string[];
-  boostExample: string;
-  tipLabel: string;
-}> = {
-  restaurant: {
-    label:    "Restaurant",
-    emoji:    "🍽️",
-    icon:     UtensilsCrossed,
-    color:    "text-violet-600",
-    gradient: "from-violet-500 to-purple-600",
-    heroTitle: "Mehr Gäste. Mehr Tische. Mehr Umsatz.",
-    heroSub:   "RestoSmart bringt Restaurants neue Gäste aus der Umgebung — mit smarter Sichtbarkeit, Live-Verfügbarkeit und gezieltem Marketing.",
-    peakTime:  "Mittag & Abend",
-    peakDesc:  "Nutzer suchen aktiv nach Tischreservierungen in Ihrer Umgebung",
-    values: [
-      { icon: MapPin,     title: "Karten-Sichtbarkeit",  desc: "Erscheinen Sie prominent auf der Entdeckungs-Karte" },
-      { icon: Eye,        title: "Höhere Reichweite",    desc: "Erreichen Sie mehr Menschen in Ihrer Umgebung" },
-      { icon: BarChart3,  title: "Buchungsanalysen",     desc: "Verstehen Sie wann und warum Gäste reservieren" },
-      { icon: Zap,        title: "Mittags-Boost",        desc: "Promoted Platzierung in Stoßzeiten 11–14 Uhr" },
-      { icon: Star,       title: "Premium-Badge",        desc: "Trust-Badge für höhere Klickrate" },
-      { icon: TrendingUp, title: "Umsatz-Optimizer",     desc: "KI-gestützte Empfehlungen für Wachstum" },
-    ],
-    missedItems: [
-      "Nutzer in Ihrer Umgebung reservieren bei Konkurrenten",
-      "Ihr Lokal erscheint nicht auf der Entdeckungs-Karte",
-      "Mittags- und Abend-Peaks nutzen Sie nicht für Sichtbarkeit",
-      "Gäste finden Sie nicht, obwohl sie gerade suchen",
-      "Kein Premium-Badge — Vertrauen bleibt auf der Strecke",
-    ],
-    boostExample: "Mittagstisch-Boost — €0.01/Einblendung, sichtbar für alle Umgebungsnutzer 11–14 Uhr",
-    tipLabel: "Mittags-Boost",
-  },
-  cafe: {
-    label:    "Café",
-    emoji:    "☕",
-    icon:     Coffee,
-    color:    "text-amber-600",
-    gradient: "from-amber-500 to-orange-500",
-    heroTitle: "Mehr Stammgäste. Mehr Kaffee. Mehr Morgen.",
-    heroSub:   "RestoSmart bringt Cafés lokale Gäste am Morgen, in der Mittagspause und am Nachmittag — mit echter Nähesuche und smarten Angeboten.",
-    peakTime:  "Morgen & Mittagspause",
-    peakDesc:  "Kaffee-Nachfrage in Wien ist morgens und mittags am stärksten",
-    values: [
-      { icon: MapPin,     title: "Nahbereichs-Entdeckung", desc: "Nutzer in 500m Umkreis finden Sie zuerst" },
-      { icon: Eye,        title: "Frühstücks-Sichtbarkeit", desc: "Prominente Platzierung in der Morgenroutine" },
-      { icon: BarChart3,  title: "Besucheranalysen",        desc: "Wann kommen Ihre besten Gäste?" },
-      { icon: Zap,        title: "Frühstücks-Boost",        desc: "Promoted Platzierung 6–11 Uhr" },
-      { icon: Star,       title: "Vertrauens-Badge",        desc: "Premium-Badge erhöht Klickrate spürbar" },
-      { icon: Globe,      title: "Work-from-Café Signal",   desc: "Laptop-Friendly Badge für Work-Gäste" },
-    ],
-    missedItems: [
-      "Morgenbesucher wählen Cafés, die zuerst angezeigt werden",
-      "Sie fehlen auf der Karte, wenn Gäste ihren Tag starten",
-      "Mittagspausen-Suchende finden Sie nicht in der Nähe",
-      "Kein Boost — Sie erscheinen nach der Konkurrenz",
-      "Nachmittags-Potential bleibt ungenutzt",
-    ],
-    boostExample: "Frühstücks-Boost — €0.01/Einblendung, maximale Café-Sichtbarkeit 6–11 Uhr",
-    tipLabel: "Frühstücks-Boost",
-  },
-  bar: {
-    label:    "Bar / Lounge",
-    emoji:    "🍸",
-    icon:     Wine,
-    color:    "text-rose-600",
-    gradient: "from-rose-500 to-pink-600",
-    heroTitle: "Mehr Gäste. Mehr Happy Hour. Mehr Nächte.",
-    heroSub:   "RestoSmart bringt Bars Nachtleben-Gäste in der richtigen Stunde — mit Happy-Hour-Boosts, Wochenend-Sichtbarkeit und lokaler Entdeckung.",
-    peakTime:  "Abend & Wochenende",
-    peakDesc:  "Nachtleben-Suchen in Wien explodieren ab 19 Uhr freitags und samstags",
-    values: [
-      { icon: MapPin,     title: "Nachtleben-Entdeckung",  desc: "Sichtbar wenn Gäste ausgehen wollen" },
-      { icon: Flame,      title: "Happy-Hour-Boosts",      desc: "Promoted Platzierung 17–20 Uhr" },
-      { icon: BarChart3,  title: "Nacht-Analysen",         desc: "Verstehen Sie Ihre besten Abendmuster" },
-      { icon: Star,       title: "Wochenend-Premium",      desc: "Erhöhte Sichtbarkeit Fr/Sa/So" },
-      { icon: Users,      title: "Gruppen-Empfehlungen",   desc: "Erscheinen bei Gruppen-Planungs-Features" },
-      { icon: Zap,        title: "Nightlife-Boost",        desc: "Top-Platzierung 19–24 Uhr" },
-    ],
-    missedItems: [
-      "Gruppen suchen freitagabends nach Bars — und finden Ihre nicht",
-      "Happy-Hour Potential bleibt ohne Boost ungenutzt",
-      "Wochenend-Suchende sehen zuerst die Premium-Bars",
-      "Nachtleben-Suchen treffen Sie nicht, weil Sie nicht gelistet sind",
-      "Kein Gruppen-Empfehlungs-Feature ohne Premium",
-    ],
-    boostExample: "Nightlife-Boost — €0.01/Einblendung, maximale Bar-Sichtbarkeit 19–24 Uhr Fr/Sa",
-    tipLabel: "Nightlife-Boost",
-  },
-};
+function getBizConfig(t: (key: string) => string) {
+  return {
+    restaurant: {
+      label:    t("for_business.biz_restaurant_label"),
+      emoji:    "🍽️",
+      icon:     UtensilsCrossed,
+      color:    "text-violet-600",
+      gradient: "from-violet-500 to-purple-600",
+      heroTitle: t("for_business.biz_restaurant_hero"),
+      heroSub:   t("for_business.biz_restaurant_sub"),
+      peakTime:  t("for_business.biz_restaurant_peak_time"),
+      peakDesc:  t("for_business.biz_restaurant_peak_desc"),
+      values: [
+        { icon: MapPin,     title: t("for_business.biz_restaurant_v0_title"), desc: t("for_business.biz_restaurant_v0_desc") },
+        { icon: Eye,        title: t("for_business.biz_restaurant_v1_title"), desc: t("for_business.biz_restaurant_v1_desc") },
+        { icon: BarChart3,  title: t("for_business.biz_restaurant_v2_title"), desc: t("for_business.biz_restaurant_v2_desc") },
+        { icon: Zap,        title: t("for_business.biz_restaurant_v3_title"), desc: t("for_business.biz_restaurant_v3_desc") },
+        { icon: Star,       title: t("for_business.biz_restaurant_v4_title"), desc: t("for_business.biz_restaurant_v4_desc") },
+        { icon: TrendingUp, title: t("for_business.biz_restaurant_v5_title"), desc: t("for_business.biz_restaurant_v5_desc") },
+      ],
+      missedItems: [
+        t("for_business.biz_restaurant_m0"),
+        t("for_business.biz_restaurant_m1"),
+        t("for_business.biz_restaurant_m2"),
+        t("for_business.biz_restaurant_m3"),
+        t("for_business.biz_restaurant_m4"),
+      ],
+      boostExample: t("for_business.biz_restaurant_boost"),
+      tipLabel: t("for_business.biz_restaurant_tip"),
+    },
+    cafe: {
+      label:    t("for_business.biz_cafe_label"),
+      emoji:    "☕",
+      icon:     Coffee,
+      color:    "text-amber-600",
+      gradient: "from-amber-500 to-orange-500",
+      heroTitle: t("for_business.biz_cafe_hero"),
+      heroSub:   t("for_business.biz_cafe_sub"),
+      peakTime:  t("for_business.biz_cafe_peak_time"),
+      peakDesc:  t("for_business.biz_cafe_peak_desc"),
+      values: [
+        { icon: MapPin,     title: t("for_business.biz_cafe_v0_title"), desc: t("for_business.biz_cafe_v0_desc") },
+        { icon: Eye,        title: t("for_business.biz_cafe_v1_title"), desc: t("for_business.biz_cafe_v1_desc") },
+        { icon: BarChart3,  title: t("for_business.biz_cafe_v2_title"), desc: t("for_business.biz_cafe_v2_desc") },
+        { icon: Zap,        title: t("for_business.biz_cafe_v3_title"), desc: t("for_business.biz_cafe_v3_desc") },
+        { icon: Star,       title: t("for_business.biz_cafe_v4_title"), desc: t("for_business.biz_cafe_v4_desc") },
+        { icon: Globe,      title: t("for_business.biz_cafe_v5_title"), desc: t("for_business.biz_cafe_v5_desc") },
+      ],
+      missedItems: [
+        t("for_business.biz_cafe_m0"),
+        t("for_business.biz_cafe_m1"),
+        t("for_business.biz_cafe_m2"),
+        t("for_business.biz_cafe_m3"),
+        t("for_business.biz_cafe_m4"),
+      ],
+      boostExample: t("for_business.biz_cafe_boost"),
+      tipLabel: t("for_business.biz_cafe_tip"),
+    },
+    bar: {
+      label:    t("for_business.biz_bar_label"),
+      emoji:    "🍸",
+      icon:     Wine,
+      color:    "text-rose-600",
+      gradient: "from-rose-500 to-pink-600",
+      heroTitle: t("for_business.biz_bar_hero"),
+      heroSub:   t("for_business.biz_bar_sub"),
+      peakTime:  t("for_business.biz_bar_peak_time"),
+      peakDesc:  t("for_business.biz_bar_peak_desc"),
+      values: [
+        { icon: MapPin,     title: t("for_business.biz_bar_v0_title"), desc: t("for_business.biz_bar_v0_desc") },
+        { icon: Flame,      title: t("for_business.biz_bar_v1_title"), desc: t("for_business.biz_bar_v1_desc") },
+        { icon: BarChart3,  title: t("for_business.biz_bar_v2_title"), desc: t("for_business.biz_bar_v2_desc") },
+        { icon: Star,       title: t("for_business.biz_bar_v3_title"), desc: t("for_business.biz_bar_v3_desc") },
+        { icon: Users,      title: t("for_business.biz_bar_v4_title"), desc: t("for_business.biz_bar_v4_desc") },
+        { icon: Zap,        title: t("for_business.biz_bar_v5_title"), desc: t("for_business.biz_bar_v5_desc") },
+      ],
+      missedItems: [
+        t("for_business.biz_bar_m0"),
+        t("for_business.biz_bar_m1"),
+        t("for_business.biz_bar_m2"),
+        t("for_business.biz_bar_m3"),
+        t("for_business.biz_bar_m4"),
+      ],
+      boostExample: t("for_business.biz_bar_boost"),
+      tipLabel: t("for_business.biz_bar_tip"),
+    },
+  };
+}
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
@@ -186,7 +174,8 @@ export default function ForBusiness() {
     ownerName: "", email: "", phone: "", city: "Wien", message: "",
   });
 
-  const cfg = BIZ_CONFIG[activeBiz];
+  const bizConfig = getBizConfig(t);
+  const cfg = bizConfig[activeBiz];
 
   const signalsQuery = useQuery<GrowthSignals>({
     queryKey: ["growth-signals"],
@@ -280,7 +269,7 @@ export default function ForBusiness() {
           <div className="flex justify-center mb-8">
             <div className="inline-flex bg-muted/60 rounded-2xl p-1 border border-border/50">
               {(["restaurant", "cafe", "bar"] as BizType[]).map((type) => {
-                const c = BIZ_CONFIG[type];
+                const c = bizConfig[type];
                 const Icon = c.icon;
                 const isActive = activeBiz === type;
                 return (
@@ -638,10 +627,10 @@ export default function ForBusiness() {
                   </div>
                 ))}
                 {[
-                  "Höhere Platzierung in der Nähesuche",
-                  "Premium-Vertrauens-Badge",
-                  "Boost-Sichtbarkeit",
-                  "Analytics-Dashboard",
+                  t("for_business.free_locked_feature1"),
+                  t("for_business.free_locked_feature2"),
+                  t("for_business.free_locked_feature3"),
+                  t("for_business.free_locked_feature4"),
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5 opacity-40">
                     <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />
@@ -819,7 +808,7 @@ export default function ForBusiness() {
                     <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wide">{t("for_business.form_business_type")}</label>
                     <div className="grid grid-cols-3 gap-2">
                       {(["restaurant", "cafe", "bar"] as BizType[]).map(type => {
-                        const c = BIZ_CONFIG[type];
+                        const c = bizConfig[type];
                         const Icon = c.icon;
                         return (
                           <button

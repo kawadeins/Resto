@@ -408,18 +408,18 @@ function SmartRevenueTrigger({
   const triggerTitle = urgent
     ? t("boost.demand_very_high") + " — " + t("boost.action_recommended_now")
     : isHighDemand
-    ? "Erh\u00F6hte Nachfrage erkannt"
+    ? t("boost.demand_high_detected")
     : isLowCompete
-    ? t("boost.low_competition", { defaultValue: "Low competition currently active" })
-    : "Aktives Zeitfenster f\u00FCr Ihren Boost";
+    ? t("boost.low_competition", { defaultValue: t("boost.active_time_window") })
+    : t("boost.active_time_window");
 
   const triggerDesc = urgent
-    ? "Jetzt aktivieren f\u00FCr maximale Sichtbarkeit \u2014 Kunden suchen gerade aktiv."
+    ? t("boost.trigger_urgent_desc")
     : isHighDemand
-    ? `Nachfrage ${pricing.demandLevel === "very_high" ? "sehr hoch" : "hoch"} \u00B7 ${pricing.competingBoosts} Mitbewerber aktiv. G\u00FCnstige Konstellation.`
+    ? t("boost.trigger_high_demand_desc", { level: pricing.demandLevel === "very_high" ? t("boost.demand_very_high") : t("boost.demand_high"), competing: pricing.competingBoosts })
     : isLowCompete
-    ? `Nur ${pricing.competingBoosts} konkurrierende Boosts aktiv \u2014 g\u00FCnstiger Einstiegszeitpunkt.`
-    : `Optimales Zeitfenster: ${pricing.bestBoostWindow}`;
+    ? t("boost.trigger_low_compete_desc", { competing: pricing.competingBoosts })
+    : t("boost.trigger_window_desc", { window: pricing.bestBoostWindow });
 
   const ctaLabel = urgent ? t("boost.action_recommended_now") : t("boost.launch");
 
@@ -528,7 +528,7 @@ function AITimingStrip({ pricing }: { pricing: PricingData }) {
     { icon: Clock,    label: t("boost.stat_best_time"), value: pricing.bestBoostWindow },
     { icon: Activity, label: t("boost.stat_demand"), value: pricing.demandLevel === "very_high" ? t("boost.demand_very_high") : pricing.demandLevel === "high" ? t("boost.demand_high") : pricing.demandLevel === "normal" ? t("boost.demand_normal") : t("boost.demand_low") },
     { icon: Users, label: t("boost.competitors_active", { defaultValue: "Competitors active" }), value: String(pricing.competingBoosts) },
-    { icon: BarChart3,label: "Preis / 1.000 Einbl.", value: `\u20AC${pricing.pricePer1000.toFixed(2)}` },
+    { icon: BarChart3,label: t("boost.stat_price_cpm"), value: `\u20AC${pricing.pricePer1000.toFixed(2)}` },
   ];
 
   return (
@@ -682,8 +682,8 @@ export function PromotionTools() {
       if (err.message === "insufficient_balance" && err.walletError) {
         const { required = 0, current = 0 } = err.walletError;
         toast({
-          title: "Nicht gen\u00FCgend Guthaben",
-          description: `Ben\u00F6tigt: \u20AC${required.toFixed(2)} \u00B7 Aktuell: \u20AC${current.toFixed(2)}. Lade dein Guthaben auf.`,
+          title: t("boost.insufficient_balance"),
+          description: t("boost.insufficient_balance_desc", { required: required.toFixed(2), current: current.toFixed(2) }),
           variant: "destructive",
         });
         setShowWallet(true);
@@ -800,7 +800,7 @@ export function PromotionTools() {
           <div>
             <div className="text-lg font-bold" style={{ color: C.text }}>{t("boost.title")}</div>
             <div className="text-xs mt-0.5" style={{ color: C.muted }}>
-              {"Erh\u00F6hen Sie Ihre Sichtbarkeit \u2014 pr\u00E4zise und messbar."}
+              {t("boost.visibility_headline")}
             </div>
           </div>
         </div>
@@ -1035,10 +1035,10 @@ export function PromotionTools() {
                         >
                           <Zap style={{ width: 14, height: 14 }} />
                           {launching === cfg.type
-                            ? "Startet\u2026"
+                            ? t("boost.action_starting")
                             : cardOppty
-                            ? "Empfohlen: Jetzt aktivieren"
-                            : "Jetzt aktivieren"
+                            ? t("boost.action_recommended_now")
+                            : t("boost.launch")
                           }
                         </GradBtn>
                         {restaurantId && (
@@ -1135,7 +1135,7 @@ export function PromotionTools() {
                       </div>
                     )}
                     {b.dailyBudget === 0 && (
-                      <p className="text-[11px]" style={{ color: C.muted }}>{"Kein Tagesbudget \u2014 Boost l\u00E4uft unbegrenzt"}</p>
+                      <p className="text-[11px]" style={{ color: C.muted }}>{t("boost.budget_no_limit_running")}</p>
                     )}
 
                     {isEditing && (
@@ -1154,7 +1154,7 @@ export function PromotionTools() {
                                 color: budgetInput[b.id] === String(amount) ? "#fff" : C.muted, cursor: "pointer",
                               }}
                             >
-                              {amount === 0 ? "Unbegrenzt" : `\u20AC${amount}/Tag`}
+                              {amount === 0 ? t("boost.budget_unlimited") : `\u20AC${amount}/Tag`}
                             </motion.button>
                           ))}
                         </div>
@@ -1188,11 +1188,7 @@ export function PromotionTools() {
             <div className="flex items-start gap-2.5 text-[11px] rounded-xl px-3 py-2.5"
               style={{ color: C.muted, backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.14)" }}>
               <span className="text-sm mt-0.5">{"\u2139\uFE0F"}</span>
-              <span>
-                {"Boosted Lokale erhalten das Label "}
-                <strong style={{ color: C.text }}>{"\u201EGesponsert\u201C"}</strong>
-                {" in der Kunden-App \u2014 transparent und vertrauensw\u00FCrdig."}
-              </span>
+              <span>{t("boost.boosted_venues_info")}</span>
             </div>
           </div>
         )}
@@ -1203,16 +1199,16 @@ export function PromotionTools() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-semibold flex items-center gap-2" style={{ color: C.text }}>
                 <TrendingUp style={{ width: 15, height: 15, color: "#a78bfa" }} />
-                Gesamtperformance
+                {t("boost.total_performance_label")}
               </span>
-              <span className="text-xs" style={{ color: C.muted }}>Alle Boosts kombiniert</span>
+              <span className="text-xs" style={{ color: C.muted }}>{t("optimizer.kpi_impressions_sub")}</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { icon: Eye,           label: "Einblendungen", val: promotions.reduce((s, p) => s + (p.impressions || 0), 0) },
-                { icon: MousePointer,  label: "Klicks",        val: promotions.reduce((s, p) => s + (p.clicks || 0), 0) },
-                { icon: CalendarCheck, label: "Buchungen",     val: promotions.reduce((s, p) => s + (p.bookings_attributed || 0), 0) },
-                { icon: Flame,         label: "Heat-Expo.",    val: promotions.reduce((s, p) => s + (p.heat_exposure || 0), 0) },
+                { icon: Eye,           label: t("boost.stat_impressions"), val: promotions.reduce((s, p) => s + (p.impressions || 0), 0) },
+                { icon: MousePointer,  label: t("boost.stat_clicks"),      val: promotions.reduce((s, p) => s + (p.clicks || 0), 0) },
+                { icon: CalendarCheck, label: t("boost.stat_bookings"),    val: promotions.reduce((s, p) => s + (p.bookings_attributed || 0), 0) },
+                { icon: Flame,         label: t("boost.stat_heat"),        val: promotions.reduce((s, p) => s + (p.heat_exposure || 0), 0) },
               ].map(({ icon: Ic, label, val }, i) => (
                 <motion.div key={label}
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -1324,16 +1320,16 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
             <span className="font-semibold text-sm" style={{ color: C.text }}>Smart Pricing</span>
             <DemandChip level={pricing.demandLevel} />
           </div>
-          <span className="text-xs" style={{ color: C.muted }}>{"Echtzeit \u00B7 alle 2 Min."}</span>
+          <span className="text-xs" style={{ color: C.muted }}>{t("boost.realtime_interval")}</span>
         </div>
 
         {/* Pricing grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Aktueller Preis", main: `\u20AC${pricing.pricePer1000.toFixed(2)}`, sub: "pro 1.000 Einbl." },
-            { label: "Nachfrage",       main: null,                                        sub: `${pricing.totalActivePlatformBoosts} Boosts aktiv`, chip: pricing.demandLevel },
-            { label: "Konkurrenz",      main: String(pricing.competingBoosts),             sub: "Mitbewerber" },
-            { label: "Top-Zeit",        main: pricing.bestBoostWindow,                     sub: "Bestes Fenster", small: true },
+            { label: t("boost.stat_current_price"), main: `\u20AC${pricing.pricePer1000.toFixed(2)}`, sub: t("boost.per_1000_sub") },
+            { label: t("boost.stat_demand"),        main: null,                                        sub: `${pricing.totalActivePlatformBoosts} Boosts aktiv`, chip: pricing.demandLevel },
+            { label: t("boost.label_competition"),  main: String(pricing.competingBoosts),             sub: t("boost.competitors_label") },
+            { label: t("boost.stat_top_time"),      main: pricing.bestBoostWindow,                     sub: t("boost.stat_best_window"), small: true },
           ].map((item, i) => (
             <motion.div key={i} whileHover={{ y: -1 }}
               style={{ borderRadius: 12, border: `1px solid ${C.border}`, backgroundColor: "rgba(255,255,255,0.03)", padding: 12, textAlign: "center" }}>
@@ -1432,11 +1428,11 @@ function SmartPricingDashboard({ businessType, restaurantId }: { businessType: s
               : <ToggleLeft  style={{ width: 20, height: 20, color: C.muted,  flexShrink: 0 }} />
             }
             <div>
-              <p className="text-xs font-semibold" style={{ color: C.text }}>Automatisch optimieren</p>
+              <p className="text-xs font-semibold" style={{ color: C.text }}>{t("boost.auto_optimize_title")}</p>
               <p className="text-[10px] mt-0.5" style={{ color: C.muted }}>
                 {autoOptEnabled
-                  ? "System optimiert Timing & Budget automatisch"
-                  : "System passt Ausgaben und Timing automatisch an"
+                  ? t("boost.auto_opt_enabled_desc")
+                  : t("boost.auto_opt_disabled_desc")
                 }
               </p>
             </div>

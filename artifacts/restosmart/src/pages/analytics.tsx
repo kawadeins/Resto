@@ -62,11 +62,11 @@ export default function Analytics() {
       {isTrial && <TrialConversionBanner context="analytics" />}
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analysen & Intelligenz</h2>
-          <p className="text-muted-foreground mt-2">Tiefgehende Einblicke in Ihre Unternehmensleistung.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("analytics.title")}</h2>
+          <p className="text-muted-foreground mt-2">{t("analytics.subtitle")}</p>
         </div>
         <div className="text-sm text-muted-foreground font-mono bg-muted/30 px-3 py-1.5 rounded-md border">
-          Echtdaten aus Ihrem Betrieb
+          {t("analytics.real_data_badge")}
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export default function Analytics() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Umsatz diesen Monat</CardTitle>
+                    <CardTitle className="text-sm font-medium">{t("analytics.card_revenue_month")}</CardTitle>
                     <DollarSign className="h-4 w-4 text-emerald-500" />
                   </CardHeader>
                   <CardContent>
@@ -177,8 +177,8 @@ export default function Analytics() {
         <motion.div className="col-span-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Tagesleistung (30 Tage)</CardTitle>
-              <CardDescription>Umsatz-, Gewinn- und Reservierungstrend</CardDescription>
+              <CardTitle>{t("analytics.chart_daily_title")}</CardTitle>
+              <CardDescription>{t("analytics.chart_daily_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="pl-0">
               {loadingDaily ? (

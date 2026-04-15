@@ -36,9 +36,9 @@ import type { Reservation } from "@workspace/api-client-react";
 import { format } from "date-fns";
 
 const reservationSchema = z.object({
-  customerName: z.string().min(2, "Name ist erforderlich"),
-  customerEmail: z.string().email("Ungültige E-Mail-Adresse").or(z.literal("")),
-  customerPhone: z.string().min(5, "Telefonnummer ist erforderlich"),
+  customerName: z.string().min(2),
+  customerEmail: z.string().email().or(z.literal("")),
+  customerPhone: z.string().min(5),
   date: z.string(),
   time: z.string(),
   partySize: z.coerce.number().min(1).max(20),
@@ -49,6 +49,21 @@ const reservationSchema = z.object({
 });
 
 type ReservationFormValues = z.infer<typeof reservationSchema>;
+
+function createReservationSchema(t: (key: string) => string) {
+  return z.object({
+    customerName: z.string().min(2, t("reservations.val_name_required")),
+    customerEmail: z.string().email(t("reservations.val_email_invalid")).or(z.literal("")),
+    customerPhone: z.string().min(5, t("reservations.val_phone_required")),
+    date: z.string(),
+    time: z.string(),
+    partySize: z.coerce.number().min(1).max(20),
+    tableNumber: z.coerce.number().optional().nullable(),
+    notes: z.string().optional().nullable(),
+    source: z.enum(["direct", "online", "phone", "walkin"]),
+    status: z.enum(["pending", "confirmed", "seated", "completed", "cancelled"]).optional(),
+  });
+}
 
 const statusColors = {
   pending: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -154,7 +169,7 @@ export default function Reservations() {
   const deleteReservation = useDeleteReservation();
 
   const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(reservationSchema),
+    resolver: zodResolver(createReservationSchema(t)),
     defaultValues: {
       customerName: "",
       customerEmail: "",

@@ -108,7 +108,7 @@ export default function Finances() {
                       <Tooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
-                        formatter={(value: number) => [`€${value.toLocaleString()}`, "Umsatz"]}
+                        formatter={(value: number) => [`€${value.toLocaleString()}`, t("finances.revenue")]}
                       />
                       <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>

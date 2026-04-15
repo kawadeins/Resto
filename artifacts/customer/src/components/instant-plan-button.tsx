@@ -5,6 +5,7 @@
  */
 import { useState } from "react";
 import { Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { InstantPlanModal } from "@/components/instant-plan-modal";
 import type { MarketplaceRestaurant, MarketplaceFlashDeal } from "@workspace/api-client-react";
 import type { LifestyleMode } from "@/hooks/use-lifestyle-mode";
@@ -31,6 +32,7 @@ export function InstantPlanButton({
   variant = "inline", initialPlanMode, initialSuggestion, onPlanCreated, className,
 }: InstantPlanButtonProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   if (!email) return null;
 
@@ -46,7 +48,7 @@ export function InstantPlanButton({
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             <Zap className="w-6 h-6" />
-            <span>Plan starten</span>
+            <span>{t("home.plan_start")}</span>
             {/* Pulse ring */}
             <span className="absolute -inset-0.5 rounded-2xl animate-ping opacity-20 bg-primary pointer-events-none" />
           </button>
@@ -74,7 +76,7 @@ export function InstantPlanButton({
             className={`flex items-center justify-center gap-2 w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-lg shadow-primary/25 press-scale transition-all duration-200 ${className ?? ""}`}
           >
             <Zap className="w-4 h-4" />
-            Plan starten
+            {t("home.plan_start")}
           </button>
         );
 
@@ -85,7 +87,7 @@ export function InstantPlanButton({
             className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-bold text-sm shadow-md shadow-primary/25 press-scale transition-all duration-200 ${className ?? ""}`}
           >
             <Zap className="w-4 h-4" />
-            Plan starten
+            {t("home.plan_start")}
           </button>
         );
     }

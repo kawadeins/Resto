@@ -123,6 +123,7 @@ function RecommendationCard({
   autoMode: boolean;
   onActivated: () => void;
 }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { csrfToken } = useSession();
   const queryClient = useQueryClient();
@@ -141,12 +142,12 @@ function RecommendationCard({
       return res.json();
     },
     onSuccess: (_, boostType) => {
-      toast({ title: "Boost aktiviert", description: `${boostType.replace(/_/g, " ")} ist jetzt aktiv.` });
+      toast({ title: t("optimizer.boost_activated"), description: t("optimizer.boost_activated_desc", { boostType: boostType.replace(/_/g, " ") }) });
       queryClient.invalidateQueries({ queryKey: ["optimizer-analysis"] });
       queryClient.invalidateQueries({ queryKey: ["my-promos"] });
       onActivated();
     },
-    onError: () => toast({ title: "Fehler", description: "Boost konnte nicht aktiviert werden.", variant: "destructive" }),
+    onError: () => toast({ title: t("optimizer.activate_error"), description: t("optimizer.activate_error_desc"), variant: "destructive" }),
   });
 
   const isAutoHighlight = autoMode && rec.priority === "high" && rec.action === "boost_activate";
@@ -169,7 +170,7 @@ function RecommendationCard({
           <PriorityBadge priority={rec.priority} />
           {isAutoHighlight && (
             <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30 text-[10px]">
-              Auto-Optimierung
+              {t("optimizer.auto_badge")}
             </Badge>
           )}
           {rec.metric && (
@@ -190,18 +191,18 @@ function RecommendationCard({
                 disabled={activateMutation.isPending}
               >
                 <Zap className="w-3 h-3 mr-1.5" />
-                {activateMutation.isPending ? "Aktiviere…" : isAutoHighlight ? "Auto-Aktivieren" : "Jetzt aktivieren"}
+                {activateMutation.isPending ? t("boost.action_starting") : isAutoHighlight ? t("optimizer.auto_activate") : t("optimizer.activate_btn")}
               </Button>
             ) : rec.action === "go_to_marketing" ? (
               <Link href="/marketing">
                 <Button size="sm" variant="outline" className="h-8 text-xs">
-                  Marketing öffnen <ChevronRight className="w-3 h-3 ml-1" />
+                  {t("optimizer.open_marketing")} <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
               </Link>
             ) : rec.action === "go_to_insights" ? (
               <Link href="/insights">
                 <Button size="sm" variant="outline" className="h-8 text-xs">
-                  Tote Stunden öffnen <ChevronRight className="w-3 h-3 ml-1" />
+                  {t("optimizer.open_dead_hours")} <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
               </Link>
             ) : null}
@@ -253,10 +254,10 @@ export default function Optimizer() {
     setAutoMode(val);
     localStorage.setItem("restosmart_auto_optimize", String(val));
     toast({
-      title: val ? "Auto-Optimierung aktiviert" : "Auto-Optimierung deaktiviert",
+      title: val ? t("optimizer.auto_optimize_on") : t("optimizer.auto_optimize_off"),
       description: val
-        ? "Hochpriorisierte Empfehlungen werden hervorgehoben. Ein Klick genügt zur Aktivierung."
-        : "Auto-Optimierung wurde deaktiviert.",
+        ? t("optimizer.auto_optimize_on_desc")
+        : t("optimizer.auto_optimize_off_desc"),
     });
   };
 
@@ -294,7 +295,7 @@ export default function Optimizer() {
             <h1 className="text-2xl font-bold tracking-tight">Revenue Optimizer</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Echtzeit-Analyse Ihrer Boost-Performance mit smarten Empfehlungen zum Wachstum.
+            {t("optimizer.page_subtitle")}
           </p>
         </div>
 
@@ -302,9 +303,9 @@ export default function Optimizer() {
         <Card className="border-border bg-card/80 shrink-0">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-foreground">Auto-Optimierung</span>
+              <span className="text-sm font-semibold text-foreground">{t("optimizer.auto_optimize_label")}</span>
               <span className="text-[11px] text-muted-foreground">
-                {autoMode ? "Aktiv — hebt beste Aktion hervor" : "Inaktiv"}
+                {autoMode ? t("optimizer.auto_optimize_active") : t("optimizer.auto_optimize_inactive")}
               </span>
             </div>
             <Switch checked={autoMode} onCheckedChange={toggleAutoMode} />
@@ -327,14 +328,14 @@ export default function Optimizer() {
           <div className="flex-1 min-w-0">
             <span className="text-sm font-medium">{demand.signal}</span>
             <span className="text-[11px] opacity-70 ml-2">
-              {demand.activePlatformBoosts} aktive Boosts auf der Plattform
+              {t("optimizer.active_boosts_on_platform", { count: demand.activePlatformBoosts })}
             </span>
           </div>
           <Badge className={demand.level === "high"
             ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
             : "bg-amber-500/20 text-amber-300 border-amber-500/30"
           }>
-            {demand.level === "high" ? "Hohe Nachfrage" : "Mittlere Nachfrage"}
+            {demand.level === "high" ? t("optimizer.demand_high") : t("optimizer.demand_medium")}
           </Badge>
         </motion.div>
       )}
@@ -347,24 +348,24 @@ export default function Optimizer() {
       ) : analysis ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard
-            icon={Eye} label="Gesamt-Impressionen" iconCls="text-blue-400"
+            icon={Eye} label={t("optimizer.kpi_total_impressions")} iconCls="text-blue-400"
             value={analysis.metrics.totalImpressions.toLocaleString("de-AT")}
-            sub="Alle Boosts gesamt"
+            sub={t("optimizer.kpi_impressions_sub")}
           />
           <KpiCard
-            icon={MousePointer} label="Ø Klickrate (CTR)" iconCls="text-violet-400"
+            icon={MousePointer} label={t("optimizer.kpi_avg_ctr")} iconCls="text-violet-400"
             value={`${(analysis.metrics.avgCTR * 100).toFixed(1)}%`}
-            sub={analysis.metrics.avgCTR >= 0.03 ? "Über Durchschnitt" : "Unter Durchschnitt (3%)"}
+            sub={analysis.metrics.avgCTR >= 0.03 ? t("optimizer.kpi_ctr_above_avg") : t("optimizer.kpi_ctr_below_avg")}
           />
           <KpiCard
-            icon={CalendarCheck} label="Buchungsrate" iconCls="text-emerald-400"
+            icon={CalendarCheck} label={t("optimizer.kpi_booking_rate")} iconCls="text-emerald-400"
             value={`${(analysis.metrics.avgBookingRate * 100).toFixed(1)}%`}
-            sub="Klicks → Buchungen"
+            sub={t("optimizer.kpi_booking_sub")}
           />
           <KpiCard
-            icon={Activity} label="Aktive Boosts" iconCls="text-orange-400"
+            icon={Activity} label={t("optimizer.kpi_active_boosts")} iconCls="text-orange-400"
             value={String(analysis.metrics.activeBoostCount)}
-            sub={analysis.metrics.activeBoostCount === 0 ? "Kein Boost aktiv" : "Laufen gerade"}
+            sub={analysis.metrics.activeBoostCount === 0 ? t("optimizer.kpi_no_boost_active") : t("optimizer.kpi_running")}
           />
         </div>
       ) : null}
@@ -545,35 +546,37 @@ export default function Optimizer() {
 // ─── Business Type Strategy panel ────────────────────────────────────────────
 
 function BizTypeStrategy({ bizType, metrics }: { bizType: string; metrics: AnalysisData["metrics"] }) {
+  const { t } = useTranslation();
+
   const strategies: Record<string, { title: string; tips: { icon: string; text: string }[]; focus: string }> = {
     restaurant: {
-      title: "Restaurant-Strategie",
-      focus: "Mittag + Abend | Buchungskonversion",
+      title: t("optimizer.strategy_restaurant_title"),
+      focus: t("optimizer.strategy_restaurant_focus"),
       tips: [
-        { icon: "🍽️", text: "Mittags-Boost 11–14 Uhr für mehr Mittagsgäste" },
-        { icon: "🌇", text: "Happy Hour Boost 15–19 Uhr für frühe Abendgäste" },
-        { icon: "📊", text: "Buchungsrate unter 5%? Flash Deal erstellen" },
-        { icon: "⭐", text: "Local Spotlight für ganzwöchige Sichtbarkeit" },
+        { icon: "🍽️", text: t("optimizer.strategy_restaurant_tip1") },
+        { icon: "🌇", text: t("optimizer.strategy_restaurant_tip2") },
+        { icon: "📊", text: t("optimizer.strategy_restaurant_tip3") },
+        { icon: "⭐", text: t("optimizer.strategy_restaurant_tip4") },
       ],
     },
     cafe: {
-      title: "Café-Strategie",
-      focus: "Morgen + Mittag | Laufkundschaft",
+      title: t("optimizer.strategy_cafe_title"),
+      focus: t("optimizer.strategy_cafe_focus"),
       tips: [
-        { icon: "☕", text: "Frühstücks-Boost 6–10 Uhr für Morgengäste" },
-        { icon: "💼", text: "Mittags-Boost für Homeoffice-Gäste 11–14 Uhr" },
-        { icon: "🗺️", text: "Heat-Map Boost für Laufkundschaft auf der Karte" },
-        { icon: "📸", text: "Hohe CTR durch starke Bilder in Ihrem Profil" },
+        { icon: "☕", text: t("optimizer.strategy_cafe_tip1") },
+        { icon: "💼", text: t("optimizer.strategy_cafe_tip2") },
+        { icon: "🗺️", text: t("optimizer.strategy_cafe_tip3") },
+        { icon: "📸", text: t("optimizer.strategy_cafe_tip4") },
       ],
     },
     bar: {
-      title: "Bar-Strategie",
-      focus: "Abend + Wochenende | Gruppen",
+      title: t("optimizer.strategy_bar_title"),
+      focus: t("optimizer.strategy_bar_focus"),
       tips: [
-        { icon: "🌙", text: "Nachtleben-Boost ab 19 Uhr für Abendgäste" },
-        { icon: "🍹", text: "Happy Hour Boost 15–19 Uhr für frühe Gäste" },
-        { icon: "👥", text: "Gruppen-Vorschlag Priorität an Wochenenden" },
-        { icon: "🔥", text: "Heat-Map Boost — sichtbar wenn Gäste suchen" },
+        { icon: "🌙", text: t("optimizer.strategy_bar_tip1") },
+        { icon: "🍹", text: t("optimizer.strategy_bar_tip2") },
+        { icon: "👥", text: t("optimizer.strategy_bar_tip3") },
+        { icon: "🔥", text: t("optimizer.strategy_bar_tip4") },
       ],
     },
   };
@@ -598,7 +601,7 @@ function BizTypeStrategy({ bizType, metrics }: { bizType: string; metrics: Analy
         <div className="rounded-lg bg-violet-500/8 border border-violet-500/20 px-3 py-2 flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-violet-400 shrink-0" />
           <p className="text-xs text-violet-300">
-            Kein Boost aktiv — starten Sie mit dem empfohlenen Boost oben.
+            {t("optimizer.no_boost_hint")}
           </p>
         </div>
       )}

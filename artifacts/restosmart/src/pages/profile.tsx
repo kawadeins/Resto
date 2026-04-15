@@ -165,6 +165,7 @@ function GalleryManager({
   photos: string[];
   onChange: (photos: string[]) => void;
 }) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const MAX = 5;
@@ -219,7 +220,7 @@ function GalleryManager({
             ) : (
               <>
                 <Plus className="w-6 h-6" />
-                <span className="text-[11px] font-medium">Hinzufügen</span>
+                <span className="text-[11px] font-medium">{t("common.add")}</span>
               </>
             )}
           </button>
@@ -237,13 +238,14 @@ function GalleryManager({
         }}
       />
       <p className="text-xs text-muted-foreground">
-        {photos.length}/{MAX} Fotos · Ideal für Atmosphäre, Gerichte und Dekoration
+        {photos.length}/{MAX} {t("profile.photos_hint")}
       </p>
     </div>
   );
 }
 
 function TagsInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
+  const { t } = useTranslation();
   const [input, setInput] = useState("");
 
   const add = () => {
@@ -269,7 +271,7 @@ function TagsInput({ tags, onChange }: { tags: string[]; onChange: (tags: string
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
-          placeholder="Tag hinzufügen und Enter drücken"
+          placeholder={t("profile.tag_add_placeholder")}
           className="flex-1"
         />
         <Button type="button" variant="outline" size="sm" onClick={add} disabled={!input.trim()}>
@@ -318,10 +320,10 @@ export default function ProfilePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast({ title: "Profil gespeichert", description: "Änderungen wurden erfolgreich übernommen." });
+      toast({ title: t("profile.save_success") });
     },
     onError: () => {
-      toast({ title: "Fehler", description: "Profil konnte nicht gespeichert werden.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("profile.save_error"), variant: "destructive" });
     },
   });
 
@@ -342,23 +344,23 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Restaurant-Profil</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("profile.page_title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Gestalten Sie Ihr öffentliches Profil – so sehen Kunden Ihr Restaurant.
+            {t("profile.page_subtitle")}
           </p>
         </div>
         <Button onClick={handleSave} disabled={save.isPending} size="lg" className="gap-2 shadow-lg shadow-primary/20">
           {save.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Speichern
+          {t("profile.save_btn")}
         </Button>
       </div>
 
       <Tabs defaultValue="basics" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full max-w-lg">
-          <TabsTrigger value="basics">Grunddaten</TabsTrigger>
-          <TabsTrigger value="media">Medien</TabsTrigger>
-          <TabsTrigger value="story">Geschichte</TabsTrigger>
-          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="basics">{t("profile.tab_basics")}</TabsTrigger>
+          <TabsTrigger value="media">{t("profile.tab_media")}</TabsTrigger>
+          <TabsTrigger value="story">{t("profile.tab_story")}</TabsTrigger>
+          <TabsTrigger value="links">{t("profile.tab_links")}</TabsTrigger>
         </TabsList>
 
         {/* ── TAB: Grunddaten ── */}
@@ -367,14 +369,14 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-primary" />
-                Kernidentität
+                {t("profile.section_core")}
               </CardTitle>
-              <CardDescription>Name, Küche, Beschreibung und Tags Ihres Restaurants</CardDescription>
+              <CardDescription>{t("profile.section_core_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Restaurantname *</Label>
+                  <Label htmlFor="name">{t("profile.label_restaurant_name")}</Label>
                   <Input
                     id="name"
                     value={f.name ?? ""}
@@ -383,7 +385,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cuisine">Küche / Kategorie</Label>
+                  <Label htmlFor="cuisine">{t("profile.label_cuisine")}</Label>
                   <Input
                     id="cuisine"
                     value={f.cuisine ?? ""}
@@ -395,7 +397,7 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="emoji">Küchen-Emoji</Label>
+                  <Label htmlFor="emoji">{t("profile.label_emoji")}</Label>
                   <Input
                     id="emoji"
                     value={f.cuisineEmoji ?? ""}
@@ -405,7 +407,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="priceRange">Preiskategorie</Label>
+                  <Label htmlFor="priceRange">{t("profile.label_price_range")}</Label>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4].map((p) => (
                       <button
@@ -426,21 +428,21 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Kurzbeschreibung</Label>
+                <Label htmlFor="description">{t("profile.label_description")}</Label>
                 <Textarea
                   id="description"
                   value={f.description ?? ""}
                   onChange={(e) => set("description", e.target.value)}
-                  placeholder="Ein knapper, attraktiver Satz, der Kunden sofort begeistert…"
+                  placeholder={t("profile.description_cta_placeholder")}
                   className="resize-none min-h-[80px]"
                 />
-                <p className="text-xs text-muted-foreground">{(f.description ?? "").length}/200 Zeichen empfohlen</p>
+                <p className="text-xs text-muted-foreground">{t("profile.chars_recommended", { count: (f.description ?? "").length })}</p>
               </div>
 
               <div className="space-y-2">
-                <Label>Tags</Label>
+                <Label>{t("profile.label_tags")}</Label>
                 <TagsInput tags={f.tags ?? []} onChange={(t) => set("tags", t)} />
-                <p className="text-xs text-muted-foreground">z.B. Vegetarisch, Terrasse, Lieferung, Familien-freundlich</p>
+                <p className="text-xs text-muted-foreground">{t("profile.tags_hint")}</p>
               </div>
             </CardContent>
           </Card>
@@ -449,31 +451,31 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" />
-                Standort &amp; Kontakt
+                {t("profile.section_location")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t("common.address")}</Label>
                   <Input
                     id="address"
                     value={f.address ?? ""}
                     onChange={(e) => set("address", e.target.value)}
-                    placeholder="Musterstraße 12"
+                    placeholder={t("profile.placeholder_street")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">Stadt</Label>
+                  <Label htmlFor="city">{t("profile.label_city")}</Label>
                   <Input
                     id="city"
                     value={f.city ?? ""}
                     onChange={(e) => set("city", e.target.value)}
-                    placeholder="Wien"
+                    placeholder={t("profile.placeholder_city")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefon</Label>
+                  <Label htmlFor="phone">{t("common.phone")}</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -486,7 +488,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-Mail</Label>
+                  <Label htmlFor="email">{t("common.email")}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -504,7 +506,7 @@ export default function ProfilePage() {
               <Separator />
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="lat">Breitengrad (lat)</Label>
+                  <Label htmlFor="lat">{t("profile.label_lat")}</Label>
                   <Input
                     id="lat"
                     type="number"
@@ -515,7 +517,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lng">Längengrad (lng)</Label>
+                  <Label htmlFor="lng">{t("profile.label_lng")}</Label>
                   <Input
                     id="lng"
                     type="number"
@@ -526,20 +528,18 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Koordinaten bestimmen den Standort auf der Karte. Verwenden Sie Google Maps → Rechtsklick → Koordinaten kopieren.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("profile.coords_hint")}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Öffnungszeiten</CardTitle>
+              <CardTitle>{t("profile.section_opening")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="openTime">Öffnung</Label>
+                  <Label htmlFor="openTime">{t("profile.label_open_time")}</Label>
                   <Input
                     id="openTime"
                     type="time"
@@ -548,7 +548,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="closeTime">Schließung</Label>
+                  <Label htmlFor="closeTime">{t("profile.label_close_time")}</Label>
                   <Input
                     id="closeTime"
                     type="time"
@@ -558,7 +558,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Geöffnete Tage</Label>
+                <Label>{t("profile.label_open_days")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {ALL_DAYS.map((day) => {
                     const active = (f.openDays ?? []).includes(day);
@@ -592,21 +592,19 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="w-5 h-5 text-primary" />
-                Titelbild (Hero)
+                {t("profile.section_hero_image")}
               </CardTitle>
-              <CardDescription>
-                Das Hauptbild Ihres Restaurants — der erste Eindruck für Kunden. Empfohlen: 1920×1080 px oder größer.
-              </CardDescription>
+              <CardDescription>{t("profile.hero_image_desc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ImageUploadZone
                 value={f.heroImage ?? ""}
                 onChange={(url) => set("heroImage", url)}
-                label="Titelbild hochladen"
+                label={t("profile.upload_hero_btn")}
                 aspectClass="aspect-[16/7]"
               />
               <div className="mt-3">
-                <Label className="text-xs text-muted-foreground mb-1 block">Oder URL einfügen</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t("profile.or_url")}</Label>
                 <Input
                   value={f.heroImage ?? ""}
                   onChange={(e) => set("heroImage", e.target.value)}
@@ -621,11 +619,9 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-primary" />
-                Fotogalerie
+                {t("profile.section_gallery")}
               </CardTitle>
-              <CardDescription>
-                Bis zu 5 Fotos: Gerichte, Atmosphäre, Innenbereich, Team oder Spezialitäten.
-              </CardDescription>
+              <CardDescription>{t("profile.gallery_desc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <GalleryManager photos={f.photos ?? []} onChange={(p) => set("photos", p)} />
@@ -636,15 +632,13 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-primary" />
-                Präsentationsvideo
+                {t("profile.section_video")}
               </CardTitle>
-              <CardDescription>
-                Ein kurzes Video (30–90 Sek.) zeigt Atmosphäre, Küche und Ihr Team — sehr wirkungsvoll.
-              </CardDescription>
+              <CardDescription>{t("profile.video_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="videoUrl">Video-URL</Label>
+                <Label htmlFor="videoUrl">{t("profile.label_video_url")}</Label>
                 <div className="relative">
                   <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -655,9 +649,7 @@ export default function ProfilePage() {
                     placeholder="https://www.youtube.com/watch?v=… oder direkte MP4-URL"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Unterstützt: YouTube-Links, Vimeo-Links oder direkte MP4/WebM-Dateien
-                </p>
+                <p className="text-xs text-muted-foreground">{t("profile.video_formats")}</p>
               </div>
 
               {f.videoUrl && (
@@ -689,23 +681,20 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="w-5 h-5 text-primary" />
-                Unsere Geschichte
+                {t("profile.section_story")}
               </CardTitle>
-              <CardDescription>
-                Erzählen Sie Ihre Geschichte — warum Sie dieses Restaurant gegründet haben, Ihre Küche, Ihre Werte.
-                Ein authentischer Text baut Vertrauen auf.
-              </CardDescription>
+              <CardDescription>{t("profile.story_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
                 value={f.about ?? ""}
                 onChange={(e) => set("about", e.target.value)}
-                placeholder="Wir haben dieses Restaurant vor 10 Jahren gegründet, weil wir die Leidenschaft für authentische Küche mit Wien teilen wollten. Jedes Gericht erzählt eine Geschichte…"
+                placeholder={t("profile.story_placeholder")}
                 className="min-h-[280px] resize-none text-base leading-relaxed"
               />
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Tipp: 150–400 Wörter sind ideal</span>
-                <span>{(f.about ?? "").length} Zeichen</span>
+                <span>{t("profile.story_tip")}</span>
+                <span>{t("profile.story_chars", { count: (f.about ?? "").length })}</span>
               </div>
             </CardContent>
           </Card>
@@ -717,11 +706,9 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="w-5 h-5 text-primary" />
-                Offizielle Links &amp; Social Media
+                {t("profile.section_links")}
               </CardTitle>
-              <CardDescription>
-                Diese Links erscheinen auf Ihrem Kundenprofil als klickbare Icons.
-              </CardDescription>
+              <CardDescription>{t("profile.links_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -787,9 +774,7 @@ export default function ProfilePage() {
                     onChange={(e) => set("googleMapsUrl", e.target.value)}
                     placeholder="https://maps.google.com/?q=Mein+Restaurant+Wien"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Google Maps öffnen → Link teilen → Link kopieren
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t("profile.google_maps_hint")}</p>
                 </div>
               </div>
 
@@ -798,7 +783,7 @@ export default function ProfilePage() {
                 <>
                   <Separator />
                   <div>
-                    <p className="text-sm font-medium mb-3 text-muted-foreground">Vorschau (so erscheinen die Icons)</p>
+                    <p className="text-sm font-medium mb-3 text-muted-foreground">{t("profile.link_preview")}</p>
                     <div className="flex flex-wrap gap-3">
                       {f.instagram && (
                         <a href={f.instagram} target="_blank" rel="noopener noreferrer"

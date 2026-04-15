@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 interface ConvSummary { id: number; type: string; unread_count: number; participants: { user_email: string }[] }
@@ -41,13 +42,14 @@ function FriendRow({ friend, email, unreadCount, onRemove }: {
 }) {
   const [confirming, setConfirming] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const qc = useQueryClient();
 
   const remove = useMutation({
     mutationFn: () => removeFriend(email, friend.email),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["friends", email] });
-      toast({ title: "Freund entfernt" });
+      toast({ title: t("friends.friend_removed") });
       onRemove();
     },
   });
@@ -59,13 +61,13 @@ function FriendRow({ friend, email, unreadCount, onRemove }: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ senderEmail: email, recipientEmail: friend.email }),
       });
-      if (!r.ok) throw new Error((await r.json()).error || "Fehler");
+      if (!r.ok) throw new Error((await r.json()).error || t("friends.error"));
       return r.json();
     },
     onSuccess: (d) => {
       window.location.href = `${import.meta.env.BASE_URL?.replace(/\/$/, "") ?? ""}/messages/${d.conversationId}`;
     },
-    onError: (e: any) => toast({ title: e.message ?? "Fehler", variant: "destructive" }),
+    onError: (e: any) => toast({ title: e.message ?? t("friends.error"), variant: "destructive" }),
   });
 
   return (
@@ -78,7 +80,7 @@ function FriendRow({ friend, email, unreadCount, onRemove }: {
       {confirming ? (
         <div className="flex items-center gap-1">
           <Button size="sm" variant="destructive" className="h-7 text-xs rounded-xl" onClick={() => remove.mutate()} disabled={remove.isPending}>
-            Entfernen
+            {t("friends.confirm_remove")}
           </Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-xl" onClick={() => setConfirming(false)}>
             <X className="w-3 h-3" />
@@ -181,6 +183,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
   const [addEmail, setAddEmail] = useState("");
   const [addError, setAddError] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslation();
   const qc = useQueryClient();
 
   const { data: friends = [], isLoading: loadingFriends } = useQuery({
@@ -255,13 +258,13 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
       <div className="bg-card border border-border/50 rounded-3xl p-5 space-y-3">
         <h3 className="font-bold text-sm flex items-center gap-2">
           <UserPlus className="w-4 h-4 text-primary" />
-          Freund hinzufügen
+          {t("friends.add_friend")}
         </h3>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="E-Mail-Adresse eingeben"
+              placeholder={t("friends.search_placeholder")}
               value={addEmail}
               onChange={e => { setAddEmail(e.target.value); setAddError(""); }}
               onKeyDown={e => e.key === "Enter" && handleSend()}
@@ -273,7 +276,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
             disabled={sendReq.isPending || !addEmail}
             className="rounded-2xl h-10 px-4 bg-gradient-to-r from-primary to-accent text-white border-0 font-bold"
           >
-            Senden
+            {t("friends.send_request")}
           </Button>
         </div>
         {addError && <p className="text-xs text-destructive">{addError}</p>}
@@ -284,7 +287,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
         <div className="bg-card border border-primary/20 rounded-3xl p-5 space-y-3">
           <h3 className="font-bold text-sm flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-primary" />
-            Anfragen
+            {t("friends.requests")}
             <span className="bg-primary text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center">{incomingCount}</span>
           </h3>
           <div className="space-y-2">
@@ -299,7 +302,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
       {requests.outgoing.length > 0 && (
         <div className="bg-card border border-border/50 rounded-3xl p-5 space-y-3">
           <h3 className="font-bold text-sm text-muted-foreground flex items-center gap-2">
-            <Users className="w-4 h-4" /> Ausstehende Anfragen
+            <Users className="w-4 h-4" /> {t("friends.requests_sent")}
           </h3>
           <div className="space-y-2">
             {requests.outgoing.map(r => (
@@ -313,7 +316,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
       <div className="bg-card border border-border/50 rounded-3xl p-5 space-y-3">
         <h3 className="font-bold text-sm flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
-          Freunde
+          {t("friends.title")}
           {friends.length > 0 && (
             <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{friends.length}</span>
           )}
@@ -325,7 +328,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
         ) : friends.length === 0 ? (
           <div className="text-center py-8 text-sm text-muted-foreground">
             <div className="text-3xl mb-2">👋</div>
-            <p>Noch keine Freunde. Lade jemanden ein!</p>
+            <p>{t("friends.no_friends_hint")}</p>
           </div>
         ) : (
           <div className="space-y-1">
@@ -334,7 +337,7 @@ export function FriendsPanel({ email, compact = false, onFriendCountChange }: Fr
             ))}
             {compact && friends.length > 5 && (
               <button className="w-full text-xs font-bold text-primary py-2 flex items-center justify-center gap-1 hover:bg-primary/5 rounded-2xl transition-colors">
-                Alle {friends.length} Freunde anzeigen <ChevronRight className="w-3 h-3" />
+                {t("friends.view_all", { count: friends.length })} <ChevronRight className="w-3 h-3" />
               </button>
             )}
           </div>

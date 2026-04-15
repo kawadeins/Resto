@@ -92,7 +92,7 @@ export default function VariantOptimizationPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64 text-[#444] text-sm">
-        Lade Optimierungs-Daten…
+        {t("optimizer.loading_data")}
       </div>
     );
   }
@@ -100,7 +100,7 @@ export default function VariantOptimizationPanel() {
   if (!data) {
     return (
       <div className="text-center text-[#444] text-sm py-12">
-        Keine Daten verfügbar.
+        {t("optimizer.no_data_panel")}
       </div>
     );
   }
@@ -114,7 +114,7 @@ export default function VariantOptimizationPanel() {
         <div>
           <h2 className="text-xl font-bold text-white">Auto-Conversion Optimization</h2>
           <p className="text-[#555] text-sm mt-1">
-            Kontrolliertes A/B-System für Premium-Messaging, CTAs und Proof-Karten — lernt aus echten Klick-Daten.
+            {t("optimizer.ab_system_desc")}
           </p>
         </div>
         <button

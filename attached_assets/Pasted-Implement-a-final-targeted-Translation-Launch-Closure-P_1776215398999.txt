@@ -1,0 +1,209 @@
+Implement a final targeted "Translation Launch Closure Pass" based ONLY on the latest QA report.
+
+IMPORTANT:
+- Do NOT redesign anything
+- Do NOT rebuild i18n architecture
+- Do NOT touch already-clean files unless directly required
+- Do NOT resume old tasks or unrelated systems
+- This is a final translation repair pass only
+- Fix exactly the remaining files and issues reported in the latest QA report
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Close the final remaining translation blockers so both:
+1. customer app
+2. restaurant owner dashboard
+
+are ready for EN/FR production use with no major visible German leftovers.
+
+==================================================
+PHASE 1 — FIX THE 5 IN-SCOPE FILES FIRST
+==================================================
+
+These were already in scope and must be completed properly now.
+
+1. analytics.tsx
+Fix all remaining German visible UI:
+- card titles
+- subtitles
+- chart/table headings
+- metric labels
+- "Tagesleistung (30 Tage)"
+- "Reservierungen nach Quelle"
+- "Stoßzeiten-Heatmap"
+- "Gewinnstärkste Gerichte"
+- "Gerichts-Rentabilität im Detail"
+- table headers like "Gericht", "Kategorie"
+Use existing translation keys where possible, add missing ones only if required.
+
+2. promotion-tools.tsx
+Fix all remaining German visible UI:
+- demand badge text
+- section headline
+- activation buttons
+- budget text
+- toast/error text
+- footer labels
+Translate all remaining hardcoded visible strings.
+
+3. soft-paywall.tsx
+Fix the remaining missed string(s), especially:
+- "Angebot endet in"
+Also check the ghost preview labels if they are still visibly German and translate them if user-visible.
+
+4. variant-optimization-panel.tsx
+Fix:
+- "Keine Daten verfügbar."
+and any other remaining hardcoded visible labels.
+
+5. menu.tsx
+Fix the category system properly:
+- CATEGORIES array must not stay German-hardcoded
+- make category labels translation-driven and reactive
+- fix default form category value display so it is localized correctly in UI
+
+==================================================
+PHASE 2 — FIX THE 5 MAJOR OUT-OF-SCOPE PAGES NOW
+==================================================
+
+These pages are clearly visible and block EN/FR launch. Fix them fully.
+
+6. optimizer.tsx
+Translate all visible UI:
+- buttons
+- metric cards
+- strategy descriptions
+- toast messages
+- demand indicators
+- labels
+
+7. campaigns.tsx
+Translate all visible UI:
+- campaign template labels/descriptions
+- message body UI
+- SEGMENT_LABELS
+- send button labels
+- dialog titles
+- loyalty modal labels
+- all remaining visible German strings
+
+8. reservations.tsx
+Fix visible validation/localized error behavior:
+- translate Zod/form validation messages such as:
+  - "Name ist erforderlich"
+  - "Ungültige E-Mail-Adresse"
+  - "Telefonnummer ist erforderlich"
+Ensure they react properly in EN/FR.
+
+9. profile.tsx (owner dashboard profile)
+Translate the entire owner profile page:
+- tabs
+- labels
+- placeholders
+- settings text
+- media/history/general sections
+This page must not remain German in EN/FR.
+
+10. for-business.tsx
+Translate the full B2B/customer business landing page:
+- hero
+- feature descriptions
+- benefit bullets
+- CTA/support text
+No visible German should remain there in EN/FR.
+
+==================================================
+PHASE 3 — FIX THE MINOR LEFTOVERS
+==================================================
+
+Then fix these smaller remaining issues:
+
+11. instant-plan-button.tsx
+- translate "Plan starten"
+
+12. friends-panel.tsx
+- translate "Noch keine Freunde. Lade jemanden ein!"
+
+13. my-bookings.tsx
+- translate ratingLabel() values:
+  "Ausgezeichnet", "Gut", "Mittel", "Schlecht", "Sehr schlecht"
+
+14. finances.tsx
+- translate Recharts label "Umsatz"
+
+15. insights.tsx
+- translate labels like:
+  "Läuft"
+  "Keine Daten"
+
+16. campaigns.tsx
+- translate "Wiederkehrquote" if still visible after Phase 2
+
+==================================================
+IMPLEMENTATION RULES
+==================================================
+
+1. Use existing translation namespaces/keys where possible.
+2. Add missing keys only when necessary.
+3. Do NOT leave any visible hardcoded German strings in the files listed above.
+4. For arrays/constants/select options rendered in UI:
+   - do NOT keep German labels at module scope
+   - make them translation-driven/reactive
+5. For validation messages:
+   - use translation-aware schema/message generation where needed
+6. Keep user-generated content untouched.
+7. Do NOT touch files already confirmed clean in the QA report.
+
+==================================================
+VALIDATION
+==================================================
+
+After fixing the files above, validate in:
+- German
+- English
+- French
+
+Check specifically:
+
+CUSTOMER APP:
+- for-business
+- instant plan button
+- friends panel
+- my bookings
+
+OWNER DASHBOARD:
+- analytics
+- promotion tools
+- soft paywall
+- variant optimization panel
+- menu
+- optimizer
+- campaigns
+- reservations
+- owner profile
+- finances
+- insights
+
+Confirm:
+- no major visible German remains
+- no raw translation keys appear
+- no mixed-language UI remains in these repaired files
+- EN/FR experience is now production-safe in these areas
+
+==================================================
+FINAL REPORT
+==================================================
+
+Return a concise report with:
+
+A. In-scope files fixed
+B. Out-of-scope major pages fixed
+C. Minor leftovers fixed
+D. Any remaining visible German strings in the repaired files
+E. Whether translation is now ready for final production QA
+
+Do not include unrelated work.
+Do not mention old task IDs.
+Do not resume any previous session plan.

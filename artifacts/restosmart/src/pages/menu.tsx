@@ -317,7 +317,7 @@ export default function Menu() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                         <SelectContent>
-                          {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                          {CATEGORIES.map(c => <SelectItem key={c} value={c}>{t(`menu.cat_${c.toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u")}`, { defaultValue: c })}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />

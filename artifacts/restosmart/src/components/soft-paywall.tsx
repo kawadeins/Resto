@@ -352,10 +352,10 @@ export function SoftPaywall({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-extrabold text-amber-400 leading-tight">
-                Heute: 14 Tage gratis testen
+                {t("paywall.free_trial_today")}
               </p>
               <p className="text-[11px] text-amber-500/55 mt-0.5">
-                Angebot endet in
+                {t("paywall.offer_ends_in")}
               </p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">

@@ -61,48 +61,46 @@ interface CampaignTemplate {
   defaultMessage: string;
 }
 
-const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
-  {
-    type: "win_back",
-    label: "Rückgewinnung",
-    description: "Kunden ansprechen, die seit 45+ Tagen nicht mehr da waren",
-    icon: RefreshCw,
-    targetSegment: "inactive",
-    color: "text-orange-400",
-    defaultMessage:
-      "Wir vermissen Sie! Es ist schon eine Weile her seit Ihrem letzten Besuch. Als geschätzter Gast würden wir Sie gerne mit einem exklusiven Angebot wieder willkommen heißen.",
-  },
-  {
-    type: "thank_you",
-    label: "Besuchsdankeschön",
-    description: "Stammkunden danken und zu Bewertungen motivieren",
-    icon: Heart,
-    targetSegment: "returning",
-    color: "text-pink-400",
-    defaultMessage:
-      "Vielen Dank für Ihren Besuch! Wir hoffen, Sie hatten ein wunderbares Erlebnis. Hinterlassen Sie uns eine Bewertung und sammeln Sie 5 Bonus-Treuepunkte — wir freuen uns auf Ihr Wiederkommen!",
-  },
-  {
-    type: "flash_blast",
-    label: "Blitzangebot-Versand",
-    description: "Exklusives zeitlich begrenztes Angebot an alle Kunden senden",
-    icon: Zap,
-    targetSegment: "all",
-    color: "text-yellow-400",
-    defaultMessage:
-      "Exklusives Angebot! Wir haben ein zeitlich begrenztes Angebot nur für unsere geschätzten Kunden. Reservieren Sie jetzt Ihren Tisch — die Plätze sind begrenzt!",
-  },
-  {
-    type: "loyalty_reward",
-    label: "Treuebelohnung",
-    description: "Hochwertige Gäste über Stufenstatus und Belohnungen informieren",
-    icon: Gift,
-    targetSegment: "high_value",
-    color: "text-purple-400",
-    defaultMessage:
-      "Tolle Neuigkeiten! Sie machen fantastische Fortschritte auf Ihrem Treueweg. Prüfen Sie Ihre Punkte — vielleicht fehlt nur noch ein Besuch bis zu Ihrer nächsten exklusiven Belohnung.",
-  },
-];
+function getCampaignTemplates(t: (key: string) => string): CampaignTemplate[] {
+  return [
+    {
+      type: "win_back",
+      label: t("campaigns.tmpl_win_back_label"),
+      description: t("campaigns.tmpl_win_back_desc"),
+      icon: RefreshCw,
+      targetSegment: "inactive",
+      color: "text-orange-400",
+      defaultMessage: t("campaigns.tmpl_win_back_msg"),
+    },
+    {
+      type: "thank_you",
+      label: t("campaigns.tmpl_thank_you_label"),
+      description: t("campaigns.tmpl_thank_you_desc"),
+      icon: Heart,
+      targetSegment: "returning",
+      color: "text-pink-400",
+      defaultMessage: t("campaigns.tmpl_thank_you_msg"),
+    },
+    {
+      type: "flash_blast",
+      label: t("campaigns.tmpl_flash_blast_label"),
+      description: t("campaigns.tmpl_flash_blast_desc"),
+      icon: Zap,
+      targetSegment: "all",
+      color: "text-yellow-400",
+      defaultMessage: t("campaigns.tmpl_flash_blast_msg"),
+    },
+    {
+      type: "loyalty_reward",
+      label: t("campaigns.tmpl_loyalty_reward_label"),
+      description: t("campaigns.tmpl_loyalty_reward_desc"),
+      icon: Gift,
+      targetSegment: "high_value",
+      color: "text-purple-400",
+      defaultMessage: t("campaigns.tmpl_loyalty_reward_msg"),
+    },
+  ];
+}
 
 const SEGMENT_LABELS: Record<SegmentKey | string, { label: string; color: string }> = {
   inactive: { label: "Inaktiv", color: "bg-orange-500/20 text-orange-400" },
@@ -320,7 +318,7 @@ function CreateCampaignModal({
 
   async function handleLaunch() {
     if (targetCount === 0) {
-      toast({ title: "Keine Kunden in diesem Segment", description: "Fügen Sie mehr Kunden hinzu, um diese Kampagne zu starten.", variant: "destructive" });
+      toast({ title: t("campaigns.no_customers_in_segment"), description: t("campaigns.no_customers_add_hint"), variant: "destructive" });
       return;
     }
     try {
@@ -334,11 +332,11 @@ function CreateCampaignModal({
       });
       await launchCampaign.mutateAsync({ id: created.id });
       await qc.invalidateQueries({ queryKey: getListCampaignsQueryKey() });
-      toast({ title: "Kampagne gestartet!", description: `An ${targetCount} Kunden gesendet.` });
+      toast({ title: t("campaigns.campaign_launched"), description: t("campaigns.campaign_launched_desc", { count: targetCount }) });
       onCreated(created.id);
       onClose();
     } catch {
-      toast({ title: "Kampagne konnte nicht gestartet werden", variant: "destructive" });
+      toast({ title: t("campaigns.launch_error"), variant: "destructive" });
     }
   }
 
@@ -350,7 +348,7 @@ function CreateCampaignModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className={`h-5 w-5 ${template.color}`} />
-            {template.label} Kampagne
+            {template.label}
           </DialogTitle>
           <DialogDescription>{template.description}</DialogDescription>
         </DialogHeader>
@@ -393,7 +391,7 @@ function CreateCampaignModal({
 
           <div className="flex gap-2 pt-1">
             <Button variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
-              Abbrechen
+              {t("common.cancel")}
             </Button>
             <Button
               className="flex-1 gap-2"
@@ -401,7 +399,7 @@ function CreateCampaignModal({
               disabled={isLoading || targetCount === 0}
             >
               <Send className="h-4 w-4" />
-              {isLoading ? "Wird gestartet..." : `An ${targetCount} Kunden senden`}
+              {isLoading ? t("campaigns.sending_progress") : t("campaigns.send_to_count", { count: targetCount })}
             </Button>
           </div>
         </div>
@@ -415,6 +413,7 @@ const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 export default function Campaigns() {
   const { t } = useTranslation();
+  const campaignTemplates = getCampaignTemplates(t);
   const segmentLabel = (key: string) => ({
     inactive: t("campaigns.segment_inactive"),
     new: t("campaigns.segment_new"),
@@ -455,9 +454,9 @@ export default function Campaigns() {
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Wachstumszentrale</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">{t("campaigns.page_title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Kunden zurückgewinnen und Wiederholungsbesuche mit gezielten Kampagnen steigern.
+          {t("campaigns.page_subtitle")}
         </p>
       </div>
 
@@ -466,9 +465,8 @@ export default function Campaigns() {
         <div className="flex items-start gap-3 rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-sm text-orange-300">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
           <div>
-            <span className="font-semibold text-orange-300">E-Mail nicht konfiguriert — </span>
-            Kampagnen werden gespeichert, aber keine E-Mails versendet. Bitte{" "}
-            <span className="font-mono font-semibold">RESEND_API_KEY</span> als Umgebungsvariable setzen, um den echten Versand zu aktivieren.
+            <span className="font-semibold text-orange-300">{t("campaigns.email_not_configured")}</span>
+            {" "}{t("campaigns.email_not_configured_desc", { varName: "RESEND_API_KEY" })}
           </div>
         </div>
       )}
@@ -476,53 +474,52 @@ export default function Campaigns() {
       {/* Retention Metrics */}
       <section>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Bindungsübersicht
+          {t("campaigns.retention_section_title")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <MetricCard
-            label="Wiederkehrquote"
+            label={t("campaigns.return_rate_label")}
             value={loadingRetention ? "..." : `${retention?.repeatRate ?? 0}%`}
-            sub="Kunden zurückgekehrt"
+            sub={t("campaigns.return_rate_sub")}
             icon={TrendingUp}
             loading={loadingRetention}
             highlight={(retention?.repeatRate ?? 0) >= 40 ? "good" : "warn"}
           />
           <MetricCard
-            label="Stammkunden"
+            label={t("campaigns.regular_customers_label")}
             value={loadingRetention ? "..." : retention?.repeatCustomers ?? 0}
-            sub="2+ Buchungen"
+            sub={t("campaigns.regular_customers_sub")}
             icon={Users}
             loading={loadingRetention}
             highlight="neutral"
           />
           <MetricCard
-            label="Inaktiv"
+            label={t("campaigns.inactive_label")}
             value={loadingRetention ? "..." : retention?.inactiveCount ?? 0}
-            sub="45+ Tage nicht besucht"
+            sub={t("campaigns.inactive_sub")}
             icon={AlertTriangle}
             loading={loadingRetention}
             highlight={(retention?.inactiveCount ?? 0) > 5 ? "warn" : "good"}
           />
           <MetricCard
-            label="Gefährdet"
+            label={t("campaigns.at_risk_label")}
             value={loadingRetention ? "..." : retention?.atRiskCount ?? 0}
-            sub="21–44 Tage nicht besucht"
+            sub={t("campaigns.at_risk_sub")}
             icon={Clock}
             loading={loadingRetention}
             highlight={(retention?.atRiskCount ?? 0) > 3 ? "warn" : "neutral"}
           />
           <MetricCard
-            label="High-Value"
+            label={t("campaigns.segment_high_value")}
             value={loadingRetention ? "..." : retention?.highValueCount ?? 0}
-            sub="VIP-Gäste"
             icon={Star}
             loading={loadingRetention}
             highlight="good"
           />
           <MetricCard
-            label="Kampagnenbuchungen"
+            label={t("campaigns.campaign_bookings_label")}
             value={loadingRetention ? "..." : retention?.campaignDrivenBookings ?? 0}
-            sub="Letzte 30 Tage"
+            sub={t("campaigns.campaign_bookings_sub")}
             icon={BarChart3}
             loading={loadingRetention}
             highlight={(retention?.campaignDrivenBookings ?? 0) > 0 ? "good" : "neutral"}
@@ -589,10 +586,10 @@ export default function Campaigns() {
       {/* Campaign Launcher */}
       <section>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Kampagne starten
+          {t("campaigns.launch_section_title")}
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {CAMPAIGN_TEMPLATES.map((tpl) => {
+          {campaignTemplates.map((tpl) => {
             const Icon = tpl.icon;
             const count =
               tpl.targetSegment === "all"

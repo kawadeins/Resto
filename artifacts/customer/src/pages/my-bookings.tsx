@@ -152,11 +152,11 @@ export default function MyBookings() {
   };
 
   const getRatingLabel = (rating: number) => {
-    if (rating === 5) return "Ausgezeichnet";
-    if (rating === 4) return "Gut";
-    if (rating === 3) return "Mittel";
-    if (rating === 2) return "Schlecht";
-    return "Sehr schlecht";
+    if (rating === 5) return t("booking.rating_excellent");
+    if (rating === 4) return t("booking.rating_good");
+    if (rating === 3) return t("booking.rating_ok");
+    if (rating === 2) return t("booking.rating_bad");
+    return t("booking.rating_terrible");
   };
 
   if (!activeEmail) {
