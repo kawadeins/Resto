@@ -139,19 +139,6 @@ export default function Explore() {
   const activeFiltersCount = [cuisine, priceRange, openNow, rating, businessType].filter(Boolean).length;
   const displayList = restaurantsWithDistances ?? [];
 
-  const firedImpressions = useRef<Set<number>>(new Set());
-  useEffect(() => {
-    const boosted = displayList.filter(({ restaurant }) => restaurant.hasActiveBoost);
-    boosted.forEach(({ restaurant }) => {
-      if (firedImpressions.current.has(restaurant.id)) return;
-      firedImpressions.current.add(restaurant.id);
-      const API = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-      fetch(`${API}/api/promotions/restaurant/${restaurant.id}/impression`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      }).catch(() => {});
-    });
-  }, [displayList]);
 
   const BUSINESS_TYPE_OPTS = [
     { value: "",           label: t("explore.filter_all"),        emoji: "🍽️" },

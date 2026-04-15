@@ -227,7 +227,7 @@ export function RestaurantCard({ restaurant, showFlashDeal = false, distance }: 
             <span className="shrink-0 text-sm font-semibold text-muted-foreground">{priceString}</span>
           </div>
 
-          {/* Type + cuisine + availability + sponsored */}
+          {/* Type + cuisine + availability */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${typeCfg.badgeCls}`}>
               <TypeIcon className="w-3 h-3" />

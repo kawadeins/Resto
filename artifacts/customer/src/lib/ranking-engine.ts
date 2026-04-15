@@ -13,8 +13,7 @@
  *   boostScore = 0-12 pts, only applied if budget remaining AND time-window match
  *
  * Transparency:
- *   Every result carries isSponsored — shown as "Gesponsert" label in the UI.
- *   Boosted venues only get the sponsored flag if their budget is not exhausted.
+ *   Boosted venues get a score bonus if their budget is not exhausted.
  */
 
 import { scoreRestaurant } from "./smart-offers";
@@ -31,7 +30,6 @@ export interface RankedVenue {
   finalScore: number;
   relevanceScore: number;
   boostScore: number;
-  isSponsored: boolean;
   reasons: ReasonLabel[];
   primaryReason: ReasonLabel;
   flashDeal: MarketplaceFlashDeal | null;
@@ -103,7 +101,7 @@ export function rankVenues(
     );
 
     // Remove the unconditional +12 boost already baked into scoreRestaurant.
-    // We re-apply it budget-aware below so we can track isSponsored accurately.
+    // We re-apply it budget-aware below.
     let relevanceScore = offer.score;
     if ((restaurant as any).hasActiveBoost) {
       relevanceScore = Math.max(0, relevanceScore - 12);
@@ -123,18 +121,15 @@ export function rankVenues(
     // ── Boost score (budget-aware, time-aware) ────────────────────────────────
     // Rule 4: boost enhances relevance, never overrides it.
     // Rule 6: boost must respect time context.
-    // Rule 9: we flag isSponsored only when boost is actually applied.
     const budgetRemaining: number = (restaurant as any).boostBudgetRemaining ?? Infinity;
     const hasActiveBudgetedBoost =
       Boolean((restaurant as any).hasActiveBoost) && budgetRemaining > 0;
 
     let boostScore = 0;
-    let isSponsored = false;
 
     if (hasActiveBudgetedBoost) {
       const timeFactor = timeBoostMultiplier(restaurant, mode);
       boostScore = Math.round(12 * timeFactor);
-      if (boostScore > 0) isSponsored = true;
     }
 
     // ── Compute final score ───────────────────────────────────────────────────
@@ -146,7 +141,6 @@ export function rankVenues(
       finalScore,
       relevanceScore: Math.round(adjustedRelevance),
       boostScore,
-      isSponsored,
       reasons: offer.reasons,
       primaryReason: offer.primaryReason,
       flashDeal: flashByRestaurantId.get(restaurant.id) ?? null,
@@ -183,14 +177,12 @@ export function rankByContext(
       else if (priority[1] && biz === priority[1]) score += 6;
 
       const boostScore = hasActiveBudgetedBoost ? Math.round(10 * timeBoostMultiplier(r, mode)) : 0;
-      const isSponsored = boostScore > 0;
 
       return {
         restaurant: r,
         finalScore: Math.min(100, score + boostScore),
         relevanceScore: Math.round(score),
         boostScore,
-        isSponsored,
         reasons: [] as ReasonLabel[],
         primaryReason: {
           emoji: "⭐",

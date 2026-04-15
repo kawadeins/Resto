@@ -114,11 +114,6 @@ function SmartOfferCard({ offer, rank }: { offer: SmartOffer; rank: number }) {
               <span className="text-sm leading-none">{primaryReason.emoji}</span>
               {primaryReason.text}
             </div>
-            {(r as any).hasActiveBoost && ((r as any).boostBudgetRemaining === null || (r as any).boostBudgetRemaining > 0) && (
-              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                Gesponsert
-              </span>
-            )}
           </div>
 
           {/* Secondary reason chips */}
