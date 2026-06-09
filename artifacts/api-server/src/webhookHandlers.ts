@@ -160,8 +160,13 @@ export class WebhookHandlers {
       case "checkout.session.completed": {
         const session = data;
         const meta = session.metadata ?? {};
-        const restaurantId = parseInt(meta.restaurant_id ?? "1", 10);
+        const restaurantId = parseInt(meta.restaurant_id ?? "0", 10);
         const paymentStatus = session.payment_status;
+
+        if (!restaurantId || restaurantId <= 0) {
+          logger.warn({ meta }, "Webhook: missing or invalid restaurant_id in metadata — skipping");
+          return;
+        }
 
         logger.info({ eventType, restaurantId, mode: session.mode, paymentStatus }, "Checkout session completed");
 
@@ -235,7 +240,7 @@ export class WebhookHandlers {
           const periodStart = new Date((sub as any).current_period_start * 1000);
           const periodEnd = new Date((sub as any).current_period_end * 1000);
           const meta = (sub as any).metadata ?? {};
-          const restaurantId = parseInt(meta.restaurant_id ?? "1", 10);
+          const restaurantId = parseInt(meta.restaurant_id ?? "0", 10);
 
           // Find our subscription by stripeSubscriptionId or stripeCustomerId
           const rows = await db.execute(sql`

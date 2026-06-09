@@ -5,9 +5,12 @@ import { sql, eq } from "drizzle-orm";
 
 const router = Router();
 
-const FOUNDER_KEY = process.env.FOUNDER_KEY ?? "rs_founder_2026";
+const FOUNDER_KEY = process.env.FOUNDER_KEY;
 
 function authMiddleware(req: any, res: any, next: any) {
+  if (!FOUNDER_KEY) {
+    return res.status(503).json({ error: "Founder access not configured" });
+  }
   const key = req.headers["x-founder-key"] as string | undefined;
   if (!key || key !== FOUNDER_KEY) {
     return res.status(401).json({ error: "Unauthorized" });

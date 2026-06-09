@@ -5,6 +5,7 @@ import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createNotification } from "../lib/notify";
 import { sendBookingConfirmation, sendLoyaltyTierUnlock } from "../services/email";
+import { requireManagerOrAbove } from "../middleware/role-guard";
 import {
   CreateReservationBody,
   UpdateReservationBody,
@@ -33,7 +34,7 @@ function mapReservation(r: typeof reservationsTable.$inferSelect) {
   };
 }
 
-router.get("/today", async (req, res) => {
+router.get("/today", requireManagerOrAbove(), async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const rows = await db
@@ -48,7 +49,7 @@ router.get("/today", async (req, res) => {
   }
 });
 
-router.get("/stats", async (req, res) => {
+router.get("/stats", requireManagerOrAbove(), async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -82,7 +83,7 @@ router.get("/stats", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const { date, status } = req.query as { date?: string; status?: string };
     let rows = await db
@@ -100,7 +101,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const body = CreateReservationBody.parse(req.body);
     const [row] = await db.insert(reservationsTable).values({
@@ -133,7 +134,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = GetReservationParams.parse({ id: parseInt(req.params.id) });
     const [row] = await db.select().from(reservationsTable).where(eq(reservationsTable.id, id));
@@ -145,7 +146,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.patch("/:id/status", async (req, res) => {
+router.patch("/:id/status", requireManagerOrAbove(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status } = z.object({
@@ -187,7 +188,7 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = UpdateReservationParams.parse({ id: parseInt(req.params.id) });
     const body = UpdateReservationBody.parse(req.body);
@@ -211,7 +212,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = DeleteReservationParams.parse({ id: parseInt(req.params.id) });
     await db.delete(reservationsTable).where(eq(reservationsTable.id, id));

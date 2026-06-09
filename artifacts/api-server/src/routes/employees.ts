@@ -7,7 +7,7 @@ import { requireManagerOrAbove } from "../middleware/role-guard";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
     const employees = await db.select().from(employeesTable).orderBy(employeesTable.name);
     res.json(employees.map((e) => ({
@@ -48,7 +48,7 @@ router.post("/", requireManagerOrAbove(), async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireManagerOrAbove(), async (req, res) => {
   try {
     const { id } = GetEmployeeParams.parse({ id: parseInt(req.params.id) });
     const [employee] = await db.select().from(employeesTable).where(eq(employeesTable.id, id));

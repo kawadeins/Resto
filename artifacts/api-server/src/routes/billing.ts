@@ -17,12 +17,12 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { subscriptionsTable, restaurantsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
-import { requireOwner } from "../middleware/role-guard";
+import { requireOwner, requireManagerOrAbove } from "../middleware/role-guard";
 import { getUncachableStripeClient, getStripePublishableKey } from "../stripeClient";
 
-async function getRestaurantPilotMode(): Promise<boolean> {
+async function getRestaurantPilotMode(restaurantId: number): Promise<boolean> {
   try {
-    const [r] = await db.select({ pilotMode: restaurantsTable.pilotMode }).from(restaurantsTable).where(eq(restaurantsTable.id, 1));
+    const [r] = await db.select({ pilotMode: restaurantsTable.pilotMode }).from(restaurantsTable).where(eq(restaurantsTable.id, restaurantId));
     return r?.pilotMode ?? false;
   } catch { return false; }
 }
@@ -67,14 +67,15 @@ function mapSub(s: typeof subscriptionsTable.$inferSelect) {
 }
 
 // GET /api/billing/subscription
-router.get("/subscription", async (req, res) => {
+router.get("/subscription", requireManagerOrAbove(), async (req, res) => {
   try {
-    const isPilot = await getRestaurantPilotMode();
+    const restaurantId = req.session.restaurantId!;
+    const isPilot = await getRestaurantPilotMode(restaurantId);
     const now = new Date();
-    let rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    let rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, restaurantId));
 
     if (rows.length === 0) {
-      const [created] = await db.insert(subscriptionsTable).values({ restaurantId: 1, status: "inactive" }).returning();
+      const [created] = await db.insert(subscriptionsTable).values({ restaurantId, status: "inactive" }).returning();
       const mapped = mapSub(created);
       return void res.json({ ...mapped, isPilot, isActive: isPilot || mapped.isActive });
     }
@@ -83,7 +84,7 @@ router.get("/subscription", async (req, res) => {
     if (rows[0].status === "trial" && rows[0].currentPeriodEnd && new Date(rows[0].currentPeriodEnd) < now) {
       const [expired] = await db.update(subscriptionsTable)
         .set({ status: "expired" })
-        .where(eq(subscriptionsTable.restaurantId, 1))
+        .where(eq(subscriptionsTable.restaurantId, restaurantId))
         .returning();
       rows = [expired];
     }
@@ -99,7 +100,8 @@ router.get("/subscription", async (req, res) => {
 // POST /api/billing/trial
 router.post("/trial", requireOwner(), async (req, res) => {
   try {
-    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    const restaurantId = req.session.restaurantId!;
+    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, restaurantId));
     const existing = rows[0];
 
     if (existing) {
@@ -110,7 +112,7 @@ router.post("/trial", requireOwner(), async (req, res) => {
         return void res.status(400).json({ error: "trial_active", message: "Ihre Testphase ist bereits aktiv." });
       }
       if (existing.status === "expired") {
-        return void res.status(400).json({ error: "trial_used", message: "Ihre Testphase wurde bereits genutzt. Bitte abonnieren Sie f\u00fcr vollen Zugang." });
+        return void res.status(400).json({ error: "trial_used", message: "Ihre Testphase wurde bereits genutzt. Bitte abonnieren Sie für vollen Zugang." });
       }
     }
 
@@ -120,7 +122,7 @@ router.post("/trial", requireOwner(), async (req, res) => {
     let sub;
     if (!existing) {
       [sub] = await db.insert(subscriptionsTable).values({
-        restaurantId: 1,
+        restaurantId,
         status: "trial",
         planName: "RestoSmart Business Premium",
         amountEur: "0.00",
@@ -137,7 +139,7 @@ router.post("/trial", requireOwner(), async (req, res) => {
           currentPeriodEnd: trialEnd,
           cancelledAt: null,
         })
-        .where(eq(subscriptionsTable.restaurantId, 1))
+        .where(eq(subscriptionsTable.restaurantId, restaurantId))
         .returning();
     }
 
@@ -161,17 +163,18 @@ router.post("/checkout", requireOwner(), async (req, res) => {
   try {
     const stripe = await getUncachableStripeClient();
     const frontendBase = getFrontendBase();
+    const restaurantId = req.session.restaurantId!;
     const ownerEmail = (req as any).userEmail as string | undefined;
 
     // Find or create Stripe customer linked to this restaurant
-    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, restaurantId));
     const existing = rows[0];
     let customerId: string | undefined = existing?.stripeCustomerId ?? undefined;
 
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: ownerEmail ?? undefined,
-        metadata: { restaurant_id: "1", platform: "restosmart" },
+        metadata: { restaurant_id: String(restaurantId), platform: "restosmart" },
       });
       customerId = customer.id;
 
@@ -179,10 +182,10 @@ router.post("/checkout", requireOwner(), async (req, res) => {
       if (existing) {
         await db.update(subscriptionsTable)
           .set({ stripeCustomerId: customerId })
-          .where(eq(subscriptionsTable.restaurantId, 1));
+          .where(eq(subscriptionsTable.restaurantId, restaurantId));
       } else {
         await db.insert(subscriptionsTable).values({
-          restaurantId: 1,
+          restaurantId,
           status: "inactive",
           stripeCustomerId: customerId,
         });
@@ -192,8 +195,8 @@ router.post("/checkout", requireOwner(), async (req, res) => {
     // Environment-aware price selection
     // LIVE  — deployed production (REPLIT_DEPLOYMENT=1)
     // TEST  — local development / sandbox
-    const PREMIUM_PRICE_ID_LIVE = "price_1TK7DxDq06OMDnUjYnSnpUY3";
-    const PREMIUM_PRICE_ID_TEST = "price_1TK5gkAgY8yJ0qgTg1oAXFd6";
+    const PREMIUM_PRICE_ID_LIVE = process.env.STRIPE_PREMIUM_PRICE_ID_LIVE ?? "price_1TK7DxDq06OMDnUjYnSnpUY3";
+    const PREMIUM_PRICE_ID_TEST = process.env.STRIPE_PREMIUM_PRICE_ID_TEST ?? "price_1TK5gkAgY8yJ0qgTg1oAXFd6";
     const isDeployed = process.env.REPLIT_DEPLOYMENT === "1";
     const PREMIUM_PRICE_ID = isDeployed ? PREMIUM_PRICE_ID_LIVE : PREMIUM_PRICE_ID_TEST;
 
@@ -208,12 +211,12 @@ router.post("/checkout", requireOwner(), async (req, res) => {
       success_url: `${frontendBase}/billing?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendBase}/billing?stripe=cancel`,
       metadata: {
-        restaurant_id: "1",
+        restaurant_id: String(restaurantId),
         type: "subscription",
         platform: "restosmart",
       },
       subscription_data: {
-        metadata: { restaurant_id: "1", platform: "restosmart" },
+        metadata: { restaurant_id: String(restaurantId), platform: "restosmart" },
       },
       allow_promotion_codes: true,
     });
@@ -233,15 +236,16 @@ router.post("/checkout", requireOwner(), async (req, res) => {
 // GET /api/billing/verify-session?session_id=cs_xxx
 // Called by the billing page on return from Stripe success URL to confirm pending status.
 // Actual activation comes from webhook — this just returns current DB state.
-router.get("/verify-session", async (req, res) => {
+router.get("/verify-session", requireManagerOrAbove(), async (req, res) => {
   try {
     const sessionId = req.query.session_id as string;
     if (!sessionId) return void res.status(400).json({ error: "session_id required" });
 
+    const restaurantId = req.session.restaurantId!;
     const stripe = await getUncachableStripeClient();
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, restaurantId));
     const sub = rows[0];
 
     res.json({
@@ -263,7 +267,8 @@ router.get("/verify-session", async (req, res) => {
 // GET /api/billing/portal — Stripe Customer Portal for managing subscription
 router.get("/portal", requireOwner(), async (req, res) => {
   try {
-    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    const restaurantId = req.session.restaurantId!;
+    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, restaurantId));
     const sub = rows[0];
     const customerId = sub?.stripeCustomerId;
 
@@ -289,7 +294,8 @@ router.get("/portal", requireOwner(), async (req, res) => {
 // POST /api/billing/cancel — cancel Stripe subscription + update DB
 router.post("/cancel", requireOwner(), async (req, res) => {
   try {
-    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, 1));
+    const restaurantId = req.session.restaurantId!;
+    const rows = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.restaurantId, restaurantId));
     const sub = rows[0];
 
     if (!sub) {
@@ -309,13 +315,13 @@ router.post("/cancel", requireOwner(), async (req, res) => {
 
     const [updated] = await db.update(subscriptionsTable)
       .set({ status: "cancelled", cancelledAt: new Date() })
-      .where(eq(subscriptionsTable.restaurantId, 1))
+      .where(eq(subscriptionsTable.restaurantId, restaurantId))
       .returning();
 
     res.json({ success: true, subscription: mapSub(updated) });
   } catch (err) {
     req.log.error({ err }, "Failed to cancel subscription");
-    res.status(500).json({ error: "K\u00fcndigung fehlgeschlagen" });
+    res.status(500).json({ error: "Kündigung fehlgeschlagen" });
   }
 });
 

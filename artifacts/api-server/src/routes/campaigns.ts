@@ -23,9 +23,8 @@ import { EMAIL_ENABLED } from "../services/email";
 const router = Router();
 
 // ─── Tenant helper ────────────────────────────────────────────────────────────
-// Prefer session restaurantId; fall back to 1 for single-tenant compatibility.
 function getRestaurantId(req: any): number {
-  return req.session?.restaurantId ?? 1;
+  return req.session?.restaurantId;
 }
 
 // ─── Segmentation engine (tenant-scoped) ──────────────────────────────────────
