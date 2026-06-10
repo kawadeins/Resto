@@ -114,7 +114,7 @@ export default function SettingsScreen() {
         style: "destructive",
         onPress: async () => {
           await clearCustomerEmail();
-          router.replace("/(auth)");
+          router.replace("/(auth)/login");
         },
       },
     ]);
