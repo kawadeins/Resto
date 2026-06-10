@@ -3,10 +3,13 @@
     "name": "RestoSmart",
     "slug": "restosmart-customer",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "restosmart",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -14,14 +17,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.restosmart.customer"
+      "bundleIdentifier": "com.restosmart.customer",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.restosmart.customer"
+      "package": "com.restosmart.customer",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +39,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }
