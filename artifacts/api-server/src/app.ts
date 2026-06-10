@@ -47,8 +47,8 @@ app.use(cors({
     if (!origin || ALLOWED_ORIGIN_PATTERN.test(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // still allow for now — log suspicious origins
-      logger.warn({ origin }, "CORS: request from unexpected origin");
+      logger.warn({ origin }, "CORS: request from unexpected origin blocked");
+      callback(new Error("CORS not allowed"), false);
     }
   },
   credentials: true,

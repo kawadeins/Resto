@@ -1,8 +1,6 @@
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 
-const RESTAURANT_ID = 1;
-
 export type TeamRole = "owner" | "manager" | "staff";
 
 export async function resolveIdentity(
@@ -11,34 +9,29 @@ export async function resolveIdentity(
   if (!email) return null;
   const normalised = email.trim().toLowerCase();
 
+  // Check if owner of any restaurant (multi-tenant: not hardcoded to ID=1)
   const ownerRow = await db.execute(sql`
-    SELECT id, owner_email FROM restaurants WHERE id = ${RESTAURANT_ID} LIMIT 1
+    SELECT id FROM restaurants WHERE LOWER(owner_email) = ${normalised} LIMIT 1
   `);
-  const restaurant = ownerRow.rows[0] as
-    | { id: number; owner_email: string }
-    | undefined;
-  if (!restaurant) return null;
-
-  if (
-    restaurant.owner_email &&
-    normalised === restaurant.owner_email.trim().toLowerCase()
-  ) {
-    return { role: "owner", restaurantId: restaurant.id };
+  const owned = ownerRow.rows[0] as { id: number } | undefined;
+  if (owned) {
+    return { role: "owner", restaurantId: owned.id };
   }
 
+  // Check if active team member of any restaurant
   const memberRows = await db.execute(sql`
-    SELECT role, status FROM team_members
+    SELECT role, restaurant_id FROM team_members
     WHERE LOWER(email) = ${normalised}
-      AND restaurant_id = ${restaurant.id}
+      AND status = 'active'
     LIMIT 1
   `);
   const member = memberRows.rows[0] as
-    | { role: string; status: string }
+    | { role: string; restaurant_id: number }
     | undefined;
-  if (!member || member.status !== "active") return null;
+  if (!member) return null;
 
   return {
     role: member.role as TeamRole,
-    restaurantId: restaurant.id,
+    restaurantId: member.restaurant_id,
   };
 }

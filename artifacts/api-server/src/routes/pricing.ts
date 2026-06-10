@@ -23,7 +23,7 @@ import {
 
 const router = Router();
 
-const FOUNDER_KEY = "rs_founder_2026";
+const FOUNDER_KEY = process.env.FOUNDER_KEY;
 
 // ─── GET /api/pricing/current ─────────────────────────────────────────────────
 router.get("/current", async (req, res) => {
@@ -139,7 +139,7 @@ router.get("/auto-optimize", async (req, res) => {
 
 // ─── GET /api/pricing/config — founder only ───────────────────────────────────
 router.get("/config", async (req, res) => {
-  if (req.headers["x-founder-key"] !== FOUNDER_KEY) {
+  if (!FOUNDER_KEY || req.headers["x-founder-key"] !== FOUNDER_KEY) {
     return res.status(403).json({ error: "Unauthorized" });
   }
   try {
@@ -168,7 +168,7 @@ const ConfigSchema = z.object({
 });
 
 router.put("/config", async (req, res) => {
-  if (req.headers["x-founder-key"] !== FOUNDER_KEY) {
+  if (!FOUNDER_KEY || req.headers["x-founder-key"] !== FOUNDER_KEY) {
     return res.status(403).json({ error: "Unauthorized" });
   }
   try {

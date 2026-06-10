@@ -64,8 +64,8 @@ export async function computeBoostCost(boostType: string, restaurantId: number):
 
 router.get("/", requireManagerOrAbove(), async (req, res) => {
   try {
-    const restaurantId = Number(req.query.restaurantId);
-    if (!restaurantId) return res.status(400).json({ error: "restaurantId required" });
+    const restaurantId = req.session.restaurantId;
+    if (!restaurantId) return res.status(403).json({ error: "Nicht authentifiziert" });
 
     const [balanceResult, txResult] = await Promise.all([
       db.execute(sql`
@@ -204,7 +204,7 @@ router.post("/topup", walletTopupLimiter, requireManagerOrAbove(), async (req, r
 router.get("/topup/verify", requireManagerOrAbove(), async (req, res) => {
   try {
     const sessionId = req.query.session_id as string;
-    const restaurantId = Number(req.query.restaurantId ?? 1);
+    const restaurantId = req.session.restaurantId!;
 
     if (!sessionId) return void res.status(400).json({ error: "session_id required" });
 
@@ -228,10 +228,10 @@ router.get("/topup/verify", requireManagerOrAbove(), async (req, res) => {
 
 // ── GET /api/wallet/cost?boostType=X&restaurantId=Y ──────────────────────────
 
-router.get("/cost", async (req, res) => {
+router.get("/cost", requireManagerOrAbove(), async (req, res) => {
   try {
     const boostType    = String(req.query.boostType ?? "");
-    const restaurantId = Number(req.query.restaurantId ?? 1);
+    const restaurantId = req.session.restaurantId!;
 
     if (!boostType) return res.status(400).json({ error: "boostType required" });
 
