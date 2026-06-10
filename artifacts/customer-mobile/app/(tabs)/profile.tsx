@@ -46,7 +46,7 @@ export default function ProfileScreen() {
           text: "Abmelden", style: "destructive",
           onPress: async () => {
             await clearCustomerEmail();
-            router.replace("/(auth)");
+            router.replace("/(auth)/login");
           },
         },
       ],

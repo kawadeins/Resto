@@ -9,7 +9,7 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace("/(auth)");
+      router.replace("/(auth)/login");
     }
   }, [isAuthenticated, isLoading]);
 
